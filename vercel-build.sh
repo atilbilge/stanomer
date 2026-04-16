@@ -3,27 +3,35 @@
 # Exit on error
 set -e
 
-echo "--- Installing dependencies ---"
-yum install -y xz git
+echo "--- Starting Stanomer Production Build ---"
 
-echo "--- Downloading Flutter ---"
-if [ ! -d "flutter" ]; then
-  git clone https://github.com/flutter/flutter.git -b stable
-fi
+# 1. Generate .env file from Vercel Environment Variables
+# This is crucial for Supabase initialization in Flutter
+echo "Generating .env file..."
+echo "SUPABASE_URL=$SUPABASE_URL" > .env
+echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+echo ".env file generated successfully."
 
-export PATH="$PATH:`pwd`/flutter/bin"
-
-echo "--- Flutter Build Web App ---"
-# Build with base-href /app/ to allow hosting in sub-directory
+# 2. Build Flutter Web for the /app sub-path
+echo "Building Flutter Web..."
 flutter build web --release --base-href /app/
 
-echo "--- Preparing Deployment Directory ---"
+# 3. Create deployment directory (dist)
+echo "Preparing distribution directory..."
+rm -rf dist
 mkdir -p dist/app
 
-# 1. Copy Landing Page to root
-cp -r landing/* dist/
+# 4. Copy Landing Page to root (/)
+if [ -d "landing" ]; then
+  echo "Copying landing page..."
+  cp -r landing/* dist/
+else
+  echo "Warning: landing directory not found!"
+fi
 
-# 2. Copy Flutter App to /app
+# 5. Copy Flutter App to /app
+echo "Copying Flutter web build to /app..."
 cp -r build/web/* dist/app/
 
-echo "--- Build Complete ---"
+echo "--- Build Complete! ---"
+echo "Deployment directory: dist"
