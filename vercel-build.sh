@@ -6,7 +6,6 @@ set -e
 echo "--- Starting Stanomer Production Build ---"
 
 # 1. Generate .env file from Vercel Environment Variables
-# This is crucial for Supabase initialization in Flutter
 echo "Generating .env file..."
 echo "SUPABASE_URL=$SUPABASE_URL" > .env
 echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
@@ -32,6 +31,10 @@ fi
 # 5. Copy Flutter App to /app
 echo "Copying Flutter web build to /app..."
 cp -r build/web/* dist/app/
+
+# 6. Verify Directory Structure (Diagnostic)
+echo "--- Verified Directory Structure ---"
+ls -R dist
 
 echo "--- Build Complete! ---"
 echo "Deployment directory: dist"
