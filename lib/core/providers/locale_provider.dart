@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('sharedPreferencesProvider must be overridden in main');
+});
+
+final localeProvider = NotifierProvider<LocaleNotifier, Locale>(() {
+  return LocaleNotifier();
+});
+
+class LocaleNotifier extends Notifier<Locale> {
+  static const _localeKey = 'app_locale';
+
+  @override
+  Locale build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final languageCode = prefs.getString(_localeKey);
+    
+    if (languageCode == 'sr_Cyrl') {
+      return const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl');
+    } else if (languageCode == 'en') {
+      return const Locale('en');
+    } else if (languageCode == 'tr') {
+      return const Locale('tr');
+    }
+    // Default to Serbian Latin
+    return const Locale('sr');
+  }
+
+  Future<void> setLocale(Locale locale) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    String code = locale.languageCode;
+    if (locale.scriptCode != null) {
+      code = '${locale.languageCode}_${locale.scriptCode}';
+    }
+    await prefs.setString(_localeKey, code);
+    state = locale;
+  }
+}
