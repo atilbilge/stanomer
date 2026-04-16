@@ -3,36 +3,54 @@
 # Exit on error
 set -e
 
-echo "--- Starting Emergency Recovery Build ---"
+echo "--- VERCEL BUILD START (V5 - Ultimate) ---"
 
-# 1. Generate .env file from Vercel Environment Variables
-echo "Generating .env file..."
+# 1. Environment Check
+echo "Step 1: Checking Environment Variables..."
+if [ -z "$SUPABASE_URL" ]; then
+  echo "Error: SUPABASE_URL is not set!"
+  exit 1
+fi
+echo "Environment check passed."
+
+# 2. Generate .env file
+echo "Step 2: Generating .env file..."
 echo "SUPABASE_URL=$SUPABASE_URL" > .env
 echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+echo ".env file generated."
 
-# 2. Build Flutter Web for the /app sub-path
-echo "Building Flutter Web..."
-# Reverting to the subfolder distribution strategy
+# 3. Build Flutter Web
+echo "Step 3: Building Flutter Web for /app..."
 flutter build web --release --base-href /app/
 
-# 3. Create deployment directory (dist)
-echo "Preparing distribution directory..."
-rm -rf dist
-mkdir -p dist/app
+# 4. Prepare Public Directory (Standard Vercel Output)
+echo "Step 4: Preparing public directory..."
+rm -rf public
+mkdir -p public/app
 
-# 4. Copy Landing Page to root (/)
+# 5. Distribute Files
+echo "Step 5: Copying Landing Page to root..."
 if [ -d "landing" ]; then
-  echo "Copying landing page..."
-  cp -r landing/* dist/
+  cp -v -r landing/* public/
+else
+  echo "Critical Error: landing directory not found!"
+  exit 1
 fi
 
-# 5. Copy Flutter App to /app
-echo "Copying Flutter web build to /app..."
-cp -r build/web/* dist/app/
+echo "Step 6: Copying Flutter App to /app folder..."
+if [ -d "build/web" ]; then
+  cp -v -r build/web/* public/app/
+else
+  echo "Critical Error: build/web directory not found!"
+  exit 1
+fi
 
-# 6. Verify Directory Structure (Diagnostic)
-echo "--- Verified Directory Structure ---"
-ls -F dist/
-ls -F dist/app/ | head -n 10
+# 6. Final Diagnostic Listing
+echo "Step 7: Verifying Final Directory Structure..."
+echo "--- PUBLIC ROOT ---"
+ls -F public/
+echo "--- PUBLIC APP FOLDER ---"
+ls -F public/app/ | head -n 10
 
-echo "--- Build Complete! ---"
+echo "--- VERCEL BUILD END ---"
+echo "Output Directory: public"
