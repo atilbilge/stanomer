@@ -1,3 +1,37 @@
+// Language switcher logic
+const langSelect = document.getElementById('langSelect');
+
+const setLanguage = (lang) => {
+    if (!translations[lang]) return;
+
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            element.textContent = translations[lang][key];
+        }
+    });
+
+    // Update HTML lang attribute
+    document.documentElement.lang = lang;
+    
+    // Persist
+    localStorage.setItem('stanomer_lang', lang);
+    langSelect.value = lang;
+};
+
+langSelect.addEventListener('change', (e) => {
+    setLanguage(e.target.value);
+});
+
+// Initialize language
+const initLanguage = () => {
+    const savedLang = localStorage.getItem('stanomer_lang');
+    const browserLang = navigator.language.split('-')[0];
+    const defaultLang = savedLang || (translations[browserLang] ? browserLang : 'tr');
+    
+    setLanguage(defaultLang);
+};
+
 // Navbar shadow on scroll
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
@@ -10,28 +44,8 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Simple Scroll Reveal Effect
-const revealOnScroll = () => {
-    const reveals = document.querySelectorAll('.role-card, .feature-item');
-    
-    reveals.forEach(element => {
-        const windowHeight = window.innerHeight;
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 150;
-        
-        if (elementTop < windowHeight - elementVisible) {
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-        }
-    });
-};
-
-// Set initial state for reveal
-document.querySelectorAll('.role-card, .feature-item').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'all 0.8s ease-out';
+// Initial load
+document.addEventListener('DOMContentLoaded', () => {
+    initLanguage();
+    if (window.lucide) lucide.createIcons();
 });
-
-window.addEventListener('scroll', revealOnScroll);
-revealOnScroll(); // Trigger initial check

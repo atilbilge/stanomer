@@ -19,9 +19,17 @@
                 <span class="logo-text">Stanomer</span>
             </div>
             <div class="nav-links">
-                <a href="#features">Özellikler</a>
-                <a href="#roles">Roller</a>
-                <a href="/app" class="btn-primary">Uygulamaya Git</a>
+                <a href="#features" data-i18n="nav_features">Özellikler</a>
+                <a href="#roles" data-i18n="nav_roles">Roller</a>
+                <div class="lang-switcher">
+                    <select id="langSelect">
+                        <option value="tr">TR</option>
+                        <option value="en">EN</option>
+                        <option value="sr">SR (Lat)</option>
+                        <option value="sr_Cyrl">SR (Кри)</option>
+                    </select>
+                </div>
+                <a href="/app" class="btn-primary" data-i18n="nav_app">Uygulamaya Git</a>
             </div>
         </div>
     </nav>
@@ -29,24 +37,26 @@
     <header class="hero">
         <div class="container hero-content">
             <div class="hero-text" data-aos="fade-right">
-                <span class="badge">PropTech'te Yeni Standart</span>
-                <h1>Mülk Yönetiminde <span class="text-gradient">Yeni Nesil</span> Dönem.</h1>
-                <p>Ev sahipleri ve kiracılar arasındaki şeffaflık boşluğunu Stanomer ile doldurun. Kontratlar, ödemeler ve arıza takibi artık tek bir noktada.</p>
+                <span class="badge" data-i18n="hero_badge">PropTech'te Yeni Standart</span>
+                <h1 data-i18n="hero_title">Mülk Yönetiminde Yeni Nesil Dönem.</h1>
+                <p data-i18n="hero_desc">Ev sahipleri ve kiracılar arasındaki şeffaflık boşluğunu Stanomer ile doldurun. Kontratlar, ödemeler ve arıza takibi artık tek bir noktada.</p>
                 <div class="hero-actions">
-                    <a href="/app" class="btn-primary btn-lg">Ücretsiz Başlayın</a>
-                    <a href="#features" class="btn-secondary btn-lg">Keşfedin</a>
+                    <a href="/app" class="btn-primary btn-lg" data-i18n="hero_cta_free">Ücretsiz Başlayın</a>
                 </div>
             </div>
             <div class="hero-visual" data-aos="zoom-in">
                 <div class="mockup-container">
-                    <img src="assets/dashboard_real.jpg" alt="Stanomer Uygulama Ekranı" class="app-mockup">
+                    <!-- Showing top half of dashboard -->
+                    <div class="dashboard-crop">
+                        <img src="assets/dashboard_real.jpg" alt="Stanomer Dashboard" class="app-mockup">
+                    </div>
                     <div class="floating-card c1">
                         <i data-lucide="check-circle" class="icon-success"></i>
-                        <span>Kira Ödendi</span>
+                        <span data-i18n="hero_card_paid">Kira Ödendi</span>
                     </div>
                     <div class="floating-card c2">
                         <i data-lucide="wrench" class="icon-warning"></i>
-                        <span>Yeni Arıza Bildirimi</span>
+                        <span data-i18n="hero_card_issue">Yeni Arıza Bildirimi</span>
                     </div>
                 </div>
             </div>
@@ -56,27 +66,41 @@
     <section id="roles" class="roles-section">
         <div class="container">
             <div class="section-header center">
-                <h2>Her İki Taraf İçin de <span class="text-gradient">Kazan-Kazan</span></h2>
-                <p>Stanomer, hem mülk sahiplerinin hem de kiracıların beklentilerini tek bir platformda karşılar.</p>
+                <h2 data-i18n="roles_title">Her İki Taraf İçin de Kazan-Kazan</h2>
+                <p data-i18n="roles_desc">Stanomer, hem mülk sahiplerinin hem de kiracıların beklentilerini tek bir platformda karşılar.</p>
             </div>
             <div class="roles-grid">
                 <div class="role-card landlord">
                     <div class="role-icon"><i data-lucide="building-2"></i></div>
-                    <h3>Ev Sahipleri İçin</h3>
+                    <h3 data-i18n="landlord_title">Ev Sahipleri İçin</h3>
                     <ul>
-                        <li><i data-lucide="check"></i> Otomatik kira takibi ve gecikme uyarıları.</li>
-                        <li><i data-lucide="check"></i> Dijital kontrat müzakeresi ve arşivi.</li>
-                        <li><i data-lucide="check"></i> Arıza ve bakım süreçlerinin merkezi yönetimi.</li>
+                        <li><i data-lucide="check"></i> <span data-i18n="landlord_f1">Otomatik kira takibi ve gecikme uyarıları.</span></li>
+                        <li><i data-lucide="check"></i> <span data-i18n="landlord_f2">Dijital kontrat müzakeresi ve arşivi.</span></li>
+                        <li><i data-lucide="check"></i> <span data-i18n="landlord_f3">Arıza ve bakım süreçlerinin merkezi yönetimi.</span></li>
                     </ul>
                 </div>
                 <div class="role-card tenant">
                     <div class="role-icon"><i data-lucide="home"></i></div>
-                    <h3>Kiracılar İçin</h3>
+                    <h3 data-i18n="tenant_title">Kiracılar İçin</h3>
                     <ul>
-                        <li><i data-lucide="check"></i> Tek tıkla arıza bildirimi ve durum takibi.</li>
-                        <li><i data-lucide="check"></i> Güvenli makbuz yükleme ve ödeme onayı.</li>
-                        <li><i data-lucide="check"></i> Tüm belgelere 7/24 mobil erişim.</li>
+                        <li><i data-lucide="check"></i> <span data-i18n="tenant_f1">Tek tıkla arıza bildirimi ve durum takibi.</span></li>
+                        <li><i data-lucide="check"></i> <span data-i18n="tenant_f2">Güvenli makbuz yükleme ve ödeme onayı.</span></li>
+                        <li><i data-lucide="check"></i> <span data-i18n="tenant_f3">Tüm belgelere 7/24 mobil erişim.</span></li>
                     </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Professional Features Section with New Screenshots -->
+    <section class="visual-features">
+        <div class="container">
+            <div class="features-grid-visual">
+                <div class="feature-visual-card">
+                    <img src="assets/feature_add_1.png" alt="Mülk Detayları">
+                </div>
+                <div class="feature-visual-card">
+                    <img src="assets/feature_add_2.png" alt="Gider Yapılandırma">
                 </div>
             </div>
         </div>
@@ -87,18 +111,18 @@
             <div class="features-grid">
                 <div class="feature-item">
                     <i data-lucide="shield-check"></i>
-                    <h4>Dijital Güven</h4>
-                    <p>Kontrat değişiklikleri ve ödemeler her iki tarafın onayıyla onaylanır, anlaşmazlıklar tarih olur.</p>
+                    <h4 data-i18n="feature_shield">Dijital Güven</h4>
+                    <p data-i18n="feature_shield_desc">Kontrat değişiklikleri ve ödemeler her iki tarafın onayıyla onaylanır.</p>
                 </div>
                 <div class="feature-item">
                     <i data-lucide="languages"></i>
-                    <h4>Çoklu Dil Desteği</h4>
-                    <p>TR, EN ve SR dilleriyle uluslararası mülk yönetimi artık çok daha kolay.</p>
+                    <h4 data-i18n="feature_lang">Çoklu Dil Desteği</h4>
+                    <p data-i18n="feature_lang_desc">TR, EN ve SR dilleriyle uluslararası mülk yönetimi artık çok daha kolay.</p>
                 </div>
                 <div class="feature-item">
                     <i data-lucide="zap"></i>
-                    <h4>Anlık Bildirimler</h4>
-                    <p>Hiçbir detayı kaçırmayın. Ödemeler ve bakım süreçleri anlık olarak cebinizde.</p>
+                    <h4 data-i18n="feature_zap">Anlık Bildirimler</h4>
+                    <p data-i18n="feature_zap_desc">Hiçbir detayı kaçırmayın. Ödemeler ve bakım süreçleri cebinizde.</p>
                 </div>
             </div>
         </div>
@@ -111,11 +135,12 @@
                     <img src="assets/logo.png" alt="Stanomer Logo" class="logo-img footer-logo">
                     <span class="logo-text">Stanomer</span>
                 </div>
-                <p>&copy; 2024 Stanomer PropTech. Tüm hakları saklıdır.</p>
+                <p>&copy; 2024 Stanomer PropTech. <span data-i18n="footer_rights">Tüm hakları saklıdır.</span></p>
             </div>
         </div>
     </footer>
 
+    <script src="lang.js"></script>
     <script src="main.js"></script>
     <script>
       lucide.createIcons();
