@@ -1,5 +1,5 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/l10n/app_localizations.dart';
 
@@ -41,8 +41,8 @@ class AppleSignInButton extends StatelessWidget {
             )
           else ...[
             const Icon(
-              LucideIcons.apple,
-              size: 20,
+              CupertinoIcons.apple_logo,
+              size: 22,
               color: StanomerColors.textPrimary,
             ),
             const SizedBox(width: 12),

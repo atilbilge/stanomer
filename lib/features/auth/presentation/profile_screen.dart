@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -156,7 +157,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(isGoogleUser ? LucideIcons.chrome : LucideIcons.apple, color: StanomerColors.brandPrimary, size: 20),
+                        Icon(isGoogleUser ? LucideIcons.chrome : CupertinoIcons.apple_logo, color: StanomerColors.brandPrimary, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
