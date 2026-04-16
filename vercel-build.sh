@@ -3,13 +3,12 @@
 # Exit on error
 set -e
 
-echo "--- Starting Stanomer Production Build ---"
+echo "--- Starting Stanomer Production Build (V4 - Radical) ---"
 
 # 1. Generate .env file from Vercel Environment Variables
 echo "Generating .env file..."
 echo "SUPABASE_URL=$SUPABASE_URL" > .env
 echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
-echo ".env file generated successfully."
 
 # 2. Build Flutter Web for the /app sub-path
 echo "Building Flutter Web..."
@@ -24,17 +23,21 @@ mkdir -p dist/app
 if [ -d "landing" ]; then
   echo "Copying landing page..."
   cp -r landing/* dist/
-else
-  echo "Warning: landing directory not found!"
 fi
 
-# 5. Copy Flutter App to /app
-echo "Copying Flutter web build to /app..."
+# 5. Copy Flutter App Assets to /app/ and entry point to root as app.html
+echo "Copying Flutter files..."
+# Copy all assets to /app folder (so base-href /app/ works)
 cp -r build/web/* dist/app/
+# Copy index.html to root as app.html to avoid folder conflict
+cp build/web/index.html dist/app.html
 
 # 6. Verify Directory Structure (Diagnostic)
 echo "--- Verified Directory Structure ---"
-ls -R dist
+ls -F dist/
+ls -F dist/app/ | head -n 10
 
 echo "--- Build Complete! ---"
-echo "Deployment directory: dist"
+echo "Root index.html: Landing Page"
+echo "Root app.html: Flutter App Entry"
+echo "Folder /app/: Flutter Assets"
