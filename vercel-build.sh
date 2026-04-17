@@ -3,10 +3,11 @@
 # Exit on error
 set -e
 
-echo "--- VERCEL CLI STABILIZATION START ---"
+echo "--- VERCEL PATH PRIORITY BUILD START ---"
 
 # Skip root check and optimize for CI
 export BOT=true
+export FLUTTER_ROOT_CHECK=false
 
 # 1. Environment Check
 echo "Step 1: Checking Environment Variables..."
@@ -23,9 +24,15 @@ if [ ! -d "flutter" ]; then
 else
   echo "Flutter SDK exists."
 fi
-export PATH="$PATH:$(pwd)/flutter/bin"
 
-# 3. Environment Cleanup
+# PREPEND PATH to ensure our version is used over system defaults
+export PATH="$(pwd)/flutter/bin:$PATH"
+
+# Diagnostic check
+echo "Flutter Binary Location: $(which flutter)"
+flutter --version
+
+# 3. Environment Cleanup (Critical for low memory builds)
 echo "Step 3: Cleaning Environment..."
 flutter clean
 rm -rf build/
@@ -34,9 +41,8 @@ rm -rf build/
 echo "Step 4: Configuring Flutter for Web..."
 flutter config --enable-web
 
-# 5. Build Flutter Web (STABILIZED CLI SYNTAX)
-# Moving renderer flag to the front for better parsing
-echo "Step 5: Building Flutter Web (Compatible CLI mode)..."
+# 5. Build Flutter Web (STABILIZED CLI)
+echo "Step 5: Building Flutter Web (Verified Path mode)..."
 flutter build web --web-renderer html --release --base-href /app/
 
 # 6. Prepare Public Directory
@@ -49,4 +55,4 @@ echo "Step 7: Copying Assets..."
 cp -r landing/* public/
 cp -r build/web/* public/app/
 
-echo "--- VERCEL CLI STABILIZATION COMPLETE! ---"
+echo "--- VERCEL PATH PRIORITY BUILD COMPLETE! ---"
