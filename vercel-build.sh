@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "--- VERCEL PATH PRIORITY BUILD START ---"
+echo "--- VERCEL DIAGNOSTIC BUILD START ---"
 
 # Skip root check and optimize for CI
 export BOT=true
@@ -37,13 +37,18 @@ echo "Step 3: Cleaning Environment..."
 flutter clean
 rm -rf build/
 
-# 4. Configure Flutter for Web
-echo "Step 4: Configuring Flutter for Web..."
+# 4. Configure Flutter for Web & Resolve Dependencies
+echo "Step 4: Configuring Web & Resolving Dependencies..."
 flutter config --enable-web
+flutter pub get
 
-# 5. Build Flutter Web (STABILIZED CLI)
-echo "Step 5: Building Flutter Web (Verified Path mode)..."
-flutter build web --web-renderer html --release --base-href /app/
+# 5. Build Flutter Web (DIAGNOSTIC MODE)
+echo "Step 5: Inspecting Build Options..."
+flutter build web -h
+
+echo "Step 6: Building Flutter Web (Basic Release mode)..."
+# Temporarily removing --web-renderer to check for baseline success
+flutter build web --release --base-href /app/
 
 # 6. Prepare Public Directory
 echo "Step 6: Preparing public directory..."
@@ -55,4 +60,4 @@ echo "Step 7: Copying Assets..."
 cp -r landing/* public/
 cp -r build/web/* public/app/
 
-echo "--- VERCEL PATH PRIORITY BUILD COMPLETE! ---"
+echo "--- VERCEL DIAGNOSTIC BUILD COMPLETE! ---"
