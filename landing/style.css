@@ -13,6 +13,7 @@
     --radius-md: 8px;
     --radius-lg: 10px;
     --radius-xl: 16px;
+    --radius-2xl: 24px;
 }
 
 * {
@@ -99,6 +100,14 @@ h1, h2, h3, h4, .logo-text, .badge {
     gap: 1.5rem;
 }
 
+.desktop-only {
+    display: block;
+}
+
+.mobile-menu-btn {
+    display: none;
+}
+
 .menu-toggle {
     display: none;
     background: none;
@@ -106,6 +115,7 @@ h1, h2, h3, h4, .logo-text, .badge {
     color: var(--primary);
     cursor: pointer;
     padding: 0.5rem;
+    font-size: 1.5rem;
 }
 
 .nav-links a {
@@ -152,9 +162,13 @@ h1, h2, h3, h4, .logo-text, .badge {
 
 h1 {
     font-size: 4rem;
-    line-height: 1;
+    line-height: 1.1;
     margin-bottom: 1.5rem;
     color: var(--text-dark);
+}
+
+.hero-logo-mobile {
+    display: none;
 }
 
 .hero-text p {
@@ -237,6 +251,27 @@ h1 {
 .role-card.landlord { background: var(--primary-light); }
 .role-card.tenant { background: var(--tenant-light); }
 
+.role-card ul {
+    list-style: none;
+}
+
+.role-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.role-card li i {
+    color: inherit;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
 .role-icon { width: 50px; height: 50px; background: white; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); margin-bottom: 1.5rem; }
 .landlord .role-icon { color: var(--primary); }
 .tenant .role-icon { color: var(--tenant); }
@@ -264,9 +299,23 @@ h1 {
 
 @media (max-width: 768px) {
     .menu-toggle { display: block; }
+
+    .logo { display: none; }
+
+    .desktop-only { display: none; }
+
+    .hero-logo-mobile {
+        display: block;
+        margin-bottom: 2rem;
+    }
+
+    .hero-logo-mobile img {
+        height: 60px;
+        width: auto;
+    }
     
     .nav-links {
-        display: none; /* Hidden by default on mobile */
+        display: none;
         position: absolute;
         top: 80px;
         left: 0;
@@ -289,7 +338,18 @@ h1 {
         font-size: 1.1rem;
     }
 
-    /* Hide 'Go to App' button on mobile header as requested */
+    .mobile-menu-btn {
+        display: inline-block;
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 250px;
+    }
+
+    /* Keep language switcher visible on right */
+    .nav-actions {
+        gap: 0.5rem;
+    }
+
     .nav-actions .btn-primary {
         display: none;
     }

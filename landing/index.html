@@ -22,6 +22,9 @@
 <body>
     <nav class="navbar">
         <div class="container nav-content">
+            <button class="menu-toggle" id="menuToggle">
+                <i data-lucide="menu" id="menuIcon"></i>
+            </button>
             <div class="logo">
                 <img src="assets/logo.png" alt="Stanomer Logo" class="logo-img">
                 <span class="logo-text">Stanomer</span>
@@ -29,8 +32,10 @@
             <div class="nav-links" id="navLinks">
                 <a href="#features" data-i18n="nav_features">Özellikler</a>
                 <a href="#roles" data-i18n="nav_roles">Roller</a>
+                <a href="/app" class="btn-primary mobile-menu-btn" data-i18n="nav_app">Uygulamaya Git</a>
             </div>
             <div class="nav-actions">
+                <a href="/app" class="btn-primary desktop-only" data-i18n="nav_app">Uygulamaya Git</a>
                 <div class="lang-switcher">
                     <select id="langSelect">
                         <option value="tr">TR</option>
@@ -39,10 +44,6 @@
                         <option value="sr_Cyrl">SR (Кри)</option>
                     </select>
                 </div>
-                <a href="/app" class="btn-primary" data-i18n="nav_app">Uygulamaya Git</a>
-                <button class="menu-toggle" id="menuToggle">
-                    <i data-lucide="menu" id="menuIcon"></i>
-                </button>
             </div>
         </div>
     </nav>
@@ -50,6 +51,9 @@
     <header class="hero">
         <div class="container hero-content">
             <div class="hero-text" data-aos="fade-right">
+                <div class="hero-logo-mobile">
+                    <img src="assets/logo.png" alt="Stanomer Logo">
+                </div>
                 <span class="badge" data-i18n="hero_badge">PropTech'te Yeni Standart</span>
                 <h1 data-i18n="hero_title">Mülk Yönetiminde Yeni Nesil Dönem.</h1>
                 <p data-i18n="hero_desc">Ev sahipleri ve kiracılar arasındaki şeffaflık boşluğunu Stanomer ile doldurun. Kontratlar, ödemeler ve arıza takibi artık tek bir noktada.</p>
