@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "--- VERCEL OPTIMIZED BUILD START ---"
+echo "--- VERCEL EXTREME STABILIZATION START ---"
 
 # 1. Environment Check
 echo "Step 1: Checking Environment Variables..."
@@ -31,11 +31,11 @@ rm -rf build/
 echo "Step 4: Configuring Flutter for Web..."
 flutter config --enable-web
 
-# 5. Build Flutter Web (OPTIMIZED)
-# --no-source-maps: Significantly reduces RAM usage
-# --no-tree-shake-icons: Avoids processing overhead that can cause crashes
-echo "Step 5: Building Flutter Web (Memory Optimized)..."
-flutter build web --release --base-href /app/ --no-source-maps --no-tree-shake-icons
+# 5. Build Flutter Web (V7 - EXTREME STABILIZATION)
+# --web-renderer html: Uses significantly less RAM than canvaskit
+# --no-source-maps: Avoids memory spikes during minification
+echo "Step 5: Building Flutter Web (Extreme Optimization mode)..."
+flutter build web --release --base-href /app/ --no-source-maps --web-renderer html
 
 # 6. Prepare Public Directory
 echo "Step 6: Preparing public directory..."
@@ -47,4 +47,4 @@ echo "Step 7: Copying Assets..."
 cp -r landing/* public/
 cp -r build/web/* public/app/
 
-echo "--- VERCEL OPTIMIZED BUILD COMPLETE! ---"
+echo "--- VERCEL EXTREME STABILIZATION COMPLETE! ---"
