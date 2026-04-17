@@ -31,7 +31,7 @@ class ConnectionStatusIndicator extends StatelessWidget {
           const SizedBox(width: 8),
           const Expanded(
             child: Text(
-              'Bağlantı koptu. Son veriler gösteriliyor.',
+              'Şu an çevrimdışısınız, mevcut verilerle devam edebilirsiniz. Bağlanınca güncellenecektir.',
               style: TextStyle(
                 color: StanomerColors.alertPrimary,
                 fontSize: 12,

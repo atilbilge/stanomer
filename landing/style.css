@@ -300,7 +300,12 @@ h1 {
 @media (max-width: 768px) {
     .menu-toggle { display: block; }
 
-    .logo { display: none; }
+    .logo-img { display: none; }
+    .logo-text { 
+        display: block; 
+        font-size: 1.4rem;
+        margin-left: 0.5rem;
+    }
 
     .desktop-only { display: none; }
 
