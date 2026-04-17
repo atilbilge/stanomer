@@ -3,7 +3,10 @@
 # Exit on error
 set -e
 
-echo "--- VERCEL EXTREME STABILIZATION START ---"
+echo "--- VERCEL CLI STABILIZATION START ---"
+
+# Skip root check and optimize for CI
+export BOT=true
 
 # 1. Environment Check
 echo "Step 1: Checking Environment Variables..."
@@ -22,7 +25,7 @@ else
 fi
 export PATH="$PATH:$(pwd)/flutter/bin"
 
-# 3. Environment Cleanup (Critical for low memory builds)
+# 3. Environment Cleanup
 echo "Step 3: Cleaning Environment..."
 flutter clean
 rm -rf build/
@@ -31,11 +34,10 @@ rm -rf build/
 echo "Step 4: Configuring Flutter for Web..."
 flutter config --enable-web
 
-# 5. Build Flutter Web (V7 - EXTREME STABILIZATION)
-# --web-renderer html: Uses significantly less RAM than canvaskit
-# --no-source-maps: Avoids memory spikes during minification
-echo "Step 5: Building Flutter Web (Extreme Optimization mode)..."
-flutter build web --release --base-href /app/ --no-source-maps --web-renderer html
+# 5. Build Flutter Web (STABILIZED CLI SYNTAX)
+# Moving renderer flag to the front for better parsing
+echo "Step 5: Building Flutter Web (Compatible CLI mode)..."
+flutter build web --web-renderer html --release --base-href /app/
 
 # 6. Prepare Public Directory
 echo "Step 6: Preparing public directory..."
@@ -47,4 +49,4 @@ echo "Step 7: Copying Assets..."
 cp -r landing/* public/
 cp -r build/web/* public/app/
 
-echo "--- VERCEL EXTREME STABILIZATION COMPLETE! ---"
+echo "--- VERCEL CLI STABILIZATION COMPLETE! ---"
