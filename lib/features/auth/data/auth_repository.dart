@@ -46,7 +46,7 @@ class AuthRepository {
       await _client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: kIsWeb 
-            ? '${Uri.base.origin}/app/' 
+            ? '${Uri.base.origin}/app/'.replaceAll('//app/', '/app/') // Prevent double slashes
             : 'io.supabase.stanomer://login-callback',
         queryParams: {
           'prompt': 'select_account',
