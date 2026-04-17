@@ -45,7 +45,9 @@ class AuthRepository {
       // For Web, use Supabase's native OAuth flow as it's more reliable than the deprecated GIS package for idToken
       await _client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb ? Uri.base.origin : 'io.supabase.stanomer://login-callback',
+        redirectTo: kIsWeb 
+            ? '${Uri.base.origin}/app/' 
+            : 'io.supabase.stanomer://login-callback',
         queryParams: {
           'prompt': 'select_account',
         },
