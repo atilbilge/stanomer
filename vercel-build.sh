@@ -16,6 +16,10 @@ if [ -z "$SUPABASE_URL" ]; then
   exit 1
 fi
 
+# Create .env from Vercel climate variables (Critical for bundling)
+echo "SUPABASE_URL=$SUPABASE_URL" > .env
+echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
 if [ ! -d "flutter" ]; then
