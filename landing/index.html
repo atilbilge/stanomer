@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stanomer | Mülk Yönetiminde Yeni Nesil Şeffaflık</title>
+    <script>
+      (function() {
+        const url = window.location.href;
+        if (url.indexOf('#access_token=') !== -1 || url.indexOf('code=') !== -1) {
+          window.location.href = '/app/' + window.location.search + window.location.hash;
+        }
+      })();
+    </script>
     <meta name="description" content="Ev sahipleri ve kiracılar için dijital köprü. Kontrat, ödeme ve arıza takibini tek uygulamada yönetin.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
