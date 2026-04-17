@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -26,9 +26,11 @@
                 <img src="assets/logo.png" alt="Stanomer Logo" class="logo-img">
                 <span class="logo-text">Stanomer</span>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="#features" data-i18n="nav_features">Özellikler</a>
                 <a href="#roles" data-i18n="nav_roles">Roller</a>
+            </div>
+            <div class="nav-actions">
                 <div class="lang-switcher">
                     <select id="langSelect">
                         <option value="tr">TR</option>
@@ -38,6 +40,9 @@
                     </select>
                 </div>
                 <a href="/app" class="btn-primary" data-i18n="nav_app">Uygulamaya Git</a>
+                <button class="menu-toggle" id="menuToggle">
+                    <i data-lucide="menu" id="menuIcon"></i>
+                </button>
             </div>
         </div>
     </nav>
