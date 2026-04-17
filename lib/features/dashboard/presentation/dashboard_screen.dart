@@ -73,7 +73,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.appTitle),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo_no_bg.png',
+              height: 28,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              loc.appTitle,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+            ),
+          ],
+        ),
         centerTitle: false,
         actions: [
           const NotificationBadge(),
