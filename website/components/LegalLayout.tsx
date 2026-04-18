@@ -8,38 +8,60 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
   const { lang, setLang, t } = useLanguage();
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans bg-gray-50/50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#FFFFFF]/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold">S</div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">Stanomer</span>
-          </div>
+      <nav className="fixed top-0 w-full h-20 z-[1000] bg-white/90 backdrop-blur-xl border-b border-gray-100">
+        <div className="max-w-[1200px] mx-auto px-8 h-full flex justify-between items-center">
+          {/* Logo */}
+          <a href="/" className="flex items-center gap-3 no-underline">
+            <img src="/assets/logo.png" alt="Stanomer Logo" className="h-12 w-auto object-contain" />
+            <span className="font-bold text-[1.85rem] text-brand-blue tracking-tight">Stanomer</span>
+          </a>
 
-          <div className="flex items-center gap-4">
-            <div className="relative group">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
-                {lang === "SR_LAT" ? "SR (Lat)" : lang === "SR_CYR" ? "SR (Кри)" : lang}
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-1">
-                {(["TR", "EN", "SR_LAT", "SR_CYR"] as const).map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setLang(l)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium ${
-                      lang === l ? "bg-brand-blue/10 text-brand-blue" : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {l === "SR_LAT" ? "SR (Lat)" : l === "SR_CYR" ? "SR (Кри)" : l}
-                  </button>
-                ))}
+          {/* Navigation & Actions */}
+          <div className="flex items-center gap-10">
+            {/* Desktop Nav Links */}
+            <div className="hidden lg:flex items-center gap-10 font-semibold text-gray-700">
+              <a href="/#features" className="hover:text-brand-blue transition-colors">Özellikler</a>
+              <a href="/#roles" className="hover:text-brand-blue transition-colors">Roller</a>
+            </div>
+
+            <div className="flex items-center gap-6">
+              {/* Go to App Button */}
+              <a 
+                href="/app" 
+                className="hidden md:block px-6 py-2.5 bg-brand-blue text-white rounded-[10px] font-bold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              >
+                {t("nav_app") || "Uygulamaya Git"}
+              </a>
+
+              {/* Language Switcher */}
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-sm font-bold text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none">
+                  {lang === "SR_LAT" ? "SR (Lat)" : lang === "SR_CYR" ? "SR (Кри)" : lang}
+                  <ChevronDown className="w-4 h-4 opacity-50" />
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-36 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-1.5 overflow-hidden ring-1 ring-black/5">
+                  {(["TR", "EN", "SR_LAT", "SR_CYR"] as const).map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setLang(l)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                        lang === l ? "bg-brand-blue/10 text-brand-blue" : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {l === "SR_LAT" ? "SR (Lat)" : l === "SR_CYR" ? "SR (Кри)" : l}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </nav>
+
+      {/* Spacer for fixed header */}
+      <div className="h-20" />
 
       {/* Main Content */}
       <main className="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
