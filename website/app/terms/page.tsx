@@ -21,27 +21,32 @@ function TermsContent() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
             <span className="w-1.5 h-8 bg-brand-green rounded-full"></span>
-            Conditions
+            {t("terms_title")}
           </h2>
-          <div className="pl-5 space-y-4">
-            <p className="text-gray-700 leading-relaxed">
-              By using Stanomer, you agree to comply with our mülk yönetimi rules.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              {t("legal")}
-            </p>
+          <div className="pl-5 space-y-4 text-gray-700 leading-relaxed">
+            <p>{t("legal")}</p>
+            <p>{t("intro")}</p>
           </div>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
             <span className="w-1.5 h-8 bg-brand-blue rounded-full"></span>
-            Data Protection
+            {t("data_collect")}
           </h2>
-          <div className="pl-5">
-            <p className="text-gray-700 leading-relaxed">
-              {t("rights")}
-            </p>
+          <div className="pl-5 text-gray-700 leading-relaxed space-y-4">
+            <p>{t("data_collect")}</p>
+            <p>{t("storage")}</p>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <span className="w-1.5 h-8 bg-gray-200 rounded-full"></span>
+            {t("rights")}
+          </h2>
+          <div className="pl-5 text-gray-700 leading-relaxed">
+            <p>{t("rights")}</p>
           </div>
         </section>
       </div>

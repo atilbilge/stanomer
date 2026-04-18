@@ -23,37 +23,29 @@ function PrivacyContent() {
             <span className="w-1.5 h-8 bg-brand-green rounded-full"></span>
             {t("privacy_title")}
           </h2>
-          <div className="pl-5 space-y-4">
-            <p className="text-gray-700 leading-relaxed">
-              {t("data_collect")}
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              {t("storage")}
-            </p>
+          <div className="pl-5 space-y-4 text-gray-700 leading-relaxed">
+            <p>{t("data_collect")}</p>
+            <p>{t("storage")}</p>
           </div>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
             <span className="w-1.5 h-8 bg-brand-blue rounded-full"></span>
-            Your Rights
+            {t("rights")}
           </h2>
-          <div className="pl-5">
-            <p className="text-gray-700 leading-relaxed">
-              {t("rights")}
-            </p>
+          <div className="pl-5 text-gray-700 leading-relaxed">
+            <p>{t("rights")}</p>
           </div>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
             <span className="w-1.5 h-8 bg-gray-200 rounded-full"></span>
-            Legal Advisory
+            {t("legal")}
           </h2>
-          <div className="pl-5">
-            <p className="text-gray-700 leading-relaxed">
-              {t("legal")}
-            </p>
+          <div className="pl-5 text-gray-700 leading-relaxed">
+            <p>{t("legal")}</p>
           </div>
         </section>
       </div>

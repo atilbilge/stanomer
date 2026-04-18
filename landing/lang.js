@@ -28,7 +28,12 @@ const translations = {
         "feature_zap_desc": "Hiçbir detayı kaçırmayın. Ödemeler ve bakım süreçleri cebinizde.",
         "footer_rights": "Tüm hakları saklıdır.",
         "footer_privacy": "Gizlilik Politikası",
-        "footer_terms": "Kullanım Şartları"
+        "footer_terms": "Kullanım Şartları",
+        "legal_intro": "Stanomer, Sırbistan'daki mülk yönetim süreçlerinde gizliliğinize saygı duyar.",
+        "legal_data": "Toplanan Veriler: Hesap bilgileri (Supabase Auth), Mülk verileri, İletişim kayıtları ve Sözleşme dosyaları.",
+        "legal_storage": "Verileriniz Supabase ve Google Cloud sunucularında güvenle saklanır.",
+        "legal_notice": "Stanomer bir hukuk danışmanı değildir. SORS verileri bilgilendirme amaçlıdır.",
+        "legal_rights": "ZZPL ve GDPR uyarınca verilerinizi silme veya düzeltme hakkına sahipsiniz."
     },
     "en": {
         "nav_features": "Features",
@@ -59,7 +64,12 @@ const translations = {
         "feature_zap_desc": "Never miss a detail. Payments and maintenance in your pocket.",
         "footer_rights": "All rights reserved.",
         "footer_privacy": "Privacy Policy",
-        "footer_terms": "Terms of Use"
+        "footer_terms": "Terms of Use",
+        "legal_intro": "Stanomer respects your privacy while managing properties in Serbia.",
+        "legal_data": "Data Collected: Account data (Supabase Auth), Property data, Communication logs, and Files.",
+        "legal_storage": "Your data is securely stored on Supabase and Google Cloud servers.",
+        "legal_notice": "Stanomer is not a legal advisor. SORS data is for informational purposes only.",
+        "legal_rights": "Under ZZPL and GDPR, you have the right to delete or rectify your data."
     },
     "sr": {
         "nav_features": "Funkcije",
@@ -90,7 +100,12 @@ const translations = {
         "feature_zap_desc": "Nikada ne propustite detalj. Plaćanja i održavanje u vašem džepu.",
         "footer_rights": "Sva prava zadržana.",
         "footer_privacy": "Politika privatnosti",
-        "footer_terms": "Uslovi korišćenja"
+        "footer_terms": "Uslovi korišćenja",
+        "legal_intro": "Stanomer poštuje vašu privatnost tokom upravljanja nekretninama u Srbiji.",
+        "legal_data": "Prikupljeni podaci: Podaci o nalogu (Supabase Auth), Podaci o imovini, Zapisi o komunikaciji i Datoteke.",
+        "legal_storage": "Vaši podaci se bezbedno čuvaju na Supabase i Google Cloud serverima.",
+        "legal_notice": "Stanomer nije pravni savetnik. Podaci RZS (SORS) su samo informativnog karaktera.",
+        "legal_rights": "Prema ZZPL i GDPR-u, imate pravo na brisanje ili ispravku vaših podataka."
     },
     "sr_Cyrl": {
         "nav_features": "Функције",
@@ -121,7 +136,12 @@ const translations = {
         "feature_zap_desc": "Никада не пропустите детаљ. Плаћања и одржавање у вашем џепу.",
         "footer_rights": "Сва права задржана.",
         "footer_privacy": "Политика приватности",
-        "footer_terms": "Услови коришћења"
+        "footer_terms": "Услови коришћења",
+        "legal_intro": "Stanomer поштује вашу приватност током управљања некретнинама у Србији.",
+        "legal_data": "Прикупљени подаци: Подаци о налогу (Supabase Auth), Подаци о имовини, Записи о комуникацији и Датотеке.",
+        "legal_storage": "Ваши подаци се безбедно чувају на Supabase и Google Cloud серверима.",
+        "legal_notice": "Stanomer није правни саветник. Подаци РЗС (SORS) су само информативног карактера.",
+        "legal_rights": "Према ЗЗПЛ и ГДПР-у, имате право на брисање или исправку ваших података."
     }
 };
 
