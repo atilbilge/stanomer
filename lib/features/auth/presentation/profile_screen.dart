@@ -9,6 +9,7 @@ import '../data/auth_providers.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers/locale_provider.dart';
+import '../../subscriptions/data/subscription_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -374,7 +375,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 80),
+            const SizedBox(height: 12),
+
+            // Premium Status & Customer Center / Paywall
+            Consumer(
+              builder: (context, ref, child) {
+                final isPremium = ref.watch(isPremiumProvider);
+                
+                if (isPremium) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ref.read(subscriptionServiceProvider).presentCustomerCenter();
+                      },
+                      icon: const Icon(LucideIcons.creditCard),
+                      label: Text(loc.manageSubscription),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: StanomerColors.alertPrimary,
+                        side: const BorderSide(color: StanomerColors.alertPrimary),
+                      ),
+                    ),
+                  );
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ref.read(subscriptionServiceProvider).presentPaywall();
+                      },
+                      icon: const Icon(LucideIcons.crown),
+                      label: Text(loc.discoverPremium),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: StanomerColors.brandPrimary,
+                        foregroundColor: StanomerColors.bgPage,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
 
             // Logout
             OutlinedButton.icon(

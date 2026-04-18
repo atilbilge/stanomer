@@ -2416,6 +2416,84 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Ne možete pozvati sebe kao stanara.'**
   String get cannotInviteSelf;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanomer Premium'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uklonite ograničenja u upravljanju nekretninama.'**
+  String get paywallSubtitle;
+
+  /// No description provided for @unlimitedProperties.
+  ///
+  /// In sr, this message translates to:
+  /// **'Neograničeno dodavanje i upravljanje nekretninama'**
+  String get unlimitedProperties;
+
+  /// No description provided for @detailedReporting.
+  ///
+  /// In sr, this message translates to:
+  /// **'Brže i detaljnije izveštavanje'**
+  String get detailedReporting;
+
+  /// No description provided for @extraStorage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Više prostora za skladištenje'**
+  String get extraStorage;
+
+  /// No description provided for @pdfContracts.
+  ///
+  /// In sr, this message translates to:
+  /// **'Generisanje PDF ugovora (Uskoro)'**
+  String get pdfContracts;
+
+  /// No description provided for @automatedRenewal.
+  ///
+  /// In sr, this message translates to:
+  /// **'Automatski obračun i obnova kirije (Uskoro)'**
+  String get automatedRenewal;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In sr, this message translates to:
+  /// **'Povrati kupovine'**
+  String get restorePurchases;
+
+  /// No description provided for @limitReachedTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dostigli ste besplatni limit'**
+  String get limitReachedTitle;
+
+  /// No description provided for @limitReachedSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pređite na Stanomer Premium za upravljanje sa više nekretnina.'**
+  String get limitReachedSubtitle;
+
+  /// No description provided for @discoverPremium.
+  ///
+  /// In sr, this message translates to:
+  /// **'Istražite Premium'**
+  String get discoverPremium;
+
+  /// No description provided for @optionsLoadFailed.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nije moguće učitati opcije pretplate.'**
+  String get optionsLoadFailed;
+
+  /// No description provided for @manageSubscription.
+  ///
+  /// In sr, this message translates to:
+  /// **'Upravljaj pretplatom'**
+  String get manageSubscription;
 }
 
 class _AppLocalizationsDelegate

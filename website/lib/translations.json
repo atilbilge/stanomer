@@ -1,0 +1,58 @@
+{
+  "TR": {
+    "privacy_title": "Gizlilik Politikası",
+    "terms_title": "Kullanım Şartları",
+    "intro": "Stanomer, Sırbistan'daki mülk yönetim süreçlerinde gizliliğinize saygı duyar.",
+    "data_collect": "Toplanan Veriler: Hesap bilgileri (Supabase Auth), Mülk verileri, İletişim kayıtları ve Sözleşme dosyaları.",
+    "storage": "Verileriniz Supabase ve Google Cloud sunucularında güvenle saklanır.",
+    "legal": "Stanomer bir hukuk danışmanı değildir. SORS verileri bilgilendirme amaçlıdır.",
+    "rights": "ZZPL ve GDPR uyarınca verilerinizi silme veya düzeltme hakkına sahipsiniz.",
+    "restore_purchases_title": "Satın Almaları Geri Yükle",
+    "restore_purchases_desc": "Stanomer Premium aboneliğinizi yeni bir cihazda veya kurulumda geri yüklemek için mobil uygulama ayarlarındaki 'Satın Almaları Geri Yükle' butonuna tıklayabilirsiniz.",
+    "delete_account_title": "Hesabı Sil",
+    "delete_account_desc": "Hesabınızı ve tüm verilerinizi silmek için uygulama içindeki Profil ayarlarını kullanabilir veya support@stanomer.com adresine talep gönderebilirsiniz. Verileriniz 30 gün içinde kalıcı olarak silinecektir.",
+    "language": "Dil"
+  },
+  "EN": {
+    "privacy_title": "Privacy Policy",
+    "terms_title": "Terms of Use",
+    "intro": "Stanomer respects your privacy while managing properties in Serbia.",
+    "data_collect": "Data Collected: Account data (Supabase Auth), Property data, Communication logs, and Files.",
+    "storage": "Your data is securely stored on Supabase and Google Cloud servers.",
+    "legal": "Stanomer is not a legal advisor. SORS data is for informational purposes only.",
+    "rights": "Under ZZPL and GDPR, you have the right to delete or rectify your data.",
+    "restore_purchases_title": "Restore Purchases",
+    "restore_purchases_desc": "To restore your Stanomer Premium subscription on a new device or installation, please use the 'Restore Purchases' button within the mobile app settings.",
+    "delete_account_title": "Delete Account",
+    "delete_account_desc": "To delete your account and all associated data, use the Profile settings in the app or contact support@stanomer.com. Your data will be permanently removed within 30 days.",
+    "language": "Language"
+  },
+  "SR_LAT": {
+    "privacy_title": "Politika privatnosti",
+    "terms_title": "Uslovi korišćenja",
+    "intro": "Stanomer poštuje vašu privatnost tokom upravljanja nekretninama u Srbiji.",
+    "data_collect": "Prikupljeni podaci: Podaci o nalogu (Supabase Auth), Podaci o imovini, Zapisi o komunikaciji i Datoteke.",
+    "storage": "Vaši podaci se bezbedno čuvaju na Supabase i Google Cloud serverima.",
+    "legal": "Stanomer nije pravni savetnik. Podaci RZS (SORS) su samo informativnog karaktera.",
+    "rights": "Prema ZZPL i GDPR-u, imate pravo na brisanje ili ispravku vaših podataka.",
+    "restore_purchases_title": "Vratite kupovine",
+    "restore_purchases_desc": "Da biste vratili svoju Stanomer Premium pretplatu na novom uređaju, koristite dugme 'Vratite kupovine' u podešavanjima mobilne aplikacije.",
+    "delete_account_title": "Obriši nalog",
+    "delete_account_desc": "Da biste obrisali svoj nalog i sve podatke, koristite podešavanja na Profilu u aplikaciji ili pošaljite zahtev na support@stanomer.com. Podaci će biti trajno uklonjeni u roku od 30 dana.",
+    "language": "Jezik"
+  },
+  "SR_CYR": {
+    "privacy_title": "Политика приватности",
+    "terms_title": "Услови коришћења",
+    "intro": "Stanomer поштује вашу приватност током управљања некретнинама у Србији.",
+    "data_collect": "Прикупљени подаци: Подаци о налогу (Supabase Auth), Подаци о имовини, Записи о комуникацији и Датотеке.",
+    "storage": "Ваши подаци се безбедно чувају на Supabase и Google Cloud серверима.",
+    "legal": "Stanomer није правни саветник. Подаци РЗС (SORS) су само информативног карактера.",
+    "rights": "Према ЗЗПЛ и ГДПР-у, имате право на брисање или исправку ваших података.",
+    "restore_purchases_title": "Поврати куповине",
+    "restore_purchases_desc": "Да бисте повратили своју Станомер Премиум претплату на новом уређају, користите дугме 'Поврати куповине' у подешавањима мобилне апликације.",
+    "delete_account_title": "Обриши налог",
+    "delete_account_desc": "Да бисте обрисали свој налог и све податке, користите подешавања на Профилу у апликацији или пошаљите захтев на support@stanomer.com. Подаци ће бити трајно уклоњени у року од 30 дана.",
+    "language": "Језик"
+  }
+}

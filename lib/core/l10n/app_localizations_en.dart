@@ -1267,4 +1267,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotInviteSelf => 'You cannot invite yourself as a tenant.';
+
+  @override
+  String get paywallTitle => 'Stanomer Premium';
+
+  @override
+  String get paywallSubtitle => 'Remove limits in property management.';
+
+  @override
+  String get unlimitedProperties =>
+      'Unlimited property addition and management';
+
+  @override
+  String get detailedReporting => 'Faster and more detailed reporting';
+
+  @override
+  String get extraStorage => 'More storage space';
+
+  @override
+  String get pdfContracts => 'PDF contract generation (Coming Soon)';
+
+  @override
+  String get automatedRenewal =>
+      'Automated rent calculation and renewal (Coming Soon)';
+
+  @override
+  String get restorePurchases => 'Restore Purchases';
+
+  @override
+  String get limitReachedTitle => 'You\'ve reached your free limit';
+
+  @override
+  String get limitReachedSubtitle =>
+      'Upgrade to Stanomer Premium to manage multiple properties.';
+
+  @override
+  String get discoverPremium => 'Discover Premium';
+
+  @override
+  String get optionsLoadFailed => 'Could not load subscription options.';
+
+  @override
+  String get manageSubscription => 'Manage Subscription';
 }

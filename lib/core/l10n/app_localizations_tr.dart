@@ -1263,4 +1263,45 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get cannotInviteSelf =>
       'Kendi e-posta adresinizi kiracı olarak davet edemezsiniz.';
+
+  @override
+  String get paywallTitle => 'Stanomer Premium';
+
+  @override
+  String get paywallSubtitle => 'Mülk yönetiminde sınırları kaldırın.';
+
+  @override
+  String get unlimitedProperties => 'Sınırsız mülk ekleme ve yönetimi';
+
+  @override
+  String get detailedReporting => 'Daha hızlı ve detaylı raporlama';
+
+  @override
+  String get extraStorage => 'Daha fazla depolama alanı';
+
+  @override
+  String get pdfContracts => 'PDF kontrat üretme (Yakında)';
+
+  @override
+  String get automatedRenewal =>
+      'Otomatik kira hesaplama ve yenileme (Yakında)';
+
+  @override
+  String get restorePurchases => 'Satın Alımları Geri Yükle';
+
+  @override
+  String get limitReachedTitle => 'Ücretsiz limitinize ulaştınız';
+
+  @override
+  String get limitReachedSubtitle =>
+      'Birden fazla mülk yönetmek için Stanomer Premium\'a geçiş yapın.';
+
+  @override
+  String get discoverPremium => 'Premium\'u Keşfet';
+
+  @override
+  String get optionsLoadFailed => 'Satın alma seçenekleri yüklenemedi.';
+
+  @override
+  String get manageSubscription => 'Aboneliği Yönet';
 }

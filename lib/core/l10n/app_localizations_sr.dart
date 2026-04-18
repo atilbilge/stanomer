@@ -1273,6 +1273,48 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get cannotInviteSelf => 'Ne možete pozvati sebe kao stanara.';
+
+  @override
+  String get paywallTitle => 'Stanomer Premium';
+
+  @override
+  String get paywallSubtitle =>
+      'Uklonite ograničenja u upravljanju nekretninama.';
+
+  @override
+  String get unlimitedProperties =>
+      'Neograničeno dodavanje i upravljanje nekretninama';
+
+  @override
+  String get detailedReporting => 'Brže i detaljnije izveštavanje';
+
+  @override
+  String get extraStorage => 'Više prostora za skladištenje';
+
+  @override
+  String get pdfContracts => 'Generisanje PDF ugovora (Uskoro)';
+
+  @override
+  String get automatedRenewal => 'Automatski obračun i obnova kirije (Uskoro)';
+
+  @override
+  String get restorePurchases => 'Povrati kupovine';
+
+  @override
+  String get limitReachedTitle => 'Dostigli ste besplatni limit';
+
+  @override
+  String get limitReachedSubtitle =>
+      'Pređite na Stanomer Premium za upravljanje sa više nekretnina.';
+
+  @override
+  String get discoverPremium => 'Istražite Premium';
+
+  @override
+  String get optionsLoadFailed => 'Nije moguće učitati opcije pretplate.';
+
+  @override
+  String get manageSubscription => 'Upravljaj pretplatom';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -2543,4 +2585,45 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get cannotInviteSelf => 'Не можете позвати себе као станара.';
+
+  @override
+  String get paywallTitle => 'Stanomer Premium';
+
+  @override
+  String get paywallSubtitle => 'Уклоните ограничења у управљању некретнинама.';
+
+  @override
+  String get unlimitedProperties =>
+      'Неограничено додавање и управљање некретнинама';
+
+  @override
+  String get detailedReporting => 'Брже и детаљније извештавање';
+
+  @override
+  String get extraStorage => 'Више простора за складиштење';
+
+  @override
+  String get pdfContracts => 'Генерисање ПДФ уговора (Ускоро)';
+
+  @override
+  String get automatedRenewal => 'Аутоматски обрачун и обнова кирије (Ускоро)';
+
+  @override
+  String get restorePurchases => 'Поврати куповине';
+
+  @override
+  String get limitReachedTitle => 'Достигли сте бесплатни лимит';
+
+  @override
+  String get limitReachedSubtitle =>
+      'Пређите на Stanomer Premium за управљање са више некретнина.';
+
+  @override
+  String get discoverPremium => 'Истражите Premium';
+
+  @override
+  String get optionsLoadFailed => 'Није могуће учитати опције претплате.';
+
+  @override
+  String get manageSubscription => 'Управљај претплатом';
 }

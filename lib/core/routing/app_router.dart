@@ -21,6 +21,7 @@ import '../../features/maintenance/presentation/maintenance_screen.dart';
 import '../../features/maintenance/presentation/maintenance_detail_screen.dart';
 import '../../features/maintenance/domain/maintenance_request.dart';
 import '../../features/notifications/presentation/notification_screen.dart';
+import '../../features/subscriptions/presentation/paywall_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final listenable = ref.watch(routerListenableProvider);
@@ -141,6 +142,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             request: extras['request'] as MaintenanceRequest,
           );
         },
+      ),
+      GoRoute(
+        path: '/paywall',
+        builder: (context, state) => const PaywallScreen(),
       ),
     ],
   );

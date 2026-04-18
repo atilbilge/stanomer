@@ -496,5 +496,18 @@
   "awaitingApproval": "Onay bekleniyor...",
   "contract": "Sözleşme",
   "paidOn": "{date} tarihinde ödendi",
-  "cannotInviteSelf": "Kendi e-posta adresinizi kiracı olarak davet edemezsiniz."
+  "cannotInviteSelf": "Kendi e-posta adresinizi kiracı olarak davet edemezsiniz.",
+  "paywallTitle": "Stanomer Premium",
+  "paywallSubtitle": "Mülk yönetiminde sınırları kaldırın.",
+  "unlimitedProperties": "Sınırsız mülk ekleme ve yönetimi",
+  "detailedReporting": "Daha hızlı ve detaylı raporlama",
+  "extraStorage": "Daha fazla depolama alanı",
+  "pdfContracts": "PDF kontrat üretme (Yakında)",
+  "automatedRenewal": "Otomatik kira hesaplama ve yenileme (Yakında)",
+  "restorePurchases": "Satın Alımları Geri Yükle",
+  "limitReachedTitle": "Ücretsiz limitinize ulaştınız",
+  "limitReachedSubtitle": "Birden fazla mülk yönetmek için Stanomer Premium'a geçiş yapın.",
+  "discoverPremium": "Premium'u Keşfet",
+  "optionsLoadFailed": "Satın alma seçenekleri yüklenemedi.",
+  "manageSubscription": "Aboneliği Yönet"
 }

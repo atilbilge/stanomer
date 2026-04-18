@@ -52,6 +52,8 @@ dependencies:
   file_picker: ^8.3.3
   url_launcher: ^6.3.1
   rxdart: ^0.28.0
+  purchases_flutter: ^10.0.1
+  purchases_ui_flutter: ^10.0.1
 
 dev_dependencies:
   flutter_test:

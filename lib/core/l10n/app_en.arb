@@ -496,5 +496,18 @@
   "awaitingApproval": "Awaiting approval...",
   "contract": "Contract",
   "paidOn": "Paid on {date}",
-  "cannotInviteSelf": "You cannot invite yourself as a tenant."
+  "cannotInviteSelf": "You cannot invite yourself as a tenant.",
+  "paywallTitle": "Stanomer Premium",
+  "paywallSubtitle": "Remove limits in property management.",
+  "unlimitedProperties": "Unlimited property addition and management",
+  "detailedReporting": "Faster and more detailed reporting",
+  "extraStorage": "More storage space",
+  "pdfContracts": "PDF contract generation (Coming Soon)",
+  "automatedRenewal": "Automated rent calculation and renewal (Coming Soon)",
+  "restorePurchases": "Restore Purchases",
+  "limitReachedTitle": "You've reached your free limit",
+  "limitReachedSubtitle": "Upgrade to Stanomer Premium to manage multiple properties.",
+  "discoverPremium": "Discover Premium",
+  "optionsLoadFailed": "Could not load subscription options.",
+  "manageSubscription": "Manage Subscription"
 }

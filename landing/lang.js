@@ -26,7 +26,9 @@ const translations = {
         "feature_lang_desc": "TR, EN ve SR dilleriyle uluslararası mülk yönetimi artık çok daha kolay.",
         "feature_zap": "Anlık Bildirimler",
         "feature_zap_desc": "Hiçbir detayı kaçırmayın. Ödemeler ve bakım süreçleri cebinizde.",
-        "footer_rights": "Tüm hakları saklıdır."
+        "footer_rights": "Tüm hakları saklıdır.",
+        "footer_privacy": "Gizlilik Politikası",
+        "footer_terms": "Kullanım Şartları"
     },
     "en": {
         "nav_features": "Features",
@@ -55,7 +57,9 @@ const translations = {
         "feature_lang_desc": "International management made easy with TR, EN, and SR support.",
         "feature_zap": "Instant Notifications",
         "feature_zap_desc": "Never miss a detail. Payments and maintenance in your pocket.",
-        "footer_rights": "All rights reserved."
+        "footer_rights": "All rights reserved.",
+        "footer_privacy": "Privacy Policy",
+        "footer_terms": "Terms of Use"
     },
     "sr": {
         "nav_features": "Funkcije",
@@ -84,7 +88,9 @@ const translations = {
         "feature_lang_desc": "Međunarodno upravljanje olakšano uz TR, EN i SR podršku.",
         "feature_zap": "Instant obaveštenja",
         "feature_zap_desc": "Nikada ne propustite detalj. Plaćanja i održavanje u vašem džepu.",
-        "footer_rights": "Sva prava zadržana."
+        "footer_rights": "Sva prava zadržana.",
+        "footer_privacy": "Politika privatnosti",
+        "footer_terms": "Uslovi korišćenja"
     },
     "sr_Cyrl": {
         "nav_features": "Функције",
@@ -113,7 +119,9 @@ const translations = {
         "feature_lang_desc": "Међународно управљање олакшано уз ТР, ЕН и СР подршку.",
         "feature_zap": "Инстант обавештења",
         "feature_zap_desc": "Никада не пропустите детаљ. Плаћања и одржавање у вашем џепу.",
-        "footer_rights": "Сва права задржана."
+        "footer_rights": "Сва права задржана.",
+        "footer_privacy": "Политика приватности",
+        "footer_terms": "Услови коришћења"
     }
 };
 

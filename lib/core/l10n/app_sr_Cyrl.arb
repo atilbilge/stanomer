@@ -503,5 +503,18 @@
   "awaitingApproval": "Чека се одобрење...",
   "contract": "Уговор",
   "paidOn": "Плаћено: {date}",
-  "cannotInviteSelf": "Не можете позвати себе као станара."
+  "cannotInviteSelf": "Не можете позвати себе као станара.",
+  "paywallTitle": "Stanomer Premium",
+  "paywallSubtitle": "Уклоните ограничења у управљању некретнинама.",
+  "unlimitedProperties": "Неограничено додавање и управљање некретнинама",
+  "detailedReporting": "Брже и детаљније извештавање",
+  "extraStorage": "Више простора за складиштење",
+  "pdfContracts": "Генерисање ПДФ уговора (Ускоро)",
+  "automatedRenewal": "Аутоматски обрачун и обнова кирије (Ускоро)",
+  "restorePurchases": "Поврати куповине",
+  "limitReachedTitle": "Достигли сте бесплатни лимит",
+  "limitReachedSubtitle": "Пређите на Stanomer Premium за управљање са више некретнина.",
+  "discoverPremium": "Истражите Premium",
+  "optionsLoadFailed": "Није могуће учитати опције претплате.",
+  "manageSubscription": "Управљај претплатом"
 }

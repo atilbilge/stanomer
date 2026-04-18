@@ -54,14 +54,23 @@ echo "Step 6: Building Flutter Web (Basic Release mode)..."
 # Temporarily removing --web-renderer to check for baseline success
 flutter build web --release --base-href /app/
 
-# 6. Prepare Public Directory
-echo "Step 6: Preparing public directory..."
+# 6. Build Next.js Website (Legal Pages)
+echo "Step 6: Building Next.js Website..."
+cd website
+npm install
+npm run build
+cd ..
+
+# 7. Prepare Public Directory
+echo "Step 7: Preparing public directory..."
 rm -rf public
 mkdir -p public/app
 
-# 7. Final Distribution
-echo "Step 7: Copying Assets..."
+# 8. Final Distribution
+echo "Step 8: Copying Assets..."
 cp -r landing/* public/
+# Copy Next.js static files (privacy, terms, etc.) to root level
+cp -r website/out/* public/
 cp -r build/web/* public/app/
 
 echo "--- VERCEL DIAGNOSTIC BUILD COMPLETE! ---"
