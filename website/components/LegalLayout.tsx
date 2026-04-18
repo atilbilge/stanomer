@@ -2,66 +2,60 @@
 
 import React from "react";
 import { useLanguage } from "./LanguageProvider";
-import { Crown, Trash2, ShieldCheck, FileText, ChevronDown } from "lucide-react";
+import { Crown, Trash2, ShieldCheck, FileText, ChevronDown, Menu } from "lucide-react";
 
 export function LegalLayout({ children, activeTab }: { children: React.ReactNode, activeTab: "privacy" | "terms" }) {
   const { lang, setLang, t } = useLanguage();
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-gray-50/50">
-      {/* Header */}
-      <nav className="fixed top-0 w-full h-20 z-[1000] bg-white/90 backdrop-blur-xl border-b border-gray-100">
-        <div className="max-w-[1200px] mx-auto px-8 h-full flex justify-between items-center">
+    <div className="min-h-screen flex flex-col font-sans bg-bg-light">
+      {/* Navbar (Identical to landing page) */}
+      <nav className="h-[80px] flex items-center fixed top-0 w-full z-[1000] bg-white/90 backdrop-blur-[12px] border-b border-[#EBEBEB]">
+        <div className="max-w-[1200px] mx-auto px-8 w-full flex justify-between items-center">
+          {/* Mobile Menu Toggle (matching landing) */}
+          <button className="lg:hidden text-brand-blue p-2">
+            <Menu className="w-6 h-6" />
+          </button>
+
           {/* Logo */}
-          <a href="/" className="flex items-center gap-3 no-underline">
-            <img src="/assets/logo.png" alt="Stanomer Logo" className="h-12 w-auto object-contain" />
-            <span className="font-bold text-[1.85rem] text-brand-blue tracking-tight">Stanomer</span>
+          <a href="/" className="flex items-center gap-[0.8rem] no-underline">
+            <img src="/assets/logo.png" alt="Stanomer Logo" className="h-[48px] w-auto object-contain" />
+            <span className="font-bold text-[1.8rem] text-brand-blue tracking-tight">Stanomer</span>
           </a>
 
-          {/* Navigation & Actions */}
-          <div className="flex items-center gap-10">
-            {/* Desktop Nav Links */}
-            <div className="hidden lg:flex items-center gap-10 font-semibold text-gray-700">
-              <a href="/#features" className="hover:text-brand-blue transition-colors">Özellikler</a>
-              <a href="/#roles" className="hover:text-brand-blue transition-colors">Roller</a>
-            </div>
+          {/* Nav Links (Desktop) */}
+          <div className="hidden lg:flex items-center gap-[2.5rem]">
+            <a href="/#features" className="no-underline text-[#4A4A4A] font-bold hover:text-brand-blue transition-colors">Özellikler</a>
+            <a href="/#roles" className="no-underline text-[#4A4A4A] font-bold hover:text-brand-blue transition-colors">Roller</a>
+          </div>
 
-            <div className="flex items-center gap-6">
-              {/* Go to App Button */}
-              <a 
-                href="/app" 
-                className="hidden md:block px-6 py-2.5 bg-brand-blue text-white rounded-[10px] font-bold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+          {/* Actions */}
+          <div className="flex items-center gap-[1.5rem]">
+            <a 
+              href="/app" 
+              className="hidden lg:block bg-brand-blue text-white px-[1.5rem] py-[0.8rem] rounded-[10px] font-extrabold no-underline hover:shadow-lg transition-all"
+            >
+              Uygulamaya Git
+            </a>
+
+            <div className="lang-switcher">
+              <select 
+                value={lang} 
+                onChange={(e) => setLang(e.target.value as any)}
+                className="bg-white border border-[#EBEBEB] px-[0.6rem] py-[0.4rem] rounded-[8px] font-semibold text-brand-blue cursor-pointer outline-none text-sm"
               >
-                {t("nav_app") || "Uygulamaya Git"}
-              </a>
-
-              {/* Language Switcher */}
-              <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-sm font-bold text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none">
-                  {lang === "SR_LAT" ? "SR (Lat)" : lang === "SR_CYR" ? "SR (Кри)" : lang}
-                  <ChevronDown className="w-4 h-4 opacity-50" />
-                </button>
-                <div className="absolute right-0 top-full mt-2 w-36 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-1.5 overflow-hidden ring-1 ring-black/5">
-                  {(["TR", "EN", "SR_LAT", "SR_CYR"] as const).map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => setLang(l)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                        lang === l ? "bg-brand-blue/10 text-brand-blue" : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      {l === "SR_LAT" ? "SR (Lat)" : l === "SR_CYR" ? "SR (Кри)" : l}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                <option value="TR">TR</option>
+                <option value="EN">EN</option>
+                <option value="SR_LAT">SR (Lat)</option>
+                <option value="SR_CYR">SR (Кри)</option>
+              </select>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Spacer for fixed header */}
-      <div className="h-20" />
+      {/* Spacer */}
+      <div className="h-[80px]" />
 
       {/* Main Content */}
       <main className="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
