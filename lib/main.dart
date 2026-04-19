@@ -31,12 +31,18 @@ Future<void> main() async {
   );
 
   final prefs = await SharedPreferences.getInstance();
+  
+  // Initialize RevenueCat
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+  );
+  await container.read(subscriptionServiceProvider).init();
 
   runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const MyApp(),
     ),
   );

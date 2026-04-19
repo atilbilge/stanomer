@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
-// REVENUECAT CONFIG (Updated with user provided key)
-const _apiKey = "test_kznmOrXWcBgsbbxxebGCBalOJJi";
+// REVENUECAT CONFIG (Updated from dashboard screenshots)
+const _iosApiKey = "appl_FcQuazkBVIyEJMFWXtdCNPCJIrR";
+const _androidApiKey = "goog_DXsEfTLjfUTHBSqYcnfvJNkCQzq";
 const _entitlementId = "Stanomer Pro";
 
 final isPremiumProvider = StateProvider<bool>((ref) => false);
@@ -20,11 +21,12 @@ class SubscriptionService {
   SubscriptionService(this._ref);
 
   Future<void> init() async {
-    if (kIsWeb) return; // RevenueCat flutter SDK doesn't support Web yet
+    if (kIsWeb) return; 
 
     await Purchases.setLogLevel(LogLevel.debug);
 
-    PurchasesConfiguration configuration = PurchasesConfiguration(_apiKey);
+    String apiKey = Platform.isAndroid ? _androidApiKey : _iosApiKey;
+    PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
     
     await Purchases.configure(configuration);
     await updatePurchaseStatus();
