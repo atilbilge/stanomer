@@ -21,13 +21,15 @@ class LocaleNotifier extends Notifier<Locale> {
     
     if (languageCode == 'sr_Cyrl') {
       return const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl');
+    } else if (languageCode == 'sr_Latn') {
+      return const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn');
     } else if (languageCode == 'en') {
       return const Locale('en');
     } else if (languageCode == 'tr') {
       return const Locale('tr');
     }
-    // Default to Serbian Latin
-    return const Locale('sr');
+    // Default to Serbian Latin with explicit script tag
+    return const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn');
   }
 
   Future<void> setLocale(Locale locale) async {

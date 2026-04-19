@@ -46,14 +46,31 @@ class SubscriptionService {
   Future<void> syncLocale(Locale locale) async {
     if (kIsWeb) return;
     try {
-      // RevenueCat expects BCP-47 format, e.g. "en", "tr", "sr", "sr-Cyrl"
-      final tag = locale.scriptCode != null
-          ? '${locale.languageCode}-${locale.scriptCode}'
-          : locale.languageCode;
+      String tag;
+      
+      if (locale.languageCode == 'en') {
+        tag = 'en-US'; // Matches "English (US)" in dashboard
+      } else if (locale.languageCode == 'tr') {
+        tag = 'tr';    // Matches "Turkish" in dashboard
+      } else if (locale.languageCode == 'sr') {
+        if (locale.scriptCode == 'Cyrl') {
+          tag = 'sr-Cyrl'; // Matches "Serbian (Cyrillic)" in dashboard
+        } else {
+          tag = 'sr-Latn'; // Matches "Serbian (Latin)" in dashboard
+        }
+      } else {
+        tag = locale.languageCode;
+      }
+
       await Purchases.setAttributes({r'$preferredLanguage': tag});
-      debugPrint('RevenueCat locale set to: $tag');
+      
+      // Sometimes we need to refresh offerings to ensure the native UI 
+      // picks up the attribute change for the paywall.
+      await Purchases.getOfferings();
+      
+      debugPrint('RevenueCat locale synced to: $tag');
     } catch (e) {
-      debugPrint('RevenueCat setLocale error: $e');
+      debugPrint('RevenueCat syncLocale error: $e');
     }
   }
 
