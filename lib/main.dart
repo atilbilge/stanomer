@@ -39,11 +39,11 @@ Future<void> main() async {
       sharedPreferencesProvider.overrideWithValue(prefs),
     ],
   );
-  await container.read(subscriptionServiceProvider).init();
-
-  // Sync current locale to RevenueCat on startup
+  // Initialize RevenueCat with the current app locale
   final locale = container.read(localeProvider);
-  container.read(subscriptionServiceProvider).syncLocale(locale);
+  await container.read(subscriptionServiceProvider).init(locale: locale);
+
+  // No need to call syncLocale separately — init already handles it
 
   runApp(
     UncontrolledProviderScope(

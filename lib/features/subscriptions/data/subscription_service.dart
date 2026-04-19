@@ -21,16 +21,19 @@ class SubscriptionService {
 
   SubscriptionService(this._ref);
 
-  Future<void> init() async {
+  Future<void> init({Locale? locale}) async {
     if (kIsWeb) return; 
 
     await Purchases.setLogLevel(LogLevel.debug);
 
-    String apiKey = Platform.isAndroid ? _androidApiKey : _iosApiKey;
-    PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+    final String apiKey = Platform.isAndroid ? _androidApiKey : _iosApiKey;
+    final config = PurchasesConfiguration(apiKey);
     
-    await Purchases.configure(configuration);
+    await Purchases.configure(config);
     await updatePurchaseStatus();
+
+    // Sync locale immediately if provided
+    if (locale != null) await syncLocale(locale);
 
     // Listen to customer info changes
     Purchases.addCustomerInfoUpdateListener((customerInfo) {
