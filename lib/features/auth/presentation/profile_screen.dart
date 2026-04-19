@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,8 @@ import '../../../core/theme/colors.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../subscriptions/data/subscription_service.dart';
+import '../../subscriptions/presentation/premium_mobile_only_sheet.dart';
+import '../../../core/utils/platform_utils.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -380,8 +383,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // Premium Status & Customer Center / Paywall
             Consumer(
               builder: (context, ref, child) {
+                // On web/macOS, show the mobile-only info sheet instead of paywall
+                if (!isPurchaseSupported) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: ElevatedButton.icon(
+                      onPressed: () => showPremiumMobileOnlySheet(context),
+                      icon: const Icon(LucideIcons.crown),
+                      label: Text(loc.discoverPremium),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: StanomerColors.brandPrimary,
+                        foregroundColor: StanomerColors.bgPage,
+                      ),
+                    ),
+                  );
+                }
+
                 final isPremium = ref.watch(isPremiumProvider);
-                
+
                 if (isPremium) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),

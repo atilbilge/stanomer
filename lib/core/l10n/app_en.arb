@@ -509,5 +509,14 @@
   "limitReachedSubtitle": "Upgrade to Stanomer Premium to manage multiple properties.",
   "discoverPremium": "Discover Premium",
   "optionsLoadFailed": "Could not load subscription options.",
-  "manageSubscription": "Manage Subscription"
+  "manageSubscription": "Manage Subscription",
+  "premiumMobileOnly": "Mobile App Required",
+  "premiumMobileOnlyDesc": "Stanomer Premium subscriptions can only be purchased through the mobile app. Download the app below to get started with Premium.",
+  "downloadOnAppStore": "Download on the App Store",
+  "downloadOnPlayStore": "Get it on Google Play",
+  "premiumFeatures": "Premium Features",
+  "premiumFeature1": "Unlimited property management",
+  "premiumFeature2": "Advanced financial reporting",
+  "premiumFeature3": "Priority support",
+  "premiumFeature4": "Access across all platforms"
 }

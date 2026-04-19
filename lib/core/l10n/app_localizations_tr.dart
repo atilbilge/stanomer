@@ -1304,4 +1304,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get manageSubscription => 'Aboneliği Yönet';
+
+  @override
+  String get premiumMobileOnly => 'Mobil Uygulama Gerekli';
+
+  @override
+  String get premiumMobileOnlyDesc => 'Stanomer Premium aboneliği yalnızca mobil uygulama üzerinden satın alınabilir. Aşağıdaki bağlantılardan uygulamayı indirerek Premium\'a geçiş yapabilirsiniz.';
+
+  @override
+  String get downloadOnAppStore => 'App Store\'dan İndir';
+
+  @override
+  String get downloadOnPlayStore => 'Google Play\'den İndir';
+
+  @override
+  String get premiumFeatures => 'Premium Özellikler';
+
+  @override
+  String get premiumFeature1 => 'Sınırsız mülk yönetimi';
+
+  @override
+  String get premiumFeature2 => 'Gelişmiş finansal raporlama';
+
+  @override
+  String get premiumFeature3 => 'Öncelikli destek';
+
+  @override
+  String get premiumFeature4 => 'Tüm platformlarda erişim';
 }

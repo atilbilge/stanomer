@@ -1309,4 +1309,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manageSubscription => 'Manage Subscription';
+
+  @override
+  String get premiumMobileOnly => 'Mobile App Required';
+
+  @override
+  String get premiumMobileOnlyDesc => 'Stanomer Premium subscriptions can only be purchased through the mobile app. Download the app below to get started with Premium.';
+
+  @override
+  String get downloadOnAppStore => 'Download on the App Store';
+
+  @override
+  String get downloadOnPlayStore => 'Get it on Google Play';
+
+  @override
+  String get premiumFeatures => 'Premium Features';
+
+  @override
+  String get premiumFeature1 => 'Unlimited property management';
+
+  @override
+  String get premiumFeature2 => 'Advanced financial reporting';
+
+  @override
+  String get premiumFeature3 => 'Priority support';
+
+  @override
+  String get premiumFeature4 => 'Access across all platforms';
 }

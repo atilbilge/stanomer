@@ -516,5 +516,14 @@
   "limitReachedSubtitle": "Пређите на Stanomer Premium за управљање са више некретнина.",
   "discoverPremium": "Истражите Premium",
   "optionsLoadFailed": "Није могуће учитати опције претплате.",
-  "manageSubscription": "Управљај претплатом"
+  "manageSubscription": "Управљај претплатом",
+  "premiumMobileOnly": "Потребна мобилна апликација",
+  "premiumMobileOnlyDesc": "Stanomer Premium претплата се може купити само путем мобилне апликације. Преузмите апликацију испод да бисте почели с Premium-ом.",
+  "downloadOnAppStore": "Преузми на App Store-у",
+  "downloadOnPlayStore": "Преузми на Google Play-у",
+  "premiumFeatures": "Premium функције",
+  "premiumFeature1": "Неограничено управљање некретнинама",
+  "premiumFeature2": "Напредно финансијско извештавање",
+  "premiumFeature3": "Приоритетна подршка",
+  "premiumFeature4": "Приступ на свим платформама"
 }

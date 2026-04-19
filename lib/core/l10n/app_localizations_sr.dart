@@ -1315,6 +1315,33 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get manageSubscription => 'Upravljaj pretplatom';
+
+  @override
+  String get premiumMobileOnly => 'Potrebna mobilna aplikacija';
+
+  @override
+  String get premiumMobileOnlyDesc => 'Stanomer Premium pretplata se može kupiti samo putem mobilne aplikacije. Preuzmite aplikaciju ispod da biste počeli s Premium-om.';
+
+  @override
+  String get downloadOnAppStore => 'Preuzmi na App Store-u';
+
+  @override
+  String get downloadOnPlayStore => 'Preuzmi na Google Play-u';
+
+  @override
+  String get premiumFeatures => 'Premium funkcije';
+
+  @override
+  String get premiumFeature1 => 'Neograničeno upravljanje nekretninama';
+
+  @override
+  String get premiumFeature2 => 'Napredno finansijsko izveštavanje';
+
+  @override
+  String get premiumFeature3 => 'Prioritetna podrška';
+
+  @override
+  String get premiumFeature4 => 'Pristup na svim platformama';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -2626,4 +2653,31 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get manageSubscription => 'Управљај претплатом';
+
+  @override
+  String get premiumMobileOnly => 'Потребна мобилна апликација';
+
+  @override
+  String get premiumMobileOnlyDesc => 'Stanomer Premium претплата се може купити само путем мобилне апликације. Преузмите апликацију испод да бисте почели с Premium-ом.';
+
+  @override
+  String get downloadOnAppStore => 'Преузми на App Store-у';
+
+  @override
+  String get downloadOnPlayStore => 'Преузми на Google Play-у';
+
+  @override
+  String get premiumFeatures => 'Premium функције';
+
+  @override
+  String get premiumFeature1 => 'Неограничено управљање некретнинама';
+
+  @override
+  String get premiumFeature2 => 'Напредно финансијско извештавање';
+
+  @override
+  String get premiumFeature3 => 'Приоритетна подршка';
+
+  @override
+  String get premiumFeature4 => 'Приступ на свим платформама';
 }

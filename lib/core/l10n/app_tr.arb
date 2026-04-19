@@ -509,5 +509,14 @@
   "limitReachedSubtitle": "Birden fazla mülk yönetmek için Stanomer Premium'a geçiş yapın.",
   "discoverPremium": "Premium'u Keşfet",
   "optionsLoadFailed": "Satın alma seçenekleri yüklenemedi.",
-  "manageSubscription": "Aboneliği Yönet"
+  "manageSubscription": "Aboneliği Yönet",
+  "premiumMobileOnly": "Mobil Uygulama Gerekli",
+  "premiumMobileOnlyDesc": "Stanomer Premium aboneliği yalnızca mobil uygulama üzerinden satın alınabilir. Aşağıdaki bağlantılardan uygulamayı indirerek Premium'a geçiş yapabilirsiniz.",
+  "downloadOnAppStore": "App Store'dan İndir",
+  "downloadOnPlayStore": "Google Play'den İndir",
+  "premiumFeatures": "Premium Özellikler",
+  "premiumFeature1": "Sınırsız mülk yönetimi",
+  "premiumFeature2": "Gelişmiş finansal raporlama",
+  "premiumFeature3": "Öncelikli destek",
+  "premiumFeature4": "Tüm platformlarda erişim"
 }

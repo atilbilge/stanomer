@@ -2494,6 +2494,33 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Upravljaj pretplatom'**
   String get manageSubscription;
+
+  /// No description provided for @premiumMobileOnly.
+  String get premiumMobileOnly;
+
+  /// No description provided for @premiumMobileOnlyDesc.
+  String get premiumMobileOnlyDesc;
+
+  /// No description provided for @downloadOnAppStore.
+  String get downloadOnAppStore;
+
+  /// No description provided for @downloadOnPlayStore.
+  String get downloadOnPlayStore;
+
+  /// No description provided for @premiumFeatures.
+  String get premiumFeatures;
+
+  /// No description provided for @premiumFeature1.
+  String get premiumFeature1;
+
+  /// No description provided for @premiumFeature2.
+  String get premiumFeature2;
+
+  /// No description provided for @premiumFeature3.
+  String get premiumFeature3;
+
+  /// No description provided for @premiumFeature4.
+  String get premiumFeature4;
 }
 
 class _AppLocalizationsDelegate
