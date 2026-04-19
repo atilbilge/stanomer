@@ -15,7 +15,7 @@ class LanguagePicker extends ConsumerWidget {
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
         const PopupMenuItem<Locale>(
-          value: Locale('sr'),
+          value: Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'),
           child: Row(
             children: [
               Text('🇷🇸 '),

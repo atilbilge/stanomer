@@ -356,7 +356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: Text('🇬🇧 ${loc.english}'),
                       ),
                       DropdownMenuItem(
-                        value: const Locale('sr'),
+                        value: const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'),
                         child: Text('🇷🇸 ${loc.serbianLatin}'),
                       ),
                       DropdownMenuItem(
