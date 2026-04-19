@@ -41,6 +41,10 @@ Future<void> main() async {
   );
   await container.read(subscriptionServiceProvider).init();
 
+  // Sync current locale to RevenueCat on startup
+  final locale = container.read(localeProvider);
+  container.read(subscriptionServiceProvider).syncLocale(locale);
+
   runApp(
     UncontrolledProviderScope(
       container: container,

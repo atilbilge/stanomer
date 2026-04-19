@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
@@ -35,6 +36,22 @@ class SubscriptionService {
     Purchases.addCustomerInfoUpdateListener((customerInfo) {
       _updateStatusFromInfo(customerInfo);
     });
+  }
+
+  /// Sync the app locale to RevenueCat so the Paywall opens in the correct language.
+  /// RevenueCat uses the '$preferredLanguage' reserved subscriber attribute.
+  Future<void> syncLocale(Locale locale) async {
+    if (kIsWeb) return;
+    try {
+      // RevenueCat expects BCP-47 format, e.g. "en", "tr", "sr", "sr-Cyrl"
+      final tag = locale.scriptCode != null
+          ? '${locale.languageCode}-${locale.scriptCode}'
+          : locale.languageCode;
+      await Purchases.setAttributes({r'$preferredLanguage': tag});
+      debugPrint('RevenueCat locale set to: $tag');
+    } catch (e) {
+      debugPrint('RevenueCat setLocale error: $e');
+    }
   }
 
   Future<void> updatePurchaseStatus() async {
