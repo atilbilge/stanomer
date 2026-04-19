@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/theme/colors.dart';
-import '../../core/l10n/app_localizations.dart';
+import '../../../core/theme/colors.dart';
+import '../../../core/l10n/app_localizations.dart';
 
 const _appStoreUrl = 'https://apps.apple.com/app/stanomer/idXXXXXXXXX'; // Replace with real App Store ID
 const _playStoreUrl = 'https://play.google.com/store/apps/details?id=com.aboptima.stanomer';
