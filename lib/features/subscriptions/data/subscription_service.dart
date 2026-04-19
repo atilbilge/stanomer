@@ -21,18 +21,41 @@ class SubscriptionService {
 
   SubscriptionService(this._ref);
 
+  /// Helper to convert Flutter Locale to the BCP-47 / RevenueCat tag format (underscore preferred)
+  String _getRevenueCatTag(Locale locale) {
+    if (locale.languageCode == 'en') {
+      return 'en_US'; // Matches "English (US)" in dashboard
+    } else if (locale.languageCode == 'tr') {
+      return 'tr'; // Matches "Turkish" in dashboard
+    } else if (locale.languageCode == 'sr') {
+      if (locale.scriptCode == 'Cyrl') {
+        return 'sr_Cyrl'; // Matches "Serbian (Cyrillic)" in dashboard
+      } else {
+        return 'sr_Latn'; // Matches "Serbian (Latin)" in dashboard
+      }
+    }
+    return locale.languageCode;
+  }
+
   Future<void> init({Locale? locale}) async {
-    if (kIsWeb) return; 
+    if (kIsWeb) return;
 
     await Purchases.setLogLevel(LogLevel.debug);
 
     final String apiKey = Platform.isAndroid ? _androidApiKey : _iosApiKey;
     final config = PurchasesConfiguration(apiKey);
-    
+
+    // CRITICAL: Force the Native UI to use the app's selected locale 
+    // instead of the device system locale.
+    if (locale != null) {
+      config.preferredUILocaleOverride = _getRevenueCatTag(locale);
+      debugPrint('RevenueCat UI Locale forced to: ${config.preferredUILocaleOverride}');
+    }
+
     await Purchases.configure(config);
     await updatePurchaseStatus();
 
-    // Sync locale immediately if provided
+    // Sync backend attribute as well
     if (locale != null) await syncLocale(locale);
 
     // Listen to customer info changes
@@ -46,29 +69,15 @@ class SubscriptionService {
   Future<void> syncLocale(Locale locale) async {
     if (kIsWeb) return;
     try {
-      String tag;
-      
-      if (locale.languageCode == 'en') {
-        tag = 'en-US'; // Matches "English (US)" in dashboard
-      } else if (locale.languageCode == 'tr') {
-        tag = 'tr';    // Matches "Turkish" in dashboard
-      } else if (locale.languageCode == 'sr') {
-        if (locale.scriptCode == 'Cyrl') {
-          tag = 'sr-Cyrl'; // Matches "Serbian (Cyrillic)" in dashboard
-        } else {
-          tag = 'sr-Latn'; // Matches "Serbian (Latin)" in dashboard
-        }
-      } else {
-        tag = locale.languageCode;
-      }
+      final tag = _getRevenueCatTag(locale);
 
+      // This attribute affects the backend/dashboard localization selection
       await Purchases.setAttributes({r'$preferredLanguage': tag});
-      
-      // Sometimes we need to refresh offerings to ensure the native UI 
-      // picks up the attribute change for the paywall.
+
+      // Sometimes refreshing offerings helps the native UI sync with attribute changes
       await Purchases.getOfferings();
-      
-      debugPrint('RevenueCat locale synced to: $tag');
+
+      debugPrint('RevenueCat subscriber attribute synced to: $tag');
     } catch (e) {
       debugPrint('RevenueCat syncLocale error: $e');
     }
