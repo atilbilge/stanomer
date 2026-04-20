@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import SupportPage from "../../support/page";
-import { useLanguage } from "../../../components/LanguageProvider";
+import { LanguageProvider, useLanguage } from "../../../components/LanguageProvider";
 
 /**
  * Localized wrapper for /tr/support/

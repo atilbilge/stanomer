@@ -2,7 +2,7 @@
 
 import React from "react";
 import { LegalLayout } from "../../components/LegalLayout";
-import { useLanguage } from "../../components/LanguageProvider";
+import { LanguageProvider, useLanguage } from "../../components/LanguageProvider";
 import { Mail, Clock, Headphones } from "lucide-react";
 
 function SupportContent() {
