@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLanguage } from "./LanguageProvider";
-import { Crown, Trash2, ShieldCheck, FileText, ChevronDown, Menu } from "lucide-react";
+import { Crown, Trash2, ShieldCheck, FileText, ChevronDown, Menu, Headphones } from "lucide-react";
 
 export function LegalLayout({ children, activeTab }: { children: React.ReactNode, activeTab: "privacy" | "terms" | "support" }) {
   const { lang, setLang, t } = useLanguage();
