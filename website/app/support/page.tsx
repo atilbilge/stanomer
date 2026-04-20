@@ -5,7 +5,7 @@ import { LegalLayout } from "../../components/LegalLayout";
 import { useLanguage } from "../../components/LanguageProvider";
 import { Mail, Clock, Headphones } from "lucide-react";
 
-export default function SupportPage() {
+function SupportContent() {
   const { t } = useLanguage();
 
   return (
@@ -52,5 +52,13 @@ export default function SupportPage() {
         </div>
       </div>
     </LegalLayout>
+  );
+}
+
+export default function SupportPage() {
+  return (
+    <LanguageProvider>
+      <SupportContent />
+    </LanguageProvider>
   );
 }

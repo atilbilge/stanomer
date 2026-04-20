@@ -9,7 +9,7 @@ import { useLanguage } from "../../../components/LanguageProvider";
  * This component ensures that when someone enters via /tr/spport,
  * the language state is forced to TR.
  */
-export default function TrSupportPage() {
+function TrSupportInner() {
   const { setLang } = useLanguage();
 
   useEffect(() => {
@@ -18,4 +18,12 @@ export default function TrSupportPage() {
   }, [setLang]);
 
   return <SupportPage />;
+}
+
+export default function TrSupportPage() {
+  return (
+    <LanguageProvider>
+      <TrSupportInner />
+    </LanguageProvider>
+  );
 }
