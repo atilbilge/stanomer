@@ -124,7 +124,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
             <span className="font-bold text-sm">Stanomer</span>
           </div>
           <p className="text-gray-400 text-xs">
-            © {new Date().getFullYear()} Stanomer PropTech. All rights reserved.
+            © 2026 Stanomer. All rights reserved.
           </p>
         </div>
       </footer>
