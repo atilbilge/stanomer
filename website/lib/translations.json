@@ -11,7 +11,10 @@
     "restore_purchases_desc": "Stanomer Premium aboneliğinizi yeni bir cihazda veya kurulumda geri yüklemek için mobil uygulama ayarlarındaki 'Satın Almaları Geri Yükle' butonuna tıklayabilirsiniz.",
     "delete_account_title": "Hesabı Sil",
     "delete_account_desc": "Hesabınızı ve tüm verilerinizi silmek için uygulama içindeki Profil ayarlarını kullanabilir veya support@stanomer.com adresine talep gönderebilirsiniz. Verileriniz 30 gün içinde kalıcı olarak silinecektir.",
-    "language": "Dil"
+    "language": "Dil",
+    "support_title": "Destek",
+    "support_desc": "Teknik destek ve sorularınız için:",
+    "support_email_label": "Destek E-postası"
   },
   "EN": {
     "privacy_title": "Privacy Policy",
@@ -25,7 +28,10 @@
     "restore_purchases_desc": "To restore your Stanomer Premium subscription on a new device or installation, please use the 'Restore Purchases' button within the mobile app settings.",
     "delete_account_title": "Delete Account",
     "delete_account_desc": "To delete your account and all associated data, use the Profile settings in the app or contact support@stanomer.com. Your data will be permanently removed within 30 days.",
-    "language": "Language"
+    "language": "Language",
+    "support_title": "Support",
+    "support_desc": "For technical support and inquiries:",
+    "support_email_label": "Support Email"
   },
   "SR_LAT": {
     "privacy_title": "Politika privatnosti",
@@ -39,7 +45,10 @@
     "restore_purchases_desc": "Da biste vratili svoju Stanomer Premium pretplatu na novom uređaju, koristite dugme 'Vratite kupovine' u podešavanjima mobilne aplikacije.",
     "delete_account_title": "Obriši nalog",
     "delete_account_desc": "Da biste obrisali svoj nalog i sve podatke, koristite podešavanja na Profilu u aplikaciji ili pošaljite zahtev na support@stanomer.com. Podaci će biti trajno uklonjeni u roku od 30 dana.",
-    "language": "Jezik"
+    "language": "Jezik",
+    "support_title": "Podrška",
+    "support_desc": "Za tehničku podršku i upite:",
+    "support_email_label": "Email podrške"
   },
   "SR_CYR": {
     "privacy_title": "Политика приватности",
@@ -53,6 +62,9 @@
     "restore_purchases_desc": "Да бисте повратили своју Станомер Премиум претплату на новом уређају, користите дугме 'Поврати куповине' у подешавањима мобилне апликације.",
     "delete_account_title": "Обриши налог",
     "delete_account_desc": "Да бисте обрисали свој налог и све податке, користите подешавања на Профилу у апликацији или пошаљите захтев на support@stanomer.com. Подаци ће бити трајно уклоњени у року од 30 дана.",
-    "language": "Језик"
+    "language": "Језик",
+    "support_title": "Подршка",
+    "support_desc": "За техничку подршку и упите:",
+    "support_email_label": "Емаил подршке"
   }
 }
