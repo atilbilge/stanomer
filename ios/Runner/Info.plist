@@ -62,5 +62,11 @@
 	<array>
 		<string>_dartvm_service._tcp</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+<string>Stanomer needs access to your photo library to let you upload rent receipts and property maintenance photos.</string>
+<key>NSCameraUsageDescription</key>
+<string>Stanomer needs access to your camera so you can take photos of maintenance issues and documents directly.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Stanomer needs microphone access for video recordings of property issues.</string>
 </dict>
 </plist>

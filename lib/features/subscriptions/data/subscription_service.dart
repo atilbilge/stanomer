@@ -53,6 +53,29 @@ class SubscriptionService {
     }
 
     await Purchases.configure(config);
+    
+    // Force refresh cache to ensure we get the latest prices and dashboard config
+    await Purchases.invalidateCustomerInfoCache();
+    
+    // Debug: Inspect offerings
+    try {
+      final offerings = await Purchases.getOfferings();
+      if (offerings.current != null) {
+        debugPrint('RevenueCat Current Offering: ${offerings.current!.identifier}');
+        if (offerings.current!.availablePackages.isEmpty) {
+          debugPrint('RevenueCat WARNING: Current offering has NO packages mapped for Android!');
+        }
+        for (var package in offerings.current!.availablePackages) {
+          final p = package.storeProduct;
+          debugPrint('Package [${package.identifier}] -> ProductID: ${p.identifier} | Price: ${p.priceString} | Title: ${p.title}');
+        }
+      } else {
+        debugPrint('RevenueCat: No current offering found! Check your Dashboard "Current" status.');
+      }
+    } catch (e) {
+      debugPrint('RevenueCat debug offerings error: $e');
+    }
+
     await updatePurchaseStatus();
 
     // Sync backend attribute as well
@@ -65,17 +88,13 @@ class SubscriptionService {
   }
 
   /// Sync the app locale to RevenueCat so the Paywall opens in the correct language.
-  /// RevenueCat uses the '$preferredLanguage' reserved subscriber attribute.
   Future<void> syncLocale(Locale locale) async {
     if (kIsWeb) return;
     try {
       final tag = _getRevenueCatTag(locale);
 
-      // This attribute affects the backend/dashboard localization selection
-      await Purchases.setAttributes({r'$preferredLanguage': tag});
-
-      // Sometimes refreshing offerings helps the native UI sync with attribute changes
-      await Purchases.getOfferings();
+      // Use a custom attribute instead of a reserved "$" one to avoid API errors
+      await Purchases.setAttributes({'app_locale': tag});
 
       debugPrint('RevenueCat subscriber attribute synced to: $tag');
     } catch (e) {
@@ -98,9 +117,11 @@ class SubscriptionService {
     _ref.read(isPremiumProvider.notifier).state = isPremium;
   }
 
-  /// Present the Paywall using the RevenueCat UI SDK
+  /// Present the Paywall using the RevenueCat UI SDK (Native Fullscreen)
   Future<void> presentPaywall() async {
     try {
+      // Force refresh before showing to ensure latest logo and prices
+      await Purchases.invalidateCustomerInfoCache();
       await RevenueCatUI.presentPaywall();
     } catch (e) {
       debugPrint("Paywall Error: $e");
