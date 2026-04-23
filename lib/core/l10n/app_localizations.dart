@@ -63,8 +63,7 @@ import 'app_localizations_tr.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,2458 +83,2495 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'),
+    Locale('sr'),
     Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
-    Locale('tr'),
+    Locale('tr')
   ];
 
   /// No description provided for @appTitle.
   ///
-  /// In sr, this message translates to:
+  /// In en, this message translates to:
   /// **'Stanomer'**
   String get appTitle;
 
   /// No description provided for @login.
   ///
-  /// In sr, this message translates to:
-  /// **'Prijavite se'**
+  /// In en, this message translates to:
+  /// **'Login'**
   String get login;
 
   /// No description provided for @signup.
   ///
-  /// In sr, this message translates to:
-  /// **'Registracija'**
+  /// In en, this message translates to:
+  /// **'Sign Up'**
   String get signup;
 
   /// No description provided for @email.
   ///
-  /// In sr, this message translates to:
-  /// **'E-pošta'**
+  /// In en, this message translates to:
+  /// **'Email'**
   String get email;
 
   /// No description provided for @password.
   ///
-  /// In sr, this message translates to:
-  /// **'Lozinka'**
+  /// In en, this message translates to:
+  /// **'Password'**
   String get password;
 
   /// No description provided for @landlord.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac'**
+  /// In en, this message translates to:
+  /// **'Landlord'**
   String get landlord;
 
   /// No description provided for @tenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar'**
+  /// In en, this message translates to:
+  /// **'Tenant'**
   String get tenant;
 
   /// No description provided for @zzplConsent.
   ///
-  /// In sr, this message translates to:
-  /// **'Pristajem na obradu mojih podataka u skladu sa Zakonom o zaštiti podataka o ličnosti (ZZPL) Srbije.'**
+  /// In en, this message translates to:
+  /// **'I agree to the processing of my data in accordance with the Law on Personal Data Protection (ZZPL) of Serbia.'**
   String get zzplConsent;
 
   /// No description provided for @selectRole.
   ///
-  /// In sr, this message translates to:
-  /// **'Izaberite svoju ulogu'**
+  /// In en, this message translates to:
+  /// **'Select your role'**
   String get selectRole;
 
   /// No description provided for @fieldRequired.
   ///
-  /// In sr, this message translates to:
-  /// **'Ovo polje je obavezno'**
+  /// In en, this message translates to:
+  /// **'This field is required'**
   String get fieldRequired;
 
   /// No description provided for @consentRequired.
   ///
-  /// In sr, this message translates to:
-  /// **'Morate prihvatiti ZZPL da biste nastavili'**
+  /// In en, this message translates to:
+  /// **'You must accept the ZZPL consent to continue'**
   String get consentRequired;
 
   /// No description provided for @loginToAccount.
   ///
-  /// In sr, this message translates to:
-  /// **'Prijavite se na svoj nalog'**
+  /// In en, this message translates to:
+  /// **'Login to your account'**
   String get loginToAccount;
 
   /// No description provided for @createAccount.
   ///
-  /// In sr, this message translates to:
-  /// **'Napravite novi nalog'**
+  /// In en, this message translates to:
+  /// **'Create a new account'**
   String get createAccount;
 
   /// No description provided for @dontHaveAccount.
   ///
-  /// In sr, this message translates to:
-  /// **'Nemate nalog? Registrujte se'**
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Sign up'**
   String get dontHaveAccount;
 
   /// No description provided for @alreadyHaveAccount.
   ///
-  /// In sr, this message translates to:
-  /// **'Imate nalog? Prijavite se'**
+  /// In en, this message translates to:
+  /// **'Already have an account? Login'**
   String get alreadyHaveAccount;
 
   /// No description provided for @continueWithGoogle.
   ///
-  /// In sr, this message translates to:
-  /// **'Nastavite sa Google-om'**
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
   String get continueWithGoogle;
 
   /// No description provided for @continueWithApple.
   ///
-  /// In sr, this message translates to:
-  /// **'Nastavite sa Apple-om'**
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
   String get continueWithApple;
 
   /// No description provided for @fullName.
   ///
-  /// In sr, this message translates to:
-  /// **'Ime i prezime'**
+  /// In en, this message translates to:
+  /// **'Full Name'**
   String get fullName;
 
   /// No description provided for @errorSelectRole.
   ///
-  /// In sr, this message translates to:
-  /// **'Molimo izaberite svoju ulogu'**
+  /// In en, this message translates to:
+  /// **'Please select your role'**
   String get errorSelectRole;
 
   /// No description provided for @deleteAccount.
   ///
-  /// In sr, this message translates to:
-  /// **'Obriši nalog'**
+  /// In en, this message translates to:
+  /// **'Delete Account'**
   String get deleteAccount;
 
   /// No description provided for @deleteAccountWarning.
   ///
-  /// In sr, this message translates to:
-  /// **'Ova radnja je trajna i ne može se poništiti. Svi vaši podaci će biti obrisani.'**
+  /// In en, this message translates to:
+  /// **'This action is permanent and cannot be undone. All your data will be deleted.'**
   String get deleteAccountWarning;
 
   /// No description provided for @confirmPasswordForDeletion.
   ///
-  /// In sr, this message translates to:
-  /// **'Molimo unesite lozinku da potvrdite brisanje'**
+  /// In en, this message translates to:
+  /// **'Please enter your password to confirm deletion'**
   String get confirmPasswordForDeletion;
 
   /// No description provided for @deleteButtonLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Trajno obriši moj nalog'**
+  /// In en, this message translates to:
+  /// **'Permanently Delete My Account'**
   String get deleteButtonLabel;
 
   /// No description provided for @cancel.
   ///
-  /// In sr, this message translates to:
-  /// **'Otkaži'**
+  /// In en, this message translates to:
+  /// **'Cancel'**
   String get cancel;
 
   /// No description provided for @invalidPassword.
   ///
-  /// In sr, this message translates to:
-  /// **'Pogrešna lozinka'**
+  /// In en, this message translates to:
+  /// **'Invalid password'**
   String get invalidPassword;
 
   /// No description provided for @welcomeToStanomer.
   ///
-  /// In sr, this message translates to:
-  /// **'Dobrodošli u Stanomer'**
+  /// In en, this message translates to:
+  /// **'Welcome to Stanomer'**
   String get welcomeToStanomer;
 
   /// No description provided for @consentTextFullTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Saglasnost za obradu podataka o ličnosti (ZZPL)'**
+  /// In en, this message translates to:
+  /// **'Consent for Personal Data Processing (ZZPL)'**
   String get consentTextFullTitle;
 
   /// No description provided for @profile.
   ///
-  /// In sr, this message translates to:
-  /// **'Profil'**
+  /// In en, this message translates to:
+  /// **'Profile'**
   String get profile;
 
   /// No description provided for @updateName.
   ///
-  /// In sr, this message translates to:
-  /// **'Ažuriraj ime'**
+  /// In en, this message translates to:
+  /// **'Update Name'**
   String get updateName;
 
   /// No description provided for @updatePassword.
   ///
-  /// In sr, this message translates to:
-  /// **'Ažuriraj lozinku'**
+  /// In en, this message translates to:
+  /// **'Update Password'**
   String get updatePassword;
 
   /// No description provided for @oldPassword.
   ///
-  /// In sr, this message translates to:
-  /// **'Trenutna lozinka'**
+  /// In en, this message translates to:
+  /// **'Current Password'**
   String get oldPassword;
 
   /// No description provided for @newPassword.
   ///
-  /// In sr, this message translates to:
-  /// **'Nova lozinka'**
+  /// In en, this message translates to:
+  /// **'New Password'**
   String get newPassword;
 
   /// No description provided for @saveChanges.
   ///
-  /// In sr, this message translates to:
-  /// **'Sačuvaj izmene'**
+  /// In en, this message translates to:
+  /// **'Save Changes'**
   String get saveChanges;
 
   /// No description provided for @passwordChangedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Lozinka je uspešno promenjena'**
+  /// In en, this message translates to:
+  /// **'Password updated successfully'**
   String get passwordChangedSuccess;
 
   /// No description provided for @profileUpdatedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Profil je uspešno ažuriran'**
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
   String get profileUpdatedSuccess;
 
   /// No description provided for @role.
   ///
-  /// In sr, this message translates to:
-  /// **'Uloga'**
+  /// In en, this message translates to:
+  /// **'Role'**
   String get role;
 
   /// No description provided for @roleLandlord.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac'**
+  /// In en, this message translates to:
+  /// **'Landlord'**
   String get roleLandlord;
 
   /// No description provided for @roleTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar'**
+  /// In en, this message translates to:
+  /// **'Tenant'**
   String get roleTenant;
 
   /// No description provided for @logout.
   ///
-  /// In sr, this message translates to:
-  /// **'Odjavi se'**
+  /// In en, this message translates to:
+  /// **'Sign Out'**
   String get logout;
 
   /// No description provided for @addProperty.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodaj nekretninu'**
+  /// In en, this message translates to:
+  /// **'Add Property'**
   String get addProperty;
 
   /// No description provided for @address.
   ///
-  /// In sr, this message translates to:
-  /// **'Adresa'**
+  /// In en, this message translates to:
+  /// **'Address'**
   String get address;
 
   /// No description provided for @monthlyRent.
   ///
-  /// In sr, this message translates to:
-  /// **'Mesečna kirija'**
+  /// In en, this message translates to:
+  /// **'Monthly Rent'**
   String get monthlyRent;
 
   /// No description provided for @depositAmount.
   ///
-  /// In sr, this message translates to:
-  /// **'Iznos depozita'**
+  /// In en, this message translates to:
+  /// **'Deposit Amount'**
   String get depositAmount;
 
   /// No description provided for @currency.
   ///
-  /// In sr, this message translates to:
-  /// **'Valuta'**
+  /// In en, this message translates to:
+  /// **'Currency'**
   String get currency;
 
   /// No description provided for @propertyName.
   ///
-  /// In sr, this message translates to:
-  /// **'Naziv nekretnine'**
+  /// In en, this message translates to:
+  /// **'Property Name'**
   String get propertyName;
 
   /// No description provided for @propertyNameHint.
   ///
-  /// In sr, this message translates to:
-  /// **'npr. Apartman Beograd'**
+  /// In en, this message translates to:
+  /// **'e.g. Belgrad Apartment'**
   String get propertyNameHint;
 
   /// No description provided for @propertyAddedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Nekretnina uspešno dodata'**
+  /// In en, this message translates to:
+  /// **'Property added successfully'**
   String get propertyAddedSuccess;
 
   /// No description provided for @propertyUpdatedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Nekretnina uspešno ažurirana'**
+  /// In en, this message translates to:
+  /// **'Property updated successfully'**
   String get propertyUpdatedSuccess;
 
   /// No description provided for @noProperties.
   ///
-  /// In sr, this message translates to:
-  /// **'Nema pronađenih nekretnina'**
+  /// In en, this message translates to:
+  /// **'No properties found'**
   String get noProperties;
 
   /// No description provided for @addYourFirstProperty.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodajte svoju prvu nekretninu da biste започели praćenje!'**
+  /// In en, this message translates to:
+  /// **'Add your first property to start tracking!'**
   String get addYourFirstProperty;
 
   /// No description provided for @editProperty.
   ///
-  /// In sr, this message translates to:
-  /// **'Uredi nekretninu'**
+  /// In en, this message translates to:
+  /// **'Edit Property'**
   String get editProperty;
 
   /// No description provided for @delete.
   ///
-  /// In sr, this message translates to:
-  /// **'Obriši'**
+  /// In en, this message translates to:
+  /// **'Delete'**
   String get delete;
 
   /// No description provided for @confirmDeleteTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Obriši nekretninu'**
+  /// In en, this message translates to:
+  /// **'Delete Property'**
   String get confirmDeleteTitle;
 
   /// No description provided for @confirmDeleteMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da obrišete ovu nekretninu? Ova radnja se ne može poništiti.'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this property? This action cannot be undone.'**
   String get confirmDeleteMessage;
 
   /// No description provided for @propertyDeletedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Nekretnina uspešno obrisana'**
+  /// In en, this message translates to:
+  /// **'Property deleted successfully'**
   String get propertyDeletedSuccess;
 
   /// No description provided for @inviteTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Pozovi stanara'**
+  /// In en, this message translates to:
+  /// **'Invite Tenant'**
   String get inviteTenant;
 
   /// No description provided for @emailHint.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite e-mail stanara'**
+  /// In en, this message translates to:
+  /// **'Enter tenant\'s email address'**
   String get emailHint;
 
   /// No description provided for @inviteCreatedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Link za poziv je kreiran! Sada ga možete podeliti.'**
+  /// In en, this message translates to:
+  /// **'Invite link created! You can now share it.'**
   String get inviteCreatedSuccess;
 
   /// No description provided for @shareInviteLink.
   ///
-  /// In sr, this message translates to:
-  /// **'Podeli link za poziv'**
+  /// In en, this message translates to:
+  /// **'Share Invite Link'**
   String get shareInviteLink;
 
   /// No description provided for @copyLink.
   ///
-  /// In sr, this message translates to:
-  /// **'Kopiraj link'**
+  /// In en, this message translates to:
+  /// **'Copy Link'**
   String get copyLink;
 
   /// No description provided for @noInvitesYet.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek nema poslatih poziva'**
+  /// In en, this message translates to:
+  /// **'No invitations sent yet'**
   String get noInvitesYet;
 
   /// No description provided for @cancelInvitation.
   ///
-  /// In sr, this message translates to:
-  /// **'Otkaži poziv'**
+  /// In en, this message translates to:
+  /// **'Cancel Invitation'**
   String get cancelInvitation;
 
   /// No description provided for @invitationCancelledSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv je uspešno otkazan'**
+  /// In en, this message translates to:
+  /// **'Invitation cancelled successfully'**
   String get invitationCancelledSuccess;
 
   /// No description provided for @pendingInvite.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv na čekanju'**
+  /// In en, this message translates to:
+  /// **'Pending Invite'**
   String get pendingInvite;
 
   /// No description provided for @contractSentToTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Ugovor poslat zakupcu'**
+  /// In en, this message translates to:
+  /// **'Contract sent to tenant'**
   String get contractSentToTenant;
 
   /// No description provided for @overview.
   ///
-  /// In sr, this message translates to:
-  /// **'Pregled'**
+  /// In en, this message translates to:
+  /// **'Overview'**
   String get overview;
 
   /// No description provided for @financials.
   ///
-  /// In sr, this message translates to:
-  /// **'Finansije'**
+  /// In en, this message translates to:
+  /// **'Financials'**
   String get financials;
 
   /// No description provided for @propertySettings.
   ///
-  /// In sr, this message translates to:
-  /// **'Podešavanja'**
+  /// In en, this message translates to:
+  /// **'Settings'**
   String get propertySettings;
 
   /// No description provided for @invitationHistory.
   ///
-  /// In sr, this message translates to:
-  /// **'Istorija poziva'**
+  /// In en, this message translates to:
+  /// **'Invite History'**
   String get invitationHistory;
 
   /// No description provided for @invitationDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'Detalji poziva'**
+  /// In en, this message translates to:
+  /// **'Invitation Details'**
   String get invitationDetails;
 
   /// No description provided for @acceptInvitation.
   ///
-  /// In sr, this message translates to:
-  /// **'Da, iznajmio sam ovo'**
+  /// In en, this message translates to:
+  /// **'Yes, I rented this place'**
   String get acceptInvitation;
 
   /// No description provided for @declineInvitation.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij poziv'**
+  /// In en, this message translates to:
+  /// **'Decline Invitation'**
   String get declineInvitation;
 
   /// No description provided for @inviteNotFound.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv nije pronađen ili je istekao'**
+  /// In en, this message translates to:
+  /// **'Invitation not found or expired'**
   String get inviteNotFound;
 
   /// No description provided for @invitationAcceptedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Dobrodošli kući! Poziv je prihvaćen.'**
+  /// In en, this message translates to:
+  /// **'Welcome home! Invitation accepted.'**
   String get invitationAcceptedSuccess;
 
   /// No description provided for @pendingInvitationBanner.
   ///
-  /// In sr, this message translates to:
-  /// **'Imate otvoren poziv za {property}'**
+  /// In en, this message translates to:
+  /// **'You have a pending invitation for {property}'**
   String pendingInvitationBanner(String property);
 
   /// No description provided for @invitedBy.
   ///
-  /// In sr, this message translates to:
-  /// **'Pozvao vas je {name}'**
+  /// In en, this message translates to:
+  /// **'Invited by {name}'**
   String invitedBy(String name);
 
   /// No description provided for @yourName.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaše ime'**
+  /// In en, this message translates to:
+  /// **'Your Name'**
   String get yourName;
 
   /// No description provided for @yourNameHint.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite svoje puno ime'**
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
   String get yourNameHint;
 
   /// No description provided for @viewInvite.
   ///
-  /// In sr, this message translates to:
-  /// **'Pogledaj poziv'**
+  /// In en, this message translates to:
+  /// **'View Invite'**
   String get viewInvite;
 
   /// No description provided for @myProperties.
   ///
-  /// In sr, this message translates to:
-  /// **'Moje nekretnine'**
+  /// In en, this message translates to:
+  /// **'My Properties'**
   String get myProperties;
 
   /// No description provided for @tenantEmptyStateTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek nemate dodeljenu nekretninu'**
+  /// In en, this message translates to:
+  /// **'No property assigned yet'**
   String get tenantEmptyStateTitle;
 
   /// No description provided for @tenantEmptyStateMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Ako vam je stanodavac poslao poziv, on će se pojaviti ovde. Kliknite na dugme ispod da biste proverili nove pozive.'**
+  /// In en, this message translates to:
+  /// **'If your landlord has sent you an invitation, it will appear here. Tap the button below to check for new invites.'**
   String get tenantEmptyStateMessage;
 
   /// No description provided for @refresh.
   ///
-  /// In sr, this message translates to:
-  /// **'Osveži'**
+  /// In en, this message translates to:
+  /// **'Refresh'**
   String get refresh;
 
   /// No description provided for @invitationDeclinedSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv je odbijen.'**
+  /// In en, this message translates to:
+  /// **'Invitation declined.'**
   String get invitationDeclinedSuccess;
 
   /// No description provided for @confirmDeclineInviteTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbiti poziv?'**
+  /// In en, this message translates to:
+  /// **'Decline Invitation?'**
   String get confirmDeclineInviteTitle;
 
   /// No description provided for @confirmDeclineInviteMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da odbijete ovaj poziv? Biće uklonjen sa vaše liste na čekanju.'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to decline this invitation? It will be removed from your pending list.'**
   String get confirmDeclineInviteMessage;
 
   /// No description provided for @contractStartDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum početka ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract Start Date'**
   String get contractStartDate;
 
   /// No description provided for @contractEndDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum završetka ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract End Date'**
   String get contractEndDate;
 
   /// No description provided for @uploadContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Otpremi ugovor'**
+  /// In en, this message translates to:
+  /// **'Upload Contract'**
   String get uploadContract;
 
   /// No description provided for @viewContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Pogledaj ugovor'**
+  /// In en, this message translates to:
+  /// **'View Contract'**
   String get viewContract;
 
   /// No description provided for @contractFile.
   ///
-  /// In sr, this message translates to:
-  /// **'Datoteka ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract File'**
   String get contractFile;
 
   /// No description provided for @selectDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Izaberi datum'**
+  /// In en, this message translates to:
+  /// **'Select Date'**
   String get selectDate;
 
   /// No description provided for @appLanguage.
   ///
-  /// In sr, this message translates to:
-  /// **'Jezik aplikacije'**
+  /// In en, this message translates to:
+  /// **'App Language'**
   String get appLanguage;
 
   /// No description provided for @english.
   ///
-  /// In sr, this message translates to:
-  /// **'Engleski'**
+  /// In en, this message translates to:
+  /// **'English'**
   String get english;
 
   /// No description provided for @serbianLatin.
   ///
-  /// In sr, this message translates to:
-  /// **'Srpski (Latinica)'**
+  /// In en, this message translates to:
+  /// **'Serbian (Latin)'**
   String get serbianLatin;
 
   /// No description provided for @serbianCyrillic.
   ///
-  /// In sr, this message translates to:
-  /// **'Srpski (Ćirilica)'**
+  /// In en, this message translates to:
+  /// **'Serbian (Cyrillic)'**
   String get serbianCyrillic;
 
   /// No description provided for @turkish.
   ///
-  /// In sr, this message translates to:
-  /// **'Turski'**
+  /// In en, this message translates to:
+  /// **'Turkish'**
   String get turkish;
 
   /// No description provided for @tenantMode.
   ///
-  /// In sr, this message translates to:
-  /// **'Mod stanara'**
+  /// In en, this message translates to:
+  /// **'Tenant Mode'**
   String get tenantMode;
 
   /// No description provided for @landlordMode.
   ///
-  /// In sr, this message translates to:
-  /// **'Mod stanodavca'**
+  /// In en, this message translates to:
+  /// **'Landlord Mode'**
   String get landlordMode;
 
   /// No description provided for @whatAreYou.
   ///
-  /// In sr, this message translates to:
-  /// **'Kao šta želite da nastavite?'**
+  /// In en, this message translates to:
+  /// **'What would you like to continue as?'**
   String get whatAreYou;
 
   /// No description provided for @selectRoleToContinue.
   ///
-  /// In sr, this message translates to:
-  /// **'Izaberite ulogu da biste započeli. Možete je promeniti bilo kada u zaglavlju iznad.'**
+  /// In en, this message translates to:
+  /// **'Select a role to get started. You can switch anytime from the header above.'**
   String get selectRoleToContinue;
 
   /// No description provided for @consentTextFullBody.
   ///
-  /// In sr, this message translates to:
-  /// **'Korišćenjem aplikacije Stanomer, dajete izričitu saglasnost za obradu vaših ličnih podataka u skladu sa Zakonom o zaštiti podataka o ličnosti (ZZPL) Republike Srbije.'**
+  /// In en, this message translates to:
+  /// **'By using the Stanomer application, you provide explicit consent for the processing of your personal data in accordance with the Law on Personal Data Protection (ZZPL) of the Republic of Serbia.\n\nWhat data is collected: Your name, e-mail address, IP address, and real estate lease agreement data.\n\nPurpose of processing: The data is used exclusively to facilitate communication between the landlord and the tenant, keep payment records, and create legally valid logs.\n\nData sharing: Your data is not sold to third parties. It is stored on secure servers in the EU (Supabase Frankfurt).\n\nYour rights: You have the right at any time to request access to your data or permanent deletion of your account and all associated data directly through the app.'**
   String get consentTextFullBody;
 
   /// No description provided for @removeTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Ukloni stanara'**
+  /// In en, this message translates to:
+  /// **'Remove Tenant'**
   String get removeTenant;
 
   /// No description provided for @removeTenantConfirmation.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da uklonite ovog stanara iz nekretnine? Ovo će raskinuti vezu i obrisati zapis o pozivu.'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove this tenant from the property? This will detach them and delete the invitation record.'**
   String get removeTenantConfirmation;
 
   /// No description provided for @remove.
   ///
-  /// In sr, this message translates to:
-  /// **'Ukloni'**
+  /// In en, this message translates to:
+  /// **'Remove'**
   String get remove;
 
   /// No description provided for @logRentDeclared.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar je označio kiriju za {month} kao plaćenu.'**
+  /// In en, this message translates to:
+  /// **'Tenant declared {month} rent as paid.'**
   String logRentDeclared(String month);
 
   /// No description provided for @logRentApproved.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac je odobrio kiriju za {month}.'**
+  /// In en, this message translates to:
+  /// **'Landlord approved {month} rent.'**
   String logRentApproved(String month);
 
   /// No description provided for @logRentRejected.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac je odbio kiriju za {month}.'**
+  /// In en, this message translates to:
+  /// **'Landlord rejected {month} rent.'**
   String logRentRejected(String month);
 
   /// No description provided for @logMarkedAsPaid.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac je označio {month} kao plaćeno.'**
+  /// In en, this message translates to:
+  /// **'Landlord marked {month} as paid.'**
   String logMarkedAsPaid(String month);
 
   /// No description provided for @logMarkedAsPending.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac je označio {month} na čekanju.'**
+  /// In en, this message translates to:
+  /// **'Landlord marked {month} as pending.'**
   String logMarkedAsPending(String month);
 
   /// No description provided for @logAutoApproved.
   ///
-  /// In sr, this message translates to:
-  /// **'Kirija za {month} je automatski odobrena od strane sistema nakon 5 dana.'**
+  /// In en, this message translates to:
+  /// **'{month} rent was auto-approved by system after 5 days.'**
   String logAutoApproved(String month);
 
   /// No description provided for @activity.
   ///
-  /// In sr, this message translates to:
-  /// **'Aktivnosti'**
+  /// In en, this message translates to:
+  /// **'Activity'**
   String get activity;
 
   /// No description provided for @noContractsTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek nema ugovora'**
+  /// In en, this message translates to:
+  /// **'No contracts yet'**
   String get noContractsTitle;
 
   /// No description provided for @noContractsMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da biste pratili kiriju i troškove, prvo pozovite stanara unošenjem detalja ugovora.'**
+  /// In en, this message translates to:
+  /// **'To track rent and expenses for your property, first invite a tenant by entering contract details.'**
   String get noContractsMessage;
 
   /// No description provided for @inviteFirstTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Pozovite prvog zakupca'**
+  /// In en, this message translates to:
+  /// **'Invite First Tenant'**
   String get inviteFirstTenant;
 
   /// No description provided for @confirmCancelInvitationTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Otkaži poziv'**
+  /// In en, this message translates to:
+  /// **'Cancel Invitation'**
   String get confirmCancelInvitationTitle;
 
   /// No description provided for @confirmCancelInvitationMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da povučete ovaj poziv? Ova akcija će ga trajno izbrisati.'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to withdraw this invitation? This action will permanently delete it.'**
   String get confirmCancelInvitationMessage;
 
   /// No description provided for @confirmDeclineRevisionTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij zahtev za reviziju'**
+  /// In en, this message translates to:
+  /// **'Decline Revision Request'**
   String get confirmDeclineRevisionTitle;
 
   /// No description provided for @confirmDeclineRevisionMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da odbijete zahtev zakupca za reviziju? Ugovor će ostati na čekanju sa originalnim uslovima.'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to decline the tenant\'s revision request? The contract will remain pending with its original terms.'**
   String get confirmDeclineRevisionMessage;
 
   /// No description provided for @activeContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Aktivni ugovor'**
+  /// In en, this message translates to:
+  /// **'Active Lease'**
   String get activeContract;
 
   /// No description provided for @activeLease.
   ///
-  /// In sr, this message translates to:
-  /// **'AKTIVNI UGOVOR'**
+  /// In en, this message translates to:
+  /// **'ACTIVE LEASE'**
   String get activeLease;
 
   /// No description provided for @invitationSent.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv poslat'**
+  /// In en, this message translates to:
+  /// **'Invitation Sent'**
   String get invitationSent;
 
   /// No description provided for @accept.
   ///
-  /// In sr, this message translates to:
-  /// **'Prihvati'**
+  /// In en, this message translates to:
+  /// **'Accept'**
   String get accept;
 
   /// No description provided for @decline.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij'**
+  /// In en, this message translates to:
+  /// **'Decline'**
   String get decline;
 
   /// No description provided for @declineRevisionRequest.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij zahtev za reviziju'**
+  /// In en, this message translates to:
+  /// **'Decline revision request'**
   String get declineRevisionRequest;
 
   /// No description provided for @pendingHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'NA ČEKANJU'**
+  /// In en, this message translates to:
+  /// **'PENDING'**
   String get pendingHeader;
 
   /// No description provided for @awaitingHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'ČEKA ODOBRENJE'**
+  /// In en, this message translates to:
+  /// **'AWAITING'**
   String get awaitingHeader;
 
   /// No description provided for @paidHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'PLAĆENO'**
+  /// In en, this message translates to:
+  /// **'PAID'**
   String get paidHeader;
 
   /// No description provided for @waitingForTenantPayment.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka uplatu stanara'**
+  /// In en, this message translates to:
+  /// **'Waiting for tenant payment'**
   String get waitingForTenantPayment;
 
   /// No description provided for @waitingForYourApproval.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka vaše odobrenje'**
+  /// In en, this message translates to:
+  /// **'Waiting for your approval'**
   String get waitingForYourApproval;
 
   /// No description provided for @waitingForOwnerApproval.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka odobrenje stanodavca'**
+  /// In en, this message translates to:
+  /// **'Waiting for owner approval'**
   String get waitingForOwnerApproval;
 
   /// No description provided for @waitingForYourPayment.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka vašu uplatu'**
+  /// In en, this message translates to:
+  /// **'Waiting for your payment'**
   String get waitingForYourPayment;
 
   /// No description provided for @processCompleted.
   ///
-  /// In sr, this message translates to:
-  /// **'Proces završen'**
+  /// In en, this message translates to:
+  /// **'Process completed'**
   String get processCompleted;
 
   /// No description provided for @declared.
   ///
-  /// In sr, this message translates to:
-  /// **'prijavljeno'**
+  /// In en, this message translates to:
+  /// **'declared'**
   String get declared;
 
   /// No description provided for @sent.
   ///
-  /// In sr, this message translates to:
-  /// **'poslato'**
+  /// In en, this message translates to:
+  /// **'sent'**
   String get sent;
 
   /// No description provided for @noInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Bez računa'**
+  /// In en, this message translates to:
+  /// **'No Invoice'**
   String get noInvoice;
 
   /// No description provided for @uploadInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Otpremi račun'**
+  /// In en, this message translates to:
+  /// **'Upload Invoice'**
   String get uploadInvoice;
 
   /// No description provided for @awaitingInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka se račun'**
+  /// In en, this message translates to:
+  /// **'Awaiting invoice'**
   String get awaitingInvoice;
 
   /// No description provided for @updateLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Ažuriraj'**
+  /// In en, this message translates to:
+  /// **'Update'**
   String get updateLabel;
 
   /// No description provided for @statusVacant.
   ///
-  /// In sr, this message translates to:
-  /// **'Slobodno'**
+  /// In en, this message translates to:
+  /// **'Vacant'**
   String get statusVacant;
-
-  /// No description provided for @overdueReceivables.
-  ///
-  /// In sr, this message translates to:
-  /// **'Dospela'**
-  String get overdueReceivables;
-
-  /// No description provided for @collectedByType.
-  ///
-  /// In sr, this message translates to:
-  /// **'Naplaćeno'**
-  String get collectedByType;
 
   /// No description provided for @pendingApproval.
   ///
-  /// In sr, this message translates to:
-  /// **'ČEKA ODOBRENJE'**
+  /// In en, this message translates to:
+  /// **'PENDING APPROVAL'**
   String get pendingApproval;
 
   /// No description provided for @targetRent.
   ///
-  /// In sr, this message translates to:
-  /// **'CILJNA KIRIJA'**
+  /// In en, this message translates to:
+  /// **'TARGET RENT'**
   String get targetRent;
 
   /// No description provided for @contractInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Podaci o ugovoru'**
+  /// In en, this message translates to:
+  /// **'Contract Info'**
   String get contractInfo;
 
   /// No description provided for @term.
   ///
-  /// In sr, this message translates to:
-  /// **'Period'**
+  /// In en, this message translates to:
+  /// **'Term'**
   String get term;
 
   /// No description provided for @dueDay.
   ///
-  /// In sr, this message translates to:
-  /// **'Dan dospeća'**
+  /// In en, this message translates to:
+  /// **'Due Day'**
   String get dueDay;
 
   /// No description provided for @contractDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'Detalji ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract Details'**
   String get contractDetails;
 
   /// No description provided for @pastContracts.
   ///
-  /// In sr, this message translates to:
-  /// **'Prošli ugovori'**
+  /// In en, this message translates to:
+  /// **'Past contracts'**
   String get pastContracts;
 
   /// No description provided for @previousLeasesCount.
   ///
-  /// In sr, this message translates to:
-  /// **'{count} prethodnih ugovora'**
+  /// In en, this message translates to:
+  /// **'{count} previous leases'**
   String previousLeasesCount(int count);
 
   /// No description provided for @propertySettingsLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Podešavanja nekretnine'**
+  /// In en, this message translates to:
+  /// **'Property settings'**
   String get propertySettingsLabel;
 
   /// No description provided for @propertyActions.
   ///
-  /// In sr, this message translates to:
-  /// **'Akcije nekretnine'**
+  /// In en, this message translates to:
+  /// **'Property Actions'**
   String get propertyActions;
 
   /// No description provided for @leavePropertyConfirm.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li želite da napustite ovu nekretninu?'**
+  /// In en, this message translates to:
+  /// **'Do you want to leave this property?'**
   String get leavePropertyConfirm;
 
   /// No description provided for @leaveProperty.
   ///
-  /// In sr, this message translates to:
-  /// **'Napusti nekretninu'**
+  /// In en, this message translates to:
+  /// **'Leave Property'**
   String get leaveProperty;
 
   /// No description provided for @areYouSure.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni?'**
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
   String get areYouSure;
 
   /// No description provided for @pendingInvitations.
   ///
-  /// In sr, this message translates to:
-  /// **'Pozivi na čekanju'**
+  /// In en, this message translates to:
+  /// **'Pending Invitations'**
   String get pendingInvitations;
 
   /// No description provided for @contractSettings.
   ///
-  /// In sr, this message translates to:
-  /// **'Podešavanja ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract Settings'**
   String get contractSettings;
 
   /// No description provided for @activeContractTermsInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Aktivni uslovi ugovora. Sve izmene ovde stupaju na snagu samo kada se stanar i stanodavac slože.'**
+  /// In en, this message translates to:
+  /// **'Active contract terms. All updates made here take effect only when both tenant and landlord agree.'**
   String get activeContractTermsInfo;
 
   /// No description provided for @dueDayOfMonth.
   ///
-  /// In sr, this message translates to:
-  /// **'Dan dospeća u mesecu'**
+  /// In en, this message translates to:
+  /// **'Due Day of Month'**
   String get dueDayOfMonth;
 
   /// No description provided for @startDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum početka'**
+  /// In en, this message translates to:
+  /// **'Start Date'**
   String get startDate;
 
   /// No description provided for @endDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum kraja'**
+  /// In en, this message translates to:
+  /// **'End Date'**
   String get endDate;
 
   /// No description provided for @taxConfiguration.
   ///
-  /// In sr, this message translates to:
-  /// **'Konfiguracija poreza'**
+  /// In en, this message translates to:
+  /// **'Tax Configuration'**
   String get taxConfiguration;
 
   /// No description provided for @included.
   ///
-  /// In sr, this message translates to:
-  /// **'Uključeno'**
+  /// In en, this message translates to:
+  /// **'Included'**
   String get included;
 
   /// No description provided for @addedVat.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodato (+15%)'**
+  /// In en, this message translates to:
+  /// **'Added (+15%)'**
   String get addedVat;
 
   /// No description provided for @expensesHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'TROŠKOVI'**
+  /// In en, this message translates to:
+  /// **'EXPENSES'**
   String get expensesHeader;
 
   /// No description provided for @extraPayment.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodatna uplata'**
+  /// In en, this message translates to:
+  /// **'Extra payment'**
   String get extraPayment;
 
   /// No description provided for @utility.
   ///
-  /// In sr, this message translates to:
-  /// **'Komunalno'**
+  /// In en, this message translates to:
+  /// **'Utility'**
   String get utility;
 
   /// No description provided for @owner.
   ///
-  /// In sr, this message translates to:
-  /// **'Vlasnik'**
+  /// In en, this message translates to:
+  /// **'Owner'**
   String get owner;
 
   /// No description provided for @proposeChangesInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Izmene će biti poslate {role} na odobrenje. Trenutni uslovi ostaju na snazi do prihvatanja.'**
+  /// In en, this message translates to:
+  /// **'Changes will be sent for {role} approval. Current terms remain active until accepted.'**
   String proposeChangesInfo(String role);
 
   /// No description provided for @proposeChanges.
   ///
-  /// In sr, this message translates to:
-  /// **'Predloži izmene'**
+  /// In en, this message translates to:
+  /// **'Propose Changes'**
   String get proposeChanges;
 
   /// No description provided for @declarePayment.
   ///
-  /// In sr, this message translates to:
-  /// **'Prijavi uplatu'**
+  /// In en, this message translates to:
+  /// **'Declare Payment'**
   String get declarePayment;
 
   /// No description provided for @uploadReceipt.
   ///
-  /// In sr, this message translates to:
-  /// **'Otpremi uplatnicu'**
+  /// In en, this message translates to:
+  /// **'Upload Receipt'**
   String get uploadReceipt;
 
   /// No description provided for @paidInCash.
   ///
-  /// In sr, this message translates to:
-  /// **'Plaćeno gotovinom'**
+  /// In en, this message translates to:
+  /// **'Paid in Cash'**
   String get paidInCash;
 
   /// No description provided for @noFinancialRecords.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek nema finansijskih zapisa'**
+  /// In en, this message translates to:
+  /// **'No financial records found yet'**
   String get noFinancialRecords;
 
   /// No description provided for @noActiveContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Nije pronađen otpremljeni ugovor'**
+  /// In en, this message translates to:
+  /// **'No uploaded contract found'**
   String get noActiveContract;
 
   /// No description provided for @contractTermsInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Aktivni uslovi ugovora. Sve izmene ovde stupaju na snagu samo kada se stanar i stanodavac slože.'**
+  /// In en, this message translates to:
+  /// **'Active contract terms. All updates made here take effect only when both tenant and landlord agree.'**
   String get contractTermsInfo;
 
   /// No description provided for @send.
   ///
-  /// In sr, this message translates to:
-  /// **'Pošalji'**
+  /// In en, this message translates to:
+  /// **'Send'**
   String get send;
 
   /// No description provided for @totalRent.
   ///
-  /// In sr, this message translates to:
-  /// **'Ukupna kirija'**
+  /// In en, this message translates to:
+  /// **'Total Rent'**
   String get totalRent;
 
   /// No description provided for @infoTooltip.
   ///
-  /// In sr, this message translates to:
-  /// **'Pokriva zajedničke komunalne usluge kao što su grejanje, voda i odvoz smeća.'**
+  /// In en, this message translates to:
+  /// **'Covers pooled public utilities like heating, water, and waste.'**
   String get infoTooltip;
 
   /// No description provided for @electricityTooltip.
   ///
-  /// In sr, this message translates to:
-  /// **'Individualni troškovi potrošnje električne energije.'**
+  /// In en, this message translates to:
+  /// **'Individual electricity consumption cost.'**
   String get electricityTooltip;
 
   /// No description provided for @internetTooltip.
   ///
-  /// In sr, this message translates to:
-  /// **'Pretplatnički internet i TV paketi.'**
+  /// In en, this message translates to:
+  /// **'Subscription-based internet and TV packages.'**
   String get internetTooltip;
 
   /// No description provided for @maintenanceTooltip.
   ///
-  /// In sr, this message translates to:
-  /// **'Čišćenje zgrade, održavanje lifta i troškovi zajedničkih prostorija.'**
+  /// In en, this message translates to:
+  /// **'Building cleaning, elevator maintenance, and common area costs.'**
   String get maintenanceTooltip;
 
   /// No description provided for @declare.
   ///
-  /// In sr, this message translates to:
-  /// **'Prijavi'**
+  /// In en, this message translates to:
+  /// **'Declare'**
   String get declare;
 
   /// No description provided for @viewReceipt.
   ///
-  /// In sr, this message translates to:
-  /// **'Vidi uplatnicu'**
+  /// In en, this message translates to:
+  /// **'View Receipt'**
   String get viewReceipt;
 
   /// No description provided for @proposesChanges.
   ///
-  /// In sr, this message translates to:
-  /// **'{name} predlaže sledeće izmene:'**
+  /// In en, this message translates to:
+  /// **'{name} proposes the following changes:'**
   String proposesChanges(String name);
 
   /// No description provided for @awaitingApprovalInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaš predlog izmena čeka odobrenje druge strane.'**
+  /// In en, this message translates to:
+  /// **'Your change proposal is awaiting the other party\'s approval.'**
   String get awaitingApprovalInfo;
 
   /// No description provided for @propertyDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'DETALJI NEKRETNINE'**
+  /// In en, this message translates to:
+  /// **'PROPERTY DETAILS'**
   String get propertyDetails;
 
   /// No description provided for @defaultLeaseTerms.
   ///
-  /// In sr, this message translates to:
-  /// **'PODRAZUMEVANI USLOVI ZAKUPA'**
+  /// In en, this message translates to:
+  /// **'DEFAULT LEASE TERMS'**
   String get defaultLeaseTerms;
 
   /// No description provided for @defaultLeaseTermsSubtitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Uslovi koji se koriste kao šablon za nove pozive.'**
+  /// In en, this message translates to:
+  /// **'Target terms used as a template for new invitations.'**
   String get defaultLeaseTermsSubtitle;
 
   /// No description provided for @invalidNumber.
   ///
-  /// In sr, this message translates to:
-  /// **'Nevažeći broj'**
+  /// In en, this message translates to:
+  /// **'Invalid number'**
   String get invalidNumber;
 
   /// No description provided for @enterDayBetween1and31.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite dan između 1 i 31'**
+  /// In en, this message translates to:
+  /// **'Enter a day between 1-31'**
   String get enterDayBetween1and31;
 
   /// No description provided for @expenseConfiguration.
   ///
-  /// In sr, this message translates to:
-  /// **'KONFIGURACIJA TROŠKOVA'**
+  /// In en, this message translates to:
+  /// **'EXPENSE CONFIGURATION'**
   String get expenseConfiguration;
 
   /// No description provided for @expenseInfostan.
   ///
-  /// In sr, this message translates to:
+  /// In en, this message translates to:
   /// **'Infostan'**
   String get expenseInfostan;
 
   /// No description provided for @expenseElectricity.
   ///
-  /// In sr, this message translates to:
-  /// **'Struja (Električna energija)'**
+  /// In en, this message translates to:
+  /// **'Electricity'**
   String get expenseElectricity;
 
   /// No description provided for @expenseInternetTV.
   ///
-  /// In sr, this message translates to:
+  /// In en, this message translates to:
   /// **'Internet/TV'**
   String get expenseInternetTV;
 
   /// No description provided for @expenseMaintenance.
   ///
-  /// In sr, this message translates to:
-  /// **'Održavanje zgrade'**
+  /// In en, this message translates to:
+  /// **'Building Maintenance'**
   String get expenseMaintenance;
 
   /// No description provided for @expenseTax.
   ///
-  /// In sr, this message translates to:
-  /// **'Porez'**
+  /// In en, this message translates to:
+  /// **'Tax'**
   String get expenseTax;
 
   /// No description provided for @tenantPaysTo.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar plaća:'**
+  /// In en, this message translates to:
+  /// **'Tenant pays to:'**
   String get tenantPaysTo;
 
   /// No description provided for @fileSelected.
   ///
-  /// In sr, this message translates to:
-  /// **'Fajl izabran'**
+  /// In en, this message translates to:
+  /// **'File Selected'**
   String get fileSelected;
 
   /// No description provided for @selectInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Izaberi račun'**
+  /// In en, this message translates to:
+  /// **'Select Invoice'**
   String get selectInvoice;
 
   /// No description provided for @amount.
   ///
-  /// In sr, this message translates to:
-  /// **'Iznos'**
+  /// In en, this message translates to:
+  /// **'Amount'**
   String get amount;
 
   /// No description provided for @setAmountAndUploadInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Podesite iznos i otpremite račun'**
+  /// In en, this message translates to:
+  /// **'Set Amount & Upload Invoice'**
   String get setAmountAndUploadInvoice;
 
   /// No description provided for @save.
   ///
-  /// In sr, this message translates to:
-  /// **'Sačuvaj'**
+  /// In en, this message translates to:
+  /// **'Save'**
   String get save;
 
   /// No description provided for @paymentDeclared.
   ///
-  /// In sr, this message translates to:
-  /// **'Uplata je uspešno prijavljena.'**
+  /// In en, this message translates to:
+  /// **'Payment declared successfully.'**
   String get paymentDeclared;
 
   /// No description provided for @dashboard.
   ///
-  /// In sr, this message translates to:
-  /// **'Kontrolna tabla'**
+  /// In en, this message translates to:
+  /// **'Dashboard'**
   String get dashboard;
 
   /// No description provided for @parties.
   ///
-  /// In sr, this message translates to:
-  /// **'STRANE'**
+  /// In en, this message translates to:
+  /// **'PARTIES'**
   String get parties;
 
   /// No description provided for @tenantEmail.
   ///
-  /// In sr, this message translates to:
-  /// **'E-pošta stanara'**
+  /// In en, this message translates to:
+  /// **'Tenant Email'**
   String get tenantEmail;
 
   /// No description provided for @existingContractTermsInfo.
   ///
-  /// In sr, this message translates to:
-  /// **'Postojeći dogovoreni uslovi ugovora (kirija, datumi i troškovi) važiće i za ovog stanara.'**
+  /// In en, this message translates to:
+  /// **'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.'**
   String get existingContractTermsInfo;
 
   /// No description provided for @rentAndPayment.
   ///
-  /// In sr, this message translates to:
-  /// **'KIRIJA I PLAĆANJE'**
+  /// In en, this message translates to:
+  /// **'RENT & PAYMENT'**
   String get rentAndPayment;
 
   /// No description provided for @datesAndContract.
   ///
-  /// In sr, this message translates to:
-  /// **'DATUMI I UGOVOR'**
+  /// In en, this message translates to:
+  /// **'DATES & CONTRACT'**
   String get datesAndContract;
 
   /// No description provided for @expenseSettingsHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'PODEŠAVANJE TROŠKOVA'**
+  /// In en, this message translates to:
+  /// **'EXPENSE SETTINGS'**
   String get expenseSettingsHeader;
 
   /// No description provided for @editContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Izmeni ugovor'**
+  /// In en, this message translates to:
+  /// **'Edit Contract'**
   String get editContract;
 
   /// No description provided for @sendRevision.
   ///
-  /// In sr, this message translates to:
-  /// **'Pošalji reviziju'**
+  /// In en, this message translates to:
+  /// **'Send Revision'**
   String get sendRevision;
 
   /// No description provided for @revisionSent.
   ///
-  /// In sr, this message translates to:
-  /// **'Predlog revizije je poslat'**
+  /// In en, this message translates to:
+  /// **'Revision sent'**
   String get revisionSent;
 
   /// No description provided for @existingFileKept.
   ///
-  /// In sr, this message translates to:
-  /// **'Postojeći fajl je zadržan'**
+  /// In en, this message translates to:
+  /// **'Existing File Kept'**
   String get existingFileKept;
 
   /// No description provided for @done.
   ///
-  /// In sr, this message translates to:
-  /// **'Gotovo'**
+  /// In en, this message translates to:
+  /// **'Done'**
   String get done;
 
   /// No description provided for @startAndEndDatesMandatory.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum početka i završetka su obavezni'**
+  /// In en, this message translates to:
+  /// **'Start and end dates are mandatory'**
   String get startAndEndDatesMandatory;
 
   /// No description provided for @revisionRequested.
   ///
-  /// In sr, this message translates to:
-  /// **'Tražena revizija'**
+  /// In en, this message translates to:
+  /// **'Revision Requested'**
   String get revisionRequested;
 
   /// No description provided for @statusActive.
   ///
-  /// In sr, this message translates to:
-  /// **'Aktivno'**
+  /// In en, this message translates to:
+  /// **'Active'**
   String get statusActive;
 
   /// No description provided for @statusPending.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka odobrenje'**
+  /// In en, this message translates to:
+  /// **'Pending Approval'**
   String get statusPending;
 
   /// No description provided for @statusDeclined.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbijeno'**
+  /// In en, this message translates to:
+  /// **'Declined'**
   String get statusDeclined;
 
   /// No description provided for @statusExpired.
   ///
-  /// In sr, this message translates to:
-  /// **'Isteklo'**
+  /// In en, this message translates to:
+  /// **'Expired'**
   String get statusExpired;
 
   /// No description provided for @statusNegotiating.
   ///
-  /// In sr, this message translates to:
-  /// **'U pregovorima'**
+  /// In en, this message translates to:
+  /// **'Negotiating'**
   String get statusNegotiating;
 
   /// No description provided for @tenantPaysLandlord.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar plaća stanodavcu'**
+  /// In en, this message translates to:
+  /// **'Tenant pays landlord'**
   String get tenantPaysLandlord;
 
   /// No description provided for @tenantPaysUtility.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar plaća komunalijama'**
+  /// In en, this message translates to:
+  /// **'Tenant pays utility'**
   String get tenantPaysUtility;
 
   /// No description provided for @includedInRent.
   ///
-  /// In sr, this message translates to:
-  /// **'Uključeno u kiriju'**
+  /// In en, this message translates to:
+  /// **'Included in rent'**
   String get includedInRent;
 
   /// No description provided for @changesAccepted.
   ///
-  /// In sr, this message translates to:
-  /// **'Promene su prihvaćene'**
+  /// In en, this message translates to:
+  /// **'Changes accepted'**
   String get changesAccepted;
 
   /// No description provided for @changesDeclined.
   ///
-  /// In sr, this message translates to:
-  /// **'Promene su odbijene'**
+  /// In en, this message translates to:
+  /// **'Changes declined'**
   String get changesDeclined;
 
   /// No description provided for @contractChangeProposal.
   ///
-  /// In sr, this message translates to:
-  /// **'Predlog promene ugovora'**
+  /// In en, this message translates to:
+  /// **'Contract Change Proposal'**
   String get contractChangeProposal;
 
   /// No description provided for @cancelProposal.
   ///
-  /// In sr, this message translates to:
-  /// **'Otkaži predlog'**
+  /// In en, this message translates to:
+  /// **'Cancel Proposal'**
   String get cancelProposal;
 
   /// No description provided for @viewInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Pogledaj fakturu'**
+  /// In en, this message translates to:
+  /// **'View Invoice'**
   String get viewInvoice;
 
   /// No description provided for @paymentResponsibility.
   ///
-  /// In sr, this message translates to:
-  /// **'ODGOVORNOST ZA PLAĆANJE'**
+  /// In en, this message translates to:
+  /// **'PAYMENT RESPONSIBILITY'**
   String get paymentResponsibility;
 
   /// No description provided for @tenantPaysDirectlyToUtility.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar plaća direktno komunalnoj službi'**
+  /// In en, this message translates to:
+  /// **'Tenant pays directly to the utility'**
   String get tenantPaysDirectlyToUtility;
 
   /// No description provided for @tenantPaysToLandlord.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar plaća stanodavcu'**
+  /// In en, this message translates to:
+  /// **'Tenant pays to the landlord'**
   String get tenantPaysToLandlord;
 
   /// No description provided for @selectPaymentReceiverWarning.
   ///
-  /// In sr, this message translates to:
-  /// **'Molimo izaberite primaoca uplate pre nastavka.'**
+  /// In en, this message translates to:
+  /// **'Please select the payment receiver before continuing.'**
   String get selectPaymentReceiverWarning;
 
   /// No description provided for @progressSummary.
   ///
-  /// In sr, this message translates to:
-  /// **'{completed} / {total} plaćeno • {sent} poslato'**
+  /// In en, this message translates to:
+  /// **'{completed} / {total} paid • {sent} sent'**
   String progressSummary(int completed, int total, int sent);
 
   /// No description provided for @maintenance.
   ///
-  /// In sr, this message translates to:
-  /// **'Održavanje'**
+  /// In en, this message translates to:
+  /// **'Maintenance'**
   String get maintenance;
 
   /// No description provided for @issues.
   ///
-  /// In sr, this message translates to:
-  /// **'Problemi'**
+  /// In en, this message translates to:
+  /// **'Issues'**
   String get issues;
 
   /// No description provided for @newRequest.
   ///
-  /// In sr, this message translates to:
-  /// **'Novi zahtev'**
+  /// In en, this message translates to:
+  /// **'New Request'**
   String get newRequest;
 
   /// No description provided for @reportIssue.
   ///
-  /// In sr, this message translates to:
-  /// **'Prijavi kvar'**
+  /// In en, this message translates to:
+  /// **'Report an Issue'**
   String get reportIssue;
 
   /// No description provided for @issueTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Naslov'**
+  /// In en, this message translates to:
+  /// **'Title'**
   String get issueTitle;
 
   /// No description provided for @issueDescription.
   ///
-  /// In sr, this message translates to:
-  /// **'Opis'**
+  /// In en, this message translates to:
+  /// **'Description'**
   String get issueDescription;
 
   /// No description provided for @issueCategory.
   ///
-  /// In sr, this message translates to:
-  /// **'Kategorija'**
+  /// In en, this message translates to:
+  /// **'Category'**
   String get issueCategory;
 
   /// No description provided for @issuePriority.
   ///
-  /// In sr, this message translates to:
-  /// **'Prioritet'**
+  /// In en, this message translates to:
+  /// **'Priority'**
   String get issuePriority;
 
   /// No description provided for @statusInvestigating.
   ///
-  /// In sr, this message translates to:
-  /// **'Na pregledu'**
+  /// In en, this message translates to:
+  /// **'Investigating'**
   String get statusInvestigating;
 
   /// No description provided for @statusResolved.
   ///
-  /// In sr, this message translates to:
-  /// **'Rešeno'**
+  /// In en, this message translates to:
+  /// **'Resolved'**
   String get statusResolved;
 
   /// No description provided for @priorityNormal.
   ///
-  /// In sr, this message translates to:
-  /// **'Normalno'**
+  /// In en, this message translates to:
+  /// **'Normal'**
   String get priorityNormal;
 
   /// No description provided for @priorityUrgent.
   ///
-  /// In sr, this message translates to:
-  /// **'Hitno'**
+  /// In en, this message translates to:
+  /// **'Urgent'**
   String get priorityUrgent;
 
   /// No description provided for @categoryPlumbing.
   ///
-  /// In sr, this message translates to:
-  /// **'Vodovod'**
+  /// In en, this message translates to:
+  /// **'Plumbing'**
   String get categoryPlumbing;
 
   /// No description provided for @categoryElectrical.
   ///
-  /// In sr, this message translates to:
-  /// **'Električna energija'**
+  /// In en, this message translates to:
+  /// **'Electrical'**
   String get categoryElectrical;
 
   /// No description provided for @categoryHeating.
   ///
-  /// In sr, this message translates to:
-  /// **'Grejanje'**
+  /// In en, this message translates to:
+  /// **'Heating'**
   String get categoryHeating;
 
   /// No description provided for @categoryInternet.
   ///
-  /// In sr, this message translates to:
+  /// In en, this message translates to:
   /// **'Internet'**
   String get categoryInternet;
 
   /// No description provided for @categoryOther.
   ///
-  /// In sr, this message translates to:
-  /// **'Ostalo'**
+  /// In en, this message translates to:
+  /// **'Other'**
   String get categoryOther;
 
   /// No description provided for @noIssuesTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Još nema prijavljenih kvarova'**
+  /// In en, this message translates to:
+  /// **'No issues reported yet'**
   String get noIssuesTitle;
 
   /// No description provided for @noIssuesMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Sve je u redu! Nema prijavljenih zahteva za održavanje ove imovine.'**
+  /// In en, this message translates to:
+  /// **'All good! No maintenance requests for this property.'**
   String get noIssuesMessage;
 
   /// No description provided for @updateStatus.
   ///
-  /// In sr, this message translates to:
-  /// **'Ažuriraj status'**
+  /// In en, this message translates to:
+  /// **'Update Status'**
   String get updateStatus;
 
   /// No description provided for @issueDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'Detalji kvara'**
+  /// In en, this message translates to:
+  /// **'Issue Details'**
   String get issueDetails;
 
   /// No description provided for @logMaintenanceCreated.
   ///
-  /// In sr, this message translates to:
-  /// **'Kreiran zahtev za održavanje: {title}'**
+  /// In en, this message translates to:
+  /// **'Maintenance request created: {title}'**
   String logMaintenanceCreated(String title);
 
   /// No description provided for @logMaintenanceStatusUpdated.
   ///
-  /// In sr, this message translates to:
-  /// **'Status održavanja ažuriran na {status}'**
+  /// In en, this message translates to:
+  /// **'Maintenance status updated to {status}'**
   String logMaintenanceStatusUpdated(String status);
 
   /// No description provided for @logMaintenanceReopened.
   ///
-  /// In sr, this message translates to:
-  /// **'Zahtev za održavanje ponovo otvoren'**
+  /// In en, this message translates to:
+  /// **'Maintenance request reopened'**
   String get logMaintenanceReopened;
 
   /// No description provided for @logMaintenanceMessageAdded.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodata nova poruka zahtevu za održavanje'**
+  /// In en, this message translates to:
+  /// **'New message added to maintenance request'**
   String get logMaintenanceMessageAdded;
 
   /// No description provided for @notifications.
   ///
-  /// In sr, this message translates to:
-  /// **'Obaveštenja'**
+  /// In en, this message translates to:
+  /// **'Notifications'**
   String get notifications;
 
   /// No description provided for @markAllAsRead.
   ///
-  /// In sr, this message translates to:
-  /// **'Označi sve kao pročitano'**
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
   String get markAllAsRead;
 
   /// No description provided for @noNotifications.
   ///
-  /// In sr, this message translates to:
-  /// **'Još nema obaveštenja'**
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
   String get noNotifications;
 
   /// No description provided for @documents.
   ///
-  /// In sr, this message translates to:
-  /// **'Dokumenta'**
+  /// In en, this message translates to:
+  /// **'Documents'**
   String get documents;
 
   /// No description provided for @mainContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Glavni ugovor'**
+  /// In en, this message translates to:
+  /// **'Main Contract'**
   String get mainContract;
 
   /// No description provided for @addDocument.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodaj dokument'**
+  /// In en, this message translates to:
+  /// **'Add Document'**
   String get addDocument;
 
   /// No description provided for @enterDocumentName.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite naziv dokumenta'**
+  /// In en, this message translates to:
+  /// **'Enter document name'**
   String get enterDocumentName;
 
   /// No description provided for @noDocumentsYet.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek nema dokumenata'**
+  /// In en, this message translates to:
+  /// **'No documents yet'**
   String get noDocumentsYet;
 
   /// No description provided for @additionalDocuments.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodatna dokumenta'**
+  /// In en, this message translates to:
+  /// **'Additional Documents'**
   String get additionalDocuments;
 
   /// No description provided for @deleteDocument.
   ///
-  /// In sr, this message translates to:
-  /// **'Obriši dokument'**
+  /// In en, this message translates to:
+  /// **'Delete Document'**
   String get deleteDocument;
 
   /// No description provided for @deleteDocumentConfirm.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da obrišete ovaj dokument?'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this document?'**
   String get deleteDocumentConfirm;
 
   /// No description provided for @uploadMainContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Otpremi ugovor'**
+  /// In en, this message translates to:
+  /// **'Upload Contract'**
   String get uploadMainContract;
 
   /// No description provided for @manageDocuments.
   ///
-  /// In sr, this message translates to:
-  /// **'Upravljaj dokumentima'**
+  /// In en, this message translates to:
+  /// **'Manage Documents'**
   String get manageDocuments;
 
   /// No description provided for @monthlyCollected.
   ///
-  /// In sr, this message translates to:
-  /// **'Prikupljeno'**
+  /// In en, this message translates to:
+  /// **'Collected'**
   String get monthlyCollected;
 
   /// No description provided for @totalRentShort.
   ///
-  /// In sr, this message translates to:
-  /// **'Kira'**
+  /// In en, this message translates to:
+  /// **'Rent'**
   String get totalRentShort;
 
   /// No description provided for @delays.
   ///
-  /// In sr, this message translates to:
-  /// **'Kašnjenja'**
+  /// In en, this message translates to:
+  /// **'Delays'**
   String get delays;
 
   /// No description provided for @vacant.
   ///
-  /// In sr, this message translates to:
-  /// **'Slobodno'**
+  /// In en, this message translates to:
+  /// **'Vacant'**
   String get vacant;
+
+  /// No description provided for @overdueReceivables.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdueReceivables;
+
+  /// No description provided for @collectedByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected'**
+  String get collectedByType;
 
   /// No description provided for @propertiesCount.
   ///
-  /// In sr, this message translates to:
-  /// **'{count, plural, one{{count} nekretnina} other{{count} nekretnina}}'**
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} property} other{{count} properties}}'**
   String propertiesCount(int count);
 
   /// No description provided for @hasDebt.
   ///
-  /// In sr, this message translates to:
-  /// **'Ima dug'**
+  /// In en, this message translates to:
+  /// **'Has Debt'**
   String get hasDebt;
 
   /// No description provided for @paymentAwaitingApproval.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka odobrenje'**
+  /// In en, this message translates to:
+  /// **'Awaiting Approval'**
   String get paymentAwaitingApproval;
 
   /// No description provided for @rent.
   ///
-  /// In sr, this message translates to:
-  /// **'Kirija'**
+  /// In en, this message translates to:
+  /// **'Rent'**
   String get rent;
 
   /// No description provided for @bills.
   ///
-  /// In sr, this message translates to:
-  /// **'Računi'**
+  /// In en, this message translates to:
+  /// **'Bills'**
   String get bills;
 
   /// No description provided for @waiting.
   ///
-  /// In sr, this message translates to:
-  /// **'Na čekanju'**
+  /// In en, this message translates to:
+  /// **'Waiting'**
   String get waiting;
 
   /// No description provided for @debtLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Dug'**
+  /// In en, this message translates to:
+  /// **'Debt'**
   String get debtLabel;
 
   /// No description provided for @paidLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Plaćeno'**
+  /// In en, this message translates to:
+  /// **'Paid'**
   String get paidLabel;
 
   /// No description provided for @enterBill.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesi račun'**
+  /// In en, this message translates to:
+  /// **'Enter Bill'**
   String get enterBill;
 
   /// No description provided for @addContractAndTenant.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodaj ugovor i zakupca'**
+  /// In en, this message translates to:
+  /// **'Add Contract & Tenant'**
   String get addContractAndTenant;
 
   /// No description provided for @approve.
   ///
-  /// In sr, this message translates to:
-  /// **'Potvrdi'**
+  /// In en, this message translates to:
+  /// **'Approve'**
   String get approve;
 
   /// No description provided for @reject.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij'**
+  /// In en, this message translates to:
+  /// **'Reject'**
   String get reject;
 
   /// No description provided for @confirmApprovePaymentTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Potvrdi uplatu'**
+  /// In en, this message translates to:
+  /// **'Approve Payment'**
   String get confirmApprovePaymentTitle;
 
   /// No description provided for @confirmApprovePaymentMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da potvrdite ovu uplatu?'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to approve this payment?'**
   String get confirmApprovePaymentMessage;
 
   /// No description provided for @confirmRejectPaymentTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij uplatu'**
+  /// In en, this message translates to:
+  /// **'Reject Payment'**
   String get confirmRejectPaymentTitle;
 
   /// No description provided for @confirmRejectPaymentMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li želite da odbijete ovu deklaraciju i tražite od zakupca da je ponovo prijavi?'**
+  /// In en, this message translates to:
+  /// **'Do you want to reject this declaration and ask the tenant to re-declare?'**
   String get confirmRejectPaymentMessage;
 
   /// No description provided for @confirm.
   ///
-  /// In sr, this message translates to:
-  /// **'Potvrdi'**
+  /// In en, this message translates to:
+  /// **'Confirm'**
   String get confirm;
 
   /// No description provided for @terminateContract.
   ///
-  /// In sr, this message translates to:
-  /// **'Raskini ugovor'**
+  /// In en, this message translates to:
+  /// **'Terminate Contract'**
   String get terminateContract;
 
   /// No description provided for @terminationDate.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum raskida'**
+  /// In en, this message translates to:
+  /// **'Termination Date'**
   String get terminationDate;
 
   /// No description provided for @confirmTerminationTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Raskinuti ugovor?'**
+  /// In en, this message translates to:
+  /// **'Terminate Contract?'**
   String get confirmTerminationTitle;
 
   /// No description provided for @confirmTerminationMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da pošaljete zahtev za raskid ugovora na izabrani datum?'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to send a termination request to end this contract on the selected date?'**
   String get confirmTerminationMessage;
 
   /// No description provided for @terminationRequestSent.
   ///
-  /// In sr, this message translates to:
-  /// **'Zahtev za raskid ugovora je uspešno poslat.'**
+  /// In en, this message translates to:
+  /// **'Termination request sent successfully.'**
   String get terminationRequestSent;
 
   /// No description provided for @statusInactive.
   ///
-  /// In sr, this message translates to:
-  /// **'Pasivno / Završeno'**
+  /// In en, this message translates to:
+  /// **'Inactive / Finished'**
   String get statusInactive;
 
   /// No description provided for @terminationRequested.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka se raskid'**
+  /// In en, this message translates to:
+  /// **'Awaiting Termination'**
   String get terminationRequested;
 
   /// No description provided for @approveTermination.
   ///
-  /// In sr, this message translates to:
-  /// **'Potvrdi raskid'**
+  /// In en, this message translates to:
+  /// **'Approve Termination'**
   String get approveTermination;
 
   /// No description provided for @declineTermination.
   ///
-  /// In sr, this message translates to:
-  /// **'Odbij raskid'**
+  /// In en, this message translates to:
+  /// **'Decline Termination'**
   String get declineTermination;
 
   /// No description provided for @contractTerminatedOn.
   ///
-  /// In sr, this message translates to:
-  /// **'Ugovor je raskinut: {date}'**
+  /// In en, this message translates to:
+  /// **'Contract terminated on: {date}'**
   String contractTerminatedOn(Object date);
 
   /// No description provided for @contractWillEndOn.
   ///
-  /// In sr, this message translates to:
-  /// **'Ugovor će se završiti: {date}'**
+  /// In en, this message translates to:
+  /// **'Contract will end on: {date}'**
   String contractWillEndOn(String date);
 
   /// No description provided for @dispute.
   ///
-  /// In sr, this message translates to:
-  /// **'Ospori'**
+  /// In en, this message translates to:
+  /// **'Dispute'**
   String get dispute;
 
   /// No description provided for @disputeReason.
   ///
-  /// In sr, this message translates to:
-  /// **'Razlog osporavanja'**
+  /// In en, this message translates to:
+  /// **'Dispute Reason'**
   String get disputeReason;
 
   /// No description provided for @disputeReasonHint.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite razlog za osporavanje troška...'**
+  /// In en, this message translates to:
+  /// **'Enter your reason for disputing...'**
   String get disputeReasonHint;
 
   /// No description provided for @disputedHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'OSPORENO'**
+  /// In en, this message translates to:
+  /// **'DISPUTED'**
   String get disputedHeader;
 
   /// No description provided for @logRentDisputed.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar je osporio uplatu za {month}: {reason}'**
+  /// In en, this message translates to:
+  /// **'Tenant disputed {month} payment: {reason}'**
   String logRentDisputed(String month, String reason);
 
   /// No description provided for @confirmDisputeTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Ospori uplatu'**
+  /// In en, this message translates to:
+  /// **'Dispute Payment'**
   String get confirmDisputeTitle;
 
   /// No description provided for @disputeSentSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaš prigovor je poslat stanodavcu.'**
+  /// In en, this message translates to:
+  /// **'Your dispute has been sent to the landlord.'**
   String get disputeSentSuccess;
 
   /// No description provided for @takeAction.
   ///
-  /// In sr, this message translates to:
-  /// **'Preduzmi akciju'**
+  /// In en, this message translates to:
+  /// **'Take Action'**
   String get takeAction;
 
   /// No description provided for @ownerNote.
   ///
-  /// In sr, this message translates to:
-  /// **'Vlasnikova beleška'**
+  /// In en, this message translates to:
+  /// **'Owner Note'**
   String get ownerNote;
 
   /// No description provided for @explanationOptional.
   ///
-  /// In sr, this message translates to:
-  /// **'Objašnjenje (Opciono)'**
+  /// In en, this message translates to:
+  /// **'Explanation (Optional)'**
   String get explanationOptional;
 
   /// No description provided for @explanationHint.
   ///
-  /// In sr, this message translates to:
-  /// **'npr. Proverio sam brojilo...'**
+  /// In en, this message translates to:
+  /// **'e.g. Checked the meter...'**
   String get explanationHint;
 
   /// No description provided for @units.
   ///
-  /// In sr, this message translates to:
-  /// **'Jedinice'**
+  /// In en, this message translates to:
+  /// **'Units'**
   String get units;
 
   /// No description provided for @tenantsLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanari'**
+  /// In en, this message translates to:
+  /// **'Tenants'**
   String get tenantsLabel;
 
   /// No description provided for @portfolioManagement.
   ///
-  /// In sr, this message translates to:
-  /// **'Upravljanje portfolijom'**
+  /// In en, this message translates to:
+  /// **'Portfolio Management'**
   String get portfolioManagement;
 
   /// No description provided for @paymentRequests.
   ///
-  /// In sr, this message translates to:
-  /// **'Plaćanja i zahtevi'**
+  /// In en, this message translates to:
+  /// **'Payment & Requests'**
   String get paymentRequests;
 
   /// No description provided for @profileSettings.
   ///
-  /// In sr, this message translates to:
-  /// **'Podešavanja profila'**
+  /// In en, this message translates to:
+  /// **'Profile Settings'**
   String get profileSettings;
 
   /// No description provided for @confirmSignOutMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da se odjavite?'**
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
   String get confirmSignOutMessage;
 
   /// No description provided for @errorWithDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'Greška: {error}'**
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
   String errorWithDetails(String error);
 
   /// No description provided for @syncError.
   ///
-  /// In sr, this message translates to:
-  /// **'Greška pri sinhronizaciji: {error}'**
+  /// In en, this message translates to:
+  /// **'Sync Error: {error}'**
   String syncError(String error);
 
   /// No description provided for @acceptTermsWarning.
   ///
-  /// In sr, this message translates to:
-  /// **'Molimo prihvatite uslove pre nego što nastavite.'**
+  /// In en, this message translates to:
+  /// **'Please accept the terms before proceeding.'**
   String get acceptTermsWarning;
 
   /// No description provided for @maintenanceRequestSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Zahtev za održavanje je uspešno poslat.'**
+  /// In en, this message translates to:
+  /// **'Maintenance request sent successfully.'**
   String get maintenanceRequestSuccess;
 
   /// No description provided for @ok.
   ///
-  /// In sr, this message translates to:
-  /// **'U redu'**
+  /// In en, this message translates to:
+  /// **'OK'**
   String get ok;
 
   /// No description provided for @orLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'ILI'**
+  /// In en, this message translates to:
+  /// **'OR'**
   String get orLabel;
 
   /// No description provided for @errorUploadingPhoto.
   ///
-  /// In sr, this message translates to:
-  /// **'Greška pri otpremanju fotografije: {error}'**
+  /// In en, this message translates to:
+  /// **'Error uploading photo: {error}'**
   String errorUploadingPhoto(String error);
 
   /// No description provided for @errorUpdatingStatus.
   ///
-  /// In sr, this message translates to:
-  /// **'Greška pri ažuriranju statusa: {error}'**
+  /// In en, this message translates to:
+  /// **'Error updating status: {error}'**
   String errorUpdatingStatus(String error);
 
   /// No description provided for @errorReopeningRequest.
   ///
-  /// In sr, this message translates to:
-  /// **'Greška pri ponovnom otvaranju zahteva: {error}'**
+  /// In en, this message translates to:
+  /// **'Error reopening request: {error}'**
   String errorReopeningRequest(String error);
 
   /// No description provided for @errorOpeningDetails.
   ///
-  /// In sr, this message translates to:
-  /// **'Nije moguće otvoriti detalje: {error}'**
+  /// In en, this message translates to:
+  /// **'Could not open details: {error}'**
   String errorOpeningDetails(String error);
 
   /// No description provided for @nextPayment.
   ///
-  /// In sr, this message translates to:
-  /// **'Sledeća uplata'**
+  /// In en, this message translates to:
+  /// **'Next Payment'**
   String get nextPayment;
 
   /// No description provided for @payNow.
   ///
-  /// In sr, this message translates to:
-  /// **'Plati odmah'**
+  /// In en, this message translates to:
+  /// **'Pay Now'**
   String get payNow;
 
   /// No description provided for @upcomingLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Predstojeće'**
+  /// In en, this message translates to:
+  /// **'Upcoming'**
   String get upcomingLabel;
 
   /// No description provided for @joinPropertyInvitation.
   ///
-  /// In sr, this message translates to:
-  /// **'Poziv za pridruživanje nekretnini'**
+  /// In en, this message translates to:
+  /// **'Join Property Invitation'**
   String get joinPropertyInvitation;
 
   /// No description provided for @feedbackSent.
   ///
-  /// In sr, this message translates to:
-  /// **'Povratne informacije su poslate'**
+  /// In en, this message translates to:
+  /// **'Feedback Sent'**
   String get feedbackSent;
 
   /// No description provided for @rentalProposal.
   ///
-  /// In sr, this message translates to:
-  /// **'Predlog zakupa'**
+  /// In en, this message translates to:
+  /// **'Rental Proposal'**
   String get rentalProposal;
 
   /// No description provided for @reviewContractTerms.
   ///
-  /// In sr, this message translates to:
-  /// **'Molimo pregledajte uslove ugovora.'**
+  /// In en, this message translates to:
+  /// **'Please review the contract terms.'**
   String get reviewContractTerms;
 
   /// No description provided for @expenseDistribution.
   ///
-  /// In sr, this message translates to:
-  /// **'Raspodela troškova'**
+  /// In en, this message translates to:
+  /// **'Expense Distribution'**
   String get expenseDistribution;
 
   /// No description provided for @yourNote.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaša beleška:'**
+  /// In en, this message translates to:
+  /// **'Your Note:'**
   String get yourNote;
 
   /// No description provided for @backToDashboard.
   ///
-  /// In sr, this message translates to:
-  /// **'Nazad na kontrolnu tablu'**
+  /// In en, this message translates to:
+  /// **'Back to Dashboard'**
   String get backToDashboard;
 
   /// No description provided for @propertyDetailsHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'DETALJI NEKRETNINE'**
+  /// In en, this message translates to:
+  /// **'PROPERTY DETAILS'**
   String get propertyDetailsHeader;
 
   /// No description provided for @defaultLeaseTermsHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'PODRAZUMEVANI USLOVI ZAKUPA'**
+  /// In en, this message translates to:
+  /// **'DEFAULT LEASE TERMS'**
   String get defaultLeaseTermsHeader;
 
   /// No description provided for @proposeRevision.
   ///
-  /// In sr, this message translates to:
-  /// **'Predloži reviziju'**
+  /// In en, this message translates to:
+  /// **'Propose Revision'**
   String get proposeRevision;
 
   /// No description provided for @revisionTermsQuestion.
   ///
-  /// In sr, this message translates to:
-  /// **'Koje uslove želite da promenite? (Zakupnina, dan dospeća, troškovi, itd.)'**
+  /// In en, this message translates to:
+  /// **'Which terms would you like to change? (Rent, due day, expenses, etc.)'**
   String get revisionTermsQuestion;
 
   /// No description provided for @enterNotesHint.
   ///
-  /// In sr, this message translates to:
-  /// **'Unesite svoje beleške ovde...'**
+  /// In en, this message translates to:
+  /// **'Enter your notes here...'**
   String get enterNotesHint;
 
   /// No description provided for @submit.
   ///
-  /// In sr, this message translates to:
-  /// **'Pošalji'**
+  /// In en, this message translates to:
+  /// **'Submit'**
   String get submit;
 
   /// No description provided for @invitedToJoinProperty.
   ///
-  /// In sr, this message translates to:
-  /// **'Pozvani ste da se pridružite nekretnini {property}.'**
+  /// In en, this message translates to:
+  /// **'You have been invited to join {property}.'**
   String invitedToJoinProperty(String property);
 
   /// No description provided for @waitingForLandlord.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka se odgovor stanodavca...'**
+  /// In en, this message translates to:
+  /// **'Waiting for landlord to respond...'**
   String get waitingForLandlord;
 
   /// No description provided for @day.
   ///
-  /// In sr, this message translates to:
-  /// **'Dan'**
+  /// In en, this message translates to:
+  /// **'Day'**
   String get day;
 
   /// No description provided for @notSelected.
   ///
-  /// In sr, this message translates to:
-  /// **'Nije izabrano'**
+  /// In en, this message translates to:
+  /// **'Not selected'**
   String get notSelected;
 
   /// No description provided for @acceptTermsAndDistribution.
   ///
-  /// In sr, this message translates to:
-  /// **'Prihvatam uslove ugovora i raspodelu troškova.'**
+  /// In en, this message translates to:
+  /// **'I accept the contract terms and expense distribution.'**
   String get acceptTermsAndDistribution;
 
   /// No description provided for @datesMandatory.
   ///
-  /// In sr, this message translates to:
-  /// **'Datum početka i završetka su obavezni'**
+  /// In en, this message translates to:
+  /// **'Start and end dates are mandatory'**
   String get datesMandatory;
 
   /// No description provided for @partiesHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'STRANE'**
+  /// In en, this message translates to:
+  /// **'PARTIES'**
   String get partiesHeader;
 
   /// No description provided for @leaseLockedWarning.
   ///
-  /// In sr, this message translates to:
-  /// **'Postojeći dogovoreni uslovi zakupa (zakupnina, datumi i troškovi) će se primenjivati i na ovog zakupca.'**
+  /// In en, this message translates to:
+  /// **'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.'**
   String get leaseLockedWarning;
 
   /// No description provided for @rentPaymentHeader.
   ///
-  /// In sr, this message translates to:
-  /// **'ZAKUP I PLAĆANJE'**
+  /// In en, this message translates to:
+  /// **'RENT & PAYMENT'**
   String get rentPaymentHeader;
 
   /// No description provided for @loadingPlaceholder.
   ///
-  /// In sr, this message translates to:
-  /// **'Učitavanje...'**
+  /// In en, this message translates to:
+  /// **'Loading...'**
   String get loadingPlaceholder;
 
   /// No description provided for @photos.
   ///
-  /// In sr, this message translates to:
-  /// **'Fotografije'**
+  /// In en, this message translates to:
+  /// **'Photos'**
   String get photos;
 
   /// No description provided for @add.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodaj'**
+  /// In en, this message translates to:
+  /// **'Add'**
   String get add;
 
   /// No description provided for @paymentHistory.
   ///
-  /// In sr, this message translates to:
-  /// **'Istorija plaćanja'**
+  /// In en, this message translates to:
+  /// **'Payment History'**
   String get paymentHistory;
 
   /// No description provided for @viewAll.
   ///
-  /// In sr, this message translates to:
-  /// **'Pogledaj sve'**
+  /// In en, this message translates to:
+  /// **'View All'**
   String get viewAll;
 
   /// No description provided for @ended.
   ///
-  /// In sr, this message translates to:
-  /// **'Završeno'**
+  /// In en, this message translates to:
+  /// **'Ended'**
   String get ended;
 
   /// No description provided for @plannedEnd.
   ///
-  /// In sr, this message translates to:
-  /// **'Planirani završetak: {date}'**
+  /// In en, this message translates to:
+  /// **'Planned End: {date}'**
   String plannedEnd(String date);
 
   /// No description provided for @yourApartment.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaš stan'**
+  /// In en, this message translates to:
+  /// **'Your Apartment'**
   String get yourApartment;
 
   /// No description provided for @commentHint.
   ///
-  /// In sr, this message translates to:
-  /// **'Dodajte komentar...'**
+  /// In en, this message translates to:
+  /// **'Add a comment...'**
   String get commentHint;
 
   /// No description provided for @issueResolvedStatus.
   ///
-  /// In sr, this message translates to:
-  /// **'Ovaj kvara je označen kao rešen.'**
+  /// In en, this message translates to:
+  /// **'This issue has been marked as resolved.'**
   String get issueResolvedStatus;
 
   /// No description provided for @reopenIssue.
   ///
-  /// In sr, this message translates to:
-  /// **'Još uvek postoji problem (Ponovo otvori)'**
+  /// In en, this message translates to:
+  /// **'Still an Issue (Reopen)'**
   String get reopenIssue;
 
   /// No description provided for @deleteRequest.
   ///
-  /// In sr, this message translates to:
-  /// **'Obriši zahtev'**
+  /// In en, this message translates to:
+  /// **'Delete Request'**
   String get deleteRequest;
 
   /// No description provided for @terminationApproved.
   ///
-  /// In sr, this message translates to:
-  /// **'Raskid odobren'**
+  /// In en, this message translates to:
+  /// **'Termination Approved'**
   String get terminationApproved;
 
   /// No description provided for @paymentDeclaredHand.
   ///
-  /// In sr, this message translates to:
-  /// **'Plaćanje je prijavljeno kao lična dostava.'**
+  /// In en, this message translates to:
+  /// **'Payment declared as hand delivery.'**
   String get paymentDeclaredHand;
 
   /// No description provided for @fileUnreadable.
   ///
-  /// In sr, this message translates to:
-  /// **'Nije moguće pročitati datoteku.'**
+  /// In en, this message translates to:
+  /// **'Could not read file.'**
   String get fileUnreadable;
 
   /// No description provided for @paymentDeclaredSuccess.
   ///
-  /// In sr, this message translates to:
-  /// **'Uplata {title} je prijavljena.'**
+  /// In en, this message translates to:
+  /// **'{title} payment declared.'**
   String paymentDeclaredSuccess(String title);
 
   /// No description provided for @setAmountUploadInvoice.
   ///
-  /// In sr, this message translates to:
-  /// **'Podesite iznos i otpremite račun'**
+  /// In en, this message translates to:
+  /// **'Set Amount & Upload Invoice'**
   String get setAmountUploadInvoice;
 
   /// No description provided for @yourMessage.
   ///
-  /// In sr, this message translates to:
-  /// **'Vaša poruka:'**
+  /// In en, this message translates to:
+  /// **'Your message:'**
   String get yourMessage;
 
   /// No description provided for @revisionRequestLabel.
   ///
-  /// In sr, this message translates to:
-  /// **'Zahtev za reviziju:'**
+  /// In en, this message translates to:
+  /// **'Revision Request:'**
   String get revisionRequestLabel;
 
   /// No description provided for @noActivityLogs.
   ///
-  /// In sr, this message translates to:
-  /// **'Još nema prijavljenih aktivnosti'**
+  /// In en, this message translates to:
+  /// **'No activity logs found yet'**
   String get noActivityLogs;
 
   /// No description provided for @landlordProposedChanges.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanodavac je predložio izmene ugovora. Dodirnite da pregledate.'**
+  /// In en, this message translates to:
+  /// **'Landlord proposed contract changes. Tap to review.'**
   String get landlordProposedChanges;
 
   /// No description provided for @tenantProposedChanges.
   ///
-  /// In sr, this message translates to:
-  /// **'Stanar je predložio izmene ugovora. Dodirnite da pregledate.'**
+  /// In en, this message translates to:
+  /// **'Tenant proposed contract changes. Tap to review.'**
   String get tenantProposedChanges;
 
   /// No description provided for @dueOn.
   ///
-  /// In sr, this message translates to:
-  /// **'Dospeva: {date}'**
+  /// In en, this message translates to:
+  /// **'Due on {date}'**
   String dueOn(String date);
 
   /// No description provided for @item.
   ///
-  /// In sr, this message translates to:
-  /// **'stavka'**
+  /// In en, this message translates to:
+  /// **'item'**
   String get item;
 
   /// No description provided for @items.
   ///
-  /// In sr, this message translates to:
-  /// **'stavke'**
+  /// In en, this message translates to:
+  /// **'items'**
   String get items;
 
   /// No description provided for @waitingForOtherParty.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka se odobrenje druge strane...'**
+  /// In en, this message translates to:
+  /// **'Awaiting approval from the other party...'**
   String get waitingForOtherParty;
 
   /// No description provided for @awaitingApproval.
   ///
-  /// In sr, this message translates to:
-  /// **'Čeka se odobrenje...'**
+  /// In en, this message translates to:
+  /// **'Awaiting approval...'**
   String get awaitingApproval;
 
   /// No description provided for @contract.
   ///
-  /// In sr, this message translates to:
-  /// **'Ugovor'**
+  /// In en, this message translates to:
+  /// **'Contract'**
   String get contract;
 
   /// No description provided for @paidOn.
   ///
-  /// In sr, this message translates to:
-  /// **'Plaćeno: {date}'**
+  /// In en, this message translates to:
+  /// **'Paid on {date}'**
   String paidOn(Object date);
 
   /// No description provided for @cannotInviteSelf.
   ///
-  /// In sr, this message translates to:
-  /// **'Ne možete pozvati sebe kao stanara.'**
+  /// In en, this message translates to:
+  /// **'You cannot invite yourself as a tenant.'**
   String get cannotInviteSelf;
 
   /// No description provided for @paywallTitle.
   ///
-  /// In sr, this message translates to:
+  /// In en, this message translates to:
   /// **'Stanomer Premium'**
   String get paywallTitle;
 
   /// No description provided for @paywallSubtitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Uklonite ograničenja u upravljanju nekretninama.'**
+  /// In en, this message translates to:
+  /// **'Remove limits in property management.'**
   String get paywallSubtitle;
 
   /// No description provided for @unlimitedProperties.
   ///
-  /// In sr, this message translates to:
-  /// **'Neograničeno dodavanje i upravljanje nekretninama'**
+  /// In en, this message translates to:
+  /// **'Unlimited property addition and management'**
   String get unlimitedProperties;
 
   /// No description provided for @detailedReporting.
   ///
-  /// In sr, this message translates to:
-  /// **'Brže i detaljnije izveštavanje'**
+  /// In en, this message translates to:
+  /// **'Faster and more detailed reporting'**
   String get detailedReporting;
 
   /// No description provided for @extraStorage.
   ///
-  /// In sr, this message translates to:
-  /// **'Više prostora za skladištenje'**
+  /// In en, this message translates to:
+  /// **'More storage space'**
   String get extraStorage;
 
   /// No description provided for @pdfContracts.
   ///
-  /// In sr, this message translates to:
-  /// **'Generisanje PDF ugovora (Uskoro)'**
+  /// In en, this message translates to:
+  /// **'PDF contract generation (Coming Soon)'**
   String get pdfContracts;
 
   /// No description provided for @automatedRenewal.
   ///
-  /// In sr, this message translates to:
-  /// **'Automatski obračun i obnova kirije (Uskoro)'**
+  /// In en, this message translates to:
+  /// **'Automated rent calculation and renewal (Coming Soon)'**
   String get automatedRenewal;
 
   /// No description provided for @restorePurchases.
   ///
-  /// In sr, this message translates to:
-  /// **'Povrati kupovine'**
+  /// In en, this message translates to:
+  /// **'Restore Purchases'**
   String get restorePurchases;
 
   /// No description provided for @limitReachedTitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Dostigli ste besplatni limit'**
+  /// In en, this message translates to:
+  /// **'You\'ve reached your free limit'**
   String get limitReachedTitle;
 
   /// No description provided for @limitReachedSubtitle.
   ///
-  /// In sr, this message translates to:
-  /// **'Pređite na Stanomer Premium za upravljanje sa više nekretnina.'**
+  /// In en, this message translates to:
+  /// **'Upgrade to Stanomer Premium to manage multiple properties.'**
   String get limitReachedSubtitle;
 
   /// No description provided for @discoverPremium.
   ///
-  /// In sr, this message translates to:
-  /// **'Istražite Premium'**
+  /// In en, this message translates to:
+  /// **'Discover Premium'**
   String get discoverPremium;
 
   /// No description provided for @optionsLoadFailed.
   ///
-  /// In sr, this message translates to:
-  /// **'Nije moguće učitati opcije pretplate.'**
+  /// In en, this message translates to:
+  /// **'Could not load subscription options.'**
   String get optionsLoadFailed;
 
   /// No description provided for @manageSubscription.
   ///
-  /// In sr, this message translates to:
-  /// **'Upravljaj pretplatom'**
+  /// In en, this message translates to:
+  /// **'Manage Subscription'**
   String get manageSubscription;
 
   /// No description provided for @premiumMobileOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile App Required'**
   String get premiumMobileOnly;
 
   /// No description provided for @premiumMobileOnlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stanomer Premium subscriptions can only be purchased through the mobile app. Download the app below to get started with Premium.'**
   String get premiumMobileOnlyDesc;
 
   /// No description provided for @downloadOnAppStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on the App Store'**
   String get downloadOnAppStore;
 
   /// No description provided for @downloadOnPlayStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Get it on Google Play'**
   String get downloadOnPlayStore;
 
   /// No description provided for @premiumFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Features'**
   String get premiumFeatures;
 
   /// No description provided for @premiumFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited property management'**
   String get premiumFeature1;
 
   /// No description provided for @premiumFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced financial reporting'**
   String get premiumFeature2;
 
   /// No description provided for @premiumFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority support'**
   String get premiumFeature3;
 
   /// No description provided for @premiumFeature4.
+  ///
+  /// In en, this message translates to:
+  /// **'Access across all platforms'**
   String get premiumFeature4;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service & EULA'**
+  String get termsOfService;
+
+  /// No description provided for @termsOfServiceContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Stanomer – End User License Agreement (EULA) & Terms of Service\nLast Updated: April 23, 2026\n\n1. Introduction\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and Stanomer (\"we,\" \"us,\" or \"our\"). By installing or using the Stanomer mobile application (\"App\"), you agree to be bound by the terms of this Agreement.\n\n2. Apple and Google Terms\nApple App Store: This Agreement is concluded between the User and Stanomer only, and not with Apple Inc. This agreement incorporates Apple’s Standard Licensed Application End User License Agreement (Standard EULA) by reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: This Agreement is concluded between the User and Stanomer only, and not with Google LLC.\n\nYou acknowledge that Apple and Google have no obligation whatsoever to furnish any maintenance and support services with respect to the App.\n\n3. Subscription and Billing (Auto-Renewable Subscriptions)\nStanomer offers premium features via auto-renewable subscriptions.\n\nPayment: Payment will be charged to your iTunes Account (Apple) or Google Play Account at confirmation of purchase.\n\nRenewal: Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.\n\nManagement: You can manage or turn off auto-renew in your Account Settings (App Store or Play Store) after purchase.\n\n4. User Content & Conduct\nYou are responsible for the data you enter (rental amounts, damage reports, contracts).\n\nYou may not upload illegal, offensive, or infringing content.\n\nStanomer reserves the right to remove any content that violates Serbian laws or these terms.\n\n5. Privacy and Global Data Protection (ZZPL, GDPR, KVKK Compliance)\nYour use of the App is governed by our Privacy Policy. We are committed to protecting your personal data in compliance with:\n\nSerbian Law (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: General Data Protection Regulation (EU).\n\nKVKK: Personal Data Protection Law (Turkey).\n\nOther International Standards: We adhere to global data privacy principles to ensure your information is handled securely regardless of your location.\n\n6. Limitation of Liability\nStanomer provides a platform for rental management and is not a party to the actual rental agreements between landlords and tenants. We are not liable for disputes arising between users or for financial transactions conducted outside the platform.\n\n7. Termination\nThis Agreement is effective until terminated by you or Stanomer. Your rights under this license will terminate automatically if you fail to comply with any of its terms.'**
+  String get termsOfServiceContent;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2545,40 +2580,35 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'sr', 'tr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'sr', 'tr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
   // Lookup logic when language+script codes are specified.
   switch (locale.languageCode) {
-    case 'sr':
-      {
-        switch (locale.scriptCode) {
-          case 'Cyrl':
-            return AppLocalizationsSrCyrl();
-        }
-        break;
-      }
+    case 'sr': {
+  switch (locale.scriptCode) {
+    case 'Cyrl': return AppLocalizationsSrCyrl();
+   }
+  break;
+   }
   }
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'sr':
-      return AppLocalizationsSr();
-    case 'tr':
-      return AppLocalizationsTr();
+    case 'en': return AppLocalizationsEn();
+    case 'sr': return AppLocalizationsSr();
+    case 'tr': return AppLocalizationsTr();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }
