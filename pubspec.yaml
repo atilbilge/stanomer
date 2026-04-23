@@ -54,6 +54,7 @@ dependencies:
   rxdart: ^0.28.0
   purchases_flutter: ^10.0.1
   purchases_ui_flutter: ^10.0.1
+  universal_io: ^2.2.2
 
 dev_dependencies:
   flutter_test:

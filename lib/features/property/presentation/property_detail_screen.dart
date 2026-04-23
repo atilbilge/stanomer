@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:io' as io;
+import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stanomer/features/property/presentation/widgets/payment_responsibility_selector.dart';
