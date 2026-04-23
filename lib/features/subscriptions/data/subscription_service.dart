@@ -42,7 +42,7 @@ class SubscriptionService {
 
     await Purchases.setLogLevel(LogLevel.debug);
 
-    final String apiKey = Platform.isAndroid ? _androidApiKey : _iosApiKey;
+    final String apiKey = defaultTargetPlatform == TargetPlatform.android ? _androidApiKey : _iosApiKey;
     final config = PurchasesConfiguration(apiKey);
 
     // CRITICAL: Force the Native UI to use the app's selected locale 
