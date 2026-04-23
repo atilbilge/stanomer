@@ -461,6 +461,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get statusVacant => 'Slobodno';
 
   @override
+  String get overdueReceivables => 'Dospela';
+
+  @override
+  String get collectedByType => 'Naplaćeno';
+
+  @override
   String get pendingApproval => 'ČEKA ODOBRENJE';
 
   @override
@@ -1799,6 +1805,12 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get statusVacant => 'Слободно';
+
+  @override
+  String get overdueReceivables => 'Доспела';
+
+  @override
+  String get collectedByType => 'Наплаћено';
 
   @override
   String get pendingApproval => 'ЧЕКА ОДОБРЕЊЕ';

@@ -303,7 +303,9 @@
   "monthlyCollected": "Prikupljeno",
   "totalRentShort": "Kira",
   "delays": "Kašnjenja",
-  "vacant": "Slobodno",
+  "vacant": "Prazno",
+  "overdueReceivables": "Dospela",
+  "collectedByType": "Naplaćeno",
   "propertiesCount": "{count, plural, one{{count} nekretnina} other{{count} nekretnina}}",
   "hasDebt": "Ima dug",
   "paymentAwaitingApproval": "Čeka odobrenje",
@@ -518,5 +520,7 @@
   "premiumFeature1": "Neograničeno upravljanje nekretninama",
   "premiumFeature2": "Napredno finansijsko izveštavanje",
   "premiumFeature3": "Prioritetna podrška",
-  "premiumFeature4": "Pristup na svim platformama"
+  "premiumFeature4": "Pristup na svim platformama",
+  "termsOfService": "Uslovi korišćenja i EULA",
+  "termsOfServiceContent": "Stanomer – Ugovor o licenciranju sa krajnjim korisnikom (EULA) i Uslovi korišćenja\nPoslednji put ažurirano: 23. april 2026.\n\n1. Uvod\nOvaj Ugovor o licenciranju sa krajnjim korisnikom (\"Ugovor\") predstavlja pravni sporazum između Vas (\"Korisnik\") i aplikacije Stanomer. Instaliranjem ili korišćenjem aplikacije prihvatate odredbe ovog Ugovora.\n\n2. Apple i Google uslovi\nApple App Store: Ovaj Ugovor je zaključen isključivo između Korisnika i Stanomer-a. Ovaj ugovor uključuje Apple-ov standardni ugovor o licenci za krajnjeg korisnika (Standard EULA) putem reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Ovaj Ugovor je zaključen isključivo između Korisnika i Stanomer-a.\n\nPotvrđujete da Apple i Google nemaju nikakvu obavezu pružanja usluga održavanja i podrške u vezi sa aplikacijom.\n\n3. Pretplata i naplata\nPlaćanje: Plaćanje će biti naplaćeno sa Vašeg iTunes ili Google Play naloga prilikom potvrde kupovine.\n\nObnavljanje: Pretplate se automatski obnavljaju osim ako se automatsko obnavljanje ne isključi najmanje 24 sata pre kraja tekućeg perioda.\n\nUpravljanje: Možete upravljati pretplatama ili isključiti automatsko obnavljanje u podešavanjima naloga nakon kupovine.\n\n4. Korisnički sadržaj i ponašanje\nOdgovorni ste za podatke koje unosite (iznosi zakupa, izveštaji o šteti, ugovori).\n\nZabranjeno je otpremanje nezakonitog, uvredljivog ili kršećeg sadržaja.\n\nStanomer zadržava pravo da ukloni bilo koji sadržaj koji krši zakone Republike Srbije ili ove uslove.\n\n5. Privatnost i zaštita podataka (ZZPL, GDPR, KVKK)\nZakon Srbije (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: Opšta uredba o zaštiti podataka o ličnosti (EU).\n\nKVKK: Zakon o zaštiti podataka o ličnosti (Turska).\n\nVaši podaci se štite u skladu sa globalnim principima privatnosti podataka, bez obzira na Vašu lokaciju.\n\n6. Ograničenje odgovornosti\nStanomer pruža platformu za upravljanje zakupom i nije strana u stvarnim ugovorima o zakupu između stanodavaca i zakupaca. Ne snosimo odgovornost za sporove između korisnika ili za finansijske transakcije obavljene van platforme.\n\n7. Prekid\nOvaj Ugovor važi dok ga ne raskinete Vi ili Stanomer. Vaša prava po ovoj licenci će automatski prestati ako se ne pridržavate bilo koje od njenih odredbi."
 }

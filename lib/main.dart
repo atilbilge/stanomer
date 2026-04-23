@@ -10,6 +10,7 @@ import 'core/providers/locale_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/subscriptions/data/subscription_service.dart';
+import 'core/providers/lifecycle_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,11 +54,32 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the lifecycle observer
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appLifecycleProvider).init();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clean up
+    ref.read(appLifecycleProvider).dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final locale = ref.watch(localeProvider);
 

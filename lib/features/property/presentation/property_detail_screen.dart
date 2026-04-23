@@ -287,7 +287,28 @@ class _OverviewTab extends ConsumerWidget {
     
     return propertyAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error loading property: $e')),
+      error: (e, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.alertCircle, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text('Error loading property: $e', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  ref.invalidate(propertyProvider(property.id));
+                  ref.invalidate(propertiesStreamProvider);
+                }, 
+                icon: const Icon(LucideIcons.refreshCw, size: 18),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
       data: (liveProperty) {
         if (liveProperty == null) return const Center(child: Text('Property not found'));
         final user = ref.watch(currentUserProvider);
@@ -301,7 +322,25 @@ class _OverviewTab extends ConsumerWidget {
 
         return activeContractAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error loading contract: $e')),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.alertCircle, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text('Error loading contract: $e', textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(activeContractProvider(property.id)), 
+                    icon: const Icon(LucideIcons.refreshCw, size: 18),
+                    label: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
           data: (activeContract) {
             final effectiveIsTenant = isTenant;
             final effectiveIsLandlord = isLandlord;

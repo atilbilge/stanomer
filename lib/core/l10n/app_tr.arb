@@ -304,6 +304,8 @@
   "totalRentShort": "Kira",
   "delays": "Gecikme",
   "vacant": "Boş",
+  "overdueReceivables": "Vadesi Geçmiş",
+  "collectedByType": "Tahsil Edilenler",
   "propertiesCount": "Emlak",
   "hasDebt": "Borcu Var",
   "paymentAwaitingApproval": "Onay Bekliyor",
@@ -518,5 +520,7 @@
   "premiumFeature1": "Sınırsız mülk yönetimi",
   "premiumFeature2": "Gelişmiş finansal raporlama",
   "premiumFeature3": "Öncelikli destek",
-  "premiumFeature4": "Tüm platformlarda erişim"
+  "premiumFeature4": "Tüm platformlarda erişim",
+  "termsOfService": "Kullanım Koşulları ve EULA",
+  "termsOfServiceContent": "Stanomer – Son Kullanıcı Lisans Sözleşmesi (EULA) ve Kullanım Koşulları\nSon Güncelleme: 23 Nisan 2026\n\n1. Giriş\nBu Son Kullanıcı Lisans Sözleşmesi (\"Sözleşme\"), kullanıcı (\"Kullanıcı\") ile Stanomer arasındadır. Uygulamayı kurarak veya kullanarak bu Sözleşme şartlarına bağlı kalmayı kabul etmiş sayılırsınız.\n\n2. Apple ve Google Şartları\nApple App Store: Bu Sözleşme yalnızca Kullanıcı ve Stanomer arasında akdedilmiştir. Bu sözleşme, Apple'ın Standart Lisanslı Uygulama Son Kullanıcı Lisans Sözleşmesi'ni (Standard EULA) referans olarak içerir: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Bu Sözleşme yalnızca Kullanıcı ve Stanomer arasında akdedilmiştir.\n\nApple ve Google'ın uygulama ile ilgili herhangi bir bakım ve destek hizmeti sunma yükümlülüğü olmadığını kabul etmektesiniz.\n\n3. Abonelik ve Faturalandırma\nÖdeme: Satın alma onaylandığında ödeme iTunes veya Google Play hesabınızdan tahsil edilir.\n\nYenileme: Abonelik, dönem bitiminden en az 24 saat önce kapatılmadığı sürece otomatik olarak yenilenir.\n\nYönetim: Satın alma işleminden sonra hesap ayarlarınızdan abonelikleri yönetebilir veya otomatik yenilemeyi kapatabilirsiniz.\n\n4. Kullanıcı İçeriği ve Davranış Kuralları\nGirdiğiniz verilerden (kira tutarları, hasar raporları, sözleşmeler) siz sorumlusunuz.\n\nYasa dışı, saldırgan veya ihlal edici içerik yükleyemezsiniz.\n\nStanomer, Sırbistan yasalarını veya bu şartları ihlal eden her türlü içeriği kaldırma hakkını saklı tutar.\n\n5. Gizlilik ve Veri Koruma (ZZPL, GDPR, KVKK Uyumluluğu)\nSırbistan Yasası (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: Genel Veri Koruma Yönetmeliği (AB).\n\nKVKK: Kişisel Verilerin Korunması Kanunu (Türkiye).\n\nVerileriniz, konumunuzdan bağımsız olarak küresel veri gizliliği ilkelerine uygun olarak korunur.\n\n6. Sorumluluk Sınırlandırması\nStanomer bir mülk yönetim platformudur ve ev sahipleri ile kiracılar arasındaki asıl kira sözleşmelerinin tarafı değildir. Kullanıcılar arası uyuşmazlıklardan veya platform dışı işlemlerden sorumlu tutulamaz.\n\n7. Fesih\nBu Sözleşme, siz veya Stanomer tarafından feshedilene kadar geçerlidir. Bu lisans kapsamındaki haklarınız, şartlardan herhangi birine uymamanız durumunda otomatik olarak sona erecektir."
 }

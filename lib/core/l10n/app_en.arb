@@ -304,6 +304,8 @@
   "totalRentShort": "Rent",
   "delays": "Delays",
   "vacant": "Vacant",
+  "overdueReceivables": "Overdue",
+  "collectedByType": "Collected",
   "propertiesCount": "{count, plural, one{{count} property} other{{count} properties}}",
   "hasDebt": "Has Debt",
   "paymentAwaitingApproval": "Awaiting Approval",
@@ -518,5 +520,7 @@
   "premiumFeature1": "Unlimited property management",
   "premiumFeature2": "Advanced financial reporting",
   "premiumFeature3": "Priority support",
-  "premiumFeature4": "Access across all platforms"
+  "premiumFeature4": "Access across all platforms",
+  "termsOfService": "Terms of Service & EULA",
+  "termsOfServiceContent": "Stanomer – End User License Agreement (EULA) & Terms of Service\nLast Updated: April 23, 2026\n\n1. Introduction\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and Stanomer (\"we,\" \"us,\" or \"our\"). By installing or using the Stanomer mobile application (\"App\"), you agree to be bound by the terms of this Agreement.\n\n2. Apple and Google Terms\nApple App Store: This Agreement is concluded between the User and Stanomer only, and not with Apple Inc. This agreement incorporates Apple’s Standard Licensed Application End User License Agreement (Standard EULA) by reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: This Agreement is concluded between the User and Stanomer only, and not with Google LLC.\n\nYou acknowledge that Apple and Google have no obligation whatsoever to furnish any maintenance and support services with respect to the App.\n\n3. Subscription and Billing (Auto-Renewable Subscriptions)\nStanomer offers premium features via auto-renewable subscriptions.\n\nPayment: Payment will be charged to your iTunes Account (Apple) or Google Play Account at confirmation of purchase.\n\nRenewal: Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.\n\nManagement: You can manage or turn off auto-renew in your Account Settings (App Store or Play Store) after purchase.\n\n4. User Content & Conduct\nYou are responsible for the data you enter (rental amounts, damage reports, contracts).\n\nYou may not upload illegal, offensive, or infringing content.\n\nStanomer reserves the right to remove any content that violates Serbian laws or these terms.\n\n5. Privacy and Global Data Protection (ZZPL, GDPR, KVKK Compliance)\nYour use of the App is governed by our Privacy Policy. We are committed to protecting your personal data in compliance with:\n\nSerbian Law (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: General Data Protection Regulation (EU).\n\nKVKK: Personal Data Protection Law (Turkey).\n\nOther International Standards: We adhere to global data privacy principles to ensure your information is handled securely regardless of your location.\n\n6. Limitation of Liability\nStanomer provides a platform for rental management and is not a party to the actual rental agreements between landlords and tenants. We are not liable for disputes arising between users or for financial transactions conducted outside the platform.\n\n7. Termination\nThis Agreement is effective until terminated by you or Stanomer. Your rights under this license will terminate automatically if you fail to comply with any of its terms."
 }

@@ -460,6 +460,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusVacant => 'Vacant';
 
   @override
+  String get overdueReceivables => 'Overdue';
+
+  @override
+  String get collectedByType => 'Collected';
+
+  @override
   String get pendingApproval => 'PENDING APPROVAL';
 
   @override

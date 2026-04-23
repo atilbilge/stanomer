@@ -941,6 +941,18 @@ abstract class AppLocalizations {
   /// **'Slobodno'**
   String get statusVacant;
 
+  /// No description provided for @overdueReceivables.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dospela'**
+  String get overdueReceivables;
+
+  /// No description provided for @collectedByType.
+  ///
+  /// In sr, this message translates to:
+  /// **'Naplaćeno'**
+  String get collectedByType;
+
   /// No description provided for @pendingApproval.
   ///
   /// In sr, this message translates to:

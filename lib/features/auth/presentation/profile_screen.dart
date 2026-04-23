@@ -450,6 +450,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             const SizedBox(height: 16),
 
+            TextButton.icon(
+              onPressed: () => context.push('/terms'),
+              icon: const Icon(LucideIcons.fileText, size: 20),
+              label: Text(loc.termsOfService),
+              style: TextButton.styleFrom(
+                foregroundColor: StanomerColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
             // Delete Account
             TextButton.icon(
               onPressed: _showDeleteConfirmDialog,

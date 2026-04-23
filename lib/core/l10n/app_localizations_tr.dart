@@ -461,6 +461,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusVacant => 'Boş';
 
   @override
+  String get overdueReceivables => 'Vadesi Geçmiş';
+
+  @override
+  String get collectedByType => 'Tahsil Edilenler';
+
+  @override
   String get pendingApproval => 'ONAY BEKLİYOR';
 
   @override

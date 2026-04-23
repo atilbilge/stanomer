@@ -290,8 +290,13 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
         (List<Contract?> contracts, List<List<RentPayment>> allPayments) {
           Map<String, double> expectedByCurrency = {};
           Map<String, double> collectedByCurrency = {};
+          Map<String, double> overdueByCurrency = {};
+          Map<String, Map<String, double>> collectedByType = {};
           int vacant = 0;
           int delays = 0;
+          int awaitingApprovalCount = 0;
+          String? latestAwaitingTitle;
+          String? latestAwaitingPropertyId;
           
           final now = DateTime.now();
           final currentMonth = now.month;
@@ -305,31 +310,54 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
               vacant++;
             } else {
               expectedByCurrency = CurrencyUtils.addToMap(expectedByCurrency, c.monthlyRent, c.currency);
-              
-              // Count as delay if rent is overdue OR a bill with invoice is overdue
-              final rentOverdue = payments.any((p) => p.title == 'Kira' && p.status == 'pending' && !p.dueDate.isAfter(now));
-              final billOverdue = payments.any((p) => p.title != 'Kira' && p.status == 'pending' && p.invoiceUrl != null && !p.dueDate.isAfter(now));
-              
-              if (rentOverdue || billOverdue) delays++;
-              
-              // Sum collected for this month (paid_at is in current month)
-              for (final p in payments) {
-                if (p.status == 'paid' && 
-                    p.paidAt != null && 
-                    p.paidAt!.year == currentYear && 
-                    p.paidAt!.month == currentMonth) {
-                  collectedByCurrency = CurrencyUtils.addToMap(collectedByCurrency, p.amount, p.currency);
-                }
+            }
+
+            // Calculations based on payments
+            for (final p in payments) {
+              // 1. Calculate Overdue
+              if (p.status != 'paid' && p.dueDate.isBefore(now)) {
+                overdueByCurrency = CurrencyUtils.addToMap(overdueByCurrency, p.amount, p.currency);
+              }
+
+              // 2. Awaiting Approval
+              if (p.status == 'declared') {
+                awaitingApprovalCount++;
+                latestAwaitingTitle ??= '${properties[i].name} — ${p.title}';
+                latestAwaitingPropertyId ??= properties[i].id;
+              }
+
+              // 3. Collected for this month
+              if (p.status == 'paid' && 
+                  p.paidAt != null && 
+                  p.paidAt!.year == currentYear && 
+                  p.paidAt!.month == currentMonth) {
+                
+                collectedByCurrency = CurrencyUtils.addToMap(collectedByCurrency, p.amount, p.currency);
+                
+                // Track by type
+                final type = p.title;
+                final typeMap = Map<String, double>.from(collectedByType[type] ?? {});
+                collectedByType[type] = CurrencyUtils.addToMap(typeMap, p.amount, p.currency);
               }
             }
+            
+            // Count as delay
+            final rentOverdue = payments.any((p) => p.title == 'Kira' && p.status == 'pending' && p.dueDate.isBefore(now));
+            final billOverdue = payments.any((p) => p.title != 'Kira' && p.status == 'pending' && p.invoiceUrl != null && p.dueDate.isBefore(now));
+            if (rentOverdue || billOverdue) delays++;
           }
           
           return LandlordDashboardStats(
             expectedByCurrency: expectedByCurrency,
             collectedByCurrency: collectedByCurrency,
+            overdueByCurrency: overdueByCurrency,
+            collectedByType: collectedByType,
             delaysCount: delays,
             vacantCount: vacant,
             totalProperties: properties.length,
+            awaitingApprovalCount: awaitingApprovalCount,
+            latestAwaitingTitle: latestAwaitingTitle,
+            latestAwaitingPropertyId: latestAwaitingPropertyId,
           );
         },
       );
@@ -734,7 +762,7 @@ class PropertyRepository {
           title: 'New Contract Invitation',
           body: 'You have received a new contract invitation for ${property['name']}.',
           type: 'contract',
-          relatedId: token,
+          relatedId: propertyId,
         );
       }
     } catch (e) {
@@ -949,7 +977,7 @@ class PropertyRepository {
             ? 'The $roleName has sent updated terms for your invitation. Tap to review.'
             : '$roleName has proposed new changes to the contract terms.',
           type: 'contract',
-          relatedId: relatedId,
+          relatedId: contractData['property_id'],
         );
       }
     }
@@ -977,7 +1005,7 @@ class PropertyRepository {
           title: 'Contract Termination Requested',
           body: 'A request has been made to end the contract early.',
           type: 'contract',
-          relatedId: relatedId,
+          relatedId: contractData['property_id'],
         );
       }
     }
@@ -1004,7 +1032,7 @@ class PropertyRepository {
           title: 'Contract Changes Accepted',
           body: 'The proposed contract changes have been accepted.',
           type: 'contract',
-          relatedId: relatedId,
+          relatedId: contractData['property_id'],
         );
       }
     }
@@ -1041,7 +1069,7 @@ class PropertyRepository {
           ? '$roleName has withdrawn their proposed contract changes.'
           : '$roleName has declined the proposed contract changes.',
         type: 'contract',
-        relatedId: relatedId,
+        relatedId: contractBefore['property_id'],
       );
     }
   }

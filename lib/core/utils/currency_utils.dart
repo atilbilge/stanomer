@@ -15,7 +15,7 @@ class CurrencyUtils {
       segments.add(formattedAmount);
     }
 
-    return segments.isEmpty ? '0,00' : segments.join(' + ');
+    return segments.isEmpty ? '0,00' : segments.join('\n');
   }
 
   static String formatAmount(double amount, String currency, {bool useSymbol = false}) {
@@ -29,7 +29,7 @@ class CurrencyUtils {
       case 'EUR':
         return '€';
       case 'RSD':
-        return 'din';
+        return 'RSD';
       case 'USD':
         return '\$';
       case 'TRY':
