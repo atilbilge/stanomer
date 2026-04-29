@@ -208,7 +208,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       keyboardType: TextInputType.number,
                       validator: (val) {
                         if (val == null || val.isEmpty) return loc.fieldRequired;
-                        if (double.tryParse(val) == null) return 'Invalid number';
+                        if (double.tryParse(val) == null) return loc.invalidNumber;
                         return null;
                       },
                     ),
@@ -250,7 +250,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       ),
                       keyboardType: TextInputType.number,
                       validator: (val) {
-                        if (val != null && val.isNotEmpty && double.tryParse(val) == null) return 'Invalid number';
+                        if (val != null && val.isNotEmpty && double.tryParse(val) == null) return loc.invalidNumber;
                         return null;
                       },
                     ),

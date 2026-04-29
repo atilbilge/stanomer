@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stanomer/features/property/presentation/widgets/payment_responsibility_selector.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -8,6 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
@@ -515,9 +518,9 @@ class _OverviewTab extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.08),
+                      color: Colors.orange.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -550,7 +553,7 @@ class _OverviewTab extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: StanomerColors.textTertiary.withOpacity(0.08),
+                      color: StanomerColors.textTertiary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: StanomerColors.borderDefault),
                     ),
@@ -581,7 +584,7 @@ class _OverviewTab extends ConsumerWidget {
                       if (pending.isEmpty) return const SizedBox.shrink();
 
                       return _SectionCard(
-                        title: loc.pendingInvitations,
+                        title: loc.sentInvitation,
                         children: pending.map((c) => _ContractTile(contract: c, propertyId: liveProperty.id, isLandlord: true)).toList(),
                       );
                     },
@@ -874,7 +877,7 @@ class _NavRow extends StatelessWidget {
             if (badge != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: StanomerColors.brandPrimary.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: StanomerColors.brandPrimary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
                 child: Text(badge!, style: const TextStyle(fontSize: 11, color: StanomerColors.brandPrimary, fontWeight: FontWeight.bold)),
               ),
             const SizedBox(width: 8),
@@ -900,12 +903,96 @@ class _ContractTile extends ConsumerWidget {
     required this.isLandlord,
   });
 
+  void _showShareSheet(BuildContext context, AppLocalizations loc) {
+    final link = 'stanomer://invite?token=${contract.token}';
+    final roleColor = StanomerColors.brandPrimary;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 20),
+            Text(loc.shareInviteLink, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            // QR Kod
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: QrImageView(
+                data: link,
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Link kutusu
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: StanomerColors.bgPage,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: StanomerColors.borderDefault),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(link, style: const TextStyle(fontSize: 12, color: StanomerColors.textSecondary), overflow: TextOverflow.ellipsis),
+                  ),
+                  IconButton(
+                    icon: const Icon(LucideIcons.copy, size: 18),
+                    tooltip: loc.copyLink,
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: link));
+                      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(loc.copyLink)));
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(LucideIcons.share2, size: 18),
+                    tooltip: loc.share,
+                    onPressed: () => Share.share(link),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(LucideIcons.share2, size: 18),
+                label: Text(loc.share),
+                onPressed: () => Share.share(link),
+                style: ElevatedButton.styleFrom(backgroundColor: roleColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
 
     final isPending = contract.status == ContractStatus.pending;
     final isNegotiating = contract.status == ContractStatus.negotiating || contract.status == ContractStatus.revisionRequested;
+    final inviteDate = contract.createdAt != null ? DateFormat('dd/MM/yyyy').format(contract.createdAt!) : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -928,14 +1015,26 @@ class _ContractTile extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(contract.inviteeEmail, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    // E-posta
+                    if (contract.inviteeEmail.isNotEmpty)
+                      Text(contract.inviteeEmail, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600))
+                    else
+                      Text(loc.noEmailProvided, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: StanomerColors.textTertiary)),
+                    // Kira bilgisi
                     Text(
                       '${contract.status.label(loc)} • ${contract.monthlyRent} ${contract.currency}',
                       style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                     ),
+                    // Davet tarihi
+                    if (inviteDate != null)
+                      Text(
+                        loc.invitedOn(inviteDate),
+                        style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                      ),
                   ],
                 ),
               ),
+              // Düzenle butonu (sadece ev sahibi)
               if (isLandlord && (isPending || isNegotiating))
                 IconButton(
                   visualDensity: VisualDensity.compact,
@@ -950,6 +1049,14 @@ class _ContractTile extends ConsumerWidget {
                     );
                   },
                   tooltip: loc.editContract,
+                ),
+              // Paylaş butonu (sadece ev sahibi, sadece pending)
+              if (isLandlord && isPending)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(LucideIcons.share2, size: 18, color: StanomerColors.brandPrimary),
+                  onPressed: () => _showShareSheet(context, loc),
+                  tooltip: loc.share,
                 ),
             ],
           ),
@@ -991,43 +1098,37 @@ class _ContractTile extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: TextButton(
                   onPressed: () async {
-                    final isNegotiating = contract.status == ContractStatus.negotiating;
+                    final isNeg = contract.status == ContractStatus.negotiating;
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: Text(isNegotiating ? loc.confirmDeclineRevisionTitle : loc.confirmCancelInvitationTitle),
-                        content: Text(isNegotiating ? loc.confirmDeclineRevisionMessage : loc.confirmCancelInvitationMessage),
+                        title: Text(isNeg ? loc.confirmDeclineRevisionTitle : loc.confirmCancelInvitationTitle),
+                        content: Text(isNeg ? loc.confirmDeclineRevisionMessage : loc.confirmCancelInvitationMessage),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true), 
                             style: TextButton.styleFrom(foregroundColor: StanomerColors.alertPrimary),
-                            child: Text(isNegotiating ? loc.decline : loc.confirmCancelInvitationTitle),
+                            child: Text(isNeg ? loc.decline : loc.confirmCancelInvitationTitle),
                           ),
                         ],
                       ),
                     );
 
                     if (confirmed == true) {
-                      if (isNegotiating) {
+                      if (isNeg) {
                         await ref.read(propertyRepositoryProvider).declineProposedChanges(contract.id);
                         ref.invalidate(propertyContractsProvider(propertyId));
                         ref.invalidate(activeContractProvider(propertyId));
                         ref.invalidate(propertyProvider(propertyId));
                       } else {
                         await ref.read(propertyRepositoryProvider).cancelInvite(contract.id);
-                        
-                        // Force refresh all property-related providers immediately
                         ref.invalidate(propertyContractsProvider(propertyId));
                         ref.invalidate(activeContractProvider(propertyId));
                         ref.invalidate(propertyProvider(propertyId));
                         ref.invalidate(propertyFinancialStatusProvider(propertyId));
-                        ref.invalidate(propertiesStreamProvider); // Refresh the main list
-                        
-                        if (context.mounted) {
-                          // Go back to the main list (Home)
-                          Navigator.pop(context);
-                        }
+                        ref.invalidate(propertiesStreamProvider);
+                        if (context.mounted) Navigator.pop(context);
                       }
                     }
                   },
@@ -1428,13 +1529,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     
     if (isDeclared) {
       borderColor = Colors.amber.shade600;
-      bgColor = Colors.amber.withOpacity(0.04);
+      bgColor = Colors.amber.withValues(alpha: 0.04);
     }
     if (isDisputed) {
-      borderColor = StanomerColors.alertPrimary.withOpacity(0.4);
-      bgColor = StanomerColors.alertPrimary.withOpacity(0.02);
+      borderColor = StanomerColors.alertPrimary.withValues(alpha: 0.4);
+      bgColor = StanomerColors.alertPrimary.withValues(alpha: 0.02);
     }
-    if (isAwaitingInvoice && isLandlord) borderColor = StanomerColors.brandPrimary.withOpacity(0.4);
+    if (isAwaitingInvoice && isLandlord) borderColor = StanomerColors.brandPrimary.withValues(alpha: 0.4);
 
     return Container(
       decoration: BoxDecoration(
@@ -1450,7 +1551,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             children: [
               Container(
                 width: 42, height: 42,
-                decoration: BoxDecoration(color: catColor.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: catColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
                 child: Icon(catIcon, color: catColor, size: 20),
               ),
               const SizedBox(width: 12),
@@ -1470,7 +1571,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         if (isAwaitingInvoice)
                           Text(
                             loc.awaitingInvoice,
-                            style: TextStyle(fontSize: 12, color: StanomerColors.brandPrimary.withOpacity(0.8)),
+                            style: TextStyle(fontSize: 12, color: StanomerColors.brandPrimary.withValues(alpha: 0.8)),
                           )
                         else
                           Text(CurrencyUtils.formatAmount(payment.amount, payment.currency),
@@ -1561,9 +1662,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                             decoration: BoxDecoration(
-                              color: isDisputed ? StanomerColors.alertPrimary.withOpacity(0.1) : StanomerColors.brandPrimary.withOpacity(0.1),
+                              color: isDisputed ? StanomerColors.alertPrimary.withValues(alpha: 0.1) : StanomerColors.brandPrimary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: isDisputed ? StanomerColors.alertPrimary.withOpacity(0.4) : StanomerColors.brandPrimary.withOpacity(0.4)),
+                              border: Border.all(color: isDisputed ? StanomerColors.alertPrimary.withValues(alpha: 0.4) : StanomerColors.brandPrimary.withValues(alpha: 0.4)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -1916,7 +2017,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                         borderRadius: BorderRadius.circular(4),
                                         child: LinearProgressIndicator(
                                           value: totalPayableCount == 0 ? 0 : completedCount / totalPayableCount,
-                                          backgroundColor: headerColor.withOpacity(0.15),
+                                          backgroundColor: headerColor.withValues(alpha: 0.15),
                                           valueColor: AlwaysStoppedAnimation<Color>(headerColor),
                                           minHeight: 6,
                                         ),
@@ -2182,9 +2283,9 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: StanomerColors.brandPrimary.withOpacity(0.07),
+                color: StanomerColors.brandPrimary.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: StanomerColors.brandPrimary.withOpacity(0.15)),
+                border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
@@ -2336,9 +2437,9 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.12),
+                color: Colors.amber.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -2489,9 +2590,9 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: StanomerColors.brandPrimarySurface.withOpacity(0.3),
+            color: StanomerColors.brandPrimarySurface.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: StanomerColors.brandPrimary.withOpacity(0.15)),
+            border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.15)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2816,9 +2917,9 @@ class _ProposalReviewCardState extends ConsumerState<_ProposalReviewCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.07),
+        color: Colors.orange.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orange.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1.5),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -2955,7 +3056,7 @@ class _ProposalReviewCardState extends ConsumerState<_ProposalReviewCard> {
                           label: Text(loc.decline),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: StanomerColors.alertPrimary,
-                            side: BorderSide(color: StanomerColors.alertPrimary.withOpacity(0.5)),
+                            side: BorderSide(color: StanomerColors.alertPrimary.withValues(alpha: 0.5)),
                           ),
                         ),
                       ),
@@ -3078,7 +3179,7 @@ class _ActivityTab extends ConsumerWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: StanomerColors.brandPrimary.withOpacity(0.5),
+                        color: StanomerColors.brandPrimary.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -3202,7 +3303,7 @@ class _NoContractsEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: StanomerColors.brandPrimarySurface.withOpacity(0.1),
+              color: StanomerColors.brandPrimarySurface.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -3384,9 +3485,9 @@ class _TerminationBannerState extends ConsumerState<_TerminationBanner> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: StanomerColors.alertPrimary.withOpacity(0.08),
+        color: StanomerColors.alertPrimary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: StanomerColors.alertPrimary.withOpacity(0.3)),
+        border: Border.all(color: StanomerColors.alertPrimary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -3489,9 +3590,9 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isFilled ? color : color.withOpacity(0.12),
+        color: isFilled ? color : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isFilled ? Colors.transparent : color.withOpacity(0.35), width: 1),
+        border: Border.all(color: isFilled ? Colors.transparent : color.withValues(alpha: 0.35), width: 1),
       ),
       child: Text(
         label,
@@ -3564,9 +3665,9 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -3603,7 +3704,7 @@ class _MiniBadge extends StatelessWidget {
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

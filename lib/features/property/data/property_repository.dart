@@ -256,12 +256,38 @@ final pendingInvitesForUserProvider = StreamProvider.autoDispose<List<Map<String
   final repo = ref.watch(propertyRepositoryProvider);
   final user = ref.watch(currentUserProvider);
   
-  if (user == null || user.email == null) return Stream.value([]);
-  
-  // Combine streams for contracts and legacy invitations
-  final contractsStream = repo.getPendingContractsStreamForEmail(user.email!);
-  final invitationsStream = repo.getPendingInvitationsStreamForEmail(user.email!);
-  
+  if (user == null) return Stream.value([]);
+
+  // Apple "Hide My Email" kullanıcıları için hem email hem user.id ile sorguluyoruz.
+  // Email yoksa (nadiren null olabilir) sadece uid tabanlı sorgulama yapılır.
+  final email = user.email;
+  final userId = user.id;
+
+  final contractsByEmail = email != null
+      ? repo.getPendingContractsStreamForEmail(email)
+      : Stream.value(<Map<String, dynamic>>[]);
+  final contractsByUid = repo.getPendingContractsStreamForUserId(userId);
+
+  final invitesByEmail = email != null
+      ? repo.getPendingInvitationsStreamForEmail(email)
+      : Stream.value(<Map<String, dynamic>>[]);
+  final invitesByUid = repo.getPendingInvitationsStreamForUserId(userId);
+
+  // Her iki kaynağı birleştir, id üzerinden dedupe et (Apple relay = aynı kayıt iki kez gelir)
+  Stream<List<Map<String, dynamic>>> mergeAndDedupe(
+    Stream<List<Map<String, dynamic>>> a,
+    Stream<List<Map<String, dynamic>>> b,
+  ) =>
+      Rx.combineLatest2(a, b, (List<Map<String, dynamic>> listA, List<Map<String, dynamic>> listB) {
+        final seen = <String>{};
+        return [...listA, ...listB]
+            .where((item) => seen.add(item['id'] as String))
+            .toList();
+      });
+
+  final contractsStream = mergeAndDedupe(contractsByEmail, contractsByUid);
+  final invitationsStream = mergeAndDedupe(invitesByEmail, invitesByUid);
+
   return Rx.combineLatest2(
     contractsStream,
     invitationsStream,
@@ -608,24 +634,6 @@ class PropertyRepository {
 
   Future<Map<String, dynamic>> getInviteByToken(String token) async {
     try {
-      // Try invitations first
-      final inviteResponse = await _client
-          .from('invitations')
-          .select('*, properties(*)')
-          .eq('token', token)
-          .maybeSingle();
-      
-      if (inviteResponse != null) {
-        // If it's a secondary invite, we also want to attach the ACTIVE contract terms if available
-        final activeContract = await getActiveContract(inviteResponse['property_id']);
-        return {
-          ...inviteResponse,
-          'type': 'invitation',
-          'active_contract': activeContract?.toJson(),
-        };
-      }
-
-      // Try contracts
       final contractResponse = await _client
           .from('contracts')
           .select('*, properties(*)')
@@ -633,8 +641,26 @@ class PropertyRepository {
           .maybeSingle();
 
       if (contractResponse != null) {
+        // Apple "Hide My Email" fix:
+        // Kiracı linki açtığında tenant_id'yi hemen yaz (pending aşamasında bile).
+        // Bu sayede uid-bazlı stream devreye girerek dashboard'da invite kartı görünür.
+        final currentUser = _client.auth.currentUser;
+        final currentTenantId = contractResponse['tenant_id'];
+        if (currentUser != null && currentTenantId == null) {
+          try {
+            await _client
+                .from('contracts')
+                .update({'tenant_id': currentUser.id})
+                .eq('token', token)
+                .inFilter('status', ['pending', 'negotiating']);
+          } catch (e) {
+            print('DEBUG [getInviteByToken]: tenant_id pre-claim failed silently: $e');
+          }
+        }
+
         return {
           ...contractResponse,
+          'tenant_id': currentUser?.id ?? currentTenantId,
           'type': 'contract',
         };
       }
@@ -644,6 +670,7 @@ class PropertyRepository {
       rethrow;
     }
   }
+
 
   Future<void> acceptInvite(String token) async {
     final user = _client.auth.currentUser;
@@ -657,7 +684,7 @@ class PropertyRepository {
 
       // Call the secure database function
       await _client.rpc('accept_invitation', params: {
-        'invite_token': token,
+        'p_invite_token': token,
       });
       
       if (invite != null) {
@@ -867,13 +894,13 @@ class PropertyRepository {
     }
   }
 
-  Future<void> acceptContract(String token) async {
+  Future<void> acceptContract(String? token) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
 
     try {
       await _client.rpc('accept_contract', params: {
-        'contract_token': token,
+        'contract_token': token, // null ise RPC email fallback'e geçer
       });
     } catch (e) {
       print('DEBUG ERROR [acceptContract]: $e');
@@ -1081,32 +1108,47 @@ class PropertyRepository {
         .eq('invitee_email', email.trim().toLowerCase())
         .cast<dynamic>()
         .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .asyncMap((rows) async {
-          final pendingRows = rows
-              .where((r) {
-                final status = r['status'] as String?;
-                // 'revision_requested' with a tenant_id means the landlord proposed changes
-                // on an ACTIVE contract. The tenant sees this via Property Detail screen,
-                // NOT as a new invitation card on the dashboard.
-                if (status == 'revision_requested' && r['tenant_id'] != null) {
-                  return false;
-                }
-                return status == 'pending' || status == 'negotiating' || status == 'revision_requested';
-              })
-              .toList();
-              
-          if (pendingRows.isEmpty) return [];
+        .asyncMap((rows) => _filterAndEnrichContracts(rows));
+  }
 
-          final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
-          final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
-          final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+  /// Apple "Hide My Email" için: invitee_email yerine tenant_id ile pending kontratları getir.
+  /// Kiracı daveti kabul etmeden önce tenant_id boş olduğundan bu stream başlangıçta boş döner;
+  /// Supabase RPC email doğrulamasını bypass edince tenant_id set edilir ve bu stream devreye girer.
+  Stream<List<Map<String, dynamic>>> getPendingContractsStreamForUserId(String userId) {
+    return _client
+        .from('contracts')
+        .stream(primaryKey: ['id'])
+        .eq('tenant_id', userId)
+        .cast<dynamic>()
+        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+        .asyncMap((rows) => _filterAndEnrichContracts(rows));
+  }
 
-          return pendingRows.map((item) => {
-            ...item,
-            'type': 'contract',
-            'properties': propsMap[item['property_id']],
-          }).toList();
-        });
+  Future<List<Map<String, dynamic>>> _filterAndEnrichContracts(List<Map<String, dynamic>> rows) async {
+    final pendingRows = rows
+        .where((r) {
+          final status = r['status'] as String?;
+          // 'revision_requested' with a tenant_id means the landlord proposed changes
+          // on an ACTIVE contract. The tenant sees this via Property Detail screen,
+          // NOT as a new invitation card on the dashboard.
+          if (status == 'revision_requested' && r['tenant_id'] != null) {
+            return false;
+          }
+          return status == 'pending' || status == 'negotiating' || status == 'revision_requested';
+        })
+        .toList();
+
+    if (pendingRows.isEmpty) return [];
+
+    final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
+    final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
+    final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+
+    return pendingRows.map((item) => {
+      ...item,
+      'type': 'contract',
+      'properties': propsMap[item['property_id']],
+    }).toList();
   }
 
   Stream<List<Map<String, dynamic>>> getPendingInvitationsStreamForEmail(String email) {
@@ -1116,23 +1158,31 @@ class PropertyRepository {
         .eq('invitee_email', email.trim().toLowerCase())
         .cast<dynamic>()
         .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .asyncMap((rows) async {
-          final pendingRows = rows
-              .where((r) => r['status'] == 'pending')
-              .toList();
-              
-          if (pendingRows.isEmpty) return [];
+        .asyncMap((rows) => _filterAndEnrichInvitations(rows));
+  }
 
-          final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
-          final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
-          final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+  /// invitations tablosu bu projede kullanılmıyor; her şey contracts tablosunda yürüyor.
+  /// uid-bazlı sorgulama contracts için getPendingContractsStreamForUserId ile yapılıyor.
+  Stream<List<Map<String, dynamic>>> getPendingInvitationsStreamForUserId(String userId) {
+    return Stream.value([]);
+  }
 
-          return pendingRows.map((item) => {
-            ...item,
-            'type': 'invitation',
-            'properties': propsMap[item['property_id']],
-          }).toList();
-        });
+  Future<List<Map<String, dynamic>>> _filterAndEnrichInvitations(List<Map<String, dynamic>> rows) async {
+    final pendingRows = rows
+        .where((r) => r['status'] == 'pending')
+        .toList();
+
+    if (pendingRows.isEmpty) return [];
+
+    final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
+    final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
+    final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+
+    return pendingRows.map((item) => {
+      ...item,
+      'type': 'invitation',
+      'properties': propsMap[item['property_id']],
+    }).toList();
   }
 
   Future<void> removeTenant(String propertyId, String inviteId) async {

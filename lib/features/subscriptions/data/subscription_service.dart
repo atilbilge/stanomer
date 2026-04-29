@@ -1,4 +1,3 @@
-import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +17,7 @@ final subscriptionServiceProvider = Provider<SubscriptionService>((ref) {
 
 class SubscriptionService {
   final Ref _ref;
+  bool _isConfigured = false;
 
   SubscriptionService(this._ref);
 
@@ -45,14 +45,15 @@ class SubscriptionService {
     final String apiKey = defaultTargetPlatform == TargetPlatform.android ? _androidApiKey : _iosApiKey;
     final config = PurchasesConfiguration(apiKey);
 
-    // CRITICAL: Force the Native UI to use the app's selected locale 
-    // instead of the device system locale.
+    // Force the Native UI to use the app's selected locale.
+    // Re-configuring with a new locale override is often required to update the Native Paywall.
     if (locale != null) {
       config.preferredUILocaleOverride = _getRevenueCatTag(locale);
       debugPrint('RevenueCat UI Locale forced to: ${config.preferredUILocaleOverride}');
     }
 
     await Purchases.configure(config);
+    _isConfigured = true;
     
     // Force refresh cache to ensure we get the latest prices and dashboard config
     await Purchases.invalidateCustomerInfoCache();
@@ -93,10 +94,16 @@ class SubscriptionService {
     try {
       final tag = _getRevenueCatTag(locale);
 
-      // Use a custom attribute instead of a reserved "$" one to avoid API errors
-      await Purchases.setAttributes({'app_locale': tag});
+      // Use both the reserved attribute and our custom one for maximum compatibility
+      await Purchases.setAttributes({
+        '\$preferred_locale': tag,
+        'app_locale': tag,
+      });
 
-      debugPrint('RevenueCat subscriber attribute synced to: $tag');
+      // Force a cache invalidation so the next Paywall presentation uses the updated locale
+      await Purchases.invalidateCustomerInfoCache();
+
+      debugPrint('RevenueCat subscriber attributes synced to: $tag');
     } catch (e) {
       debugPrint('RevenueCat syncLocale error: $e');
     }
@@ -122,6 +129,10 @@ class SubscriptionService {
     try {
       // Force refresh before showing to ensure latest logo and prices
       await Purchases.invalidateCustomerInfoCache();
+      
+      // Small delay to allow the native side to process the locale change/cache invalidation
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       await RevenueCatUI.presentPaywall();
     } catch (e) {
       debugPrint("Paywall Error: $e");

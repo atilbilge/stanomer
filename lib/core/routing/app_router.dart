@@ -12,6 +12,7 @@ import '../../features/property/presentation/invitation_accept_screen.dart';
 import '../../features/property/domain/property.dart';
 import '../../features/property/presentation/property_settings_screen.dart';
 import '../../features/auth/presentation/terms_conditions_screen.dart';
+import '../../features/support/presentation/support_screen.dart';
 import '../../features/auth/data/auth_providers.dart';
 import '../../features/auth/data/auth_repository.dart';
 
@@ -151,6 +152,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/terms',
         builder: (context, state) => const TermsConditionsScreen(),
+      ),
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const SupportScreen(),
       ),
     ],
   );

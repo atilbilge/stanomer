@@ -7,6 +7,8 @@ import 'package:stanomer/features/property/presentation/widgets/payment_responsi
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
@@ -216,20 +218,8 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
           );
           Navigator.pop(context);
         }
-      } else if (_isLeaseLocked) {
-        // Subsequent tenant joining via Invitation table
-        final token = await repo.createInvitation(
-          propertyId: widget.property.id,
-          inviteeEmail: _emailController.text.trim(),
-          inviterName: newName,
-        );
-        
-        setState(() {
-          _generatedLink = 'stanomer://invite?token=$token';
-          _isLoading = false;
-        });
       } else {
-        // First tenant / Master Contract
+        // Her durumda contracts tablosunu kullan (hem ilk hem ek kiracı)
         final contract = await repo.createContract(
           propertyId: widget.property.id,
           inviteeEmail: _emailController.text.trim(),
@@ -313,15 +303,17 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                       controller: _emailController,
                       enabled: widget.existingContract == null,
                       decoration: InputDecoration(
-                        labelText: loc.tenantEmail,
+                        labelText: '${loc.tenantEmail} (${loc.optional})',
                         prefixIcon: const Icon(LucideIcons.mail, size: 20),
                         hintText: "kiraci@email.com",
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty) return loc.fieldRequired;
-                        final currentUserEmail = ref.read(currentUserProvider)?.email;
-                        if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
-                          return loc.cannotInviteSelf;
+                        // Email opsiyonel — sadece girilmişse self-invite kontrolü yap
+                        if (val != null && val.isNotEmpty) {
+                          final currentUserEmail = ref.read(currentUserProvider)?.email;
+                          if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
+                            return loc.cannotInviteSelf;
+                          }
                         }
                         return null;
                       },
@@ -332,9 +324,9 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: StanomerColors.brandPrimarySurface.withOpacity(0.1),
+                          color: StanomerColors.brandPrimarySurface.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: StanomerColors.brandPrimary.withOpacity(0.2)),
+                          border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [
@@ -511,7 +503,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
         decoration: BoxDecoration(
           color: StanomerColors.bgPage,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: date == null ? Colors.red.withOpacity(0.5) : StanomerColors.borderDefault),
+          border: Border.all(color: date == null ? Colors.red.withValues(alpha: 0.5) : StanomerColors.borderDefault),
         ),
         child: Row(
           children: [
@@ -639,31 +631,100 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Widget _buildGeneratedLinkSection(BuildContext context, AppLocalizations loc, Color roleColor) {
+    final link = _generatedLink!;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(LucideIcons.checkCircle2, color: roleColor, size: 64),
-        const SizedBox(height: 24),
-        Text(loc.inviteCreatedSuccess, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        Text(
+          loc.inviteCreatedSuccess,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 32),
+
+        // ── Link kutusu ──────────────────────────────────────────────────
         Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: StanomerColors.bgPage, borderRadius: BorderRadius.circular(12), border: Border.all(color: StanomerColors.borderDefault)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: StanomerColors.bgPage,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: StanomerColors.borderDefault),
+          ),
           child: Row(
             children: [
-              Expanded(child: Text(_generatedLink!, style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary))),
+              Expanded(
+                child: Text(
+                  link,
+                  style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               IconButton(
-                icon: const Icon(LucideIcons.copy, size: 20),
+                icon: const Icon(LucideIcons.copy, size: 18),
+                tooltip: loc.copyLink,
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: _generatedLink!));
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.copyLink)));
+                  Clipboard.setData(ClipboardData(text: link));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(loc.copyLink)),
+                  );
                 },
+              ),
+              IconButton(
+                icon: const Icon(LucideIcons.share2, size: 18),
+                tooltip: loc.share,
+                onPressed: () => Share.share(link),
               ),
             ],
           ),
         ),
+
+        const SizedBox(height: 32),
+
+        // ── QR Kod ──────────────────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              QrImageView(
+                data: link,
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(LucideIcons.share2, size: 16),
+                    label: Text(loc.share),
+                    onPressed: () => Share.share(link),
+                    style: OutlinedButton.styleFrom(foregroundColor: roleColor),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: 48),
         ElevatedButton(
           onPressed: () => Navigator.pop(context),
+          style: ElevatedButton.styleFrom(backgroundColor: roleColor),
           child: Text(loc.done),
         ),
       ],

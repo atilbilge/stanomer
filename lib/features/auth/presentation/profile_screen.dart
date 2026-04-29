@@ -248,226 +248,502 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
-    final isEmailUser = user?.appMetadata['provider'] == 'email';
-    final role = user?.userMetadata?['role'] ?? '';
-    final roleText = role == 'landlord' ? loc.roleLandlord : (role == 'tenant' ? loc.roleTenant : role);
+    final role = user?.userMetadata?['role'] as String?;
+    final isPremium = ref.watch(isPremiumProvider);
 
     return Scaffold(
+      backgroundColor: StanomerColors.bgPage,
       appBar: AppBar(
-        title: Text(loc.profile),
+        title: Text(loc.profile, style: const TextStyle(fontWeight: FontWeight.w900)),
+        centerTitle: true,
+        backgroundColor: StanomerColors.bgCard,
+        elevation: 0,
+        foregroundColor: StanomerColors.textPrimary,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Role display
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: StanomerColors.brandPrimarySurface,
-                borderRadius: const BorderRadius.all(StanomerRadius.lg),
-                border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.2)),
+            _UserInfoCard(user: user, role: role, loc: loc),
+            const SizedBox(height: 16),
+            _PremiumBanner(
+              isPremium: isPremium,
+              onTap: () {
+                if (isPurchaseSupported) {
+                  ref.read(subscriptionServiceProvider).presentPaywall();
+                } else {
+                  showPremiumMobileOnlySheet(context);
+                }
+              },
+              loc: loc,
+            ),
+            const SizedBox(height: 32),
+            
+            _SectionHeader(title: loc.updateName.toUpperCase()),
+            const SizedBox(height: 12),
+            _NameUpdateCard(
+              controller: _nameController,
+              isLoading: _isLoading,
+              onSave: _updateProfile,
+              loc: loc,
+            ),
+            
+            const SizedBox(height: 32),
+            _SectionHeader(title: loc.settingsHeader.toUpperCase()), // Using custom key or loc
+            const SizedBox(height: 12),
+            _SettingsGroup(
+              onLanguageTap: _showLanguageSwitcher,
+              onSupportTap: () => context.push('/support'),
+              onTermsTap: () => context.push('/terms'),
+              currentLocale: ref.watch(localeProvider),
+              loc: loc,
+            ),
+            
+            const SizedBox(height: 32),
+            _SectionHeader(title: loc.accountHeader.toUpperCase()), // Using custom key or loc
+            const SizedBox(height: 12),
+            _AccountGroup(
+              onLogoutTap: () => ref.read(authRepositoryProvider).signOut(),
+              onDeleteTap: _showDeleteConfirmDialog,
+              loc: loc,
+            ),
+            
+            const SizedBox(height: 40),
+            Center(
+              child: Text(
+                'Stanomer v1.1.0',
+                style: TextStyle(
+                  color: StanomerColors.textTertiary.withValues(alpha: 0.5),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              child: Row(
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLanguageSwitcher() {
+    final loc = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: StanomerRadius.xl)),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(loc.appLanguage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ),
+            ListTile(
+              leading: const Text('🇬🇧', style: TextStyle(fontSize: 20)),
+              title: Text(loc.english),
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
+              title: Text(loc.serbianLatin),
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'));
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
+              title: Text(loc.serbianCyrillic),
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'));
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Text('🇹🇷', style: TextStyle(fontSize: 20)),
+              title: Text(loc.turkish),
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(const Locale('tr'));
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UserInfoCard extends StatelessWidget {
+  final User? user;
+  final String? role;
+  final AppLocalizations loc;
+
+  const _UserInfoCard({required this.user, required this.role, required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
+    final fullName = user?.userMetadata?['full_name'] as String? ?? 'User';
+    final initials = fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('').toUpperCase();
+    final roleColor = StanomerColors.getRoleColor(role);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: StanomerColors.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: StanomerShadows.card,
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: roleColor.withValues(alpha: 0.1),
+            child: Text(
+              initials,
+              style: TextStyle(color: roleColor, fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fullName,
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5),
+                ),
+                Text(
+                  user?.email ?? '',
+                  style: const TextStyle(color: StanomerColors.textTertiary, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: roleColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              (role == 'landlord' ? loc.roleLandlord : loc.roleTenant).toUpperCase(),
+              style: TextStyle(
+                color: roleColor,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PremiumBanner extends StatelessWidget {
+  final bool isPremium;
+  final VoidCallback onTap;
+  final AppLocalizations loc;
+
+  const _PremiumBanner({required this.isPremium, required this.onTap, required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isPremium) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: StanomerColors.brandPrimary,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: StanomerColors.brandPrimary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.crown, color: Colors.white, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(LucideIcons.shieldCheck, color: StanomerColors.brandPrimary),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(loc.role, style: Theme.of(context).textTheme.labelLarge),
-                      Text(roleText, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: StanomerColors.brandPrimary)),
-                      const SizedBox(height: 4),
-                      Text(user?.email ?? '', style: Theme.of(context).textTheme.bodySmall),
-                    ],
+                  Text(
+                    loc.discoverPremium,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  Text(
+                    loc.unlimitedLeaseContracts,
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            const Icon(LucideIcons.chevronRight, color: Colors.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-            // Name update
-            Text(loc.updateName, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
+class _SectionHeader extends StatelessWidget {
+  final String title;
+
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: StanomerColors.textTertiary,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _NameUpdateCard extends StatelessWidget {
+  final TextEditingController controller;
+  final bool isLoading;
+  final VoidCallback onSave;
+  final AppLocalizations loc;
+
+  const _NameUpdateCard({
+    required this.controller,
+    required this.isLoading,
+    required this.onSave,
+    required this.loc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: StanomerColors.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: StanomerShadows.card,
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextField(
+              controller: controller,
               decoration: InputDecoration(
-                labelText: loc.fullName,
-                prefixIcon: const Icon(LucideIcons.user),
+                labelText: loc.fullName.toUpperCase(),
+                labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                prefixIcon: const Icon(LucideIcons.user, size: 20),
+                border: InputBorder.none,
+                filled: false,
+              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : onSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StanomerColors.brandPrimary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: isLoading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(loc.saveChanges, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _updateProfile,
-              child: Text(loc.saveChanges),
-            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-            // Password update
-            if (isEmailUser) ...[
-              const SizedBox(height: 48),
-              Text(loc.updatePassword, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _oldPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: loc.oldPassword,
-                  prefixIcon: const Icon(LucideIcons.lock),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _newPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: loc.newPassword,
-                  prefixIcon: const Icon(LucideIcons.key),
-                ),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: _isLoading ? null : _updatePassword,
-                child: Text(loc.updatePassword),
-              ),
-            ],
+class _SettingsGroup extends StatelessWidget {
+  final VoidCallback onLanguageTap;
+  final VoidCallback onSupportTap;
+  final VoidCallback onTermsTap;
+  final Locale currentLocale;
+  final AppLocalizations loc;
 
-            const SizedBox(height: 48),
-            
-            // Language selection
-            Text(loc.appLanguage, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: StanomerColors.borderDefault),
-                borderRadius: const BorderRadius.all(StanomerRadius.md),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<Locale>(
-                    value: ref.watch(localeProvider),
-                    isExpanded: true,
-                    icon: const Icon(LucideIcons.globe, size: 20),
-                    items: [
-                      DropdownMenuItem(
-                        value: const Locale('en'),
-                        child: Text('🇬🇧 ${loc.english}'),
+  const _SettingsGroup({
+    required this.onLanguageTap,
+    required this.onSupportTap,
+    required this.onTermsTap,
+    required this.currentLocale,
+    required this.loc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String getLanguageName() {
+      if (currentLocale.languageCode == 'tr') return loc.turkish;
+      if (currentLocale.languageCode == 'en') return loc.english;
+      if (currentLocale.languageCode == 'sr') {
+        return currentLocale.scriptCode == 'Cyrl' ? loc.serbianCyrillic : loc.serbianLatin;
+      }
+      return currentLocale.languageCode;
+    }
+
+    String getFlag() {
+      if (currentLocale.languageCode == 'tr') return '🇹🇷';
+      if (currentLocale.languageCode == 'en') return '🇬🇧';
+      return '🇷🇸';
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: StanomerColors.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: StanomerShadows.card,
+      ),
+      child: Column(
+        children: [
+          _ListTile(
+            icon: LucideIcons.globe,
+            title: loc.appLanguage.toUpperCase(),
+            subtitle: '${getFlag()} ${getLanguageName()}',
+            onTap: onLanguageTap,
+            showChevron: true,
+          ),
+          const Divider(height: 1, indent: 56),
+          _ListTile(
+            icon: LucideIcons.helpCircle,
+            title: loc.support_title,
+            onTap: onSupportTap,
+            showChevron: true,
+          ),
+          const Divider(height: 1, indent: 56),
+          _ListTile(
+            icon: LucideIcons.fileText,
+            title: loc.termsOfService,
+            onTap: onTermsTap,
+            showChevron: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountGroup extends StatelessWidget {
+  final VoidCallback onLogoutTap;
+  final VoidCallback onDeleteTap;
+  final AppLocalizations loc;
+
+  const _AccountGroup({required this.onLogoutTap, required this.onDeleteTap, required this.loc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: StanomerColors.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: StanomerShadows.card,
+      ),
+      child: Column(
+        children: [
+          _ListTile(
+            icon: LucideIcons.logOut,
+            title: loc.logout,
+            titleColor: StanomerColors.alertPrimary,
+            onTap: onLogoutTap,
+          ),
+          const Divider(height: 1, indent: 56),
+          _ListTile(
+            icon: LucideIcons.userX,
+            title: loc.deleteAccount,
+            subtitle: loc.deleteAccountWarning.split('.')[0], // Short version
+            titleColor: StanomerColors.alertPrimary,
+            onTap: onDeleteTap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ListTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+  final Color? titleColor;
+  final bool showChevron;
+
+  const _ListTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.onTap,
+    this.titleColor,
+    this.showChevron = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: titleColor ?? StanomerColors.textSecondary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (subtitle != null)
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: StanomerColors.textTertiary,
+                        letterSpacing: 0.5,
                       ),
-                      DropdownMenuItem(
-                        value: const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'),
-                        child: Text('🇷🇸 ${loc.serbianLatin}'),
-                      ),
-                      DropdownMenuItem(
-                        value: const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
-                        child: Text('🇷🇸 ${loc.serbianCyrillic}'),
-                      ),
-                      DropdownMenuItem(
-                        value: const Locale('tr'),
-                        child: Text('🇹🇷 ${loc.turkish}'),
-                      ),
-                    ],
-                    onChanged: (Locale? newLocale) {
-                      if (newLocale != null) {
-                        ref.read(localeProvider.notifier).setLocale(newLocale);
-                      }
-                    },
+                    ),
+                  Text(
+                    subtitle ?? title,
+                    style: TextStyle(
+                      fontWeight: subtitle != null ? FontWeight.w900 : FontWeight.bold,
+                      fontSize: subtitle != null ? 15 : 15,
+                      color: titleColor ?? StanomerColors.textPrimary,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            // Premium Status & Customer Center / Paywall
-            Consumer(
-              builder: (context, ref, child) {
-                // On web/macOS, show the mobile-only info sheet instead of paywall
-                if (!isPurchaseSupported) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton.icon(
-                      onPressed: () => showPremiumMobileOnlySheet(context),
-                      icon: const Icon(LucideIcons.crown),
-                      label: Text(loc.discoverPremium),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: StanomerColors.brandPrimary,
-                        foregroundColor: StanomerColors.bgPage,
-                      ),
-                    ),
-                  );
-                }
-
-                final isPremium = ref.watch(isPremiumProvider);
-
-                if (isPremium) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        ref.read(subscriptionServiceProvider).presentCustomerCenter();
-                      },
-                      icon: const Icon(LucideIcons.creditCard),
-                      label: Text(loc.manageSubscription),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: StanomerColors.alertPrimary,
-                        side: const BorderSide(color: StanomerColors.alertPrimary),
-                      ),
-                    ),
-                  );
-                } else {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        ref.read(subscriptionServiceProvider).presentPaywall();
-                      },
-                      icon: const Icon(LucideIcons.crown),
-                      label: Text(loc.discoverPremium),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: StanomerColors.brandPrimary,
-                        foregroundColor: StanomerColors.bgPage,
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-
-            // Logout
-            OutlinedButton.icon(
-              onPressed: () async {
-                await ref.read(authRepositoryProvider).signOut();
-              },
-              icon: const Icon(LucideIcons.logOut),
-              label: Text(loc.logout),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: StanomerColors.alertPrimary,
-                side: const BorderSide(color: StanomerColors.alertPrimary),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextButton.icon(
-              onPressed: () => context.push('/terms'),
-              icon: const Icon(LucideIcons.fileText, size: 20),
-              label: Text(loc.termsOfService),
-              style: TextButton.styleFrom(
-                foregroundColor: StanomerColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Delete Account
-            TextButton.icon(
-              onPressed: _showDeleteConfirmDialog,
-              icon: const Icon(LucideIcons.userX, size: 20),
-              label: Text(loc.deleteAccount),
-              style: TextButton.styleFrom(
-                foregroundColor: StanomerColors.alertPrimary,
-              ),
-            ),
+            if (showChevron)
+              const Icon(LucideIcons.chevronRight, size: 18, color: StanomerColors.borderInput),
           ],
         ),
       ),

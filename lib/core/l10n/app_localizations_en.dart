@@ -30,7 +30,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tenant => 'Tenant';
 
   @override
-  String get zzplConsent => 'I agree to the processing of my data in accordance with the Law on Personal Data Protection (ZZPL) of Serbia.';
+  String get zzplConsent =>
+      'I agree to the processing of my data in accordance with the Law on Personal Data Protection (ZZPL) of Serbia.';
 
   @override
   String get selectRole => 'Select your role';
@@ -69,10 +70,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteAccount => 'Delete Account';
 
   @override
-  String get deleteAccountWarning => 'This action is permanent and cannot be undone. All your data will be deleted.';
+  String get deleteAccountWarning =>
+      'This action is permanent and cannot be undone. All your data will be deleted.';
 
   @override
-  String get confirmPasswordForDeletion => 'Please enter your password to confirm deletion';
+  String get confirmPasswordForDeletion =>
+      'Please enter your password to confirm deletion';
 
   @override
   String get deleteButtonLabel => 'Permanently Delete My Account';
@@ -87,10 +90,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeToStanomer => 'Welcome to Stanomer';
 
   @override
-  String get consentTextFullTitle => 'Consent for Personal Data Processing (ZZPL)';
+  String get consentTextFullTitle =>
+      'Consent for Personal Data Processing (ZZPL)';
 
   @override
   String get profile => 'Profile';
+
+  @override
+  String get settingsHeader => 'Settings';
+
+  @override
+  String get accountHeader => 'Account';
+
+  @override
+  String get discoverPremium => 'Discover Premium';
+
+  @override
+  String get unlimitedLeaseContracts => 'Unlimited lease contracts';
 
   @override
   String get updateName => 'Update Name';
@@ -156,7 +172,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProperties => 'No properties found';
 
   @override
-  String get addYourFirstProperty => 'Add your first property to start tracking!';
+  String get addYourFirstProperty =>
+      'Add your first property to start tracking!';
 
   @override
   String get editProperty => 'Edit Property';
@@ -168,7 +185,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmDeleteTitle => 'Delete Property';
 
   @override
-  String get confirmDeleteMessage => 'Are you sure you want to delete this property? This action cannot be undone.';
+  String get confirmDeleteMessage =>
+      'Are you sure you want to delete this property? This action cannot be undone.';
 
   @override
   String get propertyDeletedSuccess => 'Property deleted successfully';
@@ -180,7 +198,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailHint => 'Enter tenant\'s email address';
 
   @override
-  String get inviteCreatedSuccess => 'Invite link created! You can now share it.';
+  String get inviteCreatedSuccess =>
+      'Invite link created! You can now share it.';
 
   @override
   String get shareInviteLink => 'Share Invite Link';
@@ -256,7 +275,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tenantEmptyStateTitle => 'No property assigned yet';
 
   @override
-  String get tenantEmptyStateMessage => 'If your landlord has sent you an invitation, it will appear here. Tap the button below to check for new invites.';
+  String get tenantEmptyStateMessage =>
+      'If your landlord has sent you an invitation, it will appear here. Tap the button below to check for new invites.';
 
   @override
   String get refresh => 'Refresh';
@@ -268,7 +288,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmDeclineInviteTitle => 'Decline Invitation?';
 
   @override
-  String get confirmDeclineInviteMessage => 'Are you sure you want to decline this invitation? It will be removed from your pending list.';
+  String get confirmDeclineInviteMessage =>
+      'Are you sure you want to decline this invitation? It will be removed from your pending list.';
 
   @override
   String get contractStartDate => 'Contract Start Date';
@@ -313,16 +334,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatAreYou => 'What would you like to continue as?';
 
   @override
-  String get selectRoleToContinue => 'Select a role to get started. You can switch anytime from the header above.';
+  String get selectRoleToContinue =>
+      'Select a role to get started. You can switch anytime from the header above.';
 
   @override
-  String get consentTextFullBody => 'By using the Stanomer application, you provide explicit consent for the processing of your personal data in accordance with the Law on Personal Data Protection (ZZPL) of the Republic of Serbia.\n\nWhat data is collected: Your name, e-mail address, IP address, and real estate lease agreement data.\n\nPurpose of processing: The data is used exclusively to facilitate communication between the landlord and the tenant, keep payment records, and create legally valid logs.\n\nData sharing: Your data is not sold to third parties. It is stored on secure servers in the EU (Supabase Frankfurt).\n\nYour rights: You have the right at any time to request access to your data or permanent deletion of your account and all associated data directly through the app.';
+  String get consentTextFullBody =>
+      'By using the Stanomer application, you provide explicit consent for the processing of your personal data in accordance with the Law on Personal Data Protection (ZZPL) of the Republic of Serbia.\n\nWhat data is collected: Your name, e-mail address, IP address, and real estate lease agreement data.\n\nPurpose of processing: The data is used exclusively to facilitate communication between the landlord and the tenant, keep payment records, and create legally valid logs.\n\nData sharing: Your data is not sold to third parties. It is stored on secure servers in the EU (Supabase Frankfurt).\n\nYour rights: You have the right at any time to request access to your data or permanent deletion of your account and all associated data directly through the app.';
 
   @override
   String get removeTenant => 'Remove Tenant';
 
   @override
-  String get removeTenantConfirmation => 'Are you sure you want to remove this tenant from the property? This will detach them and delete the invitation record.';
+  String get removeTenantConfirmation =>
+      'Are you sure you want to remove this tenant from the property? This will detach them and delete the invitation record.';
 
   @override
   String get remove => 'Remove';
@@ -364,22 +388,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noContractsTitle => 'No contracts yet';
 
   @override
-  String get noContractsMessage => 'To track rent and expenses for your property, first invite a tenant by entering contract details.';
+  String get noContractsMessage =>
+      'To track rent and expenses for your property, first invite a tenant by entering contract details.';
 
   @override
-  String get inviteFirstTenant => 'Invite First Tenant';
+  String get inviteFirstTenant => 'Invite Tenant';
 
   @override
   String get confirmCancelInvitationTitle => 'Cancel Invitation';
 
   @override
-  String get confirmCancelInvitationMessage => 'Are you sure you want to withdraw this invitation? This action will permanently delete it.';
+  String get confirmCancelInvitationMessage =>
+      'Are you sure you want to withdraw this invitation? This action will permanently delete it.';
 
   @override
   String get confirmDeclineRevisionTitle => 'Decline Revision Request';
 
   @override
-  String get confirmDeclineRevisionMessage => 'Are you sure you want to decline the tenant\'s revision request? The contract will remain pending with its original terms.';
+  String get confirmDeclineRevisionMessage =>
+      'Are you sure you want to decline the tenant\'s revision request? The contract will remain pending with its original terms.';
 
   @override
   String get activeContract => 'Active Lease';
@@ -492,7 +519,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contractSettings => 'Contract Settings';
 
   @override
-  String get activeContractTermsInfo => 'Active contract terms. All updates made here take effect only when both tenant and landlord agree.';
+  String get activeContractTermsInfo =>
+      'Active contract terms. All updates made here take effect only when both tenant and landlord agree.';
 
   @override
   String get dueDayOfMonth => 'Due Day of Month';
@@ -548,7 +576,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noActiveContract => 'No uploaded contract found';
 
   @override
-  String get contractTermsInfo => 'Active contract terms. All updates made here take effect only when both tenant and landlord agree.';
+  String get contractTermsInfo =>
+      'Active contract terms. All updates made here take effect only when both tenant and landlord agree.';
 
   @override
   String get send => 'Send';
@@ -557,7 +586,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalRent => 'Total Rent';
 
   @override
-  String get infoTooltip => 'Covers pooled public utilities like heating, water, and waste.';
+  String get infoTooltip =>
+      'Covers pooled public utilities like heating, water, and waste.';
 
   @override
   String get electricityTooltip => 'Individual electricity consumption cost.';
@@ -566,7 +596,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get internetTooltip => 'Subscription-based internet and TV packages.';
 
   @override
-  String get maintenanceTooltip => 'Building cleaning, elevator maintenance, and common area costs.';
+  String get maintenanceTooltip =>
+      'Building cleaning, elevator maintenance, and common area costs.';
 
   @override
   String get declare => 'Declare';
@@ -580,7 +611,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get awaitingApprovalInfo => 'Your change proposal is awaiting the other party\'s approval.';
+  String get awaitingApprovalInfo =>
+      'Your change proposal is awaiting the other party\'s approval.';
 
   @override
   String get propertyDetails => 'PROPERTY DETAILS';
@@ -589,7 +621,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultLeaseTerms => 'DEFAULT LEASE TERMS';
 
   @override
-  String get defaultLeaseTermsSubtitle => 'Target terms used as a template for new invitations.';
+  String get defaultLeaseTermsSubtitle =>
+      'Target terms used as a template for new invitations.';
 
   @override
   String get invalidNumber => 'Invalid number';
@@ -646,7 +679,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tenantEmail => 'Tenant Email';
 
   @override
-  String get existingContractTermsInfo => 'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.';
+  String get existingContractTermsInfo =>
+      'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.';
 
   @override
   String get rentAndPayment => 'RENT & PAYMENT';
@@ -721,13 +755,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentResponsibility => 'PAYMENT RESPONSIBILITY';
 
   @override
-  String get tenantPaysDirectlyToUtility => 'Tenant pays directly to the utility';
+  String get tenantPaysDirectlyToUtility =>
+      'Tenant pays directly to the utility';
 
   @override
   String get tenantPaysToLandlord => 'Tenant pays to the landlord';
 
   @override
-  String get selectPaymentReceiverWarning => 'Please select the payment receiver before continuing.';
+  String get selectPaymentReceiverWarning =>
+      'Please select the payment receiver before continuing.';
 
   @override
   String progressSummary(int completed, int total, int sent) {
@@ -789,7 +825,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noIssuesTitle => 'No issues reported yet';
 
   @override
-  String get noIssuesMessage => 'All good! No maintenance requests for this property.';
+  String get noIssuesMessage =>
+      'All good! No maintenance requests for this property.';
 
   @override
   String get updateStatus => 'Update Status';
@@ -811,7 +848,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logMaintenanceReopened => 'Maintenance request reopened';
 
   @override
-  String get logMaintenanceMessageAdded => 'New message added to maintenance request';
+  String get logMaintenanceMessageAdded =>
+      'New message added to maintenance request';
 
   @override
   String get notifications => 'Notifications';
@@ -844,7 +882,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDocument => 'Delete Document';
 
   @override
-  String get deleteDocumentConfirm => 'Are you sure you want to delete this document?';
+  String get deleteDocumentConfirm =>
+      'Are you sure you want to delete this document?';
 
   @override
   String get uploadMainContract => 'Upload Contract';
@@ -918,13 +957,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmApprovePaymentTitle => 'Approve Payment';
 
   @override
-  String get confirmApprovePaymentMessage => 'Are you sure you want to approve this payment?';
+  String get confirmApprovePaymentMessage =>
+      'Are you sure you want to approve this payment?';
 
   @override
   String get confirmRejectPaymentTitle => 'Reject Payment';
 
   @override
-  String get confirmRejectPaymentMessage => 'Do you want to reject this declaration and ask the tenant to re-declare?';
+  String get confirmRejectPaymentMessage =>
+      'Do you want to reject this declaration and ask the tenant to re-declare?';
 
   @override
   String get confirm => 'Confirm';
@@ -939,7 +980,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmTerminationTitle => 'Terminate Contract?';
 
   @override
-  String get confirmTerminationMessage => 'Are you sure you want to send a termination request to end this contract on the selected date?';
+  String get confirmTerminationMessage =>
+      'Are you sure you want to send a termination request to end this contract on the selected date?';
 
   @override
   String get terminationRequestSent => 'Termination request sent successfully.';
@@ -987,7 +1029,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmDisputeTitle => 'Dispute Payment';
 
   @override
-  String get disputeSentSuccess => 'Your dispute has been sent to the landlord.';
+  String get disputeSentSuccess =>
+      'Your dispute has been sent to the landlord.';
 
   @override
   String get takeAction => 'Take Action';
@@ -1033,7 +1076,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get acceptTermsWarning => 'Please accept the terms before proceeding.';
 
   @override
-  String get maintenanceRequestSuccess => 'Maintenance request sent successfully.';
+  String get maintenanceRequestSuccess =>
+      'Maintenance request sent successfully.';
 
   @override
   String get ok => 'OK';
@@ -1101,7 +1145,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get proposeRevision => 'Propose Revision';
 
   @override
-  String get revisionTermsQuestion => 'Which terms would you like to change? (Rent, due day, expenses, etc.)';
+  String get revisionTermsQuestion =>
+      'Which terms would you like to change? (Rent, due day, expenses, etc.)';
 
   @override
   String get enterNotesHint => 'Enter your notes here...';
@@ -1124,7 +1169,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notSelected => 'Not selected';
 
   @override
-  String get acceptTermsAndDistribution => 'I accept the contract terms and expense distribution.';
+  String get acceptTermsAndDistribution =>
+      'I accept the contract terms and expense distribution.';
 
   @override
   String get datesMandatory => 'Start and end dates are mandatory';
@@ -1133,7 +1179,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get partiesHeader => 'PARTIES';
 
   @override
-  String get leaseLockedWarning => 'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.';
+  String get leaseLockedWarning =>
+      'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.';
 
   @override
   String get rentPaymentHeader => 'RENT & PAYMENT';
@@ -1203,10 +1250,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noActivityLogs => 'No activity logs found yet';
 
   @override
-  String get landlordProposedChanges => 'Landlord proposed contract changes. Tap to review.';
+  String get landlordProposedChanges =>
+      'Landlord proposed contract changes. Tap to review.';
 
   @override
-  String get tenantProposedChanges => 'Tenant proposed contract changes. Tap to review.';
+  String get tenantProposedChanges =>
+      'Tenant proposed contract changes. Tap to review.';
 
   @override
   String dueOn(String date) {
@@ -1220,7 +1269,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get items => 'items';
 
   @override
-  String get waitingForOtherParty => 'Awaiting approval from the other party...';
+  String get waitingForOtherParty =>
+      'Awaiting approval from the other party...';
 
   @override
   String get awaitingApproval => 'Awaiting approval...';
@@ -1243,7 +1293,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paywallSubtitle => 'Remove limits in property management.';
 
   @override
-  String get unlimitedProperties => 'Unlimited property addition and management';
+  String get unlimitedProperties =>
+      'Unlimited property addition and management';
 
   @override
   String get detailedReporting => 'Faster and more detailed reporting';
@@ -1255,7 +1306,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pdfContracts => 'PDF contract generation (Coming Soon)';
 
   @override
-  String get automatedRenewal => 'Automated rent calculation and renewal (Coming Soon)';
+  String get automatedRenewal =>
+      'Automated rent calculation and renewal (Coming Soon)';
 
   @override
   String get restorePurchases => 'Restore Purchases';
@@ -1264,10 +1316,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get limitReachedTitle => 'You\'ve reached your free limit';
 
   @override
-  String get limitReachedSubtitle => 'Upgrade to Stanomer Premium to manage multiple properties.';
-
-  @override
-  String get discoverPremium => 'Discover Premium';
+  String get limitReachedSubtitle =>
+      'Upgrade to Stanomer Premium to manage multiple properties.';
 
   @override
   String get optionsLoadFailed => 'Could not load subscription options.';
@@ -1279,7 +1329,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumMobileOnly => 'Mobile App Required';
 
   @override
-  String get premiumMobileOnlyDesc => 'Stanomer Premium subscriptions can only be purchased through the mobile app. Download the app below to get started with Premium.';
+  String get premiumMobileOnlyDesc =>
+      'Stanomer Premium subscriptions can only be purchased through the mobile app. Download the app below to get started with Premium.';
 
   @override
   String get downloadOnAppStore => 'Download on the App Store';
@@ -1306,5 +1357,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termsOfService => 'Terms of Service & EULA';
 
   @override
-  String get termsOfServiceContent => 'Stanomer – End User License Agreement (EULA) & Terms of Service\nLast Updated: April 23, 2026\n\n1. Introduction\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and Stanomer (\"we,\" \"us,\" or \"our\"). By installing or using the Stanomer mobile application (\"App\"), you agree to be bound by the terms of this Agreement.\n\n2. Apple and Google Terms\nApple App Store: This Agreement is concluded between the User and Stanomer only, and not with Apple Inc. This agreement incorporates Apple’s Standard Licensed Application End User License Agreement (Standard EULA) by reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: This Agreement is concluded between the User and Stanomer only, and not with Google LLC.\n\nYou acknowledge that Apple and Google have no obligation whatsoever to furnish any maintenance and support services with respect to the App.\n\n3. Subscription and Billing (Auto-Renewable Subscriptions)\nStanomer offers premium features via auto-renewable subscriptions.\n\nPayment: Payment will be charged to your iTunes Account (Apple) or Google Play Account at confirmation of purchase.\n\nRenewal: Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.\n\nManagement: You can manage or turn off auto-renew in your Account Settings (App Store or Play Store) after purchase.\n\n4. User Content & Conduct\nYou are responsible for the data you enter (rental amounts, damage reports, contracts).\n\nYou may not upload illegal, offensive, or infringing content.\n\nStanomer reserves the right to remove any content that violates Serbian laws or these terms.\n\n5. Privacy and Global Data Protection (ZZPL, GDPR, KVKK Compliance)\nYour use of the App is governed by our Privacy Policy. We are committed to protecting your personal data in compliance with:\n\nSerbian Law (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: General Data Protection Regulation (EU).\n\nKVKK: Personal Data Protection Law (Turkey).\n\nOther International Standards: We adhere to global data privacy principles to ensure your information is handled securely regardless of your location.\n\n6. Limitation of Liability\nStanomer provides a platform for rental management and is not a party to the actual rental agreements between landlords and tenants. We are not liable for disputes arising between users or for financial transactions conducted outside the platform.\n\n7. Termination\nThis Agreement is effective until terminated by you or Stanomer. Your rights under this license will terminate automatically if you fail to comply with any of its terms.';
+  String get termsOfServiceContent =>
+      'Stanomer – End User License Agreement (EULA) & Terms of Service\nLast Updated: April 23, 2026\n\n1. Introduction\nThis End User License Agreement (\"Agreement\") is a legal agreement between you (\"User\") and Stanomer (\"we,\" \"us,\" or \"our\"). By installing or using the Stanomer mobile application (\"App\"), you agree to be bound by the terms of this Agreement.\n\n2. Apple and Google Terms\nApple App Store: This Agreement is concluded between the User and Stanomer only, and not with Apple Inc. This agreement incorporates Apple’s Standard Licensed Application End User License Agreement (Standard EULA) by reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: This Agreement is concluded between the User and Stanomer only, and not with Google LLC.\n\nYou acknowledge that Apple and Google have no obligation whatsoever to furnish any maintenance and support services with respect to the App.\n\n3. Subscription and Billing (Auto-Renewable Subscriptions)\nStanomer offers premium features via auto-renewable subscriptions.\n\nPayment: Payment will be charged to your iTunes Account (Apple) or Google Play Account at confirmation of purchase.\n\nRenewal: Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.\n\nManagement: You can manage or turn off auto-renew in your Account Settings (App Store or Play Store) after purchase.\n\n4. User Content & Conduct\nYou are responsible for the data you enter (rental amounts, damage reports, contracts).\n\nYou may not upload illegal, offensive, or infringing content.\n\nStanomer reserves the right to remove any content that violates Serbian laws or these terms.\n\n5. Privacy and Global Data Protection (ZZPL, GDPR, KVKK Compliance)\nYour use of the App is governed by our Privacy Policy. We are committed to protecting your personal data in compliance with:\n\nSerbian Law (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: General Data Protection Regulation (EU).\n\nKVKK: Personal Data Protection Law (Turkey).\n\nOther International Standards: We adhere to global data privacy principles to ensure your information is handled securely regardless of your location.\n\n6. Limitation of Liability\nStanomer provides a platform for rental management and is not a party to the actual rental agreements between landlords and tenants. We are not liable for disputes arising between users or for financial transactions conducted outside the platform.\n\n7. Termination\nThis Agreement is effective until terminated by you or Stanomer. Your rights under this license will terminate automatically if you fail to comply with any of its terms.';
+
+  @override
+  String get support_title => 'Support';
+
+  @override
+  String get support_desc => 'Contact us for technical support or feedback.';
+
+  @override
+  String get subject => 'Subject';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get bug => 'Bug';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get messageSent => 'Message sent successfully!';
+
+  @override
+  String get errorSendingMessage => 'Failed to send message. Please try again.';
+
+  @override
+  String get requiredField => 'This field is required';
+
+  @override
+  String get invalidEmail => 'Invalid email address';
+
+  @override
+  String get offlineMessage =>
+      'You are currently offline. You can continue with existing data. It will be updated when connected.';
+
+  @override
+  String get retry => 'RETRY';
+
+  @override
+  String get zzplConsentTitle => 'Personal Data Protection Consent';
+
+  @override
+  String get zzplAgreeAndContinue => 'I Read and Approve';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get sentInvitation => 'Sent Invitation';
+
+  @override
+  String invitedOn(String date) {
+    return 'Invited on $date';
+  }
+
+  @override
+  String get noEmailProvided => 'No email provided';
 }

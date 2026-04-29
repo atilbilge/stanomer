@@ -87,7 +87,6 @@ class AuthRepository {
         data: {
           if (role != null) 'role': role,
           if (googleUser.displayName != null) 'full_name': googleUser.displayName,
-          'zzpl_document_version': 'v1.0',
         },
       ));
     }
@@ -125,7 +124,6 @@ class AuthRepository {
         data: {
           if (role != null) 'role': role,
           if (fullName != null) 'full_name': fullName,
-          'zzpl_document_version': 'v1.0',
         },
       ));
     }

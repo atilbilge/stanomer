@@ -52,7 +52,7 @@ class RoleSwitcherBottomSheet extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: accentColor.withOpacity(0.1),
+                backgroundColor: accentColor.withValues(alpha: 0.1),
                 child: Text(
                   (userName ?? userEmail ?? 'U').substring(0, 1).toUpperCase(),
                   style: TextStyle(

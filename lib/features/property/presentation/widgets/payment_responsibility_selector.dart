@@ -60,7 +60,7 @@ class PaymentResponsibilitySelector extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF7E6), // Light orange/yellow background
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -91,7 +91,7 @@ class PaymentResponsibilitySelector extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseBorderColor = isDark ? StanomerColors.borderDefault.withOpacity(0.3) : StanomerColors.borderDefault;
+    final baseBorderColor = isDark ? StanomerColors.borderDefault.withValues(alpha: 0.3) : StanomerColors.borderDefault;
     final baseBgColor = isDark ? Colors.black26 : StanomerColors.bgCard;
 
     return Material(
@@ -124,7 +124,7 @@ class PaymentResponsibilitySelector extends StatelessWidget {
                   Icon(
                     isSelected ? LucideIcons.checkCircle : LucideIcons.circle,
                     size: 18,
-                    color: isSelected ? StanomerColors.brandPrimary : StanomerColors.textTertiary.withOpacity(0.5),
+                    color: isSelected ? StanomerColors.brandPrimary : StanomerColors.textTertiary.withValues(alpha: 0.5),
                   ),
                 ],
               ),

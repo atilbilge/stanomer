@@ -66,6 +66,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
+    final zzplDocumentVersion = user?.userMetadata?['zzpl_document_version'] as String?;
     final isLandlord = role == 'landlord';
 
     final propertiesAsync = ref.watch(propertiesStreamProvider);
@@ -99,6 +100,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       floatingActionButton: () {
+        if (zzplDocumentVersion == null) return null;
+        
         if (propertiesAsync.hasValue) {
           final properties = propertiesAsync.value!;
           if (isLandlord) {
@@ -178,7 +181,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (isLandlord) ...[
+              if (zzplDocumentVersion == null) ...[
+                _ZzplConsentCard(
+                  onConsent: () async {
+                    setState(() => _roleSelectionLoading = true);
+                    try {
+                      final client = Supabase.instance.client;
+                      await client.auth.updateUser(UserAttributes(
+                        data: {'zzpl_document_version': 'v1.0'},
+                      ));
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: StanomerColors.alertPrimary,
+                        ));
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() => _roleSelectionLoading = false);
+                      }
+                    }
+                  },
+                  isLoading: _roleSelectionLoading,
+                ),
+              ] else if (isLandlord) ...[
                 if (propertiesAsync.hasValue) ...[
                   () {
                     final properties = propertiesAsync.value!;
@@ -2044,3 +2071,86 @@ Widget _buildStatusBadge({
   );
 }
 
+class _ZzplConsentCard extends ConsumerWidget {
+  final VoidCallback onConsent;
+  final bool isLoading;
+
+  const _ZzplConsentCard({
+    required this.onConsent,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
+    
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600),
+        margin: const EdgeInsets.only(top: 40),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: StanomerColors.bgCard,
+          borderRadius: const BorderRadius.all(StanomerRadius.xl),
+          boxShadow: StanomerShadows.card,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Icon(LucideIcons.shieldCheck, size: 64, color: StanomerColors.brandPrimary),
+            const SizedBox(height: 24),
+            Text(
+              loc.zzplConsentTitle,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: StanomerColors.bgPage,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: StanomerColors.borderDefault),
+              ),
+              child: Text(
+                loc.consentTextFullBody,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  height: 1.5,
+                  color: StanomerColors.textPrimary.withValues(alpha: 0.8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: isLoading ? null : onConsent,
+              icon: isLoading 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(LucideIcons.check),
+              label: Text(
+                loc.zzplAgreeAndContinue,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: StanomerColors.brandPrimary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: isLoading ? null : () async {
+                await ref.read(authRepositoryProvider).signOut();
+              },
+              icon: const Icon(LucideIcons.logOut, size: 18),
+              label: Text(loc.logout),
+              style: TextButton.styleFrom(
+                foregroundColor: StanomerColors.alertPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

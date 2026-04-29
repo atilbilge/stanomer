@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
 
 import 'core/l10n/app_localizations.dart';
 import 'core/routing/app_router.dart';
@@ -62,18 +64,67 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  final _appLinks = AppLinks();
+  StreamSubscription<Uri>? _linkSubscription;
+  String? _lastHandledToken; // çift tetiklenmeyi önler
+
   @override
   void initState() {
     super.initState();
-    // Initialize the lifecycle observer
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(appLifecycleProvider).init();
+      _initDeepLinks();
+    });
+  }
+
+  Future<void> _initDeepLinks() async {
+    try {
+      // Warm start: uygulama arka plandayken/açıkken gelen linkler
+      _linkSubscription = _appLinks.uriLinkStream.listen(
+        (uri) {
+          debugPrint('Deep link (warm): $uri');
+          _scheduleDeepLink(uri);
+        },
+        onError: (err) => debugPrint('Deep link stream error: $err'),
+      );
+
+      // Cold start: uygulama kapalıyken link ile açılma
+      final initialUri = await _appLinks.getInitialLink();
+      debugPrint('Deep link (cold): $initialUri');
+      if (initialUri != null) {
+        _scheduleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('Deep link init error: $e');
+    }
+  }
+
+  /// Navigation'ı 300ms geciktir — uygulama resume sırasında router
+  /// refreshListenable yarışını önler ve aynı token'ı tekrar işlemez.
+  void _scheduleDeepLink(Uri uri) {
+    if (uri.host != 'invite') return;
+    final token = uri.queryParameters['token'];
+    if (token == null || token.isEmpty) return;
+    if (token == _lastHandledToken) {
+      debugPrint('Deep link: token $token zaten işlendi, atlanıyor');
+      return;
+    }
+    _lastHandledToken = token;
+    debugPrint('Handling deep link: $uri  token=$token');
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) {
+        debugPrint('Deep link navigate: widget unmounted, atlanıyor');
+        return;
+      }
+      debugPrint('Deep link navigate: /invite?token=$token çağrılıyor');
+      ref.read(goRouterProvider).go('/invite?token=$token');
     });
   }
 
   @override
   void dispose() {
-    // Clean up
+    _linkSubscription?.cancel();
     ref.read(appLifecycleProvider).dispose();
     super.dispose();
   }

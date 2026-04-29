@@ -41,7 +41,7 @@ class LocaleNotifier extends Notifier<Locale> {
     await prefs.setString(_localeKey, code);
     state = locale;
 
-    // Sync language preference to RevenueCat Paywall
-    ref.read(subscriptionServiceProvider).syncLocale(locale);
+    // Re-initialize RevenueCat with the new locale to force the Paywall to update
+    ref.read(subscriptionServiceProvider).init(locale: locale);
   }
 }

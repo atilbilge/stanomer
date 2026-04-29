@@ -1,6 +1,6 @@
 {
   "@@locale": "sr_Cyrl",
-  "appTitle": "Stanomer",
+  "appTitle": "Станомер",
   "login": "Пријавите се",
   "signup": "Регистрација",
   "email": "Е-пошта",
@@ -15,7 +15,7 @@
   "createAccount": "Направите нови налог",
   "dontHaveAccount": "Немате налог? Региструјте се",
   "alreadyHaveAccount": "Имате налог? Пријавите се",
-  "continueWithGoogle": "Наставите са Google-ом",
+  "continueWithGoogle": "Наставите са Гоогле-ом",
   "continueWithApple": "Наставите са Аппле-ом",
   "fullName": "Име и презиме",
   "errorSelectRole": "Молимо изаберите своју улогу",
@@ -28,6 +28,10 @@
   "welcomeToStanomer": "Добродошли у Станомер",
   "consentTextFullTitle": "Сагласност за обраду података о личности (ЗЗПЛ)",
   "profile": "Профил",
+  "settingsHeader": "Подешавања",
+  "accountHeader": "Налог",
+  "discoverPremium": "Истражите Премиум",
+  "unlimitedLeaseContracts": "Неограничени најамни уговори",
   "updateName": "Ажурирај име",
   "updatePassword": "Ажурирај лозинку",
   "oldPassword": "Тренутна лозинка",
@@ -75,9 +79,21 @@
   "inviteNotFound": "Позив није пронађен или је истекао",
   "invitationAcceptedSuccess": "Добродошли кући! Позив је прихваћен.",
   "pendingInvitationBanner": "Имате отворен позив за {property}",
-  "@pendingInvitationBanner": {"placeholders": {"property": {"type": "String"}}},
+  "@pendingInvitationBanner": {
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
   "invitedBy": "Позвао вас је {name}",
-  "@invitedBy": {"placeholders": {"name": {"type": "String"}}},
+  "@invitedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "yourName": "Ваше име",
   "yourNameHint": "Унесите своје пуно име",
   "viewInvite": "Погледај позив",
@@ -103,38 +119,74 @@
   "landlordMode": "Мод станодавца",
   "whatAreYou": "Као шта желите да наставите?",
   "selectRoleToContinue": "Изаберите улогу да бисте започели. Можете је променити било када у заглављу изнад.",
-  "consentTextFullBody": "Коришћењем апликације Станомер, дајете изричиту сагласност за обраду ваших личних података у складу са Законом о заштити података о личности (ЗЗПЛ) Републике Србије.",
+  "consentTextFullBody": "Коришћењем апликације Станомер, дајете изричит пристанак за обраду ваших података о личности у складу са Законом о заштити података о личности (ЗЗПЛ) Републике Србије.\n\nКоји подаци се прикупљају: Ваше име, е-маил адреса, ИП адреса и подаци из уговора о закупу непокретности.\n\nСврха обраде: Подаци се користе искључиво за олакшавање комуникације између станодавца и закупаца, вођење евиденције о плаћању и креирање правно ваљаних записа.\n\nДељење података: Ваши подаци се не продају трећим лицима. Чувају се на сигурним серверима у ЕУ (Супабасе Франкфурт).\n\nВаша права: Имате право да у било ком тренутку затражите приступ својим подацима или трајно брисање вашег налога и свих повезаних података директно путем апликације.",
   "removeTenant": "Уклони станара",
   "removeTenantConfirmation": "Да ли сте сигурни да желите да уклоните овог станара из некретнине? Ово ће раскинути везу и обрисати запис о позиву.",
   "remove": "Уклони",
   "logRentDeclared": "Станар је означио кирију за {month} као плаћену.",
-  "@logRentDeclared": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentDeclared": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logRentApproved": "Станодавац је одобрио кирију за {month}.",
-  "@logRentApproved": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logRentRejected": "Станодавац је одбио кирију за {month}.",
-  "@logRentRejected": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentRejected": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logMarkedAsPaid": "Станодавац је означио {month} као плаћено.",
-  "@logMarkedAsPaid": {"placeholders": {"month": {"type": "String"}}},
+  "@logMarkedAsPaid": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logMarkedAsPending": "Станодавац је означио {month} на чекању.",
-  "@logMarkedAsPending": {"placeholders": {"month": {"type": "String"}}},
+  "@logMarkedAsPending": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logAutoApproved": "Кирија за {month} је аутоматски одобрена од стране система након 5 дана.",
-  "@logAutoApproved": {"placeholders": {"month": {"type": "String"}}},
+  "@logAutoApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "activity": "Активности",
   "noContractsTitle": "Још увек нема уговора",
   "noContractsMessage": "Да бисте пратили кирију и трошкове, прво позовите станара уношењем детаља уговора.",
-  "inviteFirstTenant": "Позовите првог станара",
+  "inviteFirstTenant": "Позови закупца",
   "confirmCancelInvitationTitle": "Откажи позив",
   "confirmCancelInvitationMessage": "Да ли сте сигурни да желите да повучете овај позив? Ова акција ће га трајно избрисати.",
   "confirmDeclineRevisionTitle": "Одбиј захтев за ревизију",
   "confirmDeclineRevisionMessage": "Да ли сте сигурни да желите да одбијете захтев закупца за ревизију? Уговор ће остати на чекању са оригиналним условима.",
-  "activeContract": "Активни закуп",
+  "activeContract": "Активни уговор",
   "activeLease": "АКТИВНИ УГОВОР",
   "invitationSent": "Позив послат",
   "accept": "Прихвати",
   "decline": "Одбиј",
   "declineRevisionRequest": "Одбиј захтев за ревизију",
-  "pendingHeader": "НА ЧЕКАЊУ",
-  "awaitingHeader": "ЧЕКА ОДОБРЕЊЕ",
+  "pendingHeader": "НА ЧЕКАНЈУ",
+  "awaitingHeader": "ЧЕКА ОДОБРЕНЈЕ",
   "paidHeader": "ПЛАЋЕНО",
   "waitingForTenantPayment": "Чека уплату станара",
   "waitingForYourApproval": "Чека ваше одобрење",
@@ -148,15 +200,21 @@
   "awaitingInvoice": "Чека се рачун",
   "updateLabel": "Ажурирај",
   "statusVacant": "Слободно",
-  "pendingApproval": "ЧЕКА ОДОБРЕЊЕ",
-  "targetRent": "ЦИЉНА КИРИЈА",
+  "pendingApproval": "ЧЕКА ОДОБРЕНЈЕ",
+  "targetRent": "ЦИЛЈНА КИРИЈА",
   "contractInfo": "Подаци о уговору",
   "term": "Период",
   "dueDay": "Дан доспећа",
   "contractDetails": "Детаљи уговора",
   "pastContracts": "Прошли уговори",
   "previousLeasesCount": "{count} претходних уговора",
-  "@previousLeasesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@previousLeasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertySettingsLabel": "Подешавања некретнине",
   "propertyActions": "Акције некретнине",
   "leavePropertyConfirm": "Да ли желите да напустите ову некретнину?",
@@ -175,7 +233,14 @@
   "extraPayment": "Додатна уплата",
   "utility": "Комунално",
   "owner": "Власник",
-  "proposeChangesInfo": "Измене ће бити послате станару на одобрење. Тренутни услови остају на снази до прихватања.",
+  "proposeChangesInfo": "Измене ће бити послате {role} на одобрење. Тренутни услови остају на снази до прихватања.",
+  "@proposeChangesInfo": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
   "proposeChanges": "Предложи измене",
   "declarePayment": "Пријави уплату",
   "uploadReceipt": "Отпреми уплатницу",
@@ -192,11 +257,17 @@
   "declare": "Пријави",
   "viewReceipt": "Види уплатницу",
   "proposesChanges": "{name} предлаже следеће измене:",
-  "@proposesChanges": {"placeholders": {"name": {"type": "String"}}},
+  "@proposesChanges": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "awaitingApprovalInfo": "Ваш предлог измена чека одобрење друге стране.",
-  "propertyDetails": "ДЕТАЉИ НЕКРЕТНИНЕ",
+  "propertyDetails": "ДЕТАЛЈИ НЕКРЕТНИНЕ",
   "defaultLeaseTerms": "ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА",
-  "defaultLeaseTermsSubtitle": "Циљни услови који се користе као предложак за нова позивања.",
+  "defaultLeaseTermsSubtitle": "Услови који се користе као шаблон за нове позиве.",
   "invalidNumber": "Неважећи број",
   "enterDayBetween1and31": "Унесите дан између 1 и 31",
   "expenseConfiguration": "КОНФИГУРАЦИЈА ТРОШКОВА",
@@ -216,9 +287,9 @@
   "parties": "СТРАНЕ",
   "tenantEmail": "Е-пошта станара",
   "existingContractTermsInfo": "Постојећи договорени услови уговора (кирија, датуми и трошкови) важиће и за овог станара.",
-  "rentAndPayment": "КИРИЈА И ПЛАЋАЊЕ",
+  "rentAndPayment": "КИРИЈА И ПЛАЋАНЈЕ",
   "datesAndContract": "ДАТУМИ И УГОВОР",
-  "expenseSettingsHeader": "ПОДЕШАВАЊЕ ТРОШКОВА",
+  "expenseSettingsHeader": "ПОДЕШАВАНЈЕ ТРОШКОВА",
   "editContract": "Измени уговор",
   "sendRevision": "Пошаљи ревизију",
   "revisionSent": "Предлог ревизије је послат",
@@ -239,34 +310,24 @@
   "contractChangeProposal": "Предлог промене уговора",
   "cancelProposal": "Откажи предлог",
   "viewInvoice": "Погледај фактуру",
-  "decline": "Одбиј",
-  "accept": "Прихвати",
-  "paymentResponsibility": "ОДГОВОРНОСТ ЗА ПЛАЋАЊЕ",
+  "paymentResponsibility": "ОДГОВОРНОСТ ЗА ПЛАЋАНЈЕ",
   "tenantPaysDirectlyToUtility": "Станар плаћа директно комуналној служби",
   "tenantPaysToLandlord": "Станар плаћа станодавцу",
   "selectPaymentReceiverWarning": "Молимо изаберите примаоца уплате пре наставка.",
   "progressSummary": "{completed} / {total} плаћено • {sent} послато",
   "@progressSummary": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"},
-      "sent": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "sent": {
+        "type": "int"
+      }
     }
   },
-  "dispute": "Оспори",
-  "disputeReason": "Разлог оспоравања",
-  "disputeReasonHint": "Унесите разлог за оспоравање трошка...",
-  "disputedHeader": "ОСПОРЕНО",
-  "logRentDisputed": "Станар је оспорио уплату за {month}: {reason}",
-  "@logRentDisputed": {
-    "placeholders": {
-      "month": {"type": "String"},
-      "reason": {"type": "String"}
-    }
-  },
-  "confirmDisputeTitle": "Оспори уплату",
-  "disputeSentSuccess": "Ваш приговор је послат станодавцу.",
-  "takeAction": "Предузми акцију",
   "maintenance": "Одржавање",
   "issues": "Проблеми",
   "newRequest": "Нови захтев",
@@ -286,12 +347,24 @@
   "categoryOther": "Остало",
   "noIssuesTitle": "Још нема пријављених кварова",
   "noIssuesMessage": "Све је у реду! Нема пријављених захтева за одржавање ове имовине.",
-  "updateStatus": "Ажурирај статус",
+  "updateStatus": "Ажурирај status",
   "issueDetails": "Детаљи квара",
   "logMaintenanceCreated": "Креиран захтев за одржавање: {title}",
-  "@logMaintenanceCreated": {"placeholders": {"title": {"type": "String"}}},
+  "@logMaintenanceCreated": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "logMaintenanceStatusUpdated": "Статус одржавања ажуриран на {status}",
-  "@logMaintenanceStatusUpdated": {"placeholders": {"status": {"type": "String"}}},
+  "@logMaintenanceStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
   "logMaintenanceReopened": "Захтев за одржавање поново отворен",
   "logMaintenanceMessageAdded": "Додата нова порука захтеву за одржавање",
   "notifications": "Обавештења",
@@ -308,9 +381,11 @@
   "uploadMainContract": "Отпреми уговор",
   "manageDocuments": "Управљај документима",
   "monthlyCollected": "Прикупљено",
-  "totalRentShort": "Кирија",
+  "totalRentShort": "Кира",
   "delays": "Кашњења",
-  "vacant": "Слободно",
+  "vacant": "Празно",
+  "overdueReceivables": "Доспела",
+  "collectedByType": "Наплаћено",
   "propertiesCount": "{count, plural, one{{count} некретнина} other{{count} некретнина}}",
   "hasDebt": "Има дуг",
   "paymentAwaitingApproval": "Чека одобрење",
@@ -327,7 +402,7 @@
   "confirmApprovePaymentMessage": "Да ли сте сигурни да желите да потврдите ову уплату?",
   "confirmRejectPaymentTitle": "Одбиј уплату",
   "confirmRejectPaymentMessage": "Да ли желите да одбијете ову декларацију и тражите од закупца да је поново пријави?",
-  "confirm": "Потврти",
+  "confirm": "Потврди",
   "terminateContract": "Раскини уговор",
   "terminationDate": "Датум раскида",
   "confirmTerminationTitle": "Раскинути уговор?",
@@ -360,8 +435,12 @@
   "logRentDisputed": "Станар је оспорио уплату за {month}: {reason}",
   "@logRentDisputed": {
     "placeholders": {
-      "month": {"type": "String"},
-      "reason": {"type": "String"}
+      "month": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "confirmDisputeTitle": "Оспори уплату",
@@ -438,9 +517,8 @@
   "expenseDistribution": "Расподела трошкова",
   "yourNote": "Ваша белешка:",
   "backToDashboard": "Назад на контролну таблу",
-  "propertyDetailsHeader": "ДЕТАЉИ НЕКРЕТНИНЕ",
+  "propertyDetailsHeader": "ДЕТАЛЈИ НЕКРЕТНИНЕ",
   "defaultLeaseTermsHeader": "ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА",
-  "defaultLeaseTermsSubtitle": "Услови који се користе као шаблон за нове позиве.",
   "proposeRevision": "Предложи ревизију",
   "revisionTermsQuestion": "Које услове желите да промените? (Закупнина, дан доспећа, трошкови, итд.)",
   "enterNotesHint": "Унесите своје белешке овде...",
@@ -448,7 +526,9 @@
   "invitedToJoinProperty": "Позвани сте да се придружите некретнини {property}.",
   "@invitedToJoinProperty": {
     "placeholders": {
-      "property": { "type": "String" }
+      "property": {
+        "type": "String"
+      }
     }
   },
   "waitingForLandlord": "Чека се одговор станодавца...",
@@ -457,8 +537,8 @@
   "acceptTermsAndDistribution": "Прихватам услове уговора и расподелу трошкова.",
   "datesMandatory": "Датум почетка и завршетка су обавезни",
   "partiesHeader": "СТРАНЕ",
-  "leaseLockedWarning": "Постојећи договорени услови закупа (закупнина, датуми и трошкови) ће се примењивати и на овог закупца.",
-  "rentPaymentHeader": "ЗАКУП И ПЛАЋАЊЕ",
+  "leaseLockedWarning": "Постојец́и договорени услови закупа (закупнина, датуми и трошкови) ц́е се примењивати и на овог закупца.",
+  "rentPaymentHeader": "ЗАКУП И ПЛАЋАНЈЕ",
   "loadingPlaceholder": "Учитавање...",
   "photos": "Фотографије",
   "add": "Додај",
@@ -468,7 +548,9 @@
   "plannedEnd": "Планирани завршетак: {date}",
   "@plannedEnd": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "yourApartment": "Ваш стан",
@@ -482,7 +564,9 @@
   "paymentDeclaredSuccess": "Уплата {title} је пријављена.",
   "@paymentDeclaredSuccess": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "setAmountUploadInvoice": "Подесите износ и отпремите рачун",
@@ -494,7 +578,9 @@
   "dueOn": "Доспева: {date}",
   "@dueOn": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "item": "ставка",
@@ -504,7 +590,7 @@
   "contract": "Уговор",
   "paidOn": "Плаћено: {date}",
   "cannotInviteSelf": "Не можете позвати себе као станара.",
-  "paywallTitle": "Stanomer Premium",
+  "paywallTitle": "Станомер Премиум",
   "paywallSubtitle": "Уклоните ограничења у управљању некретнинама.",
   "unlimitedProperties": "Неограничено додавање и управљање некретнинама",
   "detailedReporting": "Брже и детаљније извештавање",
@@ -513,19 +599,40 @@
   "automatedRenewal": "Аутоматски обрачун и обнова кирије (Ускоро)",
   "restorePurchases": "Поврати куповине",
   "limitReachedTitle": "Достигли сте бесплатни лимит",
-  "limitReachedSubtitle": "Пређите на Stanomer Premium за управљање са више некретнина.",
-  "discoverPremium": "Истражите Premium",
+  "limitReachedSubtitle": "Пређите на Станомер Премиум за управљање са више некретнина.",
   "optionsLoadFailed": "Није могуће учитати опције претплате.",
   "manageSubscription": "Управљај претплатом",
   "premiumMobileOnly": "Потребна мобилна апликација",
-  "premiumMobileOnlyDesc": "Stanomer Premium претплата се може купити само путем мобилне апликације. Преузмите апликацију испод да бисте почели с Premium-ом.",
-  "downloadOnAppStore": "Преузми на App Store-у",
-  "downloadOnPlayStore": "Преузми на Google Play-у",
-  "premiumFeatures": "Premium функције",
+  "premiumMobileOnlyDesc": "Станомер Премиум претплата се може купити само путем мобилне апликације. Преузмите апликацију испод да бисте почели с Премиум-ом.",
+  "downloadOnAppStore": "Преузми на Апп Сторе-у",
+  "downloadOnPlayStore": "Преузми на Гоогле Плаy-у",
+  "premiumFeatures": "Премиум функције",
   "premiumFeature1": "Неограничено управљање некретнинама",
   "premiumFeature2": "Напредно финансијско извештавање",
   "premiumFeature3": "Приоритетна подршка",
   "premiumFeature4": "Приступ на свим платформама",
   "termsOfService": "Услови коришћења и ЕУЛА",
-  "termsOfServiceContent": "Stanomer – Уговор о лиценцирању са крајњим корисником (ЕУЛА) и Услови коришћења\nПоследњи пут ажурирано: 23. април 2026.\n\n1. Увод\nОвај Уговор о лиценцирању са крајњим корисником (\"Уговор\") представља правни споразум између Вас (\"Корисник\") и апликације Stanomer. Инсталирањем или коришћењем апликације прихватате одредбе овог Уговора.\n\n2. Apple и Google услови\nApple App Store: Овај Уговор је закључен искључиво између Корисника и Stanomer-а. Овај уговор укључује Apple-ов стандардни уговор о лиценци за крајњег корисника (Standard EULA) путем референце: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Овај Уговор је закључен искључиво између Корисника и Stanomer-а.\n\nПотврђујете да Apple и Google немају никакву обавезу пружања услуга одржавања и подршке у вези са апликацијом.\n\n3. Претплата и наплата\nПлаћање: Плаћање ће бити наплаћено са Вашег iTunes или Google Play налога приликом потврде куповине.\n\nОбнављање: Претплате се аутоматски обнављају осим ако се аутоматско обнављање не искључи најмање 24 сата пре краја текућег периода.\n\nУправљање: Можете управљати претплатама или искључити аутоматско обнављање у подешавањима налога након куповине.\n\n4. Кориснички садржај и понашање\nОдговорни сте за податке које уносите (износи закупа, извештаји о штети, уговори).\n\nЗабрањено је отпремање незаконитог, увредљивог или кршећег садржаја.\n\nStanomer задржава право да уклони било који садржај који крши законе Републике Србије или ове услове.\n\n5. Приватност и заштита података (ZZPL, GDPR, KVKK)\nЗакон Србије (ZZPL): Закон о заштити података о личности.\n\nGDPR: Општа уредба о заштити података о личности (ЕУ).\n\nKVKK: Закон о заштити података о личности (Турска).\n\nВаши подаци се штите у складу са глобалним принципима приватности података, без обзира на Вашу локацију.\n\n6. Ограничење одговорности\nStanomer пружа платформу за управљање закупом и није страна у стварним уговорима о закупу између станодаваца и закупаца. Не сносимо одговорност за спорове између корисника или за финансијске трансакције обављене ван платформе.\n\n7. Прекид\nОвај Уговор важи док га не раскинете Ви или Stanomer. Ваша права по овој лиценци ће аутоматски престати ако се не придржавате било које од њених одредби."
+  "termsOfServiceContent": "Станомер – Уговор о лиценцирању са крајњим корисником (ЕУЛА) и Услови коришћења\nПоследњи пут ажурирано: 23. април 2026.\n\n1. Увод\nОвај Уговор о лиценцирању са крајњим корисником (\"Уговор\") представља правни споразум између Вас (\"Корисник\") и апликације Станомер. Инсталирањем или коришћењем апликације прихватате одредбе овог Уговора.\n\n2. Аппле и Гоогле услови\nАппле Апп Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а. Овај уговор укључује Аппле-ов стандардни уговор о лиценци за крајњег корисника (Стандард ЕУЛА) путем референце: хттпс://www.аппле.цом/легал/интернет-сервицес/итунес/дев/стдеула/\n\nГоогле Плаy Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а.\n\nПотврђујете да Аппле и Гоогле немају никакву обавезу пружања услуга одржавања и подршке у вези са апликацијом.\n\n3. Претплата и наплата\nПлаћање: Плаћање ће бити наплаћено са Вашег иТунес или Гоогле Плаy налога приликом потврде куповине.\n\nОбнављање: Претплате се аутоматски обнављају осим ако се аутоматско обнављање не искључи најмање 24 сата пре краја текућег периода.\n\nУправљање: Можете управљати претплатама или искључити аутоматско обнављање у подешавањима налога након куповине.\n\n4. Кориснички садржај и понашање\nОдговорни сте за податке које уносите (износи закупа, извештаји о штети, уговори).\n\nЗабрањено је отпремање незаконитог, увредљивог или кршећег садржаја.\n\nСтаномер задржава право да уклони било који садржај који крши законе Републике Србије или ове услове.\n\n5. Приватност и заштита података (ЗЗПЛ, ГДПР, КВКК)\nЗакон Србије (ЗЗПЛ): Закон о заштити података о личности.\n\nГДПР: Општа уредба о заштити података о личности (ЕУ).\n\nКВКК: Закон о заштити података о личности (Турска).\n\nВаши подаци се штите у складу са глобалним принципима приватности података, без обзир на Вашу локацију.\n\n6. Ограничење одговорности\nСтаномер пружа платформу за управљање закупом и није страна у стварним уговорима о закупу између станодаваца и закупаца. Не сносимо одговорност за спорове између корисника или за финансијске трансакције обављене ван платформе.\n\n7. Прекид\nОвај Уговор важи док га не раскинете Ви или Станомер. Ваша права по овој лиценци ће аутоматски престати ако се не придржавате било које од њених одредби.",
+  "support_title": "Подршка",
+  "support_desc": "Контактирајте нас за техничку подршку или повратне информације.",
+  "subject": "Тема",
+  "category": "Категорија",
+  "message": "Порука",
+  "support": "Подршка",
+  "bug": "Пријава грешке",
+  "other": "Друго",
+  "messageSent": "Порука је успешно послата!",
+  "errorSendingMessage": "Слање поруке није успело. Молимо покушајте поново.",
+  "requiredField": "Ово поље је обавезно",
+  "invalidEmail": "Неважећа емаил адреса",
+  "offlineMessage": "Тренутно сте ван мреже. Можете наставити са постојећим подацима. Биће ажурирано када се повежете.",
+  "retry": "ОСВЕЖИ",
+  "zzplConsentTitle": "Пристанак за обраду података о личности",
+  "zzplAgreeAndContinue": "Прочитао сам и прихватам",
+  "share": "Подели",
+  "optional": "Опционо",
+  "sentInvitation": "Послати позив",
+  "invitedOn": "Позван {date}",
+  "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
+  "noEmailProvided": "Е-пошта није наведена"
 }

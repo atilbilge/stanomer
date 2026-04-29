@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../theme/colors.dart';
+import '../l10n/app_localizations.dart';
 
 class ConnectionStatusIndicator extends StatelessWidget {
   final bool hasError;
@@ -15,6 +16,7 @@ class ConnectionStatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!hasError) return const SizedBox.shrink();
+    final loc = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -29,10 +31,10 @@ class ConnectionStatusIndicator extends StatelessWidget {
         children: [
           const Icon(LucideIcons.wifiOff, size: 14, color: StanomerColors.alertPrimary),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Şu an çevrimdışısınız, mevcut verilerle devam edebilirsiniz. Bağlanınca güncellenecektir.',
-              style: TextStyle(
+              loc.offlineMessage,
+              style: const TextStyle(
                 color: StanomerColors.alertPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -41,11 +43,11 @@ class ConnectionStatusIndicator extends StatelessWidget {
           ),
           InkWell(
             onTap: onRetry,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Text(
-                'YENİLE',
-                style: TextStyle(
+                loc.retry,
+                style: const TextStyle(
                   color: StanomerColors.alertPrimary,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,

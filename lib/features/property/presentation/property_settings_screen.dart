@@ -273,7 +273,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: StanomerColors.textTertiary.withOpacity(0.08),
+                  color: StanomerColors.textTertiary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: StanomerColors.borderDefault),
                 ),
@@ -295,9 +295,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.08),
+                  color: Colors.orange.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -466,9 +466,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.12),
+                color: Colors.amber.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -604,9 +604,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.05),
+              color: Colors.orange.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.orange.withOpacity(0.2)),
+              border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
             ),
             child: Column(
               children: [
@@ -652,7 +652,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                   },
                 ),
               if (hasMainContract && contract.additionalDocuments.isNotEmpty)
-                Divider(height: 1, color: StanomerColors.borderDefault.withOpacity(0.5)),
+                Divider(height: 1, color: StanomerColors.borderDefault.withValues(alpha: 0.5)),
               ...contract.additionalDocuments.asMap().entries.map((entry) {
                 final index = entry.key;
                 final doc = entry.value;
@@ -909,9 +909,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.08),
+        color: Colors.amber.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1028,9 +1028,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: StanomerColors.alertPrimary.withOpacity(0.08),
+        color: StanomerColors.alertPrimary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: StanomerColors.alertPrimary.withOpacity(0.3)),
+        border: Border.all(color: StanomerColors.alertPrimary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
