@@ -7,7 +7,7 @@ const setLanguage = (lang) => {
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (translations[lang][key]) {
-            element.textContent = translations[lang][key];
+            element.innerHTML = translations[lang][key];
         }
     });
 
@@ -27,7 +27,7 @@ langSelect.addEventListener('change', (e) => {
 const initLanguage = () => {
     const savedLang = localStorage.getItem('stanomer_lang');
     const browserLang = navigator.language.split('-')[0];
-    const defaultLang = savedLang || (translations[browserLang] ? browserLang : 'tr');
+    const defaultLang = savedLang || (translations[browserLang] ? browserLang : 'en');
     
     setLanguage(defaultLang);
 };
