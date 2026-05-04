@@ -62,7 +62,7 @@ class AuthRepository {
     const iosClientId = '878572868059-0rneslhna37ulnlkh689lqla5urg62pv.apps.googleusercontent.com';
     
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      clientId: iosClientId,
+      clientId: defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS ? iosClientId : null,
       serverClientId: webClientId,
     );
 

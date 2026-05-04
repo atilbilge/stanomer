@@ -326,6 +326,9 @@ class AppLocalizationsSr extends AppLocalizations {
   String get turkish => 'Turski';
 
   @override
+  String get russian => 'Ruski';
+
+  @override
   String get tenantMode => 'Mod stanara';
 
   @override
@@ -1755,6 +1758,9 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get turkish => 'Турски';
+
+  @override
+  String get russian => 'Руски';
 
   @override
   String get tenantMode => 'Мод станара';

@@ -372,6 +372,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Navigator.pop(context);
               },
             ),
+            ListTile(
+              leading: const Text('🇷🇺', style: TextStyle(fontSize: 20)),
+              title: Text(loc.russian),
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(const Locale('ru'));
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),

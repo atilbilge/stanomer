@@ -326,6 +326,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get turkish => 'Türkçe';
 
   @override
+  String get russian => 'Rusça';
+
+  @override
   String get tenantMode => 'Kiracı Modu';
 
   @override

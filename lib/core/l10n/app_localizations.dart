@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ru.dart';
 import 'app_localizations_sr.dart';
 import 'app_localizations_tr.dart';
 
@@ -96,6 +97,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ru'),
     Locale('sr'),
     Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
     Locale('tr'),
@@ -706,6 +708,12 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Turski'**
   String get turkish;
+
+  /// No description provided for @russian.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ruski'**
+  String get russian;
 
   /// No description provided for @tenantMode.
   ///
@@ -2729,7 +2737,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'sr', 'tr'].contains(locale.languageCode);
+      <String>['en', 'ru', 'sr', 'tr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2752,6 +2760,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'ru':
+      return AppLocalizationsRu();
     case 'sr':
       return AppLocalizationsSr();
     case 'tr':
