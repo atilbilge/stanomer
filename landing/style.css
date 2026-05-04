@@ -7,16 +7,16 @@
     --bg-light: #F8F7F5;
     
     --color-background-primary: #FFFFFF;
-    --color-background-secondary: #F8F9FA;
-    --color-background-info: #E8F0FE;
+    --color-background-secondary: #F8F7F5;
+    --color-background-info: #E6EEF9;
     
-    --color-text-primary: #1F2937;
-    --color-text-secondary: #4B5563;
+    --color-text-primary: #1A1A1A;
+    --color-text-secondary: #4A4A4A;
     --color-text-tertiary: #9CA3AF;
-    --color-text-info: #1A56DB;
+    --color-text-info: #1A5EB8;
     
-    --color-border-secondary: #E5E7EB;
-    --color-border-tertiary: #F3F4F6;
+    --color-border-secondary: #EBEBEB;
+    --color-border-tertiary: #EBEBEB;
     
     --border-radius-md: 8px;
     --border-radius-lg: 16px;
@@ -30,7 +30,7 @@
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     color: var(--color-text-primary);
     background: var(--color-background-primary);
     line-height: 1.6;
@@ -72,7 +72,7 @@ a {
     border: 1px solid var(--color-border-secondary);
     padding: 0.4rem 0.6rem;
     border-radius: var(--border-radius-md);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 13px;
     font-weight: 500;
     color: var(--color-text-secondary);
@@ -110,7 +110,7 @@ a {
 }
 
 .hero h1 {
-    font-family: 'Lora', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 30px;
     font-weight: 600;
     line-height: 1.25;
@@ -151,7 +151,7 @@ a {
     display: inline-block;
     background: var(--color-text-primary);
     color: #FFFFFF !important;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 14px;
     font-weight: 500;
     padding: 12px 28px;
@@ -221,7 +221,7 @@ a {
 }
 
 .role-card-header {
-    font-family: 'Lora', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 1rem;
@@ -262,7 +262,7 @@ a {
 }
 
 .steps-title {
-    font-family: 'Lora', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -401,7 +401,7 @@ a {
 }
 
 .footer-cta h2 {
-    font-family: 'Lora', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 0.75rem;
