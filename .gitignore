@@ -49,3 +49,6 @@ app.*.map.json
 # Android signing
 /android/key.properties
 **/*.jks
+website/.next/
+website/node_modules/
+scratch/
