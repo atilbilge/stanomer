@@ -590,8 +590,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get totalRent => 'Toplam Kira';
 
   @override
-  String get infoTooltip =>
-      'Isınma, su ve çöp toplama gibi toplu kamu hizmetlerini kapsar.';
+  String get infoTooltip => 'Aylık bina aidatı';
 
   @override
   String get electricityTooltip => 'Bireysel elektrik tüketim bedeli.';
@@ -638,7 +637,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get expenseConfiguration => 'GİDER KALEMLERİ';
 
   @override
-  String get expenseInfostan => 'Infostan';
+  String get expenseInfostan => 'Aidat';
 
   @override
   String get expenseElectricity => 'Elektrik';
