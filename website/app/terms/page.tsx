@@ -9,11 +9,11 @@ function TermsContent() {
 
   return (
     <div className="prose prose-blue max-w-none">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue mb-8">
+      <h1 className="text-[30px] font-bold text-brand-blue mb-8">
         {t("terms_title")}
       </h1>
       
-      <div className="whitespace-pre-wrap text-gray-700 leading-relaxed space-y-4">
+      <div className="whitespace-pre-wrap text-[14px] text-gray-700 leading-relaxed space-y-4">
         {t("eula_content")}
       </div>
     </div>

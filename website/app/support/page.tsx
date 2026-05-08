@@ -16,11 +16,11 @@ function SupportContent() {
             <div className="p-2 rounded-lg bg-brand-blue/10 text-brand-blue">
               <Headphones className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">{t("support_title")}</h2>
+            <h2 className="text-[30px] font-bold text-gray-900">{t("support_title")}</h2>
           </div>
           
           <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-            <p className="text-gray-600 mb-8 leading-relaxed">
+            <p className="text-[15px] text-gray-600 mb-8 leading-relaxed">
               {t("support_desc")}
             </p>
 
