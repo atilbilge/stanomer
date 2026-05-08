@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import translations from "../lib/translations.json";
 
-type Language = "TR" | "EN" | "SR_LAT" | "SR_CYR";
+type Language = "TR" | "EN" | "SR_LAT" | "SR_CYR" | "RU";
 
 interface LanguageContextType {
   lang: Language;
@@ -18,7 +18,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("stanomer_lang") as Language;
-    if (saved && ["TR", "EN", "SR_LAT", "SR_CYR"].includes(saved)) {
+    if (saved && ["TR", "EN", "SR_LAT", "SR_CYR", "RU"].includes(saved)) {
       setLang(saved);
     }
   }, []);

@@ -12,44 +12,31 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
       {/* Navbar (Identical to landing page) */}
       <nav className="h-[80px] flex items-center fixed top-0 w-full z-[1000] bg-white/90 backdrop-blur-[12px] border-b border-[#EBEBEB]">
         <div className="max-w-[1200px] mx-auto px-8 w-full flex justify-between items-center">
-          {/* Mobile Menu Toggle (matching landing) */}
-          <button className="lg:hidden text-brand-blue p-2">
-            <Menu className="w-6 h-6" />
-          </button>
-
           {/* Logo */}
           <a href="/" className="flex items-center gap-[0.8rem] no-underline">
-            <img src="/assets/logo.png" alt="Stanomer Logo" className="h-[48px] w-auto object-contain" />
-            <span className="font-bold text-[1.8rem] text-brand-blue tracking-tight">Stanomer</span>
+            <img src="/assets/logo.png" alt="Stanomer Logo" className="h-[32px] w-auto object-contain" />
+            <span className="font-bold text-[1.5rem] text-brand-blue tracking-tight">Stanomer</span>
           </a>
 
-          {/* Nav Links (Desktop) */}
-          <div className="hidden lg:flex items-center gap-[2.5rem]">
-            <a href="/#features" className="no-underline text-[#4A4A4A] font-bold hover:text-brand-blue transition-colors">Özellikler</a>
-            <a href="/#roles" className="no-underline text-[#4A4A4A] font-bold hover:text-brand-blue transition-colors">Roller</a>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-[1.5rem]">
-            <a 
-              href="/app" 
-              className="hidden lg:block bg-brand-blue text-white px-[1.5rem] py-[0.8rem] rounded-[10px] font-extrabold no-underline hover:shadow-lg transition-all"
-            >
-              Uygulamaya Git
-            </a>
-
-            <div className="lang-switcher">
-              <select 
-                value={lang} 
-                onChange={(e) => setLang(e.target.value as any)}
-                className="bg-white border border-[#EBEBEB] px-[0.6rem] py-[0.4rem] rounded-[8px] font-semibold text-brand-blue cursor-pointer outline-none text-sm"
+          {/* Language Switcher */}
+          <div className="flex items-center gap-[1rem]">
+            {[
+              { code: "TR", label: "TR" },
+              { code: "EN", label: "EN" },
+              { code: "SR_LAT", label: "SR" },
+              { code: "SR_CYR", label: "СР" },
+              { code: "RU", label: "RU" }
+            ].map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code as any)}
+                className={`text-[0.9rem] font-bold transition-all ${
+                  lang === l.code ? "text-brand-blue scale-110" : "text-[#999] hover:text-brand-blue"
+                }`}
               >
-                <option value="TR">TR</option>
-                <option value="EN">EN</option>
-                <option value="SR_LAT">SR (Lat)</option>
-                <option value="SR_CYR">SR (Кри)</option>
-              </select>
-            </div>
+                {l.label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
