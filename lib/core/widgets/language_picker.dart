@@ -50,6 +50,15 @@ class LanguagePicker extends ConsumerWidget {
             ],
           ),
         ),
+        const PopupMenuItem<Locale>(
+          value: Locale('ru'),
+          child: Row(
+            children: [
+              Text('🇷🇺 '),
+              Text('Русский'),
+            ],
+          ),
+        ),
       ],
       icon: Row(
         mainAxisSize: MainAxisSize.min,
@@ -67,6 +76,7 @@ class LanguagePicker extends ConsumerWidget {
   String _getButtonLabel(Locale locale) {
     if (locale.languageCode == 'en') return '🇬🇧 EN';
     if (locale.languageCode == 'tr') return '🇹🇷 TR';
+    if (locale.languageCode == 'ru') return '🇷🇺 RU';
     if (locale.scriptCode == 'Cyrl') return '🇷🇸 СРП';
     return '🇷🇸 SRP';
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -22,6 +23,7 @@ import 'widgets/profile_pill.dart';
 import 'widgets/role_switcher_sheet.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/connection_status_indicator.dart';
+import '../../../core/widgets/web_language_switcher.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -89,6 +91,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         centerTitle: false,
         actions: [
+          if (kIsWeb) ...[
+            const WebLanguageSwitcher(),
+            const SizedBox(width: 16),
+          ],
           const NotificationBadge(),
           const SizedBox(width: 8),
           ProfilePill(

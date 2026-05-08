@@ -27,6 +27,8 @@ class LocaleNotifier extends Notifier<Locale> {
       return const Locale('en');
     } else if (languageCode == 'tr') {
       return const Locale('tr');
+    } else if (languageCode == 'ru') {
+      return const Locale('ru');
     }
     // Default to Serbian Latin with explicit script tag
     return const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn');
