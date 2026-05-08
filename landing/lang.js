@@ -52,7 +52,7 @@ const translations = {
     "en": {
         "nav_app": "Web App",
         "hero_badge": "Digital Rent Ledger",
-        "hero_title": "Say Goodbye to Rent Notes<br>on Paper and Pen!",
+        "hero_title": "Say <span>Goodbye</span> to Rent Notes<br>on Paper and Pen!",
         "hero_desc": "Stop searching for receipts in WhatsApp or looking at sticky notes. Stanomer handles all rent tracking for you — it's very simple to use.",
         "hero_note": "Completely free if you have one property. No credit card required.",
         "pain_strip": "<strong>Sound familiar?</strong> You don't know if the tenant paid the rent. You're digging through your bag to find the lease agreement. You found out the faucet was broken from 3-day-old WhatsApp messages. — <strong>Stanomer ends this chaos.</strong>",
@@ -102,7 +102,7 @@ const translations = {
     "sr": {
         "nav_app": "Web App",
         "hero_badge": "Digitalna knjiga kirija",
-        "hero_title": "Recite zbogom beleškama o kiriji<br>na papiru!",
+        "hero_title": "Recite <span>zbogom</span> beleškama o kiriji<br>na papiru!",
         "hero_desc": "Prestanite da tražite priznanice na Viber-u ili beleškama. Stanomer preuzima celokupno praćenje kirije — veoma je jednostavan za korišćenje.",
         "hero_note": "Potpuno besplatno za jednu nekretninu. Nije potrebna kreditna kartica.",
         "pain_strip": "<strong>Zvuči poznato?</strong> Ne znate da li je stanar platio kiriju. Tražite ugovor o zakupu po torbama. Saznali ste da je slavina pokvarena iz Viber poruke od pre 3 dana. — <strong>Stanomer rešava ovaj haos.</strong>",
@@ -152,7 +152,7 @@ const translations = {
     "sr_Cyrl": {
         "nav_app": "Web App",
         "hero_badge": "Дигитална књига кирија",
-        "hero_title": "Реците збогом белешкама о кирији<br>на папиру!",
+        "hero_title": "Реците <span>збогом</span> белешкама о кирији<br>на папиру!",
         "hero_desc": "Престаните да тражите признанице на Viber-у или белешкама. Станомер преузима целокупно праћење кирије — веома је једноставан за коришћење.",
         "hero_note": "Потпуно бесплатно за једну некретнину. Није потребна кредитна картица.",
         "pain_strip": "<strong>Звучи познато?</strong> Не знате да ли је станар платио кирију. Тражите уговор о закупу по торбама. Сазнали сте да је славина покварена из Viber поруке од пре 3 дана. — <strong>Станомер решава овај хаос.</strong>",
