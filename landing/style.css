@@ -67,17 +67,29 @@ a {
     color: var(--primary);
 }
 
-.lang-switcher select {
-    background: white;
-    border: 1px solid var(--color-border-secondary);
-    padding: 0.4rem 0.6rem;
-    border-radius: var(--border-radius-md);
-    font-family: 'Outfit', sans-serif;
+.lang-switcher {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.lang-switcher span {
     font-size: 13px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    font-weight: 600;
+    color: var(--color-text-tertiary);
     cursor: pointer;
-    outline: none;
+    transition: color 0.2s, background 0.2s;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.lang-switcher span:hover {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.lang-switcher span.active {
+    color: var(--primary);
+    background: var(--primary-light);
 }
 
 .page {

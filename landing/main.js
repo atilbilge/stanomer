@@ -1,5 +1,5 @@
 // Language switcher logic
-const langSelect = document.getElementById('langSelect');
+const langSwitcher = document.getElementById('langSwitcher');
 
 const setLanguage = (lang) => {
     if (!translations[lang]) return;
@@ -11,16 +11,27 @@ const setLanguage = (lang) => {
         }
     });
 
+    // Update active state in switcher
+    document.querySelectorAll('#langSwitcher span').forEach(span => {
+        if (span.getAttribute('data-lang') === lang) {
+            span.classList.add('active');
+        } else {
+            span.classList.remove('active');
+        }
+    });
+
     // Update HTML lang attribute
     document.documentElement.lang = lang;
     
     // Persist
     localStorage.setItem('stanomer_lang', lang);
-    langSelect.value = lang;
 };
 
-langSelect.addEventListener('change', (e) => {
-    setLanguage(e.target.value);
+langSwitcher.addEventListener('click', (e) => {
+    const lang = e.target.getAttribute('data-lang');
+    if (lang) {
+        setLanguage(lang);
+    }
 });
 
 // Initialize language
