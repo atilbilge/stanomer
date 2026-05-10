@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../../components/LanguageProvider";
-import { sendToNotion } from "./actions";
 import { Send, CheckCircle2, AlertCircle, Shield } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -38,13 +37,31 @@ export function SupportForm() {
     setIsPending(true);
     setResult(null);
 
-    const response = await sendToNotion(formData);
+    try {
+      const response = await fetch("/api/notion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject: formData.get("subject"),
+          email: formData.get("email"),
+          category: formData.get("category"),
+          message: formData.get("message"),
+        }),
+      });
 
-    setIsPending(false);
-    if (response.success) {
-      setResult({ success: true, message: t("success_msg") });
-      (e.target as HTMLFormElement).reset();
-    } else {
+      const data = await response.json();
+
+      setIsPending(false);
+      if (data.success) {
+        setResult({ success: true, message: t("success_msg") });
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setResult({ success: false, message: t("error_msg") });
+      }
+    } catch (error) {
+      setIsPending(false);
       setResult({ success: false, message: t("error_msg") });
     }
   }

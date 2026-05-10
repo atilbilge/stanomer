@@ -68,9 +68,26 @@ mkdir -p public/app
 
 # 8. Final Distribution
 echo "Step 8: Copying Assets..."
-cp -r landing/* public/
-# Copy Next.js static files (privacy, terms, etc.) to root level
-cp -r website/out/* public/
-cp -r build/web/* public/app/
+
+# Copy landing page files
+if [ -d "landing" ]; then
+  cp -r landing/* public/
+fi
+
+# Copy Next.js static files (privacy, terms, etc.)
+if [ -d "website/out" ]; then
+  cp -r website/out/* public/
+else
+  echo "Error: website/out directory not found! Check Next.js build."
+  exit 1
+fi
+
+# Copy Flutter web build
+if [ -d "build/web" ]; then
+  cp -r build/web/* public/app/
+else
+  echo "Error: Flutter web build not found!"
+  exit 1
+fi
 
 echo "--- VERCEL DIAGNOSTIC BUILD COMPLETE! ---"

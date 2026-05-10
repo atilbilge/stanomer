@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // We removed 'output: export' to support Server Actions for Notion integration
+  output: 'export',
 
   // Disable image optimization for static export
   images: {
