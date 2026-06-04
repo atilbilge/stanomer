@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:stanomer/core/theme/colors.dart';
 import 'package:stanomer/core/l10n/app_localizations.dart';
 import '../../domain/contract.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PaymentResponsibilitySelector extends StatelessWidget {
   final PaymentReceiver value;
