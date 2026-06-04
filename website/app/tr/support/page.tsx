@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import SupportPage from "../../support/page";
+import { SupportContent } from "../../support/page";
 import { LanguageProvider, useLanguage } from "../../../components/LanguageProvider";
 
 /**
@@ -17,7 +17,7 @@ function TrSupportInner() {
     setLang("TR");
   }, [setLang]);
 
-  return <SupportPage />;
+  return <SupportContent />;
 }
 
 export default function TrSupportPage() {

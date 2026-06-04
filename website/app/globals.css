@@ -3,13 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 26, 26, 26;
-  --background-rgb: 248, 247, 245; /* Stanomer bgPage */
+  --foreground-rgb: 243, 244, 246; /* Gray 100 */
+  --background-rgb: 10, 15, 26; /* Dark background */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background-color: rgb(var(--background-rgb));
+  background-image: linear-gradient(to bottom, rgba(10, 15, 26, 0.75), rgba(10, 15, 26, 0.9)), url('/assets/site_bg.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
