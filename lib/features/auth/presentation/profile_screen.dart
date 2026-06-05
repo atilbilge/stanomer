@@ -161,7 +161,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(isGoogleUser ? LucideIcons.chrome : LucideIcons.apple, color: StanomerColors.brandPrimary, size: 20),
+                        isGoogleUser
+                            ? Image.asset(
+                                'assets/images/google_logo.png',
+                                width: 20,
+                                height: 20,
+                              )
+                            : const Icon(
+                                CupertinoIcons.logo_apple,
+                                color: StanomerColors.brandPrimary,
+                                size: 20,
+                              ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
