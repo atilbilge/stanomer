@@ -168,7 +168,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 height: 20,
                               )
                             : const Icon(
-                                CupertinoIcons.logo_apple,
+                                LucideIcons.apple,
                                 color: StanomerColors.brandPrimary,
                                 size: 20,
                               ),
