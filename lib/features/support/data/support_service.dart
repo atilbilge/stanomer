@@ -18,12 +18,12 @@ class SupportService {
       if (kIsWeb) {
         final uriBase = Uri.base;
         if (uriBase.host == 'localhost') {
-          url = Uri.parse('https://stanomer.vercel.app/api/notion');
+          url = Uri.parse('https://stanomer.vercel.app/api/notion/');
         } else {
-          url = Uri.parse('/api/notion');
+          url = Uri.parse('/api/notion/');
         }
       } else {
-        url = Uri.parse('https://stanomer.vercel.app/api/notion');
+        url = Uri.parse('https://stanomer.vercel.app/api/notion/');
       }
 
       String platform = 'Unknown';

@@ -38,7 +38,7 @@ export function SupportForm() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/notion", {
+      const response = await fetch("/api/notion/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
