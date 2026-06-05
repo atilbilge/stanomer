@@ -40,7 +40,10 @@ export default async function handler(req: Request) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Notion API error:", errorData);
-      return new Response(JSON.stringify({ error: 'Notion API error' }), { status: response.status });
+      return new Response(JSON.stringify({ 
+        error: 'Notion API error', 
+        details: errorData.message || errorData 
+      }), { status: response.status });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
