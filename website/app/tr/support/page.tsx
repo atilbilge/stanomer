@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { SupportContent } from "../../support/page";
+import { SupportContent } from "../../support/SupportContent";
 import { LanguageProvider, useLanguage } from "../../../components/LanguageProvider";
 
 /**
