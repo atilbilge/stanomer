@@ -3,18 +3,29 @@ export const config = {
 };
 
 export default async function handler(req: Request) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Content-Type': 'application/json',
+  };
+
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
   }
 
   const body = await req.json();
-  const { subject, email, category, message } = body;
+  const { subject, email, category, message, platform = 'Web', appVersion = '1.0.0' } = body;
 
   const notionToken = process.env.NOTION_TOKEN;
   const databaseId = process.env.NOTION_DATABASE_ID;
 
   if (!notionToken || !databaseId) {
-    return new Response(JSON.stringify({ error: 'Notion credentials not configured' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Notion credentials not configured' }), { status: 500, headers: corsHeaders });
   }
 
   try {
@@ -34,8 +45,8 @@ export default async function handler(req: Request) {
           Message: { rich_text: [{ text: { content: message } }] },
           Status: { rich_text: [{ text: { content: 'Open' } }] },
           Priority: { rich_text: [{ text: { content: 'Normal' } }] },
-          Platform: { rich_text: [{ text: { content: 'Web' } }] },
-          'App Version': { rich_text: [{ text: { content: '1.0.0' } }] },
+          Platform: { rich_text: [{ text: { content: platform } }] },
+          'App Version': { rich_text: [{ text: { content: appVersion } }] },
           'Created Date': { date: { start: new Date().toISOString().split('T')[0] } },
         },
       }),
@@ -47,12 +58,12 @@ export default async function handler(req: Request) {
       return new Response(JSON.stringify({ 
         error: 'Notion API error', 
         details: errorData.message || errorData 
-      }), { status: response.status });
+      }), { status: response.status, headers: corsHeaders });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Fetch error:", error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: corsHeaders });
   }
 }
