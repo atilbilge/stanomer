@@ -29,10 +29,14 @@ export default async function handler(req: Request) {
         parent: { database_id: databaseId },
         properties: {
           Subject: { title: [{ text: { content: subject } }] },
-          Email: { email: email },
-          Category: { select: { name: category } },
+          'User Email': { email: email },
+          Category: { rich_text: [{ text: { content: category } }] },
           Message: { rich_text: [{ text: { content: message } }] },
-          Date: { date: { start: new Date().toISOString() } },
+          Status: { rich_text: [{ text: { content: 'Open' } }] },
+          Priority: { rich_text: [{ text: { content: 'Normal' } }] },
+          Platform: { rich_text: [{ text: { content: 'Web' } }] },
+          'App Version': { rich_text: [{ text: { content: '1.0.0' } }] },
+          'Created Date': { date: { start: new Date().toISOString().split('T')[0] } },
         },
       }),
     });
