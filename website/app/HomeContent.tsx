@@ -37,7 +37,7 @@ export function HomeContent() {
           </div>
 
           <div className="mb-6">
-            <a href="/app/login" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
+            <a href="/app" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
               {t("btn_web_app")}
             </a>
           </div>
@@ -172,7 +172,7 @@ export function HomeContent() {
           </div>
 
           <div>
-            <a href="/app/login" className="inline-flex items-center gap-2 px-7 py-3 bg-white text-gray-900 rounded-lg font-bold text-[14px] hover:bg-gray-100 transition-all">
+            <a href="/app" className="inline-flex items-center gap-2 px-7 py-3 bg-white text-gray-900 rounded-lg font-bold text-[14px] hover:bg-gray-100 transition-all">
               {t("btn_web_app")}
             </a>
           </div>
