@@ -13,7 +13,7 @@ function TermsContent() {
         {t("terms_title")}
       </h1>
       
-      <div className="whitespace-pre-wrap text-[14px] text-gray-300 leading-relaxed space-y-4">
+      <div className="whitespace-pre-wrap text-[14px] text-gray-700 leading-relaxed space-y-4">
         {t("eula_content")}
       </div>
     </div>
