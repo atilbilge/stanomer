@@ -467,7 +467,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get uploadInvoice => 'Загрузить квитанцию';
 
   @override
-  String get awaitingInvoice => 'Ожидание квитанции';
+  String get awaitingInvoice => 'Ожидание счета';
 
   @override
   String get updateLabel => 'Обновить';
@@ -660,7 +660,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get amount => 'Сумма';
 
   @override
-  String get setAmountAndUploadInvoice => 'Установить сумму и загрузить счет';
+  String get setAmountAndUploadInvoice => 'Введите данные счета';
 
   @override
   String get save => 'Сохранить';
@@ -1232,7 +1232,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get setAmountUploadInvoice => 'Установить сумму и загрузить счет';
+  String get setAmountUploadInvoice => 'Введите данные счета';
 
   @override
   String get yourMessage => 'Ваше сообщение:';
@@ -1416,4 +1416,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get noEmailProvided => 'Почта не указана';
+
+  @override
+  String get invoiceLocalOnlyDesc =>
+      'Документ сохраняется только на этом устройстве. Вы можете включить облачную загрузку в настройках.';
+
+  @override
+  String get invoiceCloudSecureDesc =>
+      'Документ надежно сохранен с шифрованием. Видеть его можете только вы и арендатор.';
+
+  @override
+  String get invoiceUploadLimitDesc => 'PDF, JPG или PNG · макс. 10 МБ';
+
+  @override
+  String get billMissingLocalDesc =>
+      'Этот счет был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.';
+
+  @override
+  String get documentMissingLocalDesc =>
+      'Этот документ был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.';
+
+  @override
+  String get cannotOpenDocument => 'Не удалось открыть документ';
 }

@@ -667,7 +667,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get amount => 'Iznos';
 
   @override
-  String get setAmountAndUploadInvoice => 'Podesite iznos i otpremite račun';
+  String get setAmountAndUploadInvoice => 'Unesite detalje računa';
 
   @override
   String get save => 'Sačuvaj';
@@ -1248,7 +1248,7 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get setAmountUploadInvoice => 'Podesite iznos i otpremite račun';
+  String get setAmountUploadInvoice => 'Unesite detalje računa';
 
   @override
   String get yourMessage => 'Vaša poruka:';
@@ -1436,6 +1436,28 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get noEmailProvided => 'E-pošta nije navedena';
+
+  @override
+  String get invoiceLocalOnlyDesc =>
+      'Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.';
+
+  @override
+  String get invoiceCloudSecureDesc =>
+      'Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.';
+
+  @override
+  String get invoiceUploadLimitDesc => 'JPEG, PNG ili PDF · maks. 10 MB';
+
+  @override
+  String get billMissingLocalDesc =>
+      'Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.';
+
+  @override
+  String get documentMissingLocalDesc =>
+      'Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.';
+
+  @override
+  String get cannotOpenDocument => 'Nije moguće otvoriti dokument';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -2101,7 +2123,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get amount => 'Износ';
 
   @override
-  String get setAmountAndUploadInvoice => 'Подесите износ и отпремите рачун';
+  String get setAmountAndUploadInvoice => 'Унесите детаље рачуна';
 
   @override
   String get save => 'Сачувај';
@@ -2681,7 +2703,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get setAmountUploadInvoice => 'Подесите износ и отпремите рачун';
+  String get setAmountUploadInvoice => 'Унесите детаље рачуна';
 
   @override
   String get yourMessage => 'Ваша порука:';
@@ -2868,4 +2890,26 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get noEmailProvided => 'Е-пошта није наведена';
+
+  @override
+  String get invoiceLocalOnlyDesc =>
+      'Документ се чува само на овом уређају. Можете омогућити отпремање на облак у подешавањима.';
+
+  @override
+  String get invoiceCloudSecureDesc =>
+      'Документ је безбедно сачуван са енкрипцијом. Само ви и станар га можете видети.';
+
+  @override
+  String get invoiceUploadLimitDesc => 'ЈПЕГ, ПНГ или ПДФ · макс 10 МБ';
+
+  @override
+  String get billMissingLocalDesc =>
+      'Овај рачун је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.';
+
+  @override
+  String get documentMissingLocalDesc =>
+      'Овај документ је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.';
+
+  @override
+  String get cannotOpenDocument => 'Није могуће отворити документ';
 }

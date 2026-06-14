@@ -221,7 +221,7 @@
   "fileSelected": "Fajl izabran",
   "selectInvoice": "Izaberi račun",
   "amount": "Iznos",
-  "setAmountAndUploadInvoice": "Podesite iznos i otpremite račun",
+  "setAmountAndUploadInvoice": "Unesite detalje računa",
   "save": "Sačuvaj",
   "paymentDeclared": "Uplata je uspešno prijavljena.",
   "dashboard": "Kontrolna tabla",
@@ -485,7 +485,7 @@
       "title": { "type": "String" }
     }
   },
-  "setAmountUploadInvoice": "Podesite iznos i otpremite račun",
+  "setAmountUploadInvoice": "Unesite detalje računa",
   "yourMessage": "Vaša poruka:",
   "revisionRequestLabel": "Zahtev za reviziju:",
   "noActivityLogs": "Još nema prijavljenih aktivnosti",
@@ -549,5 +549,11 @@
   "sentInvitation": "Poslati poziv",
   "invitedOn": "Pozvan {date}",
   "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
-  "noEmailProvided": "E-pošta nije navedena"
+  "noEmailProvided": "E-pošta nije navedena",
+  "invoiceLocalOnlyDesc": "Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.",
+  "invoiceCloudSecureDesc": "Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.",
+  "invoiceUploadLimitDesc": "JPEG, PNG ili PDF · maks. 10 MB",
+  "billMissingLocalDesc": "Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.",
+  "documentMissingLocalDesc": "Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.",
+  "cannotOpenDocument": "Nije moguće otvoriti dokument"
 }

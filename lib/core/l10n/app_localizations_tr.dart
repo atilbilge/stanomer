@@ -664,7 +664,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get amount => 'Tutar';
 
   @override
-  String get setAmountAndUploadInvoice => 'Tutar Belirle & Fatura Yükle';
+  String get setAmountAndUploadInvoice => 'Fatura detaylarını girin';
 
   @override
   String get save => 'Kaydet';
@@ -1236,7 +1236,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get setAmountUploadInvoice => 'Tutar Belirle & Fatura Yükle';
+  String get setAmountUploadInvoice => 'Fatura detaylarını girin';
 
   @override
   String get yourMessage => 'Mesajınız:';
@@ -1424,4 +1424,26 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noEmailProvided => 'E-posta belirtilmedi';
+
+  @override
+  String get invoiceLocalOnlyDesc =>
+      'Belge yalnızca bu cihazda saklanır. Ayarlardan cloud yüklemeyi açabilirsin.';
+
+  @override
+  String get invoiceCloudSecureDesc =>
+      'Belge şifrelenmiş olarak güvenle saklanır. Yalnızca sen ve kiracı görebilir.';
+
+  @override
+  String get invoiceUploadLimitDesc => 'JPEG, PNG veya PDF · maks. 10 MB';
+
+  @override
+  String get billMissingLocalDesc =>
+      'Bu fatura başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.';
+
+  @override
+  String get documentMissingLocalDesc =>
+      'Bu belge başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.';
+
+  @override
+  String get cannotOpenDocument => 'Belge Açılamadı';
 }

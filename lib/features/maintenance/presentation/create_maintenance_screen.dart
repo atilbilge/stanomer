@@ -14,6 +14,8 @@ import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../data/maintenance_repository.dart';
+import '../../../core/services/document_storage_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CreateMaintenanceRequestScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -73,6 +75,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       final List<String> uploadedUrls = [];
       final tempRequestId = DateTime.now().millisecondsSinceEpoch.toString();
 
+      final isCloudAllowed = ref.read(cloudUploadAllowedProvider);
       for (var file in _selectedFiles) {
         List<int>? fileBytes = file.bytes?.toList();
         if (fileBytes == null && file.path != null) {
@@ -80,11 +83,24 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         }
 
         if (fileBytes != null) {
-          final url = await ref.read(maintenanceRepositoryProvider).uploadMaintenancePhoto(
-            requestId: tempRequestId,
-            fileName: file.name,
-            bytes: Uint8List.fromList(fileBytes),
-          );
+          final String url;
+          if (isCloudAllowed) {
+            url = await ref.read(maintenanceRepositoryProvider).uploadMaintenancePhoto(
+              requestId: tempRequestId,
+              fileName: file.name,
+              bytes: Uint8List.fromList(fileBytes),
+            );
+          } else {
+            final io.File localFile;
+            if (file.path != null) {
+              localFile = io.File(file.path!);
+            } else {
+              final tempDir = await getTemporaryDirectory();
+              localFile = io.File('${tempDir.path}/${file.name}');
+              await localFile.writeAsBytes(fileBytes);
+            }
+            url = await ref.read(documentStorageServiceProvider).saveDocument(localFile);
+          }
           uploadedUrls.add(url);
         }
       }

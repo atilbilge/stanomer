@@ -1242,6 +1242,7 @@ class PropertyRepository {
     }).eq('id', paymentId);
 
     await _logActivity(propertyId, 'rent_declared', {
+      'payment_id': paymentId,
       'month': monthName,
       'due_date': dueDate.toIso8601String(),
       'has_receipt': receiptUrl != null,
@@ -1267,6 +1268,7 @@ class PropertyRepository {
     }).eq('id', paymentId);
 
     await _logActivity(propertyId, 'rent_approved', {
+      'payment_id': paymentId,
       'month': monthName,
       'due_date': dueDate.toIso8601String(),
     });
@@ -1293,6 +1295,7 @@ class PropertyRepository {
     }).eq('id', paymentId);
 
     await _logActivity(propertyId, 'rent_rejected', {
+      'payment_id': paymentId,
       'month': monthName,
       'due_date': dueDate.toIso8601String(),
     });
@@ -1344,7 +1347,11 @@ class PropertyRepository {
       'owner_note': ownerNote,
     }).eq('id', paymentId);
 
-    await _logActivity(propertyId, 'invoice_uploaded', {
+    final isUploaded = invoiceUrl != null && (invoiceUrl.startsWith('http://') || invoiceUrl.startsWith('https://'));
+    final logType = isUploaded ? 'invoice_uploaded' : 'invoice_entered';
+
+    await _logActivity(propertyId, logType, {
+      'payment_id': paymentId,
       'month': monthName,
       'amount': amount,
       'currency': currency,
@@ -1364,6 +1371,49 @@ class PropertyRepository {
   }
 
 
+  Future<void> addAdditionalDocument(String contractId, String name, String url) async {
+    final data = await _client.from('contracts').select('additional_documents').eq('id', contractId).single();
+    final List<dynamic> currentDocs = data['additional_documents'] ?? [];
+    
+    final newDoc = {
+      'name': name,
+      'url': url,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    currentDocs.add(newDoc);
+
+    await _client.from('contracts').update({
+      'additional_documents': currentDocs,
+    }).eq('id', contractId);
+  }
+
+  Future<void> deleteMainContract(String contractId) async {
+    try {
+      final contract = await _client.from('contracts').select('contract_url').eq('id', contractId).single();
+      final url = contract['contract_url'] as String?;
+      if (url != null) {
+        final uri = Uri.parse(url);
+        final pathParts = uri.pathSegments;
+        final contractsIdx = pathParts.indexOf('contracts');
+        if (contractsIdx != -1 && contractsIdx + 1 < pathParts.length) {
+          final storagePath = pathParts.skip(contractsIdx + 1).join('/');
+          await _client.storage.from('contracts').remove([storagePath]);
+        }
+      }
+    } catch (_) {}
+
+    await _client.from('contracts').update({
+      'contract_url': null,
+    }).eq('id', contractId);
+  }
+
+  Future<void> updateMainContractLocal(String contractId, String localPath) async {
+    await _client.from('contracts').update({
+      'contract_url': localPath,
+    }).eq('id', contractId);
+  }
+
   Future<void> uploadContractDocument(String contractId, String name, List<int> fileBytes, String extension) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
@@ -1374,21 +1424,7 @@ class PropertyRepository {
     await _client.storage.from('contracts').uploadBinary(path, Uint8List.fromList(fileBytes));
     final publicUrl = _client.storage.from('contracts').getPublicUrl(path);
 
-    // Get current documents
-    final data = await _client.from('contracts').select('additional_documents').eq('id', contractId).single();
-    final List<dynamic> currentDocs = data['additional_documents'] ?? [];
-    
-    final newDoc = {
-      'name': name,
-      'url': publicUrl,
-      'created_at': DateTime.now().toIso8601String(),
-    };
-
-    currentDocs.add(newDoc);
-
-    await _client.from('contracts').update({
-      'additional_documents': currentDocs,
-    }).eq('id', contractId);
+    await addAdditionalDocument(contractId, name, publicUrl);
   }
 
   Future<void> deleteContractDocument(String contractId, ContractDocument doc) async {

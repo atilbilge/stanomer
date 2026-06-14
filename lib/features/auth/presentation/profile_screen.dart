@@ -13,6 +13,7 @@ import '../../../core/providers/locale_provider.dart';
 import '../../subscriptions/data/subscription_service.dart';
 import '../../subscriptions/presentation/premium_mobile_only_sheet.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../../../core/services/document_storage_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -603,7 +604,7 @@ class _NameUpdateCard extends StatelessWidget {
   }
 }
 
-class _SettingsGroup extends StatelessWidget {
+class _SettingsGroup extends ConsumerWidget {
   final VoidCallback onLanguageTap;
   final VoidCallback onSupportTap;
   final VoidCallback onTermsTap;
@@ -618,8 +619,39 @@ class _SettingsGroup extends StatelessWidget {
     required this.loc,
   });
 
+  String _getCloudTitle(BuildContext context) {
+    final code = Localizations.localeOf(context).languageCode;
+    switch (code) {
+      case 'tr': return 'BULUT YÜKLEMELERİ';
+      case 'sr': return 'OTPREMANJE U OBLAK';
+      case 'ru': return 'ОБЛАЧНАЯ ЗАГРУЗКА';
+      default: return 'CLOUD UPLOADS';
+    }
+  }
+
+  String _getCloudSubtitle(BuildContext context, bool isCloudAllowed) {
+    final code = Localizations.localeOf(context).languageCode;
+    if (isCloudAllowed) {
+      switch (code) {
+        case 'tr': return 'Belgeler (sözleşmeler, faturalar) bulutta yedeklenir.';
+        case 'sr': return 'Dokumenti (ugovori, fature) se čuvaju u oblaku.';
+        case 'ru': return 'Документы сохраняются в облаке.';
+        default: return 'Documents (contracts, invoices) are backed up to the cloud.';
+      }
+    } else {
+      switch (code) {
+        case 'tr': return 'Gizlilik Modu: Belgeler sadece bu cihazda saklanır.';
+        case 'sr': return 'Režim privatnosti: Dokumenti se čuvaju samo na uređaju.';
+        case 'ru': return 'Приватность: Документы сохраняются на устройстве.';
+        default: return 'Privacy Mode: Documents are stored offline on this device.';
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isCloudAllowed = ref.watch(cloudUploadAllowedProvider);
+
     String getLanguageName() {
       if (currentLocale.languageCode == 'tr') return loc.turkish;
       if (currentLocale.languageCode == 'en') return loc.english;
@@ -649,6 +681,16 @@ class _SettingsGroup extends StatelessWidget {
             subtitle: '${getFlag()} ${getLanguageName()}',
             onTap: onLanguageTap,
             showChevron: true,
+          ),
+          const Divider(height: 1, indent: 56),
+          _SwitchListTile(
+            icon: isCloudAllowed ? LucideIcons.cloudUpload : LucideIcons.shieldAlert,
+            title: _getCloudTitle(context),
+            subtitle: _getCloudSubtitle(context, isCloudAllowed),
+            value: isCloudAllowed,
+            onChanged: (val) {
+              ref.read(cloudUploadAllowedProvider.notifier).toggle(val);
+            },
           ),
           const Divider(height: 1, indent: 56),
           _ListTile(
@@ -764,6 +806,64 @@ class _ListTile extends StatelessWidget {
               const Icon(LucideIcons.chevronRight, size: 18, color: StanomerColors.borderInput),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SwitchListTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SwitchListTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 22, color: StanomerColors.textSecondary),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: StanomerColors.textTertiary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: StanomerColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+            activeColor: StanomerColors.brandPrimary,
+          ),
+        ],
       ),
     );
   }

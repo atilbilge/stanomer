@@ -221,7 +221,7 @@
   "fileSelected": "Dosya Seçildi",
   "selectInvoice": "Fatura Seç",
   "amount": "Tutar",
-  "setAmountAndUploadInvoice": "Tutar Belirle & Fatura Yükle",
+  "setAmountAndUploadInvoice": "Fatura detaylarını girin",
   "save": "Kaydet",
   "paymentDeclared": "Ödeme başarıyla beyan edildi.",
   "dashboard": "Kontrol Paneli",
@@ -485,7 +485,7 @@
       "title": { "type": "String" }
     }
   },
-  "setAmountUploadInvoice": "Tutar Belirle & Fatura Yükle",
+  "setAmountUploadInvoice": "Fatura detaylarını girin",
   "yourMessage": "Mesajınız:",
   "revisionRequestLabel": "Revizyon Talebi:",
   "noActivityLogs": "Henüz işlem kaydı bulunamadı",
@@ -549,5 +549,11 @@
   "sentInvitation": "Gönderilen Davet",
   "invitedOn": "{date} tarihinde davet edildi",
   "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
-  "noEmailProvided": "E-posta belirtilmedi"
+  "noEmailProvided": "E-posta belirtilmedi",
+  "invoiceLocalOnlyDesc": "Belge yalnızca bu cihazda saklanır. Ayarlardan cloud yüklemeyi açabilirsin.",
+  "invoiceCloudSecureDesc": "Belge şifrelenmiş olarak güvenle saklanır. Yalnızca sen ve kiracı görebilir.",
+  "invoiceUploadLimitDesc": "JPEG, PNG veya PDF · maks. 10 MB",
+  "billMissingLocalDesc": "Bu fatura başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.",
+  "documentMissingLocalDesc": "Bu belge başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.",
+  "cannotOpenDocument": "Belge Açılamadı"
 }

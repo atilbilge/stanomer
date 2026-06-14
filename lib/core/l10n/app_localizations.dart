@@ -1330,7 +1330,7 @@ abstract class AppLocalizations {
   /// No description provided for @setAmountAndUploadInvoice.
   ///
   /// In sr, this message translates to:
-  /// **'Podesite iznos i otpremite račun'**
+  /// **'Unesite detalje računa'**
   String get setAmountAndUploadInvoice;
 
   /// No description provided for @save.
@@ -2380,7 +2380,7 @@ abstract class AppLocalizations {
   /// No description provided for @setAmountUploadInvoice.
   ///
   /// In sr, this message translates to:
-  /// **'Podesite iznos i otpremite račun'**
+  /// **'Unesite detalje računa'**
   String get setAmountUploadInvoice;
 
   /// No description provided for @yourMessage.
@@ -2724,6 +2724,42 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'E-pošta nije navedena'**
   String get noEmailProvided;
+
+  /// No description provided for @invoiceLocalOnlyDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.'**
+  String get invoiceLocalOnlyDesc;
+
+  /// No description provided for @invoiceCloudSecureDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.'**
+  String get invoiceCloudSecureDesc;
+
+  /// No description provided for @invoiceUploadLimitDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'JPEG, PNG ili PDF · maks. 10 MB'**
+  String get invoiceUploadLimitDesc;
+
+  /// No description provided for @billMissingLocalDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.'**
+  String get billMissingLocalDesc;
+
+  /// No description provided for @documentMissingLocalDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.'**
+  String get documentMissingLocalDesc;
+
+  /// No description provided for @cannotOpenDocument.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nije moguće otvoriti dokument'**
+  String get cannotOpenDocument;
 }
 
 class _AppLocalizationsDelegate

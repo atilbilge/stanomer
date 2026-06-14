@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stanomer/features/property/presentation/widgets/payment_responsibility_selector.dart';
+import 'package:stanomer/features/property/presentation/widgets/contract_file_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -19,6 +19,8 @@ import '../../auth/data/auth_repository.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
+import '../../../core/services/document_storage_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 class InviteTenantScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -131,11 +133,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'png', 'jpeg'],
-      withData: true,
-    );
+    final result = await pickContractFile(context);
 
     if (result != null && result.files.single.name.isNotEmpty) {
       List<int>? fileBytes = result.files.single.bytes?.toList();
@@ -189,11 +187,23 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
       // Upload file if selected
       String? contractUrl = _existingContractUrl;
       if (_contractFileName != null) {
-        contractUrl = await repo.uploadContract(
-          _contractFileName!,
-          filePath: _contractFilePath,
-          bytes: _contractFileBytes,
-        );
+        if (ref.read(cloudUploadAllowedProvider)) {
+          contractUrl = await repo.uploadContract(
+            _contractFileName!,
+            filePath: _contractFilePath,
+            bytes: _contractFileBytes,
+          );
+        } else {
+          final io.File localFile;
+          if (_contractFilePath != null) {
+            localFile = io.File(_contractFilePath!);
+          } else {
+            final tempDir = await getTemporaryDirectory();
+            localFile = io.File('${tempDir.path}/$_contractFileName');
+            await localFile.writeAsBytes(_contractFileBytes!);
+          }
+          contractUrl = await ref.read(documentStorageServiceProvider).saveDocument(localFile);
+        }
       }
 
       final finalRent = double.parse(_rentController.text);

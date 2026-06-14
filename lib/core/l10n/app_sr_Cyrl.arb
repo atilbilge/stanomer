@@ -281,7 +281,7 @@
   "fileSelected": "Фајл изабран",
   "selectInvoice": "Изабери рачун",
   "amount": "Износ",
-  "setAmountAndUploadInvoice": "Подесите износ и отпремите рачун",
+  "setAmountAndUploadInvoice": "Унесите детаље рачуна",
   "save": "Сачувај",
   "paymentDeclared": "Уплата је успешно пријављена.",
   "dashboard": "Контролна табла",
@@ -570,7 +570,7 @@
       }
     }
   },
-  "setAmountUploadInvoice": "Подесите износ и отпремите рачун",
+  "setAmountUploadInvoice": "Унесите детаље рачуна",
   "yourMessage": "Ваша порука:",
   "revisionRequestLabel": "Захтев за ревизију:",
   "noActivityLogs": "Још нема пријављених активности",
@@ -635,5 +635,11 @@
   "sentInvitation": "Послати позив",
   "invitedOn": "Позван {date}",
   "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
-  "noEmailProvided": "Е-пошта није наведена"
+  "noEmailProvided": "Е-пошта није наведена",
+  "invoiceLocalOnlyDesc": "Документ се чува само на овом уређају. Можете омогућити отпремање на облак у подешавањима.",
+  "invoiceCloudSecureDesc": "Документ је безбедно сачуван са енкрипцијом. Само ви и станар га можете видети.",
+  "invoiceUploadLimitDesc": "ЈПЕГ, ПНГ или ПДФ · макс 10 МБ",
+  "billMissingLocalDesc": "Овај рачун је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.",
+  "documentMissingLocalDesc": "Овај документ је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.",
+  "cannotOpenDocument": "Није могуће отворити документ"
 }

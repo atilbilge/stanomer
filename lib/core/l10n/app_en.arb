@@ -149,8 +149,8 @@
   "declared": "declared",
   "sent": "sent",
   "noInvoice": "No Invoice",
-  "uploadInvoice": "Upload Invoice",
-  "awaitingInvoice": "Awaiting invoice",
+  "uploadInvoice": "Upload Bill",
+  "awaitingInvoice": "Awaiting bill",
   "updateLabel": "Update",
   "statusVacant": "Vacant",
   "pendingApproval": "PENDING APPROVAL",
@@ -221,7 +221,7 @@
   "fileSelected": "File Selected",
   "selectInvoice": "Select Invoice",
   "amount": "Amount",
-  "setAmountAndUploadInvoice": "Set Amount & Upload Invoice",
+  "setAmountAndUploadInvoice": "Enter bill details",
   "save": "Save",
   "paymentDeclared": "Payment declared successfully.",
   "dashboard": "Dashboard",
@@ -250,7 +250,7 @@
   "changesDeclined": "Changes declined",
   "contractChangeProposal": "Contract Change Proposal",
   "cancelProposal": "Cancel Proposal",
-  "viewInvoice": "View Invoice",
+  "viewInvoice": "View Bill",
   "decline": "Decline",
   "accept": "Accept",
   "paymentResponsibility": "PAYMENT RESPONSIBILITY",
@@ -485,7 +485,7 @@
       "title": { "type": "String" }
     }
   },
-  "setAmountUploadInvoice": "Set Amount & Upload Invoice",
+  "setAmountUploadInvoice": "Enter bill details",
   "yourMessage": "Your message:",
   "revisionRequestLabel": "Revision Request:",
   "noActivityLogs": "No activity logs found yet",
@@ -549,5 +549,11 @@
   "sentInvitation": "Sent Invitation",
   "invitedOn": "Invited on {date}",
   "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
-  "noEmailProvided": "No email provided"
+  "noEmailProvided": "No email provided",
+  "invoiceLocalOnlyDesc": "Document is stored only on this device. You can enable cloud upload in settings.",
+  "invoiceCloudSecureDesc": "Document is securely stored with encryption. Only you and the tenant can see it.",
+  "invoiceUploadLimitDesc": "JPEG, PNG or PDF · max 10 MB",
+  "billMissingLocalDesc": "This bill was saved locally on another device. You cannot view it here since cloud upload is disabled.",
+  "documentMissingLocalDesc": "This document was saved locally on another device. You cannot view it here since cloud upload is disabled.",
+  "cannotOpenDocument": "Cannot Open Document"
 }

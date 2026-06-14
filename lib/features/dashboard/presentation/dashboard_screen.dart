@@ -979,189 +979,413 @@ class _LandlordPropertyCard extends ConsumerWidget {
     final financialStatusAsync = ref.watch(propertyFinancialStatusProvider(property.id));
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
 
+    final viewDetailsLabel = loc.localeName == 'tr'
+        ? 'Detayları Gör'
+        : loc.localeName.startsWith('sr')
+            ? 'Pogledaj detalje'
+            : loc.localeName == 'ru'
+                ? 'Посмотреть детали'
+                : 'View Details';
+
+    final noContractMsg = loc.localeName == 'tr'
+        ? 'Aktif kontrat bulunmuyor. Kiracı davet etmek için detaylara gidin.'
+        : loc.localeName.startsWith('sr')
+            ? 'Nema aktivnog ugovora. Idite na detalje da pozovete stanara.'
+            : loc.localeName == 'ru'
+                ? 'Нет активного договора. Перейдите в детали, чтобы пригласить жильца.'
+                : 'No active contract. Go to details to invite a tenant.';
+
+    String formatDate(DateTime? date) {
+      if (date == null) return '-';
+      return DateFormat('dd.MM.yyyy', loc.localeName).format(date);
+    }
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push('/property-detail', extra: property),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Vertical Accent
-              financialStatusAsync.when(
-                data: (state) {
-                  final isDebt = state.rentStatus == RentStatus.debt || state.billStatus == BillStatus.debt;
-                  return Container(
-                    width: 4,
-                    color: isDebt ? const Color(0xFFE24B4A) : const Color(0xFF2DB87A),
-                  );
-                },
-                loading: () => Container(width: 4, color: Colors.grey[200]),
-                error: (_, __) => Container(width: 4, color: Colors.grey[200]),
-              ),
-              
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. Top Property Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              children: [
+                // Property Avatar Icon
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A5FA8).withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.home, color: Color(0xFF1A5FA8), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        property.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF111827),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Icon(LucideIcons.mapPin, size: 12, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  property.name,
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF111111)),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Row(
-                                  children: [
-                                    const Icon(LucideIcons.mapPin, size: 10, color: Color(0xFF999999)),
-                                    const SizedBox(width: 3),
-                                    Expanded(
-                                      child: Text(
-                                        property.address,
-                                        style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            child: Text(
+                              property.address,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF6B7280),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          activeContractAsync.when(
-                            data: (contract) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  CurrencyUtils.formatAmount(contract?.monthlyRent ?? property.defaultMonthlyRent, contract?.currency ?? property.currency, useSymbol: true),
-                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF1A5FA8)),
-                                ),
-                                Text(
-                                  loc.totalRentShort.toUpperCase(),
-                                  style: const TextStyle(fontSize: 10, color: Color(0xFF999999), letterSpacing: 0.5),
-                                ),
-                              ],
-                            ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
                           ),
                         ],
-                      ),
-                      
-                      financialStatusAsync.when(
-                        data: (state) {
-                          if (state.generalStatus == PropertyFinancialStatus.vacant) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Row(
-                                children: [
-                                  _StatusPill(label: loc.vacant, color: Colors.grey[400]!, textColor: Colors.white),
-                                ],
-                              ),
-                            );
-                          }
-
-                          final total = (state.paidCount + state.pendingCount + state.awaitingCount);
-                          final progress = total > 0 ? (state.paidCount / total) : 0.0;
-                          
-                          return Column(
-                            children: [
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF5F5F5),
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                      child: FractionallySizedBox(
-                                        alignment: Alignment.centerLeft,
-                                        widthFactor: progress.clamp(0.0, 1.0),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: progress < 1.0 ? const Color(0xFFEF9F27) : const Color(0xFF2DB87A),
-                                            borderRadius: BorderRadius.circular(2),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${state.paidCount} / $total ${loc.paidLabel.toLowerCase()}',
-                                    style: const TextStyle(fontSize: 10, color: Color(0xFF999999)),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  if (state.rentStatus != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 6),
-                                      child: _StatusPill(
-                                        label: '${loc.rent}: ${state.rentStatus == RentStatus.debt ? loc.debtLabel.toUpperCase() : (state.rentStatus == RentStatus.awaitingApproval ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
-                                        color: state.rentStatus == RentStatus.debt ? const Color(0xFFFCEBEB) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFFAEEDA) : const Color(0xFFEAF3DE)),
-                                        textColor: state.rentStatus == RentStatus.debt ? const Color(0xFFA32D2D) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFF854F0B) : const Color(0xFF3B6D11)),
-                                      ),
-                                    ),
-                                  if (state.billStatus != null)
-                                    _StatusPill(
-                                      label: '${loc.bills}: ${state.billStatus == BillStatus.debt ? loc.debtLabel.toUpperCase() : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
-                                      color: state.billStatus == BillStatus.debt ? const Color(0xFFFCEBEB) : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? const Color(0xFFFAEEDA) : const Color(0xFFEAF3DE)),
-                                      textColor: state.billStatus == BillStatus.debt ? const Color(0xFFA32D2D) : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? const Color(0xFF854F0B) : const Color(0xFF3B6D11)),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
                 ),
-              ),
-              
-              // Action Buttons Column
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _SmallIconButton(
-                      icon: LucideIcons.chevronRight,
-                      onTap: () => context.push('/property-detail', extra: property),
+                const SizedBox(width: 12),
+                // Status indicator (vacant / occupied)
+                activeContractAsync.when(
+                  data: (contract) {
+                    final isVacant = contract == null || property.tenantId == null;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isVacant ? const Color(0xFFF3F4F6) : const Color(0xFFDEF7EC),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        isVacant ? loc.vacant : (loc.localeName == 'tr' ? 'Kiracı Var' : 'Rented'),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isVacant ? const Color(0xFF4B5563) : const Color(0xFF03543F),
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+
+          // 2. Contract Info Box
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: activeContractAsync.when(
+              data: (contract) {
+                if (contract == null) {
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
                     ),
-                    const SizedBox(height: 6),
-                    _SmallIconButton(
-                      icon: LucideIcons.trash2,
-                      onTap: () => _deleteProperty(context, ref, property),
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.alertCircle, color: Color(0xFF9CA3AF), size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            noContractMsg,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6B7280),
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final displayTenant = property.tenantName ?? contract.inviteeEmail;
+                final isPendingAccept = property.tenantId == null;
+
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tenant detail
+                      Row(
+                        children: [
+                          const Icon(LucideIcons.user, color: Color(0xFF4F46E5), size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '${loc.tenant}: ',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF374151),
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: displayTenant,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  if (isPendingAccept)
+                                    TextSpan(
+                                      text: ' (${loc.localeName == 'tr' ? 'Davet Bekleniyor' : 'Invited'})',
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.amber,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Rent details
+                      Row(
+                        children: [
+                          const Icon(LucideIcons.wallet, color: Color(0xFF0F6E56), size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '${loc.rent}: ',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF374151),
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency, useSymbol: true),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  if (contract.depositAmount != null && contract.depositAmount! > 0) ...[
+                                    TextSpan(
+                                      text: '  ·  ${loc.depositAmount}: ',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF374151),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: CurrencyUtils.formatAmount(contract.depositAmount!, contract.depositCurrency, useSymbol: true),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Term and Due Day details
+                      Row(
+                        children: [
+                          const Icon(LucideIcons.calendar, color: Color(0xFF1A5FA8), size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '${formatDate(contract.startDate)} - ${formatDate(contract.endDate)}  ·  ${loc.dueDayOfMonth}: ${contract.dueDay}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF4B5563),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const SizedBox(
+                height: 60,
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+          ),
+
+          // 3. Financial Progress Bar & Badges
+          financialStatusAsync.when(
+            data: (state) {
+              if (state.generalStatus == PropertyFinancialStatus.vacant) {
+                return const SizedBox(height: 12);
+              }
+
+              final total = (state.paidCount + state.pendingCount + state.awaitingCount);
+              final progress = total > 0 ? (state.paidCount / total) : 0.0;
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Progress bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progress.clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: progress < 1.0 ? const Color(0xFFEF9F27) : const Color(0xFF2DB87A),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${state.paidCount} / $total ${loc.paidLabel.toLowerCase()}',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Status badges
+                    Row(
+                      children: [
+                        if (state.rentStatus != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: _StatusPill(
+                              label: '${loc.rent}: ${state.rentStatus == RentStatus.debt ? loc.debtLabel.toUpperCase() : (state.rentStatus == RentStatus.awaitingApproval ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
+                              color: state.rentStatus == RentStatus.debt ? const Color(0xFFFCEBEB) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFFAEEDA) : const Color(0xFFEAF3DE)),
+                              textColor: state.rentStatus == RentStatus.debt ? const Color(0xFFA32D2D) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFF854F0B) : const Color(0xFF3B6D11)),
+                            ),
+                          ),
+                        if (state.billStatus != null)
+                          _StatusPill(
+                            label: '${loc.bills}: ${state.billStatus == BillStatus.debt ? loc.debtLabel.toUpperCase() : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
+                            color: state.billStatus == BillStatus.debt ? const Color(0xFFFCEBEB) : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? const Color(0xFFFAEEDA) : const Color(0xFFEAF3DE)),
+                            textColor: state.billStatus == BillStatus.debt ? const Color(0xFFA32D2D) : (state.billStatus == BillStatus.awaitingApproval || state.billStatus == BillStatus.waitingForLandlord ? const Color(0xFF854F0B) : const Color(0xFF3B6D11)),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
-        ),
+
+          const SizedBox(height: 4),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+
+          // 4. Action Buttons Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                // Delete button
+                TextButton.icon(
+                  onPressed: () => _deleteProperty(context, ref, property),
+                  icon: const Icon(LucideIcons.trash2, color: Color(0xFFEF4444), size: 16),
+                  label: Text(
+                    loc.delete,
+                    style: const TextStyle(
+                      color: Color(0xFFEF4444),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  ),
+                ),
+                const Spacer(),
+                // View details button
+                ElevatedButton.icon(
+                  onPressed: () => context.push('/property-detail', extra: property),
+                  icon: const Icon(LucideIcons.chevronRight, size: 16, color: Colors.white),
+                  label: Text(
+                    viewDetailsLabel,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.brandPrimary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

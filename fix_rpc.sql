@@ -86,9 +86,17 @@ BEGIN
             (p_property_id, v_contract_id, v_tenant_id, v_exp_amount, v_currency, v_current_date, 'pending', v_exp_name, 'owner')
           ON CONFLICT (contract_id, due_date, title)
           DO UPDATE SET
-            -- If an invoice was uploaded, DO NOT overwrite the manually set amount and currency!
-            amount    = CASE WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.amount ELSE EXCLUDED.amount END,
-            currency  = CASE WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.currency ELSE EXCLUDED.currency END,
+            -- If an invoice was uploaded OR the amount is manually set (> 0), DO NOT overwrite it!
+            amount    = CASE 
+                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.amount 
+                          WHEN rent_payments.amount > 0 THEN rent_payments.amount 
+                          ELSE EXCLUDED.amount 
+                        END,
+            currency  = CASE 
+                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.currency 
+                          WHEN rent_payments.amount > 0 THEN rent_payments.currency 
+                          ELSE EXCLUDED.currency 
+                        END,
             tenant_id = COALESCE(EXCLUDED.tenant_id, rent_payments.tenant_id)
           WHERE rent_payments.status = 'pending';
         END IF;

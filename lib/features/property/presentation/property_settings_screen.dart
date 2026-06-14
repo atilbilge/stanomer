@@ -6,8 +6,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'widgets/contract_file_picker.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
@@ -645,10 +646,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                   subtitle: Text(DateFormat('dd/MM/yyyy').format(contract.createdAt ?? DateTime.now()), style: const TextStyle(fontSize: 11)),
                   trailing: const Icon(LucideIcons.chevronRight, size: 16),
                   onTap: () async {
-                    try {
-                      final url = Uri.parse(contract.contractUrl!);
-                      if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
-                    } catch (_) {}
+                    await _openFileOrUrl(context, contract.contractUrl!, mounted: mounted);
                   },
                 ),
               if (hasMainContract && contract.additionalDocuments.isNotEmpty)
@@ -667,10 +665,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                         onPressed: () => _deleteDocument(contract, doc),
                       ),
                       onTap: () async {
-                        try {
-                          final url = Uri.parse(doc.url);
-                          if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
-                        } catch (_) {}
+                        await _openFileOrUrl(context, doc.url, mounted: mounted);
                       },
                     ),
                     if (index < contract.additionalDocuments.length - 1)
@@ -722,12 +717,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     );
 
     if (name == null || name.trim().isEmpty) return;
+    if (!mounted) return;
 
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-      withData: true,
-    );
+    final result = await pickContractFile(context);
 
     if (result == null) return;
     
@@ -755,12 +747,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
   }
 
   Future<void> _uploadMainContract(Contract contract) async {
-    final loc = AppLocalizations.of(context)!;
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-      withData: true,
-    );
+    final result = await pickContractFile(context);
 
     if (result == null) return;
 
@@ -1416,5 +1403,44 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
         const Divider(),
       ],
     );
+  }
+}
+
+Future<void> _openFileOrUrl(BuildContext context, String pathOrUrl, {required bool mounted}) async {
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+    final uri = Uri.parse(pathOrUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  } else {
+    final file = io.File(pathOrUrl);
+    if (!file.existsSync()) {
+      if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(loc.cannotOpenDocument),
+            content: Text(loc.documentMissingLocalDesc),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.ok),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+    final result = await OpenFilex.open(pathOrUrl);
+    if (result.type != ResultType.done && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cannot open local file: ${result.message}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

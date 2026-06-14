@@ -68,7 +68,8 @@
 	<string>Stanomer uses the local network to discover and connect to your development tools.</string>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_dartvm_service._tcp</string>
+		<string>_dartVmService._tcp</string>
+		<string>_http._tcp</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 <string>Stanomer needs access to your photo library to let you upload rent receipts and property maintenance photos.</string>

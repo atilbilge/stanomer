@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +5,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import '../../../core/services/document_storage_service.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
@@ -81,26 +83,44 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         withData: true,
       );
 
-      if (result != null) {
-        final platformFile = result.files.single;
-        List<int>? fileBytes = platformFile.bytes?.toList();
-        
-        if (fileBytes == null && platformFile.path != null) {
-          fileBytes = await io.File(platformFile.path!).readAsBytes();
-        }
+      if (result == null) return;
 
-        if (fileBytes == null) return;
+      final platformFile = result.files.single;
+      List<int>? fileBytes = platformFile.bytes?.toList();
 
-        setState(() => _isSending = true);
-        
-        final url = await ref.read(maintenanceRepositoryProvider).uploadMaintenancePhoto(
+      if (fileBytes == null && platformFile.path != null) {
+        fileBytes = await io.File(platformFile.path!).readAsBytes();
+      }
+
+      if (fileBytes == null) return;
+
+      setState(() => _isSending = true);
+
+      final isCloudAllowed = ref.read(cloudUploadAllowedProvider);
+      String photoRef;
+
+      if (isCloudAllowed) {
+        // ── Cloud path: upload to Supabase and get a public URL ──
+        photoRef = await ref.read(maintenanceRepositoryProvider).uploadMaintenancePhoto(
           requestId: widget.request.id,
           fileName: platformFile.name,
           bytes: Uint8List.fromList(fileBytes),
         );
-
-        await _sendMessage(photoUrl: url);
+      } else {
+        // ── Local path: save bytes to the app's documents directory ──
+        final appDir = await getApplicationDocumentsDirectory();
+        final storedDir = io.Directory('${appDir.path}/stored_documents');
+        if (!await storedDir.exists()) {
+          await storedDir.create(recursive: true);
+        }
+        final fileName = 'maintenance_${widget.request.id}_${DateTime.now().millisecondsSinceEpoch}_${p.basename(platformFile.name)}';
+        final destPath = '${storedDir.path}/$fileName';
+        await io.File(destPath).writeAsBytes(fileBytes);
+        // Store the local path prefixed so the UI knows it's local
+        photoRef = 'local://$destPath';
       }
+
+      await _sendMessage(photoUrl: photoRef);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -538,6 +558,47 @@ class _InteractiveImage extends StatelessWidget {
   final String url;
   const _InteractiveImage({required this.url});
 
+  bool get _isLocal => url.startsWith('local://');
+  String get _localPath => url.replaceFirst('local://', '');
+
+  Widget _buildImage({double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (_isLocal) {
+      return Image.file(
+        io.File(_localPath),
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (_, __, ___) => Container(
+          width: width ?? 100,
+          height: height ?? 100,
+          color: Colors.grey.shade300,
+          child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+        ),
+      );
+    }
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          width: width ?? 100,
+          height: height ?? 100,
+          color: Colors.grey.shade200,
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      },
+      errorBuilder: (_, __, ___) => Container(
+        width: width ?? 100,
+        height: height ?? 100,
+        color: Colors.grey.shade300,
+        child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -548,7 +609,7 @@ class _InteractiveImage extends StatelessWidget {
             backgroundColor: Colors.black,
             child: Stack(
               children: [
-                Center(child: Image.network(url)),
+                Center(child: _buildImage(fit: BoxFit.contain)),
                 Positioned(
                   top: 40,
                   right: 20,
@@ -562,19 +623,7 @@ class _InteractiveImage extends StatelessWidget {
           ),
         );
       },
-      child: Image.network(
-        url,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: 100,
-            height: 100,
-            color: Colors.grey.shade200,
-            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          );
-        },
-      ),
+      child: _buildImage(width: 100, height: 100),
     );
   }
 }

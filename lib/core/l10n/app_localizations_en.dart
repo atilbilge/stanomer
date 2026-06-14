@@ -463,10 +463,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noInvoice => 'No Invoice';
 
   @override
-  String get uploadInvoice => 'Upload Invoice';
+  String get uploadInvoice => 'Upload Bill';
 
   @override
-  String get awaitingInvoice => 'Awaiting invoice';
+  String get awaitingInvoice => 'Awaiting bill';
 
   @override
   String get updateLabel => 'Update';
@@ -664,7 +664,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get amount => 'Amount';
 
   @override
-  String get setAmountAndUploadInvoice => 'Set Amount & Upload Invoice';
+  String get setAmountAndUploadInvoice => 'Enter bill details';
 
   @override
   String get save => 'Save';
@@ -752,7 +752,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelProposal => 'Cancel Proposal';
 
   @override
-  String get viewInvoice => 'View Invoice';
+  String get viewInvoice => 'View Bill';
 
   @override
   String get paymentResponsibility => 'PAYMENT RESPONSIBILITY';
@@ -1241,7 +1241,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get setAmountUploadInvoice => 'Set Amount & Upload Invoice';
+  String get setAmountUploadInvoice => 'Enter bill details';
 
   @override
   String get yourMessage => 'Your message:';
@@ -1428,4 +1428,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noEmailProvided => 'No email provided';
+
+  @override
+  String get invoiceLocalOnlyDesc =>
+      'Document is stored only on this device. You can enable cloud upload in settings.';
+
+  @override
+  String get invoiceCloudSecureDesc =>
+      'Document is securely stored with encryption. Only you and the tenant can see it.';
+
+  @override
+  String get invoiceUploadLimitDesc => 'JPEG, PNG or PDF · max 10 MB';
+
+  @override
+  String get billMissingLocalDesc =>
+      'This bill was saved locally on another device. You cannot view it here since cloud upload is disabled.';
+
+  @override
+  String get documentMissingLocalDesc =>
+      'This document was saved locally on another device. You cannot view it here since cloud upload is disabled.';
+
+  @override
+  String get cannotOpenDocument => 'Cannot Open Document';
 }
