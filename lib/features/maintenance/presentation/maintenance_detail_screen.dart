@@ -563,6 +563,14 @@ class _InteractiveImage extends StatelessWidget {
 
   Widget _buildImage({double? width, double? height, BoxFit fit = BoxFit.cover}) {
     if (_isLocal) {
+      if (kIsWeb) {
+        return Container(
+          width: width ?? 100,
+          height: height ?? 100,
+          color: Colors.grey.shade300,
+          child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+        );
+      }
       return Image.file(
         io.File(_localPath),
         width: width,

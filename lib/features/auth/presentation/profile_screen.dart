@@ -637,10 +637,10 @@ class _SettingsGroup extends ConsumerWidget {
     final code = Localizations.localeOf(context).languageCode;
     if (kIsWeb) {
       switch (code) {
-        case 'tr': return 'Web uygulamasında belgeler bulutta saklanır (Değiştirilemez).';
-        case 'sr': return 'Na vebu se dokumenti čuvaju u oblaku (Ne može se menjati).';
-        case 'ru': return 'В веб-приложении документы сохраняются в облаке (Нельзя изменить).';
-        default: return 'Web app requires cloud storage (Read-only).';
+        case 'tr': return 'Web uygulamasında belgeler bulutta saklanır (iOS ve Android uygulamalarında bu ayar kullanılabilir).';
+        case 'sr': return 'Na vebu se dokumenti čuvaju u oblaku (ova opcija je dostupna u iOS i Android aplikacijama).';
+        case 'ru': return 'В веб-приложении документы сохраняются в облаке (эта настройка доступна в приложениях для iOS и Android).';
+        default: return 'Web app requires cloud storage (this setting is configurable in iOS and Android apps).';
       }
     }
     if (isCloudAllowed) {

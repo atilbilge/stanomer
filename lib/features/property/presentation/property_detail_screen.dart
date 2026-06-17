@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -751,11 +752,13 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 20, color: Colors.grey),
                 )
-              : Image.file(
-                  io.File(url),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 20, color: Colors.grey),
-                ),
+              : (kIsWeb
+                  ? const Icon(LucideIcons.image, size: 20, color: Colors.grey)
+                  : Image.file(
+                      io.File(url),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 20, color: Colors.grey),
+                    )),
         ),
       );
     } else {
@@ -888,7 +891,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
       final repo = ref.read(propertyRepositoryProvider);
       
       final url = contract.contractUrl;
-      if (url != null && !url.startsWith('http://') && !url.startsWith('https://')) {
+      if (!kIsWeb && url != null && !url.startsWith('http://') && !url.startsWith('https://')) {
         try {
           final file = io.File(url);
           if (await file.exists()) {
@@ -931,7 +934,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
     try {
       final repo = ref.read(propertyRepositoryProvider);
       
-      if (!doc.url.startsWith('http://') && !doc.url.startsWith('https://')) {
+      if (!kIsWeb && !doc.url.startsWith('http://') && !doc.url.startsWith('https://')) {
         try {
           final file = io.File(doc.url);
           if (await file.exists()) {
@@ -1922,7 +1925,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
           final url = payment.invoiceUrl;
           final isRemote = url != null && (url.startsWith('http://') || url.startsWith('https://'));
-          final localFileExists = url != null && !isRemote && io.File(url).existsSync();
+          final localFileExists = !kIsWeb && url != null && !isRemote && io.File(url).existsSync();
           final isMissingLocal = url != null && !isRemote && !localFileExists && !isExistingRemoved;
 
           return AlertDialog(
@@ -2032,7 +2035,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         if (isImage) {
                           if (file.bytes != null) {
                             imageWidget = Image.memory(file.bytes!, fit: BoxFit.cover);
-                          } else if (file.path != null) {
+                          } else if (!kIsWeb && file.path != null) {
                             imageWidget = Image.file(io.File(file.path!), fit: BoxFit.cover);
                           } else {
                             imageWidget = const Icon(LucideIcons.image, size: 24, color: Colors.grey);
@@ -2167,7 +2170,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           if (isRemote) {
                             imageWidget = Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 24, color: Colors.grey));
                           } else {
-                            imageWidget = Image.file(io.File(url), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 24, color: Colors.grey));
+                            imageWidget = kIsWeb
+                                ? const Icon(LucideIcons.image, size: 24, color: Colors.grey)
+                                : Image.file(io.File(url), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, size: 24, color: Colors.grey));
                           }
                         } else {
                           imageWidget = const Icon(LucideIcons.fileText, size: 24, color: Colors.red);
@@ -2394,6 +2399,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   if (ref.read(cloudUploadAllowedProvider)) {
                                     invoiceUrl = await ref.read(propertyRepositoryProvider).uploadReceipt(
                                       'invoice_${file.name}',
+                                      filePath: file.path,
                                       bytes: file.bytes,
                                     );
                                   } else {
@@ -5230,6 +5236,25 @@ Future<void> _openFileOrUrl(BuildContext context, String pathOrUrl, {required bo
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   } else {
+    if (kIsWeb) {
+      if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(loc.cannotOpenDocument),
+            content: Text(loc.documentMissingLocalDesc),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.ok),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
     final file = io.File(pathOrUrl);
     if (!file.existsSync()) {
       if (mounted) {

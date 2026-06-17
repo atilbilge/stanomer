@@ -1,4 +1,5 @@
 
+import 'package:flutter/foundation.dart';
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1413,6 +1414,25 @@ Future<void> _openFileOrUrl(BuildContext context, String pathOrUrl, {required bo
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   } else {
+    if (kIsWeb) {
+      if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(loc.cannotOpenDocument),
+            content: Text(loc.documentMissingLocalDesc),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.ok),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
     final file = io.File(pathOrUrl);
     if (!file.existsSync()) {
       if (mounted) {
