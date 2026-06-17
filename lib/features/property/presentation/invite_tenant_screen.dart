@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -137,7 +138,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
 
     if (result != null && result.files.single.name.isNotEmpty) {
       List<int>? fileBytes = result.files.single.bytes?.toList();
-      if (fileBytes == null && result.files.single.path != null) {
+      if (fileBytes == null && !kIsWeb && result.files.single.path != null) {
         fileBytes = await io.File(result.files.single.path!).readAsBytes();
       }
 
@@ -145,7 +146,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
         _contractFileName = result.files.single.name;
         _contractFileBytes = fileBytes != null ? Uint8List.fromList(fileBytes) : null;
         try {
-          _contractFilePath = result.files.single.path;
+          _contractFilePath = kIsWeb ? null : result.files.single.path;
         } catch (_) {
           _contractFilePath = null;
         }

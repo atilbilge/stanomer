@@ -78,7 +78,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       final isCloudAllowed = ref.read(cloudUploadAllowedProvider);
       for (var file in _selectedFiles) {
         List<int>? fileBytes = file.bytes?.toList();
-        if (fileBytes == null && file.path != null) {
+        if (fileBytes == null && !kIsWeb && file.path != null) {
           fileBytes = await io.File(file.path!).readAsBytes();
         }
 
@@ -92,7 +92,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
             );
           } else {
             final io.File localFile;
-            if (file.path != null) {
+            if (!kIsWeb && file.path != null) {
               localFile = io.File(file.path!);
             } else {
               final tempDir = await getTemporaryDirectory();

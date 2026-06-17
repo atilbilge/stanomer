@@ -807,7 +807,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
 
     List<int>? fileBytes = result.files.single.bytes?.toList();
 
-    if (fileBytes == null && result.files.single.path != null) {
+    if (fileBytes == null && !kIsWeb && result.files.single.path != null) {
       fileBytes = await io.File(result.files.single.path!).readAsBytes();
     }
     if (fileBytes == null) return;
@@ -826,7 +826,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
           );
         } else {
           final io.File localFile;
-          if (result.files.single.path != null) {
+          if (!kIsWeb && result.files.single.path != null) {
             localFile = io.File(result.files.single.path!);
           } else {
             final tempDir = await getTemporaryDirectory();
@@ -846,7 +846,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
           );
         } else {
           final io.File localFile;
-          if (result.files.single.path != null) {
+          if (!kIsWeb && result.files.single.path != null) {
             localFile = io.File(result.files.single.path!);
           } else {
             final tempDir = await getTemporaryDirectory();
@@ -1686,7 +1686,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
         // 2. Upload the receipt
         List<int>? fileBytes = file.bytes?.toList();
-        if (fileBytes == null && file.path != null) {
+        if (fileBytes == null && !kIsWeb && file.path != null) {
           fileBytes = await io.File(file.path!).readAsBytes();
         }
 
@@ -1707,7 +1707,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           );
         } else {
           final io.File localFile;
-          if (file.path != null) {
+          if (!kIsWeb && file.path != null) {
             localFile = io.File(file.path!);
           } else {
             final tempDir = await getTemporaryDirectory();
@@ -2076,7 +2076,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                     const SizedBox(height: 6),
                                     Row(
                                       children: [
-                                        if (file.path != null) ...[
+                                        if (!kIsWeb && file.path != null) ...[
                                           GestureDetector(
                                             onTap: () => _openFileOrUrl(context, file.path!, mounted: context.mounted),
                                             child: Text(
@@ -2389,7 +2389,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               
                               Navigator.pop(context);
                               
-                              setState(() => _uploadingPaymentId = payment.id);
+                                setState(() => _uploadingPaymentId = payment.id);
                               try {
                                 // Default to existing invoice URL if no new file is selected, or null if removed
                                 String? invoiceUrl = isExistingRemoved ? null : payment.invoiceUrl;
@@ -2399,12 +2399,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   if (ref.read(cloudUploadAllowedProvider)) {
                                     invoiceUrl = await ref.read(propertyRepositoryProvider).uploadReceipt(
                                       'invoice_${file.name}',
-                                      filePath: file.path,
+                                      filePath: kIsWeb ? null : file.path,
                                       bytes: file.bytes,
                                     );
                                   } else {
                                     final io.File localFile;
-                                    if (file.path != null) {
+                                    if (!kIsWeb && file.path != null) {
                                       localFile = io.File(file.path!);
                                     } else {
                                       final tempDir = await getTemporaryDirectory();

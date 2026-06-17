@@ -88,7 +88,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       final platformFile = result.files.single;
       List<int>? fileBytes = platformFile.bytes?.toList();
 
-      if (fileBytes == null && platformFile.path != null) {
+      if (fileBytes == null && !kIsWeb && platformFile.path != null) {
         fileBytes = await io.File(platformFile.path!).readAsBytes();
       }
 

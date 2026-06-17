@@ -725,7 +725,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     if (result == null) return;
     
     List<int>? fileBytes = result.files.single.bytes?.toList();
-    if (fileBytes == null && result.files.single.path != null) {
+    if (fileBytes == null && !kIsWeb && result.files.single.path != null) {
       fileBytes = await io.File(result.files.single.path!).readAsBytes();
     }
 
@@ -753,7 +753,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     if (result == null) return;
 
     List<int>? fileBytes = result.files.single.bytes?.toList();
-    if (fileBytes == null && result.files.single.path != null) {
+    if (fileBytes == null && !kIsWeb && result.files.single.path != null) {
       fileBytes = await io.File(result.files.single.path!).readAsBytes();
     }
 
