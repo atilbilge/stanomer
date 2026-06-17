@@ -828,7 +828,7 @@ class _SwitchListTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   const _SwitchListTile({
     required this.icon,

@@ -16,10 +16,10 @@ ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'receipts' AND (storage.foldername(name))[1] = auth.uid()::text);
 
--- Allow authenticated users to read receipts
-CREATE POLICY "Allow authenticated users to read receipts"
+-- Allow public read access to receipts
+CREATE POLICY "Allow public read access to receipts"
 ON storage.objects FOR SELECT
-TO authenticated
+TO public
 USING (bucket_id = 'receipts');
 
 -- 3. Setup RLS Policies for contracts
@@ -29,8 +29,8 @@ ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text);
 
--- Allow authenticated users to read contracts
-CREATE POLICY "Allow authenticated users to read contracts"
+-- Allow public read access to contracts
+CREATE POLICY "Allow public read access to contracts"
 ON storage.objects FOR SELECT
-TO authenticated
+TO public
 USING (bucket_id = 'contracts');
