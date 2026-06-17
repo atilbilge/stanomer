@@ -29,6 +29,7 @@ import '../../auth/data/auth_providers.dart';
 import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'widgets/contract_file_picker.dart';
+import '../../../core/widgets/bottom_sheet_wrapper.dart';
 
 class PropertyDetailScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -124,64 +125,67 @@ class _OverviewTab extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        maxChildSize: 0.95,
-        builder: (_, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: Text(loc.contractDetails, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    context.push('/property-settings', extra: {
-                      'property': property,
-                      'initialTab': 'contract',
-                    });
-                  },
-                  icon: Icon(LucideIcons.edit2, size: 16, color: roleColor),
-                  label: Text(loc.editContract, style: TextStyle(color: roleColor, fontWeight: FontWeight.bold)),
-                  style: TextButton.styleFrom(foregroundColor: roleColor),
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          maxChildSize: 0.95,
+          builder: (_, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            children: [
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Text(loc.contractDetails, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.push('/property-settings', extra: {
+                        'property': property,
+                        'initialTab': 'property',
+                      });
+                    },
+                    icon: Icon(LucideIcons.edit2, size: 16, color: roleColor),
+                    label: Text(loc.editContract, style: TextStyle(color: roleColor, fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(foregroundColor: roleColor),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _ContractDetailRow(icon: LucideIcons.user, label: isTenant ? loc.landlord : loc.tenant, value: isTenant ? resolvedLandlordName : resolvedTenantName),
+              _ContractDetailRow(icon: LucideIcons.banknote, label: loc.monthlyRent, value: CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency)),
+              if (contract.depositAmount != null)
+                _ContractDetailRow(icon: LucideIcons.shield, label: loc.depositAmount, value: CurrencyUtils.formatAmount(contract.depositAmount!, contract.depositCurrency)),
+              _ContractDetailRow(icon: LucideIcons.calendar, label: loc.startDate, value: contract.startDate != null ? DateFormat('dd/MM/yyyy').format(contract.startDate!) : '-'),
+              _ContractDetailRow(icon: LucideIcons.calendarOff, label: loc.endDate, value: contract.endDate != null ? DateFormat('dd/MM/yyyy').format(contract.endDate!) : '-'),
+              _ContractDetailRow(icon: LucideIcons.clock, label: loc.dueDay, value: '${contract.dueDay}'),
+              if (contract.expensesConfig.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(loc.expensesHeader, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary)),
+                const SizedBox(height: 8),
+                ...contract.expensesConfig.map((e) => _ContractDetailRow(icon: LucideIcons.zap, label: e.name, value: e.receiver == PaymentReceiver.owner ? loc.roleLandlord : e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included)),
+              ],
+              if (contract.contractUrl != null && contract.contractUrl!.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await _openFileOrUrl(context, contract.contractUrl!, mounted: context.mounted);
+                    },
+                    icon: const Icon(LucideIcons.externalLink, size: 18),
+                    label: Text(loc.viewContract),
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            _ContractDetailRow(icon: LucideIcons.user, label: isTenant ? loc.landlord : loc.tenant, value: isTenant ? resolvedLandlordName : resolvedTenantName),
-            _ContractDetailRow(icon: LucideIcons.banknote, label: loc.monthlyRent, value: CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency)),
-            if (contract.depositAmount != null)
-              _ContractDetailRow(icon: LucideIcons.shield, label: loc.depositAmount, value: CurrencyUtils.formatAmount(contract.depositAmount!, contract.depositCurrency)),
-            _ContractDetailRow(icon: LucideIcons.calendar, label: loc.startDate, value: contract.startDate != null ? DateFormat('dd/MM/yyyy').format(contract.startDate!) : '-'),
-            _ContractDetailRow(icon: LucideIcons.calendarOff, label: loc.endDate, value: contract.endDate != null ? DateFormat('dd/MM/yyyy').format(contract.endDate!) : '-'),
-            _ContractDetailRow(icon: LucideIcons.clock, label: loc.dueDay, value: '${contract.dueDay}'),
-            if (contract.expensesConfig.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(loc.expensesHeader, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary)),
-              const SizedBox(height: 8),
-              ...contract.expensesConfig.map((e) => _ContractDetailRow(icon: LucideIcons.zap, label: e.name, value: e.receiver == PaymentReceiver.owner ? loc.roleLandlord : e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included)),
             ],
-            if (contract.contractUrl != null && contract.contractUrl!.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await _openFileOrUrl(context, contract.contractUrl!, mounted: context.mounted);
-                  },
-                  icon: const Icon(LucideIcons.externalLink, size: 18),
-                  label: Text(loc.viewContract),
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -193,51 +197,54 @@ class _OverviewTab extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        maxChildSize: 0.85,
-        builder: (_, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                if (isLandlord)
-                  TextButton.icon(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    context.push('/property-settings', extra: {
-                      'property': property,
-                      'initialTab': 'property',
-                    });
-                  },
-                  icon: Icon(LucideIcons.edit2, size: 16, color: roleColor),
-                  label: Text(loc.editProperty, style: TextStyle(color: roleColor, fontWeight: FontWeight.bold)),
-                  style: TextButton.styleFrom(foregroundColor: roleColor),
-                ),
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          maxChildSize: 0.85,
+          builder: (_, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            children: [
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  if (isLandlord)
+                    TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.push('/property-settings', extra: {
+                        'property': property,
+                        'initialTab': 'property',
+                      });
+                    },
+                    icon: Icon(LucideIcons.edit2, size: 16, color: roleColor),
+                    label: Text(loc.editProperty, style: TextStyle(color: roleColor, fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(foregroundColor: roleColor),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _ContractDetailRow(icon: LucideIcons.home, label: loc.propertyName, value: property.name),
+              _ContractDetailRow(icon: LucideIcons.mapPin, label: loc.address, value: property.address),
+              _ContractDetailRow(icon: LucideIcons.banknote, label: loc.targetRent, value: CurrencyUtils.formatAmount(property.defaultMonthlyRent, property.currency)),
+              if (property.defaultDepositAmount != null)
+                _ContractDetailRow(icon: LucideIcons.shield, label: loc.depositAmount, value: CurrencyUtils.formatAmount(property.defaultDepositAmount!, property.defaultDepositCurrency)),
+              _ContractDetailRow(icon: LucideIcons.clock, label: loc.dueDay, value: '${property.defaultDueDay}'),
+              if (property.expensesTemplate.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(loc.expensesHeader, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary)),
+                const SizedBox(height: 8),
+                ...property.expensesTemplate.map((e) => _ContractDetailRow(icon: LucideIcons.zap, label: e.name, value: e.receiver == PaymentReceiver.owner ? loc.roleLandlord : e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included)),
               ],
-            ),
-            const SizedBox(height: 16),
-            _ContractDetailRow(icon: LucideIcons.home, label: loc.propertyName, value: property.name),
-            _ContractDetailRow(icon: LucideIcons.mapPin, label: loc.address, value: property.address),
-            _ContractDetailRow(icon: LucideIcons.banknote, label: loc.targetRent, value: CurrencyUtils.formatAmount(property.defaultMonthlyRent, property.currency)),
-            if (property.defaultDepositAmount != null)
-              _ContractDetailRow(icon: LucideIcons.shield, label: loc.depositAmount, value: CurrencyUtils.formatAmount(property.defaultDepositAmount!, property.defaultDepositCurrency)),
-            _ContractDetailRow(icon: LucideIcons.clock, label: loc.dueDay, value: '${property.defaultDueDay}'),
-            if (property.expensesTemplate.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(loc.expensesHeader, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary)),
-              const SizedBox(height: 8),
-              ...property.expensesTemplate.map((e) => _ContractDetailRow(icon: LucideIcons.zap, label: e.name, value: e.receiver == PaymentReceiver.owner ? loc.roleLandlord : e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included)),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -248,33 +255,36 @@ class _OverviewTab extends ConsumerWidget {
     final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (_, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Text(loc.pastContracts, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            if (pastContracts.isEmpty)
-              Center(child: Text(loc.noFinancialRecords, style: const TextStyle(color: StanomerColors.textTertiary)))
-            else
-              ...pastContracts.map((c) => ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade100,
-                  child: const Icon(LucideIcons.fileText, size: 18, color: StanomerColors.textTertiary),
-                ),
-                title: Text(c.inviteeEmail, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${c.status.label(loc)} • ${CurrencyUtils.formatAmount(c.monthlyRent, c.currency)}', style: const TextStyle(fontSize: 12)),
-                trailing: c.startDate != null ? Text(DateFormat('MM/yyyy').format(c.startDate!), style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary)) : null,
-              )),
-          ],
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.5,
+          maxChildSize: 0.9,
+          builder: (_, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            children: [
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 20),
+              Text(loc.pastContracts, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              if (pastContracts.isEmpty)
+                Center(child: Text(loc.noFinancialRecords, style: const TextStyle(color: StanomerColors.textTertiary)))
+              else
+                ...pastContracts.map((c) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey.shade100,
+                    child: const Icon(LucideIcons.fileText, size: 18, color: StanomerColors.textTertiary),
+                  ),
+                  title: Text(c.inviteeEmail, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text('${c.status.label(loc)} • ${CurrencyUtils.formatAmount(c.monthlyRent, c.currency)}', style: const TextStyle(fontSize: 12)),
+                  trailing: c.startDate != null ? Text(DateFormat('MM/yyyy').format(c.startDate!), style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary)) : null,
+                )),
+            ],
+          ),
         ),
       ),
     );
@@ -680,15 +690,18 @@ class _OverviewTab extends ConsumerWidget {
   void _showDocumentsSheet(BuildContext context, WidgetRef ref, Contract contract, {bool canManage = false}) {
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: _DocumentsSheetContent(
-            contractId: contract.id,
-            propertyId: contract.propertyId,
-            canManage: canManage,
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: _DocumentsSheetContent(
+              contractId: contract.id,
+              propertyId: contract.propertyId,
+              canManage: canManage,
+            ),
           ),
         ),
       ),
@@ -1318,79 +1331,82 @@ class _ContractTile extends ConsumerWidget {
     final roleColor = StanomerColors.brandPrimary;
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            Text(loc.shareInviteLink, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-            // QR Kod
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
-                ],
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              Text(loc.shareInviteLink, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              // QR Kod
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: QrImageView(
+                  data: link,
+                  version: QrVersions.auto,
+                  size: 200,
+                  backgroundColor: Colors.white,
+                ),
               ),
-              child: QrImageView(
-                data: link,
-                version: QrVersions.auto,
-                size: 200,
-                backgroundColor: Colors.white,
+              const SizedBox(height: 20),
+              // Link kutusu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: StanomerColors.bgPage,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: StanomerColors.borderDefault),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(link, style: const TextStyle(fontSize: 12, color: StanomerColors.textSecondary), overflow: TextOverflow.ellipsis),
+                    ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.copy, size: 18),
+                      tooltip: loc.copyLink,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: link));
+                        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(loc.copyLink)));
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.share2, size: 18),
+                      tooltip: loc.share,
+                      onPressed: () => Share.share(link),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Link kutusu
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: StanomerColors.bgPage,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: StanomerColors.borderDefault),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(LucideIcons.share2, size: 18),
+                  label: Text(loc.share),
+                  onPressed: () => Share.share(link),
+                  style: ElevatedButton.styleFrom(backgroundColor: roleColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(link, style: const TextStyle(fontSize: 12, color: StanomerColors.textSecondary), overflow: TextOverflow.ellipsis),
-                  ),
-                  IconButton(
-                    icon: const Icon(LucideIcons.copy, size: 18),
-                    tooltip: loc.copyLink,
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: link));
-                      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(loc.copyLink)));
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(LucideIcons.share2, size: 18),
-                    tooltip: loc.share,
-                    onPressed: () => Share.share(link),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(LucideIcons.share2, size: 18),
-                label: Text(loc.share),
-                onPressed: () => Share.share(link),
-                style: ElevatedButton.styleFrom(backgroundColor: roleColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1724,6 +1740,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   Future<FilePickerResult?> _pickReceiptFile() async {
     final source = await showModalBottomSheet<String>(
       context: context,
+      isDismissible: false,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         final l = AppLocalizations.of(context)!;
@@ -1739,91 +1756,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           pdfText = 'Выбрать документ (PDF)';
           imgText = 'Выбрать фото / Галерея';
         }
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  l.invoiceUploadLimitDesc,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: StanomerColors.textTertiary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(LucideIcons.fileText),
-                title: Text(pdfText),
-                onTap: () => Navigator.pop(ctx, 'pdf'),
-              ),
-              ListTile(
-                leading: const Icon(LucideIcons.image),
-                title: Text(imgText),
-                onTap: () => Navigator.pop(ctx, 'image'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (source == null) return null;
-
-    return await (source == 'pdf'
-        ? FilePicker.platform.pickFiles(
-            type: FileType.custom,
-            allowedExtensions: ['pdf', 'PDF'],
-            withData: true,
-          )
-        : FilePicker.platform.pickFiles(
-            type: FileType.image,
-            withData: true,
-          ));
-  }
-
-  Future<void> _handleInvoiceUpload(RentPayment payment, String monthName) async {
-    final loc = AppLocalizations.of(context)!;
-    final amountController = TextEditingController(text: payment.amount > 0 ? payment.amount.toStringAsFixed(2) : '');
-    final noteController = TextEditingController(text: payment.ownerNote ?? '');
-    String selectedCurrency = payment.currency.isEmpty || payment.currency == 'EUR' ? 'RSD' : payment.currency; // Default to RSD as requested
-    FilePickerResult? selectedFile;
-    bool isExistingRemoved = false;
-
-    Future<FilePickerResult?> pickInvoiceFile(StateSetter setDialogState) async {
-      final source = await showModalBottomSheet<String>(
-        context: context,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        builder: (ctx) {
-          final l = AppLocalizations.of(context)!;
-          String pdfText = 'Select Document (PDF)';
-          String imgText = 'Select Photo / Gallery';
-          if (l.localeName == 'tr') {
-            pdfText = 'Belge Seç (PDF)';
-            imgText = 'Fotoğraf Seç / Galeri';
-          } else if (l.localeName.startsWith('sr')) {
-            pdfText = 'Izaberi dokument (PDF)';
-            imgText = 'Izaberi sliku / Galerija';
-          } else if (l.localeName == 'ru') {
-            pdfText = 'Выбрать документ (PDF)';
-            imgText = 'Выбрать фото / Галерея';
-          }
-          return SafeArea(
+        return ResilientBottomSheetWrapper(
+          child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1862,6 +1796,94 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   onTap: () => Navigator.pop(ctx, 'image'),
                 ),
               ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source == null) return null;
+
+    return await (source == 'pdf'
+        ? FilePicker.platform.pickFiles(
+            type: FileType.custom,
+            allowedExtensions: ['pdf', 'PDF'],
+            withData: true,
+          )
+        : FilePicker.platform.pickFiles(
+            type: FileType.image,
+            withData: true,
+          ));
+  }
+
+  Future<void> _handleInvoiceUpload(RentPayment payment, String monthName) async {
+    final loc = AppLocalizations.of(context)!;
+    final amountController = TextEditingController(text: payment.amount > 0 ? payment.amount.toStringAsFixed(2) : '');
+    final noteController = TextEditingController(text: payment.ownerNote ?? '');
+    String selectedCurrency = payment.currency.isEmpty || payment.currency == 'EUR' ? 'RSD' : payment.currency; // Default to RSD as requested
+    FilePickerResult? selectedFile;
+    bool isExistingRemoved = false;
+
+    Future<FilePickerResult?> pickInvoiceFile(StateSetter setDialogState) async {
+      final source = await showModalBottomSheet<String>(
+        context: context,
+        isDismissible: false,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        builder: (ctx) {
+          final l = AppLocalizations.of(context)!;
+          String pdfText = 'Select Document (PDF)';
+          String imgText = 'Select Photo / Gallery';
+          if (l.localeName == 'tr') {
+            pdfText = 'Belge Seç (PDF)';
+            imgText = 'Fotoğraf Seç / Galeri';
+          } else if (l.localeName.startsWith('sr')) {
+            pdfText = 'Izaberi dokument (PDF)';
+            imgText = 'Izaberi sliku / Galerija';
+          } else if (l.localeName == 'ru') {
+            pdfText = 'Выбрать документ (PDF)';
+            imgText = 'Выбрать фото / Галерея';
+          }
+          return ResilientBottomSheetWrapper(
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      l.invoiceUploadLimitDesc,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: StanomerColors.textTertiary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(LucideIcons.fileText),
+                    title: Text(pdfText),
+                    onTap: () => Navigator.pop(ctx, 'pdf'),
+                  ),
+                  ListTile(
+                    leading: const Icon(LucideIcons.image),
+                    title: Text(imgText),
+                    onTap: () => Navigator.pop(ctx, 'image'),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -3185,50 +3207,53 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       onPressed: _isPickingFile ? null : () {
                         showModalBottomSheet(
                           context: context,
+                          isDismissible: false,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          builder: (ctx) => SafeArea(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 20),
-                                    child: Text(loc.takeAction, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  ),
-                                  ListTile(
-                                    leading: Icon(LucideIcons.fileText, color: roleColor),
-                                    title: Text(loc.uploadReceipt),
-                                    onTap: () async {
-                                      Navigator.pop(ctx);
-                                      setState(() => _isPickingFile = true);
-                                      try {
-                                        final result = await _pickReceiptFile();
-                                        if (!mounted) return;
-                                        if (result != null) await _handlePaymentDeclaration(payment, monthName, result);
-                                      } finally {
-                                        if (mounted) setState(() => _isPickingFile = false);
-                                      }
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: Icon(LucideIcons.hand, color: roleColor),
-                                    title: Text(loc.paidInCash),
-                                    onTap: () async {
-                                      Navigator.pop(ctx);
-                                      await _handlePaymentDeclaration(payment, monthName, null, isCash: true);
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: const Icon(LucideIcons.alertCircle, color: StanomerColors.alertPrimary),
-                                    title: Text(loc.dispute),
-                                    onTap: () {
-                                      Navigator.pop(ctx);
-                                      _handleDispute(payment, monthName);
-                                    },
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
+                          builder: (ctx) => ResilientBottomSheetWrapper(
+                            child: SafeArea(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 20),
+                                      child: Text(loc.takeAction, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    ),
+                                    ListTile(
+                                      leading: Icon(LucideIcons.fileText, color: roleColor),
+                                      title: Text(loc.uploadReceipt),
+                                      onTap: () async {
+                                        Navigator.pop(ctx);
+                                        setState(() => _isPickingFile = true);
+                                        try {
+                                          final result = await _pickReceiptFile();
+                                          if (!mounted) return;
+                                          if (result != null) await _handlePaymentDeclaration(payment, monthName, result);
+                                        } finally {
+                                          if (mounted) setState(() => _isPickingFile = false);
+                                        }
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: Icon(LucideIcons.hand, color: roleColor),
+                                      title: Text(loc.paidInCash),
+                                      onTap: () async {
+                                        Navigator.pop(ctx);
+                                        await _handlePaymentDeclaration(payment, monthName, null, isCash: true);
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(LucideIcons.alertCircle, color: StanomerColors.alertPrimary),
+                                      title: Text(loc.dispute),
+                                      onTap: () {
+                                        Navigator.pop(ctx);
+                                        _handleDispute(payment, monthName);
+                                      },
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

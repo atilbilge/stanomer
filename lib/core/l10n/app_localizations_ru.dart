@@ -15,7 +15,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get login => 'Войти';
 
   @override
-  String get signup => 'Регистрация';
+  String get signup => 'Зарегистрироваться';
 
   @override
   String get email => 'Эл. почта';
@@ -52,16 +52,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dontHaveAccount => 'Нет аккаунта? Зарегистрируйтесь';
 
   @override
-  String get alreadyHaveAccount => 'Уже есть аккаунт? Войти';
+  String get alreadyHaveAccount => 'Уже зарегистрированы? Войти';
 
   @override
-  String get continueWithGoogle => 'Продолжить с Google';
+  String get continueWithGoogle => 'Войти через Google';
 
   @override
-  String get continueWithApple => 'Продолжить с Apple';
+  String get continueWithApple => 'Войти через Apple';
 
   @override
-  String get fullName => 'Полное имя';
+  String get fullName => 'Имя и фамилия';
 
   @override
   String get errorSelectRole => 'Пожалуйста, выберите вашу роль';
@@ -71,11 +71,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deleteAccountWarning =>
-      'Это действие необратимо. Все ваши данные будут удалены.';
+      'Это действие необратимо и его нельзя отменить. Все ваши данные будут удалены.';
 
   @override
   String get confirmPasswordForDeletion =>
-      'Пожалуйста, введите пароль для подтверждения удаления';
+      'Пожалуйста, введите пароль для подтверждения';
 
   @override
   String get deleteButtonLabel => 'Навсегда удалить мой аккаунт';
@@ -103,17 +103,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get accountHeader => 'Аккаунт';
 
   @override
-  String get discoverPremium => 'Откройте Premium';
+  String get discoverPremium => 'Попробовать Premium';
 
   @override
-  String get unlimitedLeaseContracts =>
-      'Неограниченное количество договоров аренды';
+  String get unlimitedLeaseContracts => 'Безлимитные договоры аренды';
 
   @override
   String get updateName => 'Обновить имя';
 
   @override
-  String get updatePassword => 'Обновить пароль';
+  String get updatePassword => 'Изменить пароль';
 
   @override
   String get oldPassword => 'Текущий пароль';
@@ -122,13 +121,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get newPassword => 'Новый пароль';
 
   @override
-  String get saveChanges => 'Сохранить изменения';
+  String get saveChanges => 'Сохранить';
 
   @override
   String get passwordChangedSuccess => 'Пароль успешно обновлен';
 
   @override
-  String get profileUpdatedSuccess => 'Профиль успешно обновлен';
+  String get profileUpdatedSuccess => 'Профиль обновлен';
 
   @override
   String get role => 'Роль';
@@ -152,7 +151,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get monthlyRent => 'Ежемесячная аренда';
 
   @override
-  String get depositAmount => 'Сумма залога';
+  String get depositAmount => 'Депозит';
 
   @override
   String get currency => 'Валюта';
@@ -164,17 +163,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get propertyNameHint => 'например, Квартира в Белграде';
 
   @override
-  String get propertyAddedSuccess => 'Недвижимость успешно добавлена';
+  String get propertyAddedSuccess => 'Жилье добавлено';
 
   @override
-  String get propertyUpdatedSuccess => 'Недвижимость успешно обновлена';
+  String get propertyUpdatedSuccess => 'Данные обновлены';
 
   @override
-  String get noProperties => 'Недвижимость не найдена';
+  String get noProperties => 'У вас пока нет добавленного жилья';
 
   @override
   String get addYourFirstProperty =>
-      'Добавьте свою первую недвижимость, чтобы начать!';
+      'Добавьте свое первое жилье, чтобы начать!';
 
   @override
   String get editProperty => 'Редактировать';
@@ -190,7 +189,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Вы уверены, что хотите удалить эту недвижимость? Это действие необратимо.';
 
   @override
-  String get propertyDeletedSuccess => 'Недвижимость успешно удалена';
+  String get propertyDeletedSuccess => 'Объект удален';
 
   @override
   String get inviteTenant => 'Пригласить арендатора';
@@ -200,10 +199,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get inviteCreatedSuccess =>
-      'Ссылка для приглашения создана! Теперь вы можете ею поделиться.';
+      'Ссылка для приглашения готова! Вы можете отправить ее жильцу.';
 
   @override
-  String get shareInviteLink => 'Поделиться ссылкой';
+  String get shareInviteLink => 'Поделиться приглашением';
 
   @override
   String get copyLink => 'Копировать ссылку';
@@ -227,10 +226,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get overview => 'Обзор';
 
   @override
-  String get financials => 'Финансы';
+  String get financials => 'Платежи';
 
   @override
-  String get propertySettings => 'Настройки';
+  String get propertySettings => 'Настройки жилья';
 
   @override
   String get invitationHistory => 'История приглашений';
@@ -239,7 +238,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get invitationDetails => 'Детали приглашения';
 
   @override
-  String get acceptInvitation => 'Да, я снял(а) это место';
+  String get acceptInvitation => 'Да, я арендую это жилье';
 
   @override
   String get declineInvitation => 'Отклонить';
@@ -249,23 +248,23 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get invitationAcceptedSuccess =>
-      'Добро пожаловать домой! Приглашение принято.';
+      'Добро пожаловать! Приглашение принято.';
 
   @override
   String pendingInvitationBanner(String property) {
-    return 'У вас есть ожидающее приглашение для $property';
+    return 'У вас есть приглашение для $property';
   }
 
   @override
   String invitedBy(String name) {
-    return 'Пригласил(а) $name';
+    return 'Вас пригласил $name';
   }
 
   @override
   String get yourName => 'Ваше имя';
 
   @override
-  String get yourNameHint => 'Введите ваше полное имя';
+  String get yourNameHint => 'Введите ваши имя и фамилию';
 
   @override
   String get viewInvite => 'Посмотреть';
@@ -274,11 +273,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get myProperties => 'Моя недвижимость';
 
   @override
-  String get tenantEmptyStateTitle => 'Недвижимость пока не назначена';
+  String get tenantEmptyStateTitle => 'Нет добавленного жилья';
 
   @override
   String get tenantEmptyStateMessage =>
-      'Если арендодатель отправит вам приглашение, оно появится здесь.';
+      'Когда собственник отправит вам приглашение, оно появится здесь.';
 
   @override
   String get refresh => 'Обновить';
@@ -291,7 +290,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get confirmDeclineInviteMessage =>
-      'Вы уверены, что хотите отклонить это приглашение? Оно будет удалено.';
+      'Вы уверены, что хотите отклонить приглашение? Оно будет удалено.';
 
   @override
   String get contractStartDate => 'Дата начала договора';
@@ -312,7 +311,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get selectDate => 'Выберите дату';
 
   @override
-  String get appLanguage => 'Язык приложения';
+  String get appLanguage => 'Язык';
 
   @override
   String get english => 'Английский';
@@ -327,73 +326,74 @@ class AppLocalizationsRu extends AppLocalizations {
   String get turkish => 'Турецкий';
 
   @override
-  String get russian => 'Ruski';
+  String get russian => 'Русский';
 
   @override
-  String get tenantMode => 'Режим арендатора';
+  String get tenantMode => 'Я арендатор';
 
   @override
-  String get landlordMode => 'Режим арендодателя';
+  String get landlordMode => 'Я собственник';
 
   @override
-  String get whatAreYou => 'Как вы хотите продолжить?';
+  String get whatAreYou => 'Выберите вашу роль:';
 
   @override
   String get selectRoleToContinue =>
-      'Выберите роль. Вы сможете изменить ее позже.';
+      'Выберите вашу роль, чтобы продолжить. Ее можно изменить в любой момент.';
 
   @override
   String get consentTextFullBody =>
-      'Используя приложение Stanomer, вы даете согласие на обработку персональных данных...';
+      'Используя приложение Stanomer, вы даете согласие на обработку персональных данных в соответствии с Законом о защите персональных данных (ZZPL) Сербии.';
 
   @override
   String get removeTenant => 'Удалить арендатора';
 
   @override
   String get removeTenantConfirmation =>
-      'Вы уверены, что хотите удалить этого арендатора?';
+      'Вы уверены, что хотите удалить арендатора? Связь будет разорвана.';
 
   @override
   String get remove => 'Удалить';
 
   @override
   String logRentDeclared(String month) {
-    return 'Арендатор объявил об оплате аренды за $month.';
+    return 'Арендатор сообщил об оплате за $month.';
   }
 
   @override
   String logRentApproved(String month) {
-    return 'Арендодатель подтвердил аренду за $month.';
+    return 'Собственник подтвердил оплату за $month.';
   }
 
   @override
   String logRentRejected(String month) {
-    return 'Арендодатель отклонил аренду за $month.';
+    return 'Собственник отклонил подтверждение оплаты за $month.';
   }
 
   @override
   String logMarkedAsPaid(String month) {
-    return 'Арендодатель отметил $month как оплаченный.';
+    return 'Собственник отметил $month как оплаченный.';
   }
 
   @override
   String logMarkedAsPending(String month) {
-    return 'Арендодатель отметил $month как ожидающий.';
+    return 'Собственник вернул $month в статус ожидания.';
   }
 
   @override
   String logAutoApproved(String month) {
-    return 'Оплата за $month была автоматически подтверждена через 5 дней.';
+    return 'Система автоматически подтвердила оплату за $month через 5 дней.';
   }
 
   @override
   String get activity => 'Активность';
 
   @override
-  String get noContractsTitle => 'Договоров пока нет';
+  String get noContractsTitle => 'Нет активных договоров';
 
   @override
-  String get noContractsMessage => 'Сначала пригласите арендатора.';
+  String get noContractsMessage =>
+      'Чтобы отслеживать аренду и расходы, сначала добавьте договор и пригласите жильца.';
 
   @override
   String get inviteFirstTenant => 'Пригласить арендатора';
@@ -403,14 +403,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get confirmCancelInvitationMessage =>
-      'Вы уверены, что хотите отменить?';
+      'Вы уверены, что хотите отменить приглашение?';
 
   @override
   String get confirmDeclineRevisionTitle => 'Отклонить запрос на изменение';
 
   @override
   String get confirmDeclineRevisionMessage =>
-      'Вы уверены, что хотите отклонить запрос?';
+      'Вы уверены, что хотите отклонить предложение жильца об изменениях? Договор останется на прежних условиях.';
 
   @override
   String get activeContract => 'Активный договор';
@@ -428,46 +428,50 @@ class AppLocalizationsRu extends AppLocalizations {
   String get decline => 'Отклонить';
 
   @override
-  String get declineRevisionRequest => 'Отклонить запрос';
+  String get declineRevisionRequest => 'Отклонить изменения';
 
   @override
-  String get pendingHeader => 'В ОЖИДАНИИ';
+  String get pendingHeader => 'ЖДЕТ ОПЛАТЫ';
 
   @override
-  String get awaitingHeader => 'ОЖИДАЕТСЯ';
+  String get awaitingHeader => 'НА ПРОВЕРКЕ';
+
+  @override
+  String get awaitingExplanation =>
+      'Требуется подтверждение арендодателя, чтобы отметить как оплачено.';
 
   @override
   String get paidHeader => 'ОПЛАЧЕНО';
 
   @override
-  String get waitingForTenantPayment => 'Ожидание оплаты арендатора';
+  String get waitingForTenantPayment => 'Ожидает оплаты жильцом';
 
   @override
-  String get waitingForYourApproval => 'Ожидание вашего подтверждения';
+  String get waitingForYourApproval => 'Ожидает вашего подтверждения';
 
   @override
-  String get waitingForOwnerApproval => 'Ожидание подтверждения владельца';
+  String get waitingForOwnerApproval => 'Ожидает подтверждения владельца';
 
   @override
-  String get waitingForYourPayment => 'Ожидание вашей оплаты';
+  String get waitingForYourPayment => 'Ожидает вашей оплаты';
 
   @override
-  String get processCompleted => 'Процесс завершен';
+  String get processCompleted => 'Готово';
 
   @override
-  String get declared => 'заявлено';
+  String get declared => 'сообщено';
 
   @override
   String get sent => 'отправлено';
 
   @override
-  String get noInvoice => 'Нет квитанции';
+  String get noInvoice => 'Чек не загружен';
 
   @override
-  String get uploadInvoice => 'Загрузить квитанцию';
+  String get uploadInvoice => 'Загрузить чек';
 
   @override
-  String get awaitingInvoice => 'Ожидание счета';
+  String get awaitingInvoice => 'Ожидается чек';
 
   @override
   String get updateLabel => 'Обновить';
@@ -476,42 +480,50 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusVacant => 'Свободно';
 
   @override
-  String get pendingApproval => 'ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ';
+  String get pendingApproval => 'НА ПРОВЕРКЕ';
 
   @override
   String get targetRent => 'ЦЕЛЕВАЯ АРЕНДА';
 
   @override
-  String get contractInfo => 'Инфо о договоре';
+  String get contractInfo => 'О договоре';
 
   @override
-  String get term => 'Срок';
+  String get term => 'Срок аренды';
 
   @override
-  String get dueDay => 'День оплаты';
+  String get dueDay => 'День платежа';
 
   @override
   String get contractDetails => 'Детали договора';
 
   @override
-  String get pastContracts => 'Прошлые договоры';
+  String get pastContracts => 'История договоров';
 
   @override
   String previousLeasesCount(int count) {
-    return '$count прошлых договоров';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count прошлых договоров',
+      few: '$count прошлых договора',
+      one: '$count прошлый договор',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get propertySettingsLabel => 'Настройки недвижимости';
+  String get propertySettingsLabel => 'Настройки жилья';
 
   @override
-  String get propertyActions => 'Действия';
+  String get propertyActions => 'Действия с объектом';
 
   @override
-  String get leavePropertyConfirm => 'Вы хотите покинуть эту недвижимость?';
+  String get leavePropertyConfirm =>
+      'Вы уверены, что хотите покинуть этот объект?';
 
   @override
-  String get leaveProperty => 'Покинуть недвижимость';
+  String get leaveProperty => 'Покинуть жилье';
 
   @override
   String get areYouSure => 'Вы уверены?';
@@ -523,10 +535,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get contractSettings => 'Настройки договора';
 
   @override
-  String get activeContractTermsInfo => 'Условия активного договора.';
+  String get activeContractTermsInfo =>
+      'Условия активного договора. Любые изменения вступят в силу только после подтверждения обеими сторонами.';
 
   @override
-  String get dueDayOfMonth => 'День месяца для оплаты';
+  String get dueDayOfMonth => 'День оплаты в месяце';
 
   @override
   String get startDate => 'Дата начала';
@@ -535,7 +548,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get endDate => 'Дата окончания';
 
   @override
-  String get taxConfiguration => 'Настройки налогов';
+  String get taxConfiguration => 'Налог';
 
   @override
   String get included => 'Включено';
@@ -550,21 +563,21 @@ class AppLocalizationsRu extends AppLocalizations {
   String get extraPayment => 'Дополнительный платеж';
 
   @override
-  String get utility => 'Коммунальные';
+  String get utility => 'Коммунальные услуги';
 
   @override
-  String get owner => 'Владелец';
+  String get owner => 'Собственник';
 
   @override
   String proposeChangesInfo(String role) {
-    return 'Изменения будут отправлены на подтверждение $role.';
+    return 'Изменения будут отправлены на подтверждение $role. Прежние условия действуют, пока новые не приняты.';
   }
 
   @override
   String get proposeChanges => 'Предложить изменения';
 
   @override
-  String get declarePayment => 'Заявить об оплате';
+  String get declarePayment => 'Сообщить об оплате';
 
   @override
   String get uploadReceipt => 'Загрузить чек';
@@ -573,22 +586,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get paidInCash => 'Оплачено наличными';
 
   @override
-  String get noFinancialRecords => 'Финансовых записей пока нет';
+  String get noFinancialRecords => 'Нет истории платежей';
 
   @override
-  String get noActiveContract => 'Договор не загружен';
+  String get noActiveContract => 'Нет загруженного договора';
 
   @override
-  String get contractTermsInfo => 'Активные условия договора.';
+  String get contractTermsInfo =>
+      'Условия договора. Любые изменения вступят в силу только после согласия обеих сторон.';
 
   @override
   String get send => 'Отправить';
 
   @override
-  String get totalRent => 'Итого';
+  String get totalRent => 'Итого к оплате';
 
   @override
-  String get infoTooltip => 'Покрывает общие коммунальные услуги.';
+  String get infoTooltip =>
+      'Покрывает общие коммунальные услуги (отопление, вода, вывоз мусора).';
 
   @override
   String get electricityTooltip => 'Индивидуальное потребление электроэнергии.';
@@ -597,37 +612,39 @@ class AppLocalizationsRu extends AppLocalizations {
   String get internetTooltip => 'Интернет и ТВ.';
 
   @override
-  String get maintenanceTooltip => 'Обслуживание здания.';
+  String get maintenanceTooltip =>
+      'Обслуживание дома (уборка подъезда, лифт и т.д.).';
 
   @override
-  String get declare => 'Заявить';
+  String get declare => 'Сообщить';
 
   @override
-  String get viewReceipt => 'Смотреть чек';
+  String get viewReceipt => 'Посмотреть чек';
 
   @override
   String proposesChanges(String name) {
-    return '$name предлагает изменения:';
+    return '$name предлагает следующие изменения:';
   }
 
   @override
-  String get awaitingApprovalInfo => 'Ваше предложение ожидает подтверждения.';
+  String get awaitingApprovalInfo =>
+      'Ваше предложение об изменениях ожидает подтверждения второй стороны.';
 
   @override
-  String get propertyDetails => 'ДЕТАЛИ НЕДВИЖИМОСТИ';
+  String get propertyDetails => 'ДЕТАЛИ ОБЪЕКТА';
 
   @override
   String get defaultLeaseTerms => 'УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ';
 
   @override
   String get defaultLeaseTermsSubtitle =>
-      'Используются как шаблон для новых приглашений.';
+      'Используются как шаблон для новых приглашений арендаторов.';
 
   @override
   String get invalidNumber => 'Неверный номер';
 
   @override
-  String get enterDayBetween1and31 => 'Введите число от 1 до 31';
+  String get enterDayBetween1and31 => 'Введите день с 1 по 31';
 
   @override
   String get expenseConfiguration => 'НАСТРОЙКА РАСХОДОВ';
@@ -642,19 +659,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get expenseInternetTV => 'Интернет/ТВ';
 
   @override
-  String get expenseMaintenance => 'Обслуживание здания';
+  String get expenseMaintenance => 'Обслуживание дома';
 
   @override
   String get expenseTax => 'Налог';
 
   @override
-  String get tenantPaysTo => 'Арендатор платит:';
+  String get tenantPaysTo => 'Кому платит арендатор:';
 
   @override
   String get fileSelected => 'Файл выбран';
 
   @override
-  String get selectInvoice => 'Выбрать счет';
+  String get selectInvoice => 'Прикрепить счет';
 
   @override
   String get amount => 'Сумма';
@@ -666,20 +683,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get save => 'Сохранить';
 
   @override
-  String get paymentDeclared => 'Оплата успешно заявлена.';
+  String get paymentDeclared => 'Уведомление об оплате отправлено.';
 
   @override
-  String get dashboard => 'Панель';
+  String get dashboard => 'Мое жилье';
 
   @override
   String get parties => 'СТОРОНЫ';
 
   @override
-  String get tenantEmail => 'Почта арендатора';
+  String get tenantEmail => 'Email арендатора';
 
   @override
   String get existingContractTermsInfo =>
-      'Существующие условия договора будут применяться.';
+      'Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).';
 
   @override
   String get rentAndPayment => 'АРЕНДА И ОПЛАТА';
@@ -691,16 +708,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get expenseSettingsHeader => 'НАСТРОЙКИ РАСХОДОВ';
 
   @override
-  String get editContract => 'Изменить договор';
+  String get editContract => 'Редактировать договор';
 
   @override
   String get sendRevision => 'Отправить изменения';
 
   @override
-  String get revisionSent => 'Изменения отправлены';
+  String get revisionSent => 'Предложение об изменениях отправлено.';
 
   @override
-  String get existingFileKept => 'Существующий файл сохранен';
+  String get existingFileKept => 'Текущий файл сохранен';
 
   @override
   String get done => 'Готово';
@@ -709,13 +726,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get startAndEndDatesMandatory => 'Даты начала и окончания обязательны';
 
   @override
-  String get revisionRequested => 'Запрошены изменения';
+  String get revisionRequested => 'Требуются изменения';
 
   @override
   String get statusActive => 'Активно';
 
   @override
-  String get statusPending => 'Ожидает подтверждения';
+  String get statusPending => 'На проверке';
 
   @override
   String get statusDeclined => 'Отклонено';
@@ -727,10 +744,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusNegotiating => 'Переговоры';
 
   @override
-  String get tenantPaysLandlord => 'Арендатор платит арендодателю';
+  String get tenantPaysLandlord => 'Арендатор платит собственнику';
 
   @override
-  String get tenantPaysUtility => 'Арендатор платит за услуги';
+  String get tenantPaysUtility => 'Арендатор платит напрямую службам';
 
   @override
   String get includedInRent => 'Включено в аренду';
@@ -742,25 +759,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get changesDeclined => 'Изменения отклонены';
 
   @override
-  String get contractChangeProposal => 'Предложение об изменении';
+  String get contractChangeProposal => 'Предложение об изменении договора';
 
   @override
-  String get cancelProposal => 'Отменить предложение';
+  String get cancelProposal => 'Отозвать предложение';
 
   @override
   String get viewInvoice => 'Посмотреть счет';
 
   @override
-  String get paymentResponsibility => 'ОТВЕТСТВЕННОСТЬ ЗА ОПЛАТУ';
+  String get paymentResponsibility => 'КТО ОПЛАЧИВАЕТ РАСХОДЫ';
 
   @override
-  String get tenantPaysDirectlyToUtility => 'Арендатор платит напрямую';
+  String get tenantPaysDirectlyToUtility => 'Арендатор платит напрямую службам';
 
   @override
-  String get tenantPaysToLandlord => 'Арендатор платит арендодателю';
+  String get tenantPaysToLandlord =>
+      'Арендатор платит собственнику (вместе с арендой)';
 
   @override
-  String get selectPaymentReceiverWarning => 'Выберите получателя платежа.';
+  String get selectPaymentReceiverWarning =>
+      'Пожалуйста, выберите, кому оплачивается этот счет.';
 
   @override
   String progressSummary(int completed, int total, int sent) {
@@ -768,13 +787,13 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get maintenance => 'Обслуживание';
+  String get maintenance => 'Ремонт / Проблемы';
 
   @override
   String get issues => 'Проблемы';
 
   @override
-  String get newRequest => 'Новый запрос';
+  String get newRequest => 'Новая заявка';
 
   @override
   String get reportIssue => 'Сообщить о проблеме';
@@ -786,13 +805,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get issueDescription => 'Описание';
 
   @override
-  String get issueCategory => 'Категория';
+  String get issueCategory => 'Kатегория';
 
   @override
   String get issuePriority => 'Приоритет';
 
   @override
-  String get statusInvestigating => 'Рассматривается';
+  String get statusInvestigating => 'В процессе';
 
   @override
   String get statusResolved => 'Решено';
@@ -819,32 +838,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String get categoryOther => 'Другое';
 
   @override
-  String get noIssuesTitle => 'Проблем пока нет';
+  String get noIssuesTitle => 'Нет активных проблем';
 
   @override
-  String get noIssuesMessage => 'Все отлично!';
+  String get noIssuesMessage =>
+      'Всё отлично! Для этого жилья не зарегистрировано проблем.';
 
   @override
-  String get updateStatus => 'Обновить статус';
+  String get updateStatus => 'Изменить статус';
 
   @override
-  String get issueDetails => 'Детали проблемы';
+  String get issueDetails => 'Описание проблемы';
 
   @override
   String logMaintenanceCreated(String title) {
-    return 'Запрос на обслуживание создан: $title';
+    return 'Зарегистрирована новая проблема: $title';
   }
 
   @override
   String logMaintenanceStatusUpdated(String status) {
-    return 'Статус обновлен на $status';
+    return 'Статус поправки изменен на $status';
   }
 
   @override
-  String get logMaintenanceReopened => 'Запрос открыт заново';
+  String get logMaintenanceReopened => 'Проблема открыта повторно';
 
   @override
-  String get logMaintenanceMessageAdded => 'Новое сообщение добавлено';
+  String get logMaintenanceMessageAdded => 'Добавлено сообщение по проблеме';
 
   @override
   String get notifications => 'Уведомления';
@@ -853,7 +873,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get markAllAsRead => 'Отметить все как прочитанные';
 
   @override
-  String get noNotifications => 'Нет уведомлений';
+  String get noNotifications => 'Нет новых уведомлений';
 
   @override
   String get documents => 'Документы';
@@ -865,10 +885,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addDocument => 'Добавить документ';
 
   @override
-  String get enterDocumentName => 'Введите имя документа';
+  String get enterDocumentName => 'Название документа';
 
   @override
-  String get noDocumentsYet => 'Документов пока нет';
+  String get noDocumentsYet => 'Нет загруженных документов';
 
   @override
   String get additionalDocuments => 'Дополнительные документы';
@@ -877,16 +897,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deleteDocument => 'Удалить документ';
 
   @override
-  String get deleteDocumentConfirm => 'Вы уверены, что хотите удалить?';
+  String get deleteDocumentConfirm =>
+      'Вы уверены, что хотите удалить этот документ?';
 
   @override
-  String get uploadMainContract => 'Загрузить договор';
+  String get uploadMainContract => 'Прикрепить договор';
 
   @override
   String get manageDocuments => 'Управление документами';
 
   @override
-  String get monthlyCollected => 'Собрано';
+  String get monthlyCollected => 'Получено';
 
   @override
   String get totalRentShort => 'Аренда';
@@ -898,10 +919,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get vacant => 'Свободно';
 
   @override
-  String get overdueReceivables => 'Просрочено';
+  String get overdueReceivables => 'Неоплаченные';
 
   @override
-  String get collectedByType => 'Собрано';
+  String get collectedByType => 'Виды оплат';
 
   @override
   String propertiesCount(int count) {
@@ -919,7 +940,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get hasDebt => 'Есть долг';
 
   @override
-  String get paymentAwaitingApproval => 'Ожидает подтверждения';
+  String get paymentAwaitingApproval => 'Ожидает проверки';
 
   @override
   String get rent => 'Аренда';
@@ -928,10 +949,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get bills => 'Счета';
 
   @override
-  String get waiting => 'Ожидание';
+  String get waiting => 'Ожидается';
 
   @override
   String get debtLabel => 'Долг';
+
+  @override
+  String get totalDebt => 'Общий долг';
 
   @override
   String get paidLabel => 'Оплачено';
@@ -940,7 +964,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get enterBill => 'Ввести счет';
 
   @override
-  String get addContractAndTenant => 'Добавить договор и арендатора';
+  String get addContractAndTenant => 'Добавить договор и жильца';
 
   @override
   String get approve => 'Подтвердить';
@@ -953,13 +977,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get confirmApprovePaymentMessage =>
-      'Вы уверены, что хотите подтвердить?';
+      'Вы уверены, что хотите подтвердить этот платеж?';
 
   @override
   String get confirmRejectPaymentTitle => 'Отклонить оплату';
 
   @override
-  String get confirmRejectPaymentMessage => 'Вы уверены, что хотите отклонить?';
+  String get confirmRejectPaymentMessage =>
+      'Вы уверены, что хотите отклонить это уведомление об оплате и попросить жильца отправить его заново?';
 
   @override
   String get confirm => 'Подтвердить';
@@ -975,16 +1000,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get confirmTerminationMessage =>
-      'Вы уверены, что хотите расторгнуть договор?';
+      'Вы уверены, что хотите отправить запрос на расторжение договора на выбранную дату?';
 
   @override
-  String get terminationRequestSent => 'Запрос на расторжение отправлен.';
+  String get terminationRequestSent =>
+      'Запрос на расторжение договора отправлен.';
 
   @override
-  String get statusInactive => 'Неактивно';
+  String get statusInactive => 'Завершен';
 
   @override
-  String get terminationRequested => 'Ожидает расторжения';
+  String get terminationRequested => 'Расторжение на рассмотрении';
 
   @override
   String get approveTermination => 'Подтвердить расторжение';
@@ -1009,7 +1035,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get disputeReason => 'Причина спора';
 
   @override
-  String get disputeReasonHint => 'Введите причину спора...';
+  String get disputeReasonHint => 'Опишите причину спора...';
 
   @override
   String get disputedHeader => 'ОСПОРЕНО';
@@ -1023,16 +1049,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get confirmDisputeTitle => 'Оспорить платеж';
 
   @override
-  String get disputeSentSuccess => 'Ваш спор отправлен арендодателю.';
+  String get disputeSentSuccess => 'Ваш спор по оплате отправлен собственнику.';
 
   @override
-  String get takeAction => 'Действовать';
+  String get takeAction => 'Выбрать действие';
 
   @override
-  String get ownerNote => 'Заметка владельца';
+  String get ownerNote => 'Заметка собственника';
 
   @override
-  String get explanationOptional => 'Объяснение (необязательно)';
+  String get explanationOptional => 'Комментарий (необязательно)';
 
   @override
   String get explanationHint => 'Например: Проверил счетчик...';
@@ -1041,19 +1067,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get units => 'Единицы';
 
   @override
-  String get tenantsLabel => 'Арендаторы';
+  String get tenantsLabel => 'Жильцы';
 
   @override
-  String get portfolioManagement => 'Управление портфелем';
+  String get portfolioManagement => 'Мои объекты';
 
   @override
-  String get paymentRequests => 'Платежи и запросы';
+  String get paymentRequests => 'Запросы и платежи';
 
   @override
   String get profileSettings => 'Настройки профиля';
 
   @override
-  String get confirmSignOutMessage => 'Вы уверены, что хотите выйти?';
+  String get confirmSignOutMessage =>
+      'Вы уверены, что хотите выйти из аккаунта?';
 
   @override
   String errorWithDetails(String error) {
@@ -1067,11 +1094,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get acceptTermsWarning =>
-      'Пожалуйста, примите условия перед продолжением.';
+      'Пожалуйста, примите условия использования для продолжения.';
 
   @override
-  String get maintenanceRequestSuccess =>
-      'Запрос на обслуживание успешно отправлен.';
+  String get maintenanceRequestSuccess => 'Проблема успешно зарегистрирована.';
 
   @override
   String get ok => 'ОК';
@@ -1091,7 +1117,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String errorReopeningRequest(String error) {
-    return 'Ошибка переоткрытия запроса: $error';
+    return 'Ошибка открытия запроса: $error';
   }
 
   @override
@@ -1103,35 +1129,36 @@ class AppLocalizationsRu extends AppLocalizations {
   String get nextPayment => 'Следующий платеж';
 
   @override
-  String get payNow => 'Оплатить сейчас';
+  String get payNow => 'Сообщить об оплате';
 
   @override
-  String get upcomingLabel => 'Ближайшие';
+  String get upcomingLabel => 'Предстоящие';
 
   @override
   String get joinPropertyInvitation =>
       'Приглашение присоединиться к недвижимости';
 
   @override
-  String get feedbackSent => 'Отзыв отправлен';
+  String get feedbackSent => 'Спасибо за ваш отзыв!';
 
   @override
   String get rentalProposal => 'Предложение об аренде';
 
   @override
-  String get reviewContractTerms => 'Пожалуйста, проверьте условия договора.';
+  String get reviewContractTerms =>
+      'Пожалуйста, ознакомьтесь с условиями договора.';
 
   @override
   String get expenseDistribution => 'Распределение расходов';
 
   @override
-  String get yourNote => 'Ваша заметка:';
+  String get yourNote => 'Ваш комментарий:';
 
   @override
-  String get backToDashboard => 'Назад к панели';
+  String get backToDashboard => 'На главную';
 
   @override
-  String get propertyDetailsHeader => 'ДЕТАЛИ НЕДВИЖИМОСТИ';
+  String get propertyDetailsHeader => 'ДЕТАЛИ ОБЪЕКТА';
 
   @override
   String get defaultLeaseTermsHeader => 'УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ';
@@ -1140,21 +1167,22 @@ class AppLocalizationsRu extends AppLocalizations {
   String get proposeRevision => 'Предложить изменения';
 
   @override
-  String get revisionTermsQuestion => 'Какие условия вы хотите изменить?';
+  String get revisionTermsQuestion =>
+      'Какие условия вы хотите изменить? (Аренда, день оплаты, счета...)';
 
   @override
-  String get enterNotesHint => 'Введите ваши заметки здесь...';
+  String get enterNotesHint => 'Введите ваш комментарий здесь...';
 
   @override
   String get submit => 'Отправить';
 
   @override
   String invitedToJoinProperty(String property) {
-    return 'Вас пригласили присоединиться к $property.';
+    return 'Вас пригласили заселиться в $property.';
   }
 
   @override
-  String get waitingForLandlord => 'Ожидание ответа арендодателя...';
+  String get waitingForLandlord => 'Ожидание ответа собственника...';
 
   @override
   String get day => 'День';
@@ -1164,7 +1192,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get acceptTermsAndDistribution =>
-      'Я принимаю условия договора и распределение расходов.';
+      'Я принимаю условия договора и распределение счетов.';
 
   @override
   String get datesMandatory => 'Даты начала и окончания обязательны';
@@ -1174,7 +1202,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get leaseLockedWarning =>
-      'Существующие условия договора будут применяться.';
+      'Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).';
 
   @override
   String get rentPaymentHeader => 'АРЕНДА И ОПЛАТА';
@@ -1212,7 +1240,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get issueResolvedStatus => 'Проблема отмечена как решенная.';
 
   @override
-  String get reopenIssue => 'Все еще проблема (Переоткрыть)';
+  String get reopenIssue => 'Проблема не решена (Открыть заново)';
 
   @override
   String get deleteRequest => 'Удалить запрос';
@@ -1228,7 +1256,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String paymentDeclaredSuccess(String title) {
-    return 'Оплата $title успешно заявлена.';
+    return 'Уведомление об оплате $title отправлено.';
   }
 
   @override
@@ -1238,18 +1266,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get yourMessage => 'Ваше сообщение:';
 
   @override
-  String get revisionRequestLabel => 'Запрос на изменение:';
+  String get revisionRequestLabel => 'Запрос на изменения:';
 
   @override
   String get noActivityLogs => 'Логов активности пока нет';
 
   @override
   String get landlordProposedChanges =>
-      'Арендодатель предложил изменения. Нажмите для просмотра.';
+      'Собственник предложил изменения в договоре. Нажмите для просмотра.';
 
   @override
   String get tenantProposedChanges =>
-      'Арендатор предложил изменения. Нажмите для просмотра.';
+      'Жилец предложил изменения в договоре. Нажмите для просмотра.';
 
   @override
   String dueOn(String date) {
@@ -1263,7 +1291,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get items => 'предметов';
 
   @override
-  String get waitingForOtherParty => 'Ожидание подтверждения другой стороны...';
+  String get waitingForOtherParty => 'Ожидание подтверждения второй стороны...';
 
   @override
   String get awaitingApproval => 'Ожидание подтверждения...';
@@ -1283,8 +1311,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get paywallTitle => 'Stanomer Premium';
 
   @override
-  String get paywallSubtitle =>
-      'Снимите ограничения в управлении недвижимостью.';
+  String get paywallSubtitle => 'Управляйте объектами без ограничений.';
 
   @override
   String get unlimitedProperties => 'Неограниченное управление недвижимостью';
@@ -1299,7 +1326,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pdfContracts => 'Создание PDF-договоров (Скоро)';
 
   @override
-  String get automatedRenewal => 'Автоматический расчет и продление (Скоро)';
+  String get automatedRenewal => 'Автоматический расчет аренды (Скоро)';
 
   @override
   String get restorePurchases => 'Восстановить покупки';
@@ -1322,7 +1349,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get premiumMobileOnlyDesc =>
-      'Подписки Stanomer Premium можно приобрести только через мобильное приложение.';
+      'Подписку Stanomer Premium можно приобрести только в мобильном приложении. Скачайте его по ссылкам ниже.';
 
   @override
   String get downloadOnAppStore => 'Загрузить в App Store';
@@ -1350,13 +1377,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get termsOfServiceContent =>
-      'Stanomer – Пользовательское соглашение и условия использования...';
+      'Stanomer – Пользовательское соглашение и условия использования\nПоследнее обновление: 23 апреля 2026\n\n1. Введение\nНастоящее Пользовательское соглашение («Соглашение») регулирует отношения между Вами («Пользователь») и приложением Stanomer. Устанавливая или используя приложение, Вы соглашаетесь с условиями настоящего Соглашения.\n\n2. Условия Apple и Google\nApple App Store: Данное Соглашение заключено исключительно между Пользователем и Stanomer. Настоящее Соглашение включает Стандартное лицензионное соглашение с конечным пользователем Apple (Standard EULA) посредством ссылки: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Данное Соглашение заключено исключительно между Пользователем и Stanomer.\n\nВы подтверждаете, что Apple и Google не несут никаких обязательств по техническому обслуживанию и поддержке приложения.\n\n3. Подписка и оплата\nОплата: Оплата списывается с Вашего аккаунта iTunes или Google Play после подтверждения покупки.\n\nПродление: Подписка продлевается автоматически, если автопродление не отключено как минимум за 24 часа до окончания текущего периода.\n\nУправление: Вы можете управлять подписками или отключить автопродление в настройках аккаунта после совершения покупки.\n\n4. Контент пользователя и правила поведения\nВы несете полную ответственность за вводимые Вами данные (суммы аренды, отчеты о неисправностях, договоры).\n\nЗапрещено загружать незаконный, оскорбительный или нарушающий чьи-либо права контент.\n\nStanomer оставляет за собой право удалить любой контент, нарушающий законы Республики Сербии или условия настоящего Соглашения.\n\n5. Конфиденциальность и защита данных (ZZPL, GDPR, KVKK)\nЗакон Сербии (ZZPL): Закон о защите персональных данных.\n\nGDPR: Общий регламент по защите данных (ЕС).\n\nKVKK: Закон о защите персональных данных (Турция).\n\nВаши данные защищены в соответствии с международными стандартами конфиденциальности независимо от Вашего местонахождения.\n\n6. Ограничение ответственности\nStanomer предоставляет платформу для управления арендой и не является стороной договоров аренды между собственниками и жильцами. Мы не несем ответственности за споры между пользователями или за транзакции, совершенные вне платформы.\n\n7. Прекращение действия соглашения\nСоглашение действует до тех пор, пока не будет расторгнуто Вами или Stanomer. Ваши права по данной лицензии автоматически аннулируются в случае нарушения любого из условий.';
 
   @override
   String get support_title => 'Поддержка';
 
   @override
-  String get support_desc => 'Свяжитесь с нами.';
+  String get support_desc =>
+      'Свяжитесь с нами, если у вас возникли вопросы или есть отзыв.';
 
   @override
   String get subject => 'Тема';
@@ -1377,10 +1405,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get other => 'Другое';
 
   @override
-  String get messageSent => 'Сообщение успешно отправлено!';
+  String get messageSent => 'Сообщение отправлено!';
 
   @override
-  String get errorSendingMessage => 'Не удалось отправить сообщение.';
+  String get errorSendingMessage =>
+      'Не удалось отправить сообщение. Пожалуйста, попробуйте еще раз.';
 
   @override
   String get requiredField => 'Это поле обязательно';
@@ -1389,16 +1418,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get invalidEmail => 'Неверный адрес эл. почты';
 
   @override
-  String get offlineMessage => 'Вы сейчас не в сети.';
+  String get offlineMessage =>
+      'Вы сейчас не в сети. Данные будут синхронизированы при подключении.';
 
   @override
   String get retry => 'ПОВТОРИТЬ';
 
   @override
-  String get zzplConsentTitle => 'Согласие на защиту данных';
+  String get zzplConsentTitle => 'Защита персональных данных (ZZPL)';
 
   @override
-  String get zzplAgreeAndContinue => 'Я прочитал(а) и одобряю';
+  String get zzplAgreeAndContinue => 'Принять и продолжить';
 
   @override
   String get share => 'Поделиться';
@@ -1419,22 +1449,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get invoiceLocalOnlyDesc =>
-      'Документ сохраняется только на этом устройстве. Вы можете включить облачную загрузку в настройках.';
+      'Файл сохранен только на этом устройстве. Вы можете включить облачное резервное копирование в настройках.';
 
   @override
   String get invoiceCloudSecureDesc =>
-      'Документ надежно сохранен с шифрованием. Видеть его можете только вы и арендатор.';
+      'Файл надежно сохранен в облаке. Доступ есть только у вас и жильца.';
 
   @override
-  String get invoiceUploadLimitDesc => 'PDF, JPG или PNG · макс. 10 МБ';
+  String get invoiceUploadLimitDesc => 'JPEG, PNG или PDF · макс. 10 МБ';
 
   @override
   String get billMissingLocalDesc =>
-      'Этот счет был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.';
+      'Файл сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.';
 
   @override
   String get documentMissingLocalDesc =>
-      'Этот документ был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.';
+      'Документ сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.';
 
   @override
   String get cannotOpenDocument => 'Не удалось открыть документ';

@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/widgets/language_picker.dart';
 import '../../../core/theme/colors.dart';
+import '../../../core/widgets/bottom_sheet_wrapper.dart';
 import 'widgets/role_card.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/apple_sign_in_button.dart';
@@ -236,37 +237,40 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             onTap: () {
                               showModalBottomSheet(
                                 context: context,
+                                isDismissible: false,
                                 isScrollControlled: true,
                                 backgroundColor: StanomerColors.bgCard,
                                 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: StanomerRadius.xl)),
-                                builder: (ctx) => Container(
-                                  padding: const EdgeInsets.all(24.0).copyWith(bottom: MediaQuery.of(ctx).padding.bottom + 24),
-                                  constraints: BoxConstraints(
-                                    maxHeight: MediaQuery.of(ctx).size.height * 0.8,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Text(
-                                        loc.consentTextFullTitle, 
-                                        style: theme.textTheme.headlineLarge?.copyWith(fontSize: 24),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Flexible(
-                                        child: SingleChildScrollView(
-                                          child: Text(
-                                            loc.consentTextFullBody, 
-                                            style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+                                builder: (ctx) => ResilientBottomSheetWrapper(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(24.0).copyWith(bottom: MediaQuery.of(ctx).padding.bottom + 24),
+                                    constraints: BoxConstraints(
+                                      maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Text(
+                                          loc.consentTextFullTitle, 
+                                          style: theme.textTheme.headlineLarge?.copyWith(fontSize: 24),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Flexible(
+                                          child: SingleChildScrollView(
+                                            child: Text(
+                                              loc.consentTextFullBody, 
+                                              style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.of(ctx).pop(),
-                                        child: Text(loc.ok),
-                                      )
-                                    ],
+                                        const SizedBox(height: 24),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.of(ctx).pop(),
+                                          child: Text(loc.ok),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );

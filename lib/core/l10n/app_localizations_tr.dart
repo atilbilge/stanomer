@@ -15,7 +15,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get login => 'Giriş Yap';
 
   @override
-  String get signup => 'Kayıt Ol';
+  String get signup => 'Kaydol';
 
   @override
   String get email => 'E-posta';
@@ -41,16 +41,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get consentRequired =>
-      'Devam etmek için ZZPL onayını kabul etmelisiniz';
+      'Devam etmek için ZZPL şartlarını kabul etmelisiniz';
 
   @override
   String get loginToAccount => 'Hesabınıza giriş yapın';
 
   @override
-  String get createAccount => 'Yeni hesap oluştur';
+  String get createAccount => 'Hesap oluştur';
 
   @override
-  String get dontHaveAccount => 'Hesabınız yok mu? Kayıt olun';
+  String get dontHaveAccount => 'Hesabınız yok mu? Kaydolun';
 
   @override
   String get alreadyHaveAccount => 'Zaten hesabınız var mı? Giriş yapın';
@@ -65,7 +65,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fullName => 'Ad Soyad';
 
   @override
-  String get errorSelectRole => 'Lütfen rolünüzü seçin';
+  String get errorSelectRole => 'Lütfen bir rol seçin';
 
   @override
   String get deleteAccount => 'Hesabı Sil';
@@ -85,7 +85,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cancel => 'İptal';
 
   @override
-  String get invalidPassword => 'Geçersiz şifre';
+  String get invalidPassword => 'Hatalı şifre';
 
   @override
   String get welcomeToStanomer => 'Stanomer\'e Hoş Geldiniz';
@@ -106,13 +106,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get discoverPremium => 'Premium\'u Keşfet';
 
   @override
-  String get unlimitedLeaseContracts => 'Sınırsız kira sözleşmeleri';
+  String get unlimitedLeaseContracts => 'Sınırsız kira sözleşmesi';
 
   @override
-  String get updateName => 'Adı Güncelle';
+  String get updateName => 'İsmi Güncelle';
 
   @override
-  String get updatePassword => 'Şifreyi Güncelle';
+  String get updatePassword => 'Şifreyi Değiştir';
 
   @override
   String get oldPassword => 'Mevcut Şifre';
@@ -121,16 +121,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get newPassword => 'Yeni Şifre';
 
   @override
-  String get saveChanges => 'Değişiklikleri Kaydet';
+  String get saveChanges => 'Kaydet';
 
   @override
-  String get passwordChangedSuccess => 'Şifre başarıyla güncellendi';
+  String get passwordChangedSuccess => 'Şifre başarıyla değiştirildi';
 
   @override
-  String get profileUpdatedSuccess => 'Profil başarıyla güncellendi';
+  String get profileUpdatedSuccess => 'Profiliniz güncellendi.';
 
   @override
-  String get role => 'Rol';
+  String get role => 'Kullanıcı Türü';
 
   @override
   String get roleLandlord => 'Ev Sahibi';
@@ -151,7 +151,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get monthlyRent => 'Aylık Kira';
 
   @override
-  String get depositAmount => 'Depozito Tutarı';
+  String get depositAmount => 'Depozito';
 
   @override
   String get currency => 'Para Birimi';
@@ -163,13 +163,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get propertyNameHint => 'ör. Belgrad Dairesi';
 
   @override
-  String get propertyAddedSuccess => 'Mülk başarıyla eklendi';
+  String get propertyAddedSuccess => 'Mülk başarıyla eklendi.';
 
   @override
-  String get propertyUpdatedSuccess => 'Mülk başarıyla güncellendi';
+  String get propertyUpdatedSuccess => 'Mülk güncellendi.';
 
   @override
-  String get noProperties => 'Mülk bulunamadı';
+  String get noProperties => 'Henüz mülk eklenmemiş';
 
   @override
   String get addYourFirstProperty =>
@@ -189,17 +189,17 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu mülkü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
 
   @override
-  String get propertyDeletedSuccess => 'Mülk başarıyla silindi';
+  String get propertyDeletedSuccess => 'Mülk silindi.';
 
   @override
   String get inviteTenant => 'Kiracı Davet Et';
 
   @override
-  String get emailHint => 'Kiracının e-posta adresini girin';
+  String get emailHint => 'Kiracının e-posta adresi';
 
   @override
   String get inviteCreatedSuccess =>
-      'Davet bağlantısı oluşturuldu! Artık paylaşabilirsiniz.';
+      'Davet bağlantısı oluşturuldu! Şimdi paylaşabilirsiniz.';
 
   @override
   String get shareInviteLink => 'Davet Bağlantısını Paylaş';
@@ -208,28 +208,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get copyLink => 'Bağlantıyı Kopyala';
 
   @override
-  String get noInvitesYet => 'Henüz gönderilmiş davet yok';
+  String get noInvitesYet => 'Henüz gönderilmiş bir davet yok';
 
   @override
   String get cancelInvitation => 'Daveti İptal Et';
 
   @override
-  String get invitationCancelledSuccess => 'Davet başarıyla iptal edildi';
+  String get invitationCancelledSuccess => 'Davet iptal edildi.';
 
   @override
   String get pendingInvite => 'Bekleyen Davet';
 
   @override
-  String get contractSentToTenant => 'Kiracıya kontrat gönderildi';
+  String get contractSentToTenant => 'Kontrat kiracıya gönderildi';
 
   @override
   String get overview => 'Genel Bakış';
 
   @override
-  String get financials => 'Finansallar';
+  String get financials => 'Ödemeler';
 
   @override
-  String get propertySettings => 'Ayarlar';
+  String get propertySettings => 'Mülk Ayarları';
 
   @override
   String get invitationHistory => 'Davet Geçmişi';
@@ -238,46 +238,46 @@ class AppLocalizationsTr extends AppLocalizations {
   String get invitationDetails => 'Davet Detayları';
 
   @override
-  String get acceptInvitation => 'Evet, burayı kiraladım';
+  String get acceptInvitation => 'Kabul Et';
 
   @override
-  String get declineInvitation => 'Daveti Reddet';
+  String get declineInvitation => 'Reddet';
 
   @override
-  String get inviteNotFound => 'Davet bulunamadı veya süresi dolmuş';
+  String get inviteNotFound => 'Davet bulunamadı veya süresi dolmuş.';
 
   @override
   String get invitationAcceptedSuccess =>
-      'Eve hoş geldiniz! Davet kabul edildi.';
+      'Eve hoş geldiniz! Daveti kabul ettiniz.';
 
   @override
   String pendingInvitationBanner(String property) {
-    return '$property için bekleyen bir davetiniz var';
+    return '$property için bekleyen bir davetiniz var.';
   }
 
   @override
   String invitedBy(String name) {
-    return '$name tarafından davet edildiniz';
+    return '$name sizi davet etti';
   }
 
   @override
   String get yourName => 'Adınız';
 
   @override
-  String get yourNameHint => 'Adınızı ve soyadınızı girin';
+  String get yourNameHint => 'Adınız Soyadınız';
 
   @override
-  String get viewInvite => 'Daveti Görüntüle';
+  String get viewInvite => 'Daveti Gör';
 
   @override
   String get myProperties => 'Mülklerim';
 
   @override
-  String get tenantEmptyStateTitle => 'Henüz atanmış bir mülk yok';
+  String get tenantEmptyStateTitle => 'Henüz atanmış bir mülkünüz yok';
 
   @override
   String get tenantEmptyStateMessage =>
-      'Ev sahibiniz size bir davet gönderdiyse burada görünecektir. Yeni davetleri kontrol etmek için aşağıdaki düğmeye dokunun.';
+      'Ev sahibiniz size bir davet gönderdiğinde burada görünecektir. Yeni davetleri kontrol etmek için aşağıdaki düğmeye dokunabilirsiniz.';
 
   @override
   String get refresh => 'Yenile';
@@ -286,23 +286,23 @@ class AppLocalizationsTr extends AppLocalizations {
   String get invitationDeclinedSuccess => 'Davet reddedildi.';
 
   @override
-  String get confirmDeclineInviteTitle => 'Daveti Reddet?';
+  String get confirmDeclineInviteTitle => 'Daveti reddetmek istiyor musunuz?';
 
   @override
   String get confirmDeclineInviteMessage =>
-      'Bu daveti reddetmek istediğinizden emin misiniz? Bekleyenler listenizden kaldırılacaktır.';
+      'Bu daveti reddetmek istediğinizden emin misiniz? Bekleyen davetler listenizden silinecektir.';
 
   @override
-  String get contractStartDate => 'Sözleşme Başlangıç Tarihi';
+  String get contractStartDate => 'Sözleşme Başlangıcı';
 
   @override
-  String get contractEndDate => 'Sözleşme Bitiş Tarihi';
+  String get contractEndDate => 'Sözleşme Bitişi';
 
   @override
   String get uploadContract => 'Sözleşme Yükle';
 
   @override
-  String get viewContract => 'Sözleşmeyi Görüntüle';
+  String get viewContract => 'Sözleşmeyi Gör';
 
   @override
   String get contractFile => 'Sözleşme Dosyası';
@@ -311,7 +311,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get selectDate => 'Tarih Seç';
 
   @override
-  String get appLanguage => 'Uygulama Dili';
+  String get appLanguage => 'Dil';
 
   @override
   String get english => 'İngilizce';
@@ -335,11 +335,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get landlordMode => 'Ev Sahibi Modu';
 
   @override
-  String get whatAreYou => 'Ne olarak devam etmek istersiniz?';
+  String get whatAreYou => 'Uygulamayı hangi rolde kullanmak istersiniz?';
 
   @override
   String get selectRoleToContinue =>
-      'Başlamak için bir rol seçin. İstediğiniz zaman yukarıdan değiştirebilirsiniz.';
+      'Devam etmek için bir rol seçin. Bunu istediğiniz zaman değiştirebilirsiniz.';
 
   @override
   String get consentTextFullBody =>
@@ -350,50 +350,50 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get removeTenantConfirmation =>
-      'Bu kiracıyı mülkten kaldırmak istediğinizden emin misiniz? Bu işlem bağlantıyı keser ve davet kaydını siler.';
+      'Bu kiracıyı mülkten kaldırmak istediğinizden emin misiniz? Bu işlem kiracıyla olan bağlantıyı keser ve tüm geçmişi siler.';
 
   @override
   String get remove => 'Kaldır';
 
   @override
   String logRentDeclared(String month) {
-    return 'Kiracı $month kirasını ödedi olarak işaretledi.';
+    return 'Kiracı, $month kirasını ödediğini bildirdi.';
   }
 
   @override
   String logRentApproved(String month) {
-    return 'Ev sahibi $month kirasını onayladı.';
+    return 'Ev sahibi, $month kirasını onayladı.';
   }
 
   @override
   String logRentRejected(String month) {
-    return 'Ev sahibi $month kirasını reddetti.';
+    return 'Ev sahibi, $month kirasını reddetti.';
   }
 
   @override
   String logMarkedAsPaid(String month) {
-    return 'Ev sahibi $month kirasını ödendi yaptı.';
+    return 'Ev sahibi, $month kirasını ödendi olarak işaretledi.';
   }
 
   @override
   String logMarkedAsPending(String month) {
-    return 'Ev sahibi $month kirasını beklemede yaptı.';
+    return 'Ev sahibi, $month kirasını beklemede olarak işaretledi.';
   }
 
   @override
   String logAutoApproved(String month) {
-    return '$month kirası 5 gün geçtiği için sistem tarafından otomatik onaylandı.';
+    return '$month kirası, ödeme bildiriminden 5 gün geçtiği için sistem tarafından otomatik onaylandı.';
   }
 
   @override
   String get activity => 'Aktivite';
 
   @override
-  String get noContractsTitle => 'Henüz kontrat yok';
+  String get noContractsTitle => 'Kayıtlı kontrat yok';
 
   @override
   String get noContractsMessage =>
-      'Kiraladığınız mülkün kira ve masraf takibini yapmak için önce kontrat bilgilerini girerek bir kiracı davet etmelisiniz.';
+      'Mülkünüzün kira ve masraf takibini yapmak için önce kontrat bilgilerini girmeli ve bir kiracı davet etmelisiniz.';
 
   @override
   String get inviteFirstTenant => 'Kiracı Davet Et';
@@ -403,14 +403,14 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get confirmCancelInvitationMessage =>
-      'Bu daveti geri çekmek istediğinizden emin misiniz? Bu işlem daveti kalıcı olarak siler.';
+      'Bu daveti geri çekmek istediğinizden emin misiniz? Bu işlem daveti kalıcı olarak silecektir.';
 
   @override
   String get confirmDeclineRevisionTitle => 'Değişiklik Talebini Reddet';
 
   @override
   String get confirmDeclineRevisionMessage =>
-      'Kiracının değişiklik talebini reddetmek istediğinizden emin misiniz? Kontrat orijinal şartlarıyla onay beklemeye devam edecektir.';
+      'Kiracının değişiklik talebini reddetmek istediğinizden emin misiniz? Kontrat mevcut şartlarıyla onay beklemeye devam edecektir.';
 
   @override
   String get activeContract => 'Aktif Kontrat';
@@ -428,7 +428,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get decline => 'Reddet';
 
   @override
-  String get declineRevisionRequest => 'Değişiklik talebini reddet';
+  String get declineRevisionRequest => 'Talebi Reddet';
 
   @override
   String get pendingHeader => 'BEKLEYEN';
@@ -437,16 +437,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get awaitingHeader => 'ONAY BEKLİYOR';
 
   @override
+  String get awaitingExplanation =>
+      'Ödemelerin ödendi olarak işaretlenmesi için ev sahibinin onaylaması gerekiyor.';
+
+  @override
   String get paidHeader => 'ÖDENDİ';
 
   @override
-  String get waitingForTenantPayment => 'Kiracı ödemesi bekleniyor';
+  String get waitingForTenantPayment => 'Kiracının ödemesi bekleniyor';
 
   @override
   String get waitingForYourApproval => 'Onayınız bekleniyor';
 
   @override
-  String get waitingForOwnerApproval => 'Ev sahibi onayı bekleniyor';
+  String get waitingForOwnerApproval => 'Ev sahibinin onayı bekleniyor';
 
   @override
   String get waitingForYourPayment => 'Ödeme yapmanız bekleniyor';
@@ -482,36 +486,37 @@ class AppLocalizationsTr extends AppLocalizations {
   String get targetRent => 'HEDEF KİRA';
 
   @override
-  String get contractInfo => 'Kontrat Bilgisi';
+  String get contractInfo => 'Sözleşme Bilgileri';
 
   @override
-  String get term => 'Süre';
+  String get term => 'Sözleşme Süresi';
 
   @override
-  String get dueDay => 'Ödeme Günü';
+  String get dueDay => 'Son Ödeme Günü';
 
   @override
-  String get contractDetails => 'Kontrat Detayları';
+  String get contractDetails => 'Sözleşme Detayları';
 
   @override
-  String get pastContracts => 'Geçmiş kontratlar';
+  String get pastContracts => 'Geçmiş Kontratlar';
 
   @override
   String previousLeasesCount(int count) {
-    return '$count önceki kontrat';
+    return '$count önceki sözleşme';
   }
 
   @override
-  String get propertySettingsLabel => 'Mülk ayarları';
+  String get propertySettingsLabel => 'Mülk Ayarları';
 
   @override
   String get propertyActions => 'Mülk İşlemleri';
 
   @override
-  String get leavePropertyConfirm => 'Bu mülkten ayrılmak istiyor musunuz?';
+  String get leavePropertyConfirm =>
+      'Bu mülkten ayrılmak istediğinizden emin misiniz?';
 
   @override
-  String get leaveProperty => 'Mülkü Bırak';
+  String get leaveProperty => 'Mülkten Ayrıl';
 
   @override
   String get areYouSure => 'Emin misiniz?';
@@ -524,10 +529,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get activeContractTermsInfo =>
-      'Aktif kontrat şartları. Burada yapılan tüm değişiklikler yalnızca kiracı ve ev sahibi mutabık kaldığında geçerli olur.';
+      'Aktif kontrat şartları. Burada yapılan değişiklikler yalnızca iki taraf da onayladığında geçerli olur.';
 
   @override
-  String get dueDayOfMonth => 'Ayın Ödeme Günü';
+  String get dueDayOfMonth => 'Ödeme Günü (Gün)';
 
   @override
   String get startDate => 'Başlangıç Tarihi';
@@ -536,7 +541,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get endDate => 'Bitiş Tarihi';
 
   @override
-  String get taxConfiguration => 'Vergi Durumu';
+  String get taxConfiguration => 'Vergilendirme';
 
   @override
   String get included => 'Dahil';
@@ -545,20 +550,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addedVat => 'Eklenir (+%15)';
 
   @override
-  String get expensesHeader => 'GİDERLER';
+  String get expensesHeader => 'Giderler';
 
   @override
-  String get extraPayment => 'Ek ödeme';
+  String get extraPayment => 'Ek Ödeme';
 
   @override
-  String get utility => 'Kuruma';
+  String get utility => 'Kurum (Fatura)';
 
   @override
   String get owner => 'Ev Sahibine';
 
   @override
   String proposeChangesInfo(String role) {
-    return 'Değişiklikler $role onayı için gönderilecektir. Mevcut şartlar kabul edilene kadar geçerli kalır.';
+    return 'Değişiklikler $role onayına gönderilecektir. Yeni şartlar kabul edilene kadar mevcut kontrat geçerli kalır.';
   }
 
   @override
@@ -574,14 +579,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get paidInCash => 'Nakit Ödendi';
 
   @override
-  String get noFinancialRecords => 'Henüz finansal kayıt bulunamadı';
+  String get noFinancialRecords => 'Henüz bir ödeme kaydı yok.';
 
   @override
-  String get noActiveContract => 'Yüklenmiş kontrat bulunamadı';
+  String get noActiveContract => 'Aktif kontrat bulunamadı.';
 
   @override
   String get contractTermsInfo =>
-      'Aktif kontrat şartları. Burada yapılan tüm değişiklikler yalnızca kiracı ve ev sahibi mutabık kaldığında geçerli olur.';
+      'Aktif kontrat şartları. Burada yapılan değişiklikler yalnızca iki taraf da onayladığında geçerli olur.';
 
   @override
   String get send => 'Gönder';
@@ -596,11 +601,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get electricityTooltip => 'Bireysel elektrik tüketim bedeli.';
 
   @override
-  String get internetTooltip => 'Abonelik bazlı internet ve TV paketleri.';
+  String get internetTooltip => 'İnternet ve TV paketi bedeli.';
 
   @override
   String get maintenanceTooltip =>
-      'Bina temizliği, asansör bakımı ve ortak alan giderleri.';
+      'Bina temizliği, asansör bakımı og ortak alan giderleri.';
 
   @override
   String get declare => 'Bildir';
@@ -610,12 +615,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String proposesChanges(String name) {
-    return '$name aşağıdaki değişiklikleri teklif ediyor:';
+    return '$name şu değişiklikleri teklif ediyor:';
   }
 
   @override
   String get awaitingApprovalInfo =>
-      'Değişiklik teklifiniz diğer tarafın onayını bekliyor.';
+      'Değişiklik teklifiniz karşı tarafın onayını bekliyor.';
 
   @override
   String get propertyDetails => 'MÜLK BİLGİLERİ';
@@ -625,19 +630,19 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get defaultLeaseTermsSubtitle =>
-      'Yeni kiracı davet ederken kullanılacak taslak bilgiler.';
+      'Yeni kiracı davet ederken şablon olarak kullanılacak bilgiler.';
 
   @override
-  String get invalidNumber => 'Geçersiz sayı';
+  String get invalidNumber => 'Hatalı değer';
 
   @override
-  String get enterDayBetween1and31 => '1-31 arası bir gün girin';
+  String get enterDayBetween1and31 => '1 ile 31 arasında bir gün girin';
 
   @override
   String get expenseConfiguration => 'GİDER KALEMLERİ';
 
   @override
-  String get expenseInfostan => 'Aidat';
+  String get expenseInfostan => 'Aidat / Infostan';
 
   @override
   String get expenseElectricity => 'Elektrik';
@@ -652,7 +657,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get expenseTax => 'Vergi';
 
   @override
-  String get tenantPaysTo => 'Kiracı kime ödeyecek?';
+  String get tenantPaysTo => 'Ödeme kime yapılacak?';
 
   @override
   String get fileSelected => 'Dosya Seçildi';
@@ -670,20 +675,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get save => 'Kaydet';
 
   @override
-  String get paymentDeclared => 'Ödeme başarıyla beyan edildi.';
+  String get paymentDeclared => 'Ödeme bildirimi yapıldı.';
 
   @override
-  String get dashboard => 'Kontrol Paneli';
+  String get dashboard => 'Panel';
 
   @override
   String get parties => 'TARAFLAR';
 
   @override
-  String get tenantEmail => 'Kiracı E-postası';
+  String get tenantEmail => 'Kiracının E-postası';
 
   @override
   String get existingContractTermsInfo =>
-      'Lehterdeki mevcut uzaşılmış kontrat şartları (kira bedeli, tarihler ve masraf dağılımı) bu kiracı için de geçerli olacaktır.';
+      'Mevcut sözleşme şartları (kira bedeli, tarihler ve masraf dağılımı) bu kiracı için de geçerli olacaktır.';
 
   @override
   String get rentAndPayment => 'KİRA VE ÖDEME';
@@ -701,7 +706,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sendRevision => 'Revize Gönder';
 
   @override
-  String get revisionSent => 'Revize teklif gönderildi';
+  String get revisionSent => 'Revize teklif gönderildi.';
 
   @override
   String get existingFileKept => 'Mevcut Dosya Korunuyor';
@@ -735,7 +740,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get tenantPaysLandlord => 'Kiracı ev sahibine öder';
 
   @override
-  String get tenantPaysUtility => 'Kiracı kuruma öder';
+  String get tenantPaysUtility => 'Kiracı kuruma doğrudan öder';
 
   @override
   String get includedInRent => 'Kiraya dahil';
@@ -767,7 +772,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get selectPaymentReceiverWarning =>
-      'Devam etmeden önce ödeme yapılacak tarafı seçin.';
+      'Lütfen önce ödeme yapılacak tarafı seçin.';
 
   @override
   String progressSummary(int completed, int total, int sent) {
@@ -778,13 +783,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get maintenance => 'Bakım / Arıza';
 
   @override
-  String get issues => 'Arızalar';
+  String get issues => 'Sorunlar';
 
   @override
   String get newRequest => 'Yeni Talep';
 
   @override
-  String get reportIssue => 'Arıza Bildir';
+  String get reportIssue => 'Sorun Bildir';
 
   @override
   String get issueTitle => 'Başlık';
@@ -826,42 +831,42 @@ class AppLocalizationsTr extends AppLocalizations {
   String get categoryOther => 'Diğer';
 
   @override
-  String get noIssuesTitle => 'Henüz arıza bildirimi yok';
+  String get noIssuesTitle => 'Kayıtlı sorun yok';
 
   @override
   String get noIssuesMessage =>
-      'Her şey yolunda! Bu mülk için bildirilen bir arıza bulunmuyor.';
+      'Her şey yolunda! Bu mülk için bildirilen bir sorun bulunmuyor.';
 
   @override
-  String get updateStatus => 'Durum Güncelle';
+  String get updateStatus => 'Durumu Güncelle';
 
   @override
-  String get issueDetails => 'Arıza Detayları';
+  String get issueDetails => 'Sorun Detayları';
 
   @override
   String logMaintenanceCreated(String title) {
-    return '$title başlıklı arıza kaydı oluşturuldu.';
+    return '$title başlıklı sorun kaydı oluşturuldu.';
   }
 
   @override
   String logMaintenanceStatusUpdated(String status) {
-    return 'Arıza kaydı durumu $status olarak güncellendi.';
+    return 'Sorun kaydı durumu $status olarak güncellendi.';
   }
 
   @override
-  String get logMaintenanceReopened => 'Arıza kaydı tekrar açıldı.';
+  String get logMaintenanceReopened => 'Sorun kaydı tekrar açıldı.';
 
   @override
-  String get logMaintenanceMessageAdded => 'Arıza kaydına yeni mesaj eklendi.';
+  String get logMaintenanceMessageAdded => 'Sorun kaydına yeni mesaj eklendi.';
 
   @override
   String get notifications => 'Bildirimler';
 
   @override
-  String get markAllAsRead => 'Tümünü okundu işaretle';
+  String get markAllAsRead => 'Hepsini Okundu İşaretle';
 
   @override
-  String get noNotifications => 'Henüz bildirim yok';
+  String get noNotifications => 'Bildiriminiz yok.';
 
   @override
   String get documents => 'Belgeler';
@@ -873,10 +878,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addDocument => 'Belge Ekle';
 
   @override
-  String get enterDocumentName => 'Belge adı girin';
+  String get enterDocumentName => 'Belge adı';
 
   @override
-  String get noDocumentsYet => 'Henüz belge yok';
+  String get noDocumentsYet => 'Henüz yüklenmiş belge yok.';
 
   @override
   String get additionalDocuments => 'Ek Belgeler';
@@ -892,10 +897,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get uploadMainContract => 'Sözleşmeyi Yükle';
 
   @override
-  String get manageDocuments => 'Dokümanları Yönet';
+  String get manageDocuments => 'Belgeleri Yönet';
 
   @override
-  String get monthlyCollected => 'Toplanan';
+  String get monthlyCollected => 'Tahsil Edilen';
 
   @override
   String get totalRentShort => 'Kira';
@@ -907,21 +912,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get vacant => 'Boş';
 
   @override
-  String get overdueReceivables => 'Vadesi Geçmiş';
+  String get overdueReceivables => 'Geciken Ödemeler';
 
   @override
-  String get collectedByType => 'Tahsil Edilenler';
+  String get collectedByType => 'Ödeme Türleri';
 
   @override
   String propertiesCount(int count) {
-    return 'Emlak';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mülk',
+      one: '$count mülk',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get hasDebt => 'Borcu Var';
+  String get hasDebt => 'Borçlu';
 
   @override
-  String get paymentAwaitingApproval => 'Onay Bekliyor';
+  String get paymentAwaitingApproval => 'Onay Bekleyenler';
 
   @override
   String get rent => 'Kira';
@@ -934,6 +945,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get debtLabel => 'Borç';
+
+  @override
+  String get totalDebt => 'Toplam Borç';
 
   @override
   String get paidLabel => 'Ödendi';
@@ -955,54 +969,54 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get confirmApprovePaymentMessage =>
-      'Bu ödemeyi onaylamak istiyor musunuz?';
+      'Bu ödemeyi onaylamak istediğinizden emin misiniz?';
 
   @override
   String get confirmRejectPaymentTitle => 'Ödemeyi Reddet';
 
   @override
   String get confirmRejectPaymentMessage =>
-      'Bu ödemeyi reddetmek ve kiracıdan tekrar bildirmesini istemek mi istiyorsunuz?';
+      'Bu ödemeyi reddetmek ve kiracıdan tekrar bildirmesini mi istiyorsunuz?';
 
   @override
   String get confirm => 'Onayla';
 
   @override
-  String get terminateContract => 'Kontratı Feshet';
+  String get terminateContract => 'Sözleşmeyi Sonlandır';
 
   @override
-  String get terminationDate => 'Fesih Tarihi';
+  String get terminationDate => 'Sonlanma Tarihi';
 
   @override
-  String get confirmTerminationTitle => 'Kontratı Feshet?';
+  String get confirmTerminationTitle => 'Sözleşmeyi Sonlandır?';
 
   @override
   String get confirmTerminationMessage =>
-      'Bu kontratı seçilen tarihte bitirmek için bir fesih talebi göndermek istediğinizden emin misiniz?';
+      'Bu sözleşmeyi seçilen tarihte bitirmek için bir sonlandırma talebi göndermek istediğinizden emin misiniz?';
 
   @override
-  String get terminationRequestSent => 'Fesih talebi başarıyla gönderildi.';
+  String get terminationRequestSent => 'Sonlandırma talebi gönderildi.';
 
   @override
-  String get statusInactive => 'Pasif / Bitti';
+  String get statusInactive => 'Sona Erdi';
 
   @override
-  String get terminationRequested => 'Fesih Bekleniyor';
+  String get terminationRequested => 'Sonlandırma Bekleniyor';
 
   @override
-  String get approveTermination => 'Feshi Onayla';
+  String get approveTermination => 'Sonlandırmayı Onayla';
 
   @override
-  String get declineTermination => 'Feshi Reddet';
+  String get declineTermination => 'Sonlandırmayı Reddet';
 
   @override
   String contractTerminatedOn(Object date) {
-    return 'Sözleşme feshedildi: $date';
+    return 'Sözleşme sonlandırıldı: $date';
   }
 
   @override
   String contractWillEndOn(String date) {
-    return 'Kontrat şu tarihte sona erecek: $date';
+    return 'Sözleşme şu tarihte bitecek: $date';
   }
 
   @override
@@ -1012,7 +1026,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get disputeReason => 'İtiraz Nedeni';
 
   @override
-  String get disputeReasonHint => 'Neden itiraz ettiğinizi açıklayın...';
+  String get disputeReasonHint => 'İtiraz nedeninizi buraya yazın...';
 
   @override
   String get disputedHeader => 'İTİRAZ EDİLDİ';
@@ -1032,7 +1046,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get takeAction => 'İşlem Yap';
 
   @override
-  String get ownerNote => 'Ev Sahibi Notu';
+  String get ownerNote => 'Ev Sahibinin Notu';
 
   @override
   String get explanationOptional => 'Açıklama (İsteğe bağlı)';
@@ -1041,7 +1055,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get explanationHint => 'Örn: Sayacı kontrol ettim...';
 
   @override
-  String get units => 'Birimler';
+  String get units => 'Mülkler';
 
   @override
   String get tenantsLabel => 'Kiracılar';
@@ -1050,7 +1064,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get portfolioManagement => 'Portföy Yönetimi';
 
   @override
-  String get paymentRequests => 'Ödeme ve Talepler';
+  String get paymentRequests => 'Ödemeler ve Talepler';
 
   @override
   String get profileSettings => 'Profil Ayarları';
@@ -1066,16 +1080,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String syncError(String error) {
-    return 'Senkronizasyon Hatası: $error';
+    return 'Bağlantı Hatası: $error';
   }
 
   @override
   String get acceptTermsWarning =>
-      'Devam etmek için lütfen şartları kabul edin.';
+      'Devam etmek için lütfen kullanım şartlarını kabul edin.';
 
   @override
-  String get maintenanceRequestSuccess =>
-      'Arıza bildirimi başarıyla gönderildi.';
+  String get maintenanceRequestSuccess => 'Sorun bildirimi gönderildi.';
 
   @override
   String get ok => 'Tamam';
@@ -1104,10 +1117,10 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get nextPayment => 'Gelecek Ödeme';
+  String get nextPayment => 'Sonraki Ödeme';
 
   @override
-  String get payNow => 'Hemen Öde';
+  String get payNow => 'Ödeme Bildir';
 
   @override
   String get upcomingLabel => 'Beklemede';
@@ -1116,22 +1129,22 @@ class AppLocalizationsTr extends AppLocalizations {
   String get joinPropertyInvitation => 'Mülke Katılma Daveti';
 
   @override
-  String get feedbackSent => 'Geri Bildirim Gönderildi';
+  String get feedbackSent => 'Geri bildiriminiz gönderildi.';
 
   @override
   String get rentalProposal => 'Kira Teklifi';
 
   @override
-  String get reviewContractTerms => 'Lütfen kontrat şartlarını inceleyin.';
+  String get reviewContractTerms => 'Lütfen sözleşme şartlarını inceleyin.';
 
   @override
-  String get expenseDistribution => 'Giderlerin Durumu';
+  String get expenseDistribution => 'Gider Dağılımı';
 
   @override
-  String get yourNote => 'Sizin Notunuz:';
+  String get yourNote => 'Notunuz:';
 
   @override
-  String get backToDashboard => 'Ana Sayfaya Dön';
+  String get backToDashboard => 'Panele Dön';
 
   @override
   String get propertyDetailsHeader => 'MÜLK BİLGİLERİ';
@@ -1140,11 +1153,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get defaultLeaseTermsHeader => 'VARSAYILAN KONTRAT ŞARTLARI';
 
   @override
-  String get proposeRevision => 'Revize Öner';
+  String get proposeRevision => 'Şartları Değiştir';
 
   @override
   String get revisionTermsQuestion =>
-      'Hangi şartları değiştirmek istiyorsunuz? (Kira bedeli, ödeme günü, giderler vb.)';
+      'Hangi şartları değiştirmek istiyorsunuz? (Kira bedeli, ödeme günü, faturalar vb.)';
 
   @override
   String get enterNotesHint => 'Notunuzu buraya yazın...';
@@ -1168,7 +1181,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get acceptTermsAndDistribution =>
-      'Kontrat şartlarını ve gider dağılımını kabul ediyorum.';
+      'Sözleşme şartlarını og gider dağılımını kabul ediyorum.';
 
   @override
   String get datesMandatory => 'Başlangıç ve bitiş tarihleri zorunludur';
@@ -1178,7 +1191,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get leaseLockedWarning =>
-      'Lehterdeki mevcut uzaşılmış kontrat şartları (kira bedeli, tarihler ve masraf dağılımı) bu kiracı için de geçerli olacaktır.';
+      'Mevcut sözleşme şartları (kira bedeli, tarihler ve gider dağılımı) bu kiracı için de geçerli olacaktır.';
 
   @override
   String get rentPaymentHeader => 'KİRA VE ÖDEME';
@@ -1207,32 +1220,32 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get yourApartment => 'Oturduğunuz Daire';
+  String get yourApartment => 'Daireniz';
 
   @override
   String get commentHint => 'Yorum yazın...';
 
   @override
-  String get issueResolvedStatus => 'Arıza giderildi olarak işaretlendi.';
+  String get issueResolvedStatus => 'Sorun çözüldü olarak işaretlendi.';
 
   @override
-  String get reopenIssue => 'Hala Sorun Var (Tekrar Aç)';
+  String get reopenIssue => 'Sorun devam ediyor (Tekrar aç)';
 
   @override
   String get deleteRequest => 'Kaydı Sil';
 
   @override
-  String get terminationApproved => 'Fesih Onaylandı';
+  String get terminationApproved => 'Sonlandırma Onaylandı';
 
   @override
-  String get paymentDeclaredHand => 'Ödeme elden yapıldı olarak beyan edildi.';
+  String get paymentDeclaredHand => 'Ödemenin elden yapıldığı bildirildi.';
 
   @override
   String get fileUnreadable => 'Dosya okunamadı.';
 
   @override
   String paymentDeclaredSuccess(String title) {
-    return '$title ödemesi beyan edildi.';
+    return '$title ödemesi bildirildi.';
   }
 
   @override
@@ -1245,26 +1258,26 @@ class AppLocalizationsTr extends AppLocalizations {
   String get revisionRequestLabel => 'Revizyon Talebi:';
 
   @override
-  String get noActivityLogs => 'Henüz işlem kaydı bulunamadı';
+  String get noActivityLogs => 'Henüz bir işlem kaydı yok.';
 
   @override
   String get landlordProposedChanges =>
-      'Ev sahibi kontrat değişikliği önerdi. İncelemek için dokun.';
+      'Ev sahibi sözleşme değişikliği önerdi. İncelemek için dokunun.';
 
   @override
   String get tenantProposedChanges =>
-      'Kiracı kontrat değişikliği önerdi. İncelemek için dokun.';
+      'Kiracı sözleşme değişikliği önerdi. İncelemek için dokunun.';
 
   @override
   String dueOn(String date) {
-    return 'Ödeme tarihi: $date';
+    return 'Son Ödeme Tarihi: $date';
   }
 
   @override
-  String get item => 'kalem';
+  String get item => 'gider';
 
   @override
-  String get items => 'kalem';
+  String get items => 'gider';
 
   @override
   String get waitingForOtherParty => 'Karşı tarafın onayı bekleniyor...';
@@ -1281,8 +1294,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get cannotInviteSelf =>
-      'Kendi e-posta adresinizi kiracı olarak davet edemezsiniz.';
+  String get cannotInviteSelf => 'Kendi e-posta adresinizi davet edemezsiniz.';
 
   @override
   String get paywallTitle => 'Stanomer Premium';
@@ -1291,16 +1303,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get paywallSubtitle => 'Mülk yönetiminde sınırları kaldırın.';
 
   @override
-  String get unlimitedProperties => 'Sınırsız mülk ekleme ve yönetimi';
+  String get unlimitedProperties => 'Sınırsız mülk yönetimi';
 
   @override
-  String get detailedReporting => 'Daha hızlı ve detaylı raporlama';
+  String get detailedReporting => 'Gelişmiş raporlama';
 
   @override
   String get extraStorage => 'Daha fazla depolama alanı';
 
   @override
-  String get pdfContracts => 'PDF kontrat üretme (Yakında)';
+  String get pdfContracts => 'PDF sözleşme oluşturma (Yakında)';
 
   @override
   String get automatedRenewal =>
@@ -1310,11 +1322,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get restorePurchases => 'Satın Alımları Geri Yükle';
 
   @override
-  String get limitReachedTitle => 'Ücretsiz limitinize ulaştınız';
+  String get limitReachedTitle => 'Ücretsiz mülk limitinize ulaştınız';
 
   @override
   String get limitReachedSubtitle =>
-      'Birden fazla mülk yönetmek için Stanomer Premium\'a geçiş yapın.';
+      'Daha fazla mülk yönetmek için Stanomer Premium\'a geçin.';
 
   @override
   String get optionsLoadFailed => 'Satın alma seçenekleri yüklenemedi.';
@@ -1327,7 +1339,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get premiumMobileOnlyDesc =>
-      'Stanomer Premium aboneliği yalnızca mobil uygulama üzerinden satın alınabilir. Aşağıdaki bağlantılardan uygulamayı indirerek Premium\'a geçiş yapabilirsiniz.';
+      'Stanomer Premium aboneliği yalnızca mobil uygulama üzerinden satın alınabilir. Aşağıdaki bağlantılardan uygulamayı indirip Premium\'a geçiş yapabilirsiniz.';
 
   @override
   String get downloadOnAppStore => 'App Store\'dan İndir';
@@ -1361,8 +1373,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get support_title => 'Destek';
 
   @override
-  String get support_desc =>
-      'Teknik destek veya geri bildirim için bizimle iletişime geçin.';
+  String get support_desc => 'Bizimle iletişime geçin.';
 
   @override
   String get subject => 'Konu';
@@ -1383,7 +1394,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get other => 'Diğer';
 
   @override
-  String get messageSent => 'Mesaj başarıyla gönderildi!';
+  String get messageSent => 'Mesajınız gönderildi!';
 
   @override
   String get errorSendingMessage =>
@@ -1397,16 +1408,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get offlineMessage =>
-      'Şu an çevrimdışısınız, mevcut verilerle devam edebilirsiniz. Bağlanınca güncellenecektir.';
+      'Şu an internetsizsiniz. Bağlantı sağlandığında bilgileriniz eşitlenecektir.';
 
   @override
-  String get retry => 'YENİLE';
+  String get retry => 'TEKRAR DENE';
 
   @override
-  String get zzplConsentTitle => 'Açık Rıza Sözleşmesi';
+  String get zzplConsentTitle => 'Veri İşleme Onayı';
 
   @override
-  String get zzplAgreeAndContinue => 'Okudum ve Onaylıyorum';
+  String get zzplAgreeAndContinue => 'Kabul Et ve Devam Et';
 
   @override
   String get share => 'Paylaş';
@@ -1427,23 +1438,23 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get invoiceLocalOnlyDesc =>
-      'Belge yalnızca bu cihazda saklanır. Ayarlardan cloud yüklemeyi açabilirsin.';
+      'Belge yalnızca bu cihazda saklanır. Ayarlardan bulut yüklemesini açabilirsiniz.';
 
   @override
   String get invoiceCloudSecureDesc =>
-      'Belge şifrelenmiş olarak güvenle saklanır. Yalnızca sen ve kiracı görebilir.';
+      'Belge şifrelenmiş olarak güvenle saklanır. Yalnızca siz ve kiracınız görebilirsiniz.';
 
   @override
   String get invoiceUploadLimitDesc => 'JPEG, PNG veya PDF · maks. 10 MB';
 
   @override
   String get billMissingLocalDesc =>
-      'Bu fatura başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.';
+      'Bu fatura başka bir cihazda yerel kaydedilmiş. Bulut yedeklemesi kapalı olduğu için bu cihazdan görüntülenemez.';
 
   @override
   String get documentMissingLocalDesc =>
-      'Bu belge başka bir cihazda yerel olarak kaydedilmiş. Bulut yüklemesi aktif olmadığı için bu cihazdan görüntüleyemezsiniz.';
+      'Bu belge başka bir cihazda yerel kaydedilmiş. Bulut yedeklemesi kapalı olduğu için bu cihazdan görüntülenemez.';
 
   @override
-  String get cannotOpenDocument => 'Belge Açılamadı';
+  String get cannotOpenDocument => 'Belge açılamadı.';
 }

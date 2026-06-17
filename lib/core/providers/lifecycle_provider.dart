@@ -33,6 +33,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
       
       // 1. Force Supabase Realtime to reconnect
       // This is helpful if the socket was closed due to backgrounding
+      // ignore: invalid_use_of_internal_member
       Supabase.instance.client.realtime.connect();
 
       // 2. Invalidate key stream providers to force a fresh subscription

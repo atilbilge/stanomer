@@ -24,7 +24,7 @@ Future<void> main() async {
   // Log Flutter errors to console
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('CATCHED ERROR: ${details.exception}');
+    debugPrint('CATCHED ERROR: ${details.exception}\n${details.stack}');
   };
 
   await dotenv.load(fileName: ".env");

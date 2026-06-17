@@ -192,6 +192,7 @@ export function HomeContent() {
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-[12px] font-medium text-gray-500">
             <a href="/privacy" className="hover:text-brand-blue transition-colors">{t("footer_privacy")}</a>
             <a href="/terms" className="hover:text-brand-blue transition-colors">{t("footer_terms")}</a>
+            <a href="/changelog" className="hover:text-brand-blue transition-colors">{t("footer_changelog")}</a>
             <a href="/support" className="hover:text-brand-blue transition-colors">{t("footer_support")}</a>
           </div>
 

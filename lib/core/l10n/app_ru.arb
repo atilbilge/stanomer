@@ -2,7 +2,7 @@
   "@@locale": "ru",
   "appTitle": "Stanomer",
   "login": "Войти",
-  "signup": "Регистрация",
+  "signup": "Зарегистрироваться",
   "email": "Эл. почта",
   "password": "Пароль",
   "landlord": "Арендодатель",
@@ -14,14 +14,14 @@
   "loginToAccount": "Войдите в свой аккаунт",
   "createAccount": "Создать новый аккаунт",
   "dontHaveAccount": "Нет аккаунта? Зарегистрируйтесь",
-  "alreadyHaveAccount": "Уже есть аккаунт? Войти",
-  "continueWithGoogle": "Продолжить с Google",
-  "continueWithApple": "Продолжить с Apple",
-  "fullName": "Полное имя",
+  "alreadyHaveAccount": "Уже зарегистрированы? Войти",
+  "continueWithGoogle": "Войти через Google",
+  "continueWithApple": "Войти через Apple",
+  "fullName": "Имя и фамилия",
   "errorSelectRole": "Пожалуйста, выберите вашу роль",
   "deleteAccount": "Удалить аккаунт",
-  "deleteAccountWarning": "Это действие необратимо. Все ваши данные будут удалены.",
-  "confirmPasswordForDeletion": "Пожалуйста, введите пароль для подтверждения удаления",
+  "deleteAccountWarning": "Это действие необратимо и его нельзя отменить. Все ваши данные будут удалены.",
+  "confirmPasswordForDeletion": "Пожалуйста, введите пароль для подтверждения",
   "deleteButtonLabel": "Навсегда удалить мой аккаунт",
   "cancel": "Отмена",
   "invalidPassword": "Неверный пароль",
@@ -30,15 +30,15 @@
   "profile": "Профиль",
   "settingsHeader": "Настройки",
   "accountHeader": "Аккаунт",
-  "discoverPremium": "Откройте Premium",
-  "unlimitedLeaseContracts": "Неограниченное количество договоров аренды",
+  "discoverPremium": "Попробовать Premium",
+  "unlimitedLeaseContracts": "Безлимитные договоры аренды",
   "updateName": "Обновить имя",
-  "updatePassword": "Обновить пароль",
+  "updatePassword": "Изменить пароль",
   "oldPassword": "Текущий пароль",
   "newPassword": "Новый пароль",
-  "saveChanges": "Сохранить изменения",
+  "saveChanges": "Сохранить",
   "passwordChangedSuccess": "Пароль успешно обновлен",
-  "profileUpdatedSuccess": "Профиль успешно обновлен",
+  "profileUpdatedSuccess": "Профиль обновлен",
   "role": "Роль",
   "roleLandlord": "Арендодатель",
   "roleTenant": "Арендатор",
@@ -46,23 +46,23 @@
   "addProperty": "Добавить недвижимость",
   "address": "Адрес",
   "monthlyRent": "Ежемесячная аренда",
-  "depositAmount": "Сумма залога",
+  "depositAmount": "Депозит",
   "currency": "Валюта",
   "propertyName": "Название недвижимости",
   "propertyNameHint": "например, Квартира в Белграде",
-  "propertyAddedSuccess": "Недвижимость успешно добавлена",
-  "propertyUpdatedSuccess": "Недвижимость успешно обновлена",
-  "noProperties": "Недвижимость не найдена",
-  "addYourFirstProperty": "Добавьте свою первую недвижимость, чтобы начать!",
+  "propertyAddedSuccess": "Жилье добавлено",
+  "propertyUpdatedSuccess": "Данные обновлены",
+  "noProperties": "У вас пока нет добавленного жилья",
+  "addYourFirstProperty": "Добавьте свое первое жилье, чтобы начать!",
   "editProperty": "Редактировать",
   "delete": "Удалить",
   "confirmDeleteTitle": "Удалить недвижимость",
   "confirmDeleteMessage": "Вы уверены, что хотите удалить эту недвижимость? Это действие необратимо.",
-  "propertyDeletedSuccess": "Недвижимость успешно удалена",
+  "propertyDeletedSuccess": "Объект удален",
   "inviteTenant": "Пригласить арендатора",
   "emailHint": "Введите эл. почту арендатора",
-  "inviteCreatedSuccess": "Ссылка для приглашения создана! Теперь вы можете ею поделиться.",
-  "shareInviteLink": "Поделиться ссылкой",
+  "inviteCreatedSuccess": "Ссылка для приглашения готова! Вы можете отправить ее жильцу.",
+  "shareInviteLink": "Поделиться приглашением",
   "copyLink": "Копировать ссылку",
   "noInvitesYet": "Приглашения еще не отправлены",
   "cancelInvitation": "Отменить приглашение",
@@ -70,197 +70,277 @@
   "pendingInvite": "В ожидании",
   "contractSentToTenant": "Договор отправлен арендатору",
   "overview": "Обзор",
-  "financials": "Финансы",
-  "propertySettings": "Настройки",
+  "financials": "Платежи",
+  "propertySettings": "Настройки жилья",
   "invitationHistory": "История приглашений",
   "invitationDetails": "Детали приглашения",
-  "acceptInvitation": "Да, я снял(а) это место",
+  "acceptInvitation": "Да, я арендую это жилье",
   "declineInvitation": "Отклонить",
   "inviteNotFound": "Приглашение не найдено или истек срок действия",
-  "invitationAcceptedSuccess": "Добро пожаловать домой! Приглашение принято.",
-  "pendingInvitationBanner": "У вас есть ожидающее приглашение для {property}",
-  "@pendingInvitationBanner": {"placeholders": {"property": {"type": "String"}}},
-  "invitedBy": "Пригласил(а) {name}",
-  "@invitedBy": {"placeholders": {"name": {"type": "String"}}},
+  "invitationAcceptedSuccess": "Добро пожаловать! Приглашение принято.",
+  "pendingInvitationBanner": "У вас есть приглашение для {property}",
+  "@pendingInvitationBanner": {
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
+  "invitedBy": "Вас пригласил {name}",
+  "@invitedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "yourName": "Ваше имя",
-  "yourNameHint": "Введите ваше полное имя",
+  "yourNameHint": "Введите ваши имя и фамилию",
   "viewInvite": "Посмотреть",
   "myProperties": "Моя недвижимость",
-  "tenantEmptyStateTitle": "Недвижимость пока не назначена",
-  "tenantEmptyStateMessage": "Если арендодатель отправит вам приглашение, оно появится здесь.",
+  "tenantEmptyStateTitle": "Нет добавленного жилья",
+  "tenantEmptyStateMessage": "Когда собственник отправит вам приглашение, оно появится здесь.",
   "refresh": "Обновить",
   "invitationDeclinedSuccess": "Приглашение отклонено.",
   "confirmDeclineInviteTitle": "Отклонить приглашение?",
-  "confirmDeclineInviteMessage": "Вы уверены, что хотите отклонить это приглашение? Оно будет удалено.",
+  "confirmDeclineInviteMessage": "Вы уверены, что хотите отклонить приглашение? Оно будет удалено.",
   "contractStartDate": "Дата начала договора",
   "contractEndDate": "Дата окончания договора",
   "uploadContract": "Загрузить договор",
   "viewContract": "Посмотреть договор",
   "contractFile": "Файл договора",
   "selectDate": "Выберите дату",
-  "appLanguage": "Язык приложения",
+  "appLanguage": "Язык",
   "english": "Английский",
   "serbianLatin": "Сербский (Латиница)",
   "serbianCyrillic": "Сербский (Кириллица)",
   "turkish": "Турецкий",
-  "tenantMode": "Режим арендатора",
-  "landlordMode": "Режим арендодателя",
-  "whatAreYou": "Как вы хотите продолжить?",
-  "selectRoleToContinue": "Выберите роль. Вы сможете изменить ее позже.",
-  "consentTextFullBody": "Используя приложение Stanomer, вы даете согласие на обработку персональных данных...",
+  "russian": "Русский",
+  "tenantMode": "Я арендатор",
+  "landlordMode": "Я собственник",
+  "whatAreYou": "Выберите вашу роль:",
+  "selectRoleToContinue": "Выберите вашу роль, чтобы продолжить. Ее можно изменить в любой момент.",
+  "consentTextFullBody": "Используя приложение Stanomer, вы даете согласие на обработку персональных данных в соответствии с Законом о защите персональных данных (ZZPL) Сербии.",
   "removeTenant": "Удалить арендатора",
-  "removeTenantConfirmation": "Вы уверены, что хотите удалить этого арендатора?",
+  "removeTenantConfirmation": "Вы уверены, что хотите удалить арендатора? Связь будет разорвана.",
   "remove": "Удалить",
-  "logRentDeclared": "Арендатор объявил об оплате аренды за {month}.",
-  "@logRentDeclared": {"placeholders": {"month": {"type": "String"}}},
-  "logRentApproved": "Арендодатель подтвердил аренду за {month}.",
-  "@logRentApproved": {"placeholders": {"month": {"type": "String"}}},
-  "logRentRejected": "Арендодатель отклонил аренду за {month}.",
-  "@logRentRejected": {"placeholders": {"month": {"type": "String"}}},
-  "logMarkedAsPaid": "Арендодатель отметил {month} как оплаченный.",
-  "@logMarkedAsPaid": {"placeholders": {"month": {"type": "String"}}},
-  "logMarkedAsPending": "Арендодатель отметил {month} как ожидающий.",
-  "@logMarkedAsPending": {"placeholders": {"month": {"type": "String"}}},
-  "logAutoApproved": "Оплата за {month} была автоматически подтверждена через 5 дней.",
-  "@logAutoApproved": {"placeholders": {"month": {"type": "String"}}},
+  "logRentDeclared": "Арендатор сообщил об оплате за {month}.",
+  "@logRentDeclared": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logRentApproved": "Собственник подтвердил оплату за {month}.",
+  "@logRentApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logRentRejected": "Собственник отклонил подтверждение оплаты за {month}.",
+  "@logRentRejected": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logMarkedAsPaid": "Собственник отметил {month} как оплаченный.",
+  "@logMarkedAsPaid": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logMarkedAsPending": "Собственник вернул {month} в статус ожидания.",
+  "@logMarkedAsPending": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logAutoApproved": "Система автоматически подтвердила оплату за {month} через 5 дней.",
+  "@logAutoApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "activity": "Активность",
-  "noContractsTitle": "Договоров пока нет",
-  "noContractsMessage": "Сначала пригласите арендатора.",
+  "noContractsTitle": "Нет активных договоров",
+  "noContractsMessage": "Чтобы отслеживать аренду и расходы, сначала добавьте договор и пригласите жильца.",
   "inviteFirstTenant": "Пригласить арендатора",
   "confirmCancelInvitationTitle": "Отменить приглашение",
-  "confirmCancelInvitationMessage": "Вы уверены, что хотите отменить?",
+  "confirmCancelInvitationMessage": "Вы уверены, что хотите отменить приглашение?",
   "confirmDeclineRevisionTitle": "Отклонить запрос на изменение",
-  "confirmDeclineRevisionMessage": "Вы уверены, что хотите отклонить запрос?",
+  "confirmDeclineRevisionMessage": "Вы уверены, что хотите отклонить предложение жильца об изменениях? Договор останется на прежних условиях.",
   "activeContract": "Активный договор",
   "activeLease": "АКТИВНАЯ АРЕНДА",
   "invitationSent": "Приглашение отправлено",
   "accept": "Принять",
   "decline": "Отклонить",
-  "declineRevisionRequest": "Отклонить запрос",
-  "pendingHeader": "В ОЖИДАНИИ",
-  "awaitingHeader": "ОЖИДАЕТСЯ",
+  "declineRevisionRequest": "Отклонить изменения",
+  "pendingHeader": "ЖДЕТ ОПЛАТЫ",
+  "awaitingHeader": "НА ПРОВЕРКЕ",
+  "awaitingExplanation": "Требуется подтверждение арендодателя, чтобы отметить как оплачено.",
   "paidHeader": "ОПЛАЧЕНО",
-  "waitingForTenantPayment": "Ожидание оплаты арендатора",
-  "waitingForYourApproval": "Ожидание вашего подтверждения",
-  "waitingForOwnerApproval": "Ожидание подтверждения владельца",
-  "waitingForYourPayment": "Ожидание вашей оплаты",
-  "processCompleted": "Процесс завершен",
-  "declared": "заявлено",
+  "waitingForTenantPayment": "Ожидает оплаты жильцом",
+  "waitingForYourApproval": "Ожидает вашего подтверждения",
+  "waitingForOwnerApproval": "Ожидает подтверждения владельца",
+  "waitingForYourPayment": "Ожидает вашей оплаты",
+  "processCompleted": "Готово",
+  "declared": "сообщено",
   "sent": "отправлено",
-  "noInvoice": "Нет квитанции",
-  "uploadInvoice": "Загрузить квитанцию",
-  "awaitingInvoice": "Ожидание счета",
+  "noInvoice": "Чек не загружен",
+  "uploadInvoice": "Загрузить чек",
+  "awaitingInvoice": "Ожидается чек",
   "updateLabel": "Обновить",
   "statusVacant": "Свободно",
-  "pendingApproval": "ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ",
+  "pendingApproval": "НА ПРОВЕРКЕ",
   "targetRent": "ЦЕЛЕВАЯ АРЕНДА",
-  "contractInfo": "Инфо о договоре",
-  "term": "Срок",
-  "dueDay": "День оплаты",
+  "contractInfo": "О договоре",
+  "term": "Срок аренды",
+  "dueDay": "День платежа",
   "contractDetails": "Детали договора",
-  "pastContracts": "Прошлые договоры",
-  "previousLeasesCount": "{count} прошлых договоров",
-  "@previousLeasesCount": {"placeholders": {"count": {"type": "int"}}},
-  "propertySettingsLabel": "Настройки недвижимости",
-  "propertyActions": "Действия",
-  "leavePropertyConfirm": "Вы хотите покинуть эту недвижимость?",
-  "leaveProperty": "Покинуть недвижимость",
+  "pastContracts": "История договоров",
+  "previousLeasesCount": "{count, plural, one{{count} прошлый договор} few{{count} прошлых договора} other{{count} прошлых договоров}}",
+  "@previousLeasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "propertySettingsLabel": "Настройки жилья",
+  "propertyActions": "Действия с объектом",
+  "leavePropertyConfirm": "Вы уверены, что хотите покинуть этот объект?",
+  "leaveProperty": "Покинуть жилье",
   "areYouSure": "Вы уверены?",
   "pendingInvitations": "Ожидающие приглашения",
   "contractSettings": "Настройки договора",
-  "activeContractTermsInfo": "Условия активного договора.",
-  "dueDayOfMonth": "День месяца для оплаты",
+  "activeContractTermsInfo": "Условия активного договора. Любые изменения вступят в силу только после подтверждения обеими сторонами.",
+  "dueDayOfMonth": "День оплаты в месяце",
   "startDate": "Дата начала",
   "endDate": "Дата окончания",
-  "taxConfiguration": "Настройки налогов",
+  "taxConfiguration": "Налог",
   "included": "Включено",
   "addedVat": "Добавлено (+15%)",
   "expensesHeader": "РАСХОДЫ",
   "extraPayment": "Дополнительный платеж",
-  "utility": "Коммунальные",
-  "owner": "Владелец",
-  "proposeChangesInfo": "Изменения будут отправлены на подтверждение {role}.",
-  "@proposeChangesInfo": {"placeholders": {"role": {"type": "String"}}},
+  "utility": "Коммунальные услуги",
+  "owner": "Собственник",
+  "proposeChangesInfo": "Изменения будут отправлены на подтверждение {role}. Прежние условия действуют, пока новые не приняты.",
+  "@proposeChangesInfo": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
   "proposeChanges": "Предложить изменения",
-  "declarePayment": "Заявить об оплате",
+  "declarePayment": "Сообщить об оплате",
   "uploadReceipt": "Загрузить чек",
   "paidInCash": "Оплачено наличными",
-  "noFinancialRecords": "Финансовых записей пока нет",
-  "noActiveContract": "Договор не загружен",
-  "contractTermsInfo": "Активные условия договора.",
+  "noFinancialRecords": "Нет истории платежей",
+  "noActiveContract": "Нет загруженного договора",
+  "contractTermsInfo": "Условия договора. Любые изменения вступят в силу только после согласия обеих сторон.",
   "send": "Отправить",
-  "totalRent": "Итого",
-  "infoTooltip": "Покрывает общие коммунальные услуги.",
+  "totalRent": "Итого к оплате",
+  "infoTooltip": "Покрывает общие коммунальные услуги (отопление, вода, вывоз мусора).",
   "electricityTooltip": "Индивидуальное потребление электроэнергии.",
   "internetTooltip": "Интернет и ТВ.",
-  "maintenanceTooltip": "Обслуживание здания.",
-  "declare": "Заявить",
-  "viewReceipt": "Смотреть чек",
-  "proposesChanges": "{name} предлагает изменения:",
-  "@proposesChanges": {"placeholders": {"name": {"type": "String"}}},
-  "awaitingApprovalInfo": "Ваше предложение ожидает подтверждения.",
-  "propertyDetails": "ДЕТАЛИ НЕДВИЖИМОСТИ",
+  "maintenanceTooltip": "Обслуживание дома (уборка подъезда, лифт и т.д.).",
+  "declare": "Сообщить",
+  "viewReceipt": "Посмотреть чек",
+  "proposesChanges": "{name} предлагает следующие изменения:",
+  "@proposesChanges": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "awaitingApprovalInfo": "Ваше предложение об изменениях ожидает подтверждения второй стороны.",
+  "propertyDetails": "ДЕТАЛИ ОБЪЕКТА",
   "defaultLeaseTerms": "УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ",
-  "defaultLeaseTermsSubtitle": "Используются как шаблон для новых приглашений.",
+  "defaultLeaseTermsSubtitle": "Используются как шаблон для новых приглашений арендаторов.",
   "invalidNumber": "Неверный номер",
-  "enterDayBetween1and31": "Введите число от 1 до 31",
+  "enterDayBetween1and31": "Введите день с 1 по 31",
   "expenseConfiguration": "НАСТРОЙКА РАСХОДОВ",
   "expenseInfostan": "Инфостан",
   "expenseElectricity": "Электричество",
   "expenseInternetTV": "Интернет/ТВ",
-  "expenseMaintenance": "Обслуживание здания",
+  "expenseMaintenance": "Обслуживание дома",
   "expenseTax": "Налог",
-  "tenantPaysTo": "Арендатор платит:",
+  "tenantPaysTo": "Кому платит арендатор:",
   "fileSelected": "Файл выбран",
-  "selectInvoice": "Выбрать счет",
+  "selectInvoice": "Прикрепить счет",
   "amount": "Сумма",
   "setAmountAndUploadInvoice": "Введите данные счета",
   "save": "Сохранить",
-  "paymentDeclared": "Оплата успешно заявлена.",
-  "dashboard": "Панель",
+  "paymentDeclared": "Уведомление об оплате отправлено.",
+  "dashboard": "Мое жилье",
   "parties": "СТОРОНЫ",
-  "tenantEmail": "Почта арендатора",
-  "existingContractTermsInfo": "Существующие условия договора будут применяться.",
+  "tenantEmail": "Email арендатора",
+  "existingContractTermsInfo": "Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).",
   "rentAndPayment": "АРЕНДА И ОПЛАТА",
   "datesAndContract": "ДАТЫ И ДОГОВОР",
   "expenseSettingsHeader": "НАСТРОЙКИ РАСХОДОВ",
-  "editContract": "Изменить договор",
+  "editContract": "Редактировать договор",
   "sendRevision": "Отправить изменения",
-  "revisionSent": "Изменения отправлены",
-  "existingFileKept": "Существующий файл сохранен",
+  "revisionSent": "Предложение об изменениях отправлено.",
+  "existingFileKept": "Текущий файл сохранен",
   "done": "Готово",
   "startAndEndDatesMandatory": "Даты начала и окончания обязательны",
-  "revisionRequested": "Запрошены изменения",
+  "revisionRequested": "Требуются изменения",
   "statusActive": "Активно",
-  "statusPending": "Ожидает подтверждения",
+  "statusPending": "На проверке",
   "statusDeclined": "Отклонено",
   "statusExpired": "Истекло",
   "statusNegotiating": "Переговоры",
-  "tenantPaysLandlord": "Арендатор платит арендодателю",
-  "tenantPaysUtility": "Арендатор платит за услуги",
+  "tenantPaysLandlord": "Арендатор платит собственнику",
+  "tenantPaysUtility": "Арендатор платит напрямую службам",
   "includedInRent": "Включено в аренду",
   "changesAccepted": "Изменения приняты",
   "changesDeclined": "Изменения отклонены",
-  "contractChangeProposal": "Предложение об изменении",
-  "cancelProposal": "Отменить предложение",
+  "contractChangeProposal": "Предложение об изменении договора",
+  "cancelProposal": "Отозвать предложение",
   "viewInvoice": "Посмотреть счет",
   "decline": "Отклонить",
   "accept": "Принять",
-  "paymentResponsibility": "ОТВЕТСТВЕННОСТЬ ЗА ОПЛАТУ",
-  "tenantPaysDirectlyToUtility": "Арендатор платит напрямую",
-  "tenantPaysToLandlord": "Арендатор платит арендодателю",
-  "selectPaymentReceiverWarning": "Выберите получателя платежа.",
+  "paymentResponsibility": "КТО ОПЛАЧИВАЕТ РАСХОДЫ",
+  "tenantPaysDirectlyToUtility": "Арендатор платит напрямую службам",
+  "tenantPaysToLandlord": "Арендатор платит собственнику (вместе с арендой)",
+  "selectPaymentReceiverWarning": "Пожалуйста, выберите, кому оплачивается этот счет.",
   "progressSummary": "{completed} / {total} оплачено • {sent} отправлено",
-  "@progressSummary": {"placeholders": {"completed": {"type": "int"}, "total": {"type": "int"}, "sent": {"type": "int"}}},
-  "maintenance": "Обслуживание",
+  "@progressSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "sent": {
+        "type": "int"
+      }
+    }
+  },
+  "maintenance": "Ремонт / Проблемы",
   "issues": "Проблемы",
-  "newRequest": "Новый запрос",
+  "newRequest": "Новая заявка",
   "reportIssue": "Сообщить о проблеме",
   "issueTitle": "Заголовок",
   "issueDescription": "Описание",
-  "issueCategory": "Категория",
+  "issueCategory": "Kатегория",
   "issuePriority": "Приоритет",
-  "statusInvestigating": "Рассматривается",
+  "statusInvestigating": "В процессе",
   "statusResolved": "Решено",
   "priorityNormal": "Обычный",
   "priorityUrgent": "Срочный",
@@ -269,125 +349,200 @@
   "categoryHeating": "Отопление",
   "categoryInternet": "Интернет",
   "categoryOther": "Другое",
-  "noIssuesTitle": "Проблем пока нет",
-  "noIssuesMessage": "Все отлично!",
-  "updateStatus": "Обновить статус",
-  "issueDetails": "Детали проблемы",
-  "logMaintenanceCreated": "Запрос на обслуживание создан: {title}",
-  "@logMaintenanceCreated": {"placeholders": {"title": {"type": "String"}}},
-  "logMaintenanceStatusUpdated": "Статус обновлен на {status}",
-  "@logMaintenanceStatusUpdated": {"placeholders": {"status": {"type": "String"}}},
-  "logMaintenanceReopened": "Запрос открыт заново",
-  "logMaintenanceMessageAdded": "Новое сообщение добавлено",
+  "noIssuesTitle": "Нет активных проблем",
+  "noIssuesMessage": "Всё отлично! Для этого жилья не зарегистрировано проблем.",
+  "updateStatus": "Изменить статус",
+  "issueDetails": "Описание проблемы",
+  "logMaintenanceCreated": "Зарегистрирована новая проблема: {title}",
+  "@logMaintenanceCreated": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "logMaintenanceStatusUpdated": "Статус поправки изменен на {status}",
+  "@logMaintenanceStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "logMaintenanceReopened": "Проблема открыта повторно",
+  "logMaintenanceMessageAdded": "Добавлено сообщение по проблеме",
   "notifications": "Уведомления",
   "markAllAsRead": "Отметить все как прочитанные",
-  "noNotifications": "Нет уведомлений",
+  "noNotifications": "Нет новых уведомлений",
   "documents": "Документы",
   "mainContract": "Основной договор",
   "addDocument": "Добавить документ",
-  "enterDocumentName": "Введите имя документа",
-  "noDocumentsYet": "Документов пока нет",
+  "enterDocumentName": "Название документа",
+  "noDocumentsYet": "Нет загруженных документов",
   "additionalDocuments": "Дополнительные документы",
   "deleteDocument": "Удалить документ",
-  "deleteDocumentConfirm": "Вы уверены, что хотите удалить?",
-  "uploadMainContract": "Загрузить договор",
+  "deleteDocumentConfirm": "Вы уверены, что хотите удалить этот документ?",
+  "uploadMainContract": "Прикрепить договор",
   "manageDocuments": "Управление документами",
-  "monthlyCollected": "Собрано",
+  "monthlyCollected": "Получено",
   "totalRentShort": "Аренда",
   "delays": "Задержки",
   "vacant": "Свободно",
-  "overdueReceivables": "Просрочено",
-  "collectedByType": "Собрано",
+  "overdueReceivables": "Неоплаченные",
+  "collectedByType": "Виды оплат",
   "propertiesCount": "{count, plural, one{{count} объект} few{{count} объекта} other{{count} объектов}}",
   "hasDebt": "Есть долг",
-  "paymentAwaitingApproval": "Ожидает подтверждения",
+  "paymentAwaitingApproval": "Ожидает проверки",
   "rent": "Аренда",
   "bills": "Счета",
-  "waiting": "Ожидание",
+  "waiting": "Ожидается",
   "debtLabel": "Долг",
+  "totalDebt": "Общий долг",
   "paidLabel": "Оплачено",
   "enterBill": "Ввести счет",
-  "addContractAndTenant": "Добавить договор и арендатора",
+  "addContractAndTenant": "Добавить договор и жильца",
   "approve": "Подтвердить",
   "reject": "Отклонить",
   "confirmApprovePaymentTitle": "Подтвердить оплату",
-  "confirmApprovePaymentMessage": "Вы уверены, что хотите подтвердить?",
+  "confirmApprovePaymentMessage": "Вы уверены, что хотите подтвердить этот платеж?",
   "confirmRejectPaymentTitle": "Отклонить оплату",
-  "confirmRejectPaymentMessage": "Вы уверены, что хотите отклонить?",
+  "confirmRejectPaymentMessage": "Вы уверены, что хотите отклонить это уведомление об оплате и попросить жильца отправить его заново?",
   "confirm": "Подтвердить",
   "terminateContract": "Расторгнуть договор",
   "terminationDate": "Дата расторжения",
   "confirmTerminationTitle": "Расторгнуть договор?",
-  "confirmTerminationMessage": "Вы уверены, что хотите расторгнуть договор?",
-  "terminationRequestSent": "Запрос на расторжение отправлен.",
-  "statusInactive": "Неактивно",
-  "terminationRequested": "Ожидает расторжения",
+  "confirmTerminationMessage": "Вы уверены, что хотите отправить запрос на расторжение договора на выбранную дату?",
+  "terminationRequestSent": "Запрос на расторжение договора отправлен.",
+  "statusInactive": "Завершен",
+  "terminationRequested": "Расторжение на рассмотрении",
   "approveTermination": "Подтвердить расторжение",
   "declineTermination": "Отклонить расторжение",
   "contractTerminatedOn": "Договор расторгнут: {date}",
   "contractWillEndOn": "Договор закончится: {date}",
-  "@contractWillEndOn": {"placeholders": {"date": {"type": "String"}}},
-  "@propertiesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@contractWillEndOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@propertiesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "dispute": "Спор",
   "disputeReason": "Причина спора",
-  "disputeReasonHint": "Введите причину спора...",
+  "disputeReasonHint": "Опишите причину спора...",
   "disputedHeader": "ОСПОРЕНО",
   "logRentDisputed": "Арендатор оспорил платеж за {month}: {reason}",
-  "@logRentDisputed": {"placeholders": {"month": {"type": "String"}, "reason": {"type": "String"}}},
+  "@logRentDisputed": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "confirmDisputeTitle": "Оспорить платеж",
-  "disputeSentSuccess": "Ваш спор отправлен арендодателю.",
-  "takeAction": "Действовать",
-  "ownerNote": "Заметка владельца",
-  "explanationOptional": "Объяснение (необязательно)",
+  "disputeSentSuccess": "Ваш спор по оплате отправлен собственнику.",
+  "takeAction": "Выбрать действие",
+  "ownerNote": "Заметка собственника",
+  "explanationOptional": "Комментарий (необязательно)",
   "explanationHint": "Например: Проверил счетчик...",
   "units": "Единицы",
-  "tenantsLabel": "Арендаторы",
-  "portfolioManagement": "Управление портфелем",
-  "paymentRequests": "Платежи и запросы",
+  "tenantsLabel": "Жильцы",
+  "portfolioManagement": "Мои объекты",
+  "paymentRequests": "Запросы и платежи",
   "profileSettings": "Настройки профиля",
-  "confirmSignOutMessage": "Вы уверены, что хотите выйти?",
+  "confirmSignOutMessage": "Вы уверены, что хотите выйти из аккаунта?",
   "errorWithDetails": "Ошибка: {error}",
-  "@errorWithDetails": {"placeholders": {"error": {"type": "String"}}},
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "syncError": "Ошибка синхронизации: {error}",
-  "@syncError": {"placeholders": {"error": {"type": "String"}}},
-  "acceptTermsWarning": "Пожалуйста, примите условия перед продолжением.",
-  "maintenanceRequestSuccess": "Запрос на обслуживание успешно отправлен.",
+  "@syncError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptTermsWarning": "Пожалуйста, примите условия использования для продолжения.",
+  "maintenanceRequestSuccess": "Проблема успешно зарегистрирована.",
   "ok": "ОК",
   "orLabel": "ИЛИ",
   "errorUploadingPhoto": "Ошибка загрузки фото: {error}",
-  "@errorUploadingPhoto": {"placeholders": {"error": {"type": "String"}}},
+  "@errorUploadingPhoto": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorUpdatingStatus": "Ошибка обновления статуса: {error}",
-  "@errorUpdatingStatus": {"placeholders": {"error": {"type": "String"}}},
-  "errorReopeningRequest": "Ошибка переоткрытия запроса: {error}",
-  "@errorReopeningRequest": {"placeholders": {"error": {"type": "String"}}},
+  "@errorUpdatingStatus": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorReopeningRequest": "Ошибка открытия запроса: {error}",
+  "@errorReopeningRequest": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorOpeningDetails": "Не удалось открыть детали: {error}",
-  "@errorOpeningDetails": {"placeholders": {"error": {"type": "String"}}},
+  "@errorOpeningDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "nextPayment": "Следующий платеж",
-  "payNow": "Оплатить сейчас",
-  "upcomingLabel": "Ближайшие",
+  "payNow": "Сообщить об оплате",
+  "upcomingLabel": "Предстоящие",
   "joinPropertyInvitation": "Приглашение присоединиться к недвижимости",
-  "feedbackSent": "Отзыв отправлен",
+  "feedbackSent": "Спасибо за ваш отзыв!",
   "rentalProposal": "Предложение об аренде",
-  "reviewContractTerms": "Пожалуйста, проверьте условия договора.",
+  "reviewContractTerms": "Пожалуйста, ознакомьтесь с условиями договора.",
   "expenseDistribution": "Распределение расходов",
-  "yourNote": "Ваша заметка:",
-  "backToDashboard": "Назад к панели",
-  "propertyDetailsHeader": "ДЕТАЛИ НЕДВИЖИМОСТИ",
+  "yourNote": "Ваш комментарий:",
+  "backToDashboard": "На главную",
+  "propertyDetailsHeader": "ДЕТАЛИ ОБЪЕКТА",
   "defaultLeaseTermsHeader": "УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ",
-  "defaultLeaseTermsSubtitle": "Используются как шаблон для новых приглашений.",
   "proposeRevision": "Предложить изменения",
-  "revisionTermsQuestion": "Какие условия вы хотите изменить?",
-  "enterNotesHint": "Введите ваши заметки здесь...",
+  "revisionTermsQuestion": "Какие условия вы хотите изменить? (Аренда, день оплаты, счета...)",
+  "enterNotesHint": "Введите ваш комментарий здесь...",
   "submit": "Отправить",
-  "invitedToJoinProperty": "Вас пригласили присоединиться к {property}.",
-  "@invitedToJoinProperty": {"placeholders": {"property": { "type": "String" }}},
-  "waitingForLandlord": "Ожидание ответа арендодателя...",
+  "invitedToJoinProperty": "Вас пригласили заселиться в {property}.",
+  "@invitedToJoinProperty": {
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingForLandlord": "Ожидание ответа собственника...",
   "day": "День",
   "notSelected": "Не выбрано",
-  "acceptTermsAndDistribution": "Я принимаю условия договора и распределение расходов.",
+  "acceptTermsAndDistribution": "Я принимаю условия договора и распределение счетов.",
   "datesMandatory": "Даты начала и окончания обязательны",
   "partiesHeader": "СТОРОНЫ",
-  "leaseLockedWarning": "Существующие условия договора будут применяться.",
+  "leaseLockedWarning": "Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).",
   "rentPaymentHeader": "АРЕНДА И ОПЛАТА",
   "loadingPlaceholder": "Загрузка...",
   "photos": "Фото",
@@ -396,47 +551,65 @@
   "viewAll": "Посмотреть все",
   "ended": "Завершено",
   "plannedEnd": "Планируемое окончание: {date}",
-  "@plannedEnd": {"placeholders": {"date": { "type": "String" }}},
+  "@plannedEnd": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "yourApartment": "Ваша квартира",
   "commentHint": "Добавить комментарий...",
   "issueResolvedStatus": "Проблема отмечена как решенная.",
-  "reopenIssue": "Все еще проблема (Переоткрыть)",
+  "reopenIssue": "Проблема не решена (Открыть заново)",
   "deleteRequest": "Удалить запрос",
   "terminationApproved": "Расторжение подтверждено",
   "paymentDeclaredHand": "Платеж объявлен как переданный лично.",
   "fileUnreadable": "Не удалось прочитать файл.",
-  "paymentDeclaredSuccess": "Оплата {title} успешно заявлена.",
-  "@paymentDeclaredSuccess": {"placeholders": {"title": { "type": "String" }}},
+  "paymentDeclaredSuccess": "Уведомление об оплате {title} отправлено.",
+  "@paymentDeclaredSuccess": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "setAmountUploadInvoice": "Введите данные счета",
   "yourMessage": "Ваше сообщение:",
-  "revisionRequestLabel": "Запрос на изменение:",
+  "revisionRequestLabel": "Запрос на изменения:",
   "noActivityLogs": "Логов активности пока нет",
-  "landlordProposedChanges": "Арендодатель предложил изменения. Нажмите для просмотра.",
-  "tenantProposedChanges": "Арендатор предложил изменения. Нажмите для просмотра.",
+  "landlordProposedChanges": "Собственник предложил изменения в договоре. Нажмите для просмотра.",
+  "tenantProposedChanges": "Жилец предложил изменения в договоре. Нажмите для просмотра.",
   "dueOn": "Оплатить до {date}",
-  "@dueOn": {"placeholders": {"date": { "type": "String" }}},
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "item": "предмет",
   "items": "предметов",
-  "waitingForOtherParty": "Ожидание подтверждения другой стороны...",
+  "waitingForOtherParty": "Ожидание подтверждения второй стороны...",
   "awaitingApproval": "Ожидание подтверждения...",
   "contract": "Договор",
   "paidOn": "Оплачено {date}",
   "cannotInviteSelf": "Вы не можете пригласить сами себя.",
   "paywallTitle": "Stanomer Premium",
-  "paywallSubtitle": "Снимите ограничения в управлении недвижимостью.",
+  "paywallSubtitle": "Управляйте объектами без ограничений.",
   "unlimitedProperties": "Неограниченное управление недвижимостью",
   "detailedReporting": "Быстрая и подробная отчетность",
   "extraStorage": "Больше места для хранения",
   "pdfContracts": "Создание PDF-договоров (Скоро)",
-  "automatedRenewal": "Автоматический расчет и продление (Скоро)",
+  "automatedRenewal": "Автоматический расчет аренды (Скоро)",
   "restorePurchases": "Восстановить покупки",
   "limitReachedTitle": "Вы достигли бесплатного лимита",
   "limitReachedSubtitle": "Перейдите на Stanomer Premium для управления несколькими объектами.",
-  "discoverPremium": "Откройте Premium",
+  "discoverPremium": "Попробовать Premium",
   "optionsLoadFailed": "Не удалось загрузить варианты подписки.",
   "manageSubscription": "Управление подпиской",
   "premiumMobileOnly": "Требуется мобильное приложение",
-  "premiumMobileOnlyDesc": "Подписки Stanomer Premium можно приобрести только через мобильное приложение.",
+  "premiumMobileOnlyDesc": "Подписку Stanomer Premium можно приобрести только в мобильном приложении. Скачайте его по ссылкам ниже.",
   "downloadOnAppStore": "Загрузить в App Store",
   "downloadOnPlayStore": "Доступно в Google Play",
   "premiumFeatures": "Премиум-функции",
@@ -445,33 +618,39 @@
   "premiumFeature3": "Приоритетная поддержка",
   "premiumFeature4": "Доступ на всех платформах",
   "termsOfService": "Условия обслуживания",
-  "termsOfServiceContent": "Stanomer – Пользовательское соглашение и условия использования...",
+  "termsOfServiceContent": "Stanomer – Пользовательское соглашение и условия использования\nПоследнее обновление: 23 апреля 2026\n\n1. Введение\nНастоящее Пользовательское соглашение («Соглашение») регулирует отношения между Вами («Пользователь») и приложением Stanomer. Устанавливая или используя приложение, Вы соглашаетесь с условиями настоящего Соглашения.\n\n2. Условия Apple и Google\nApple App Store: Данное Соглашение заключено исключительно между Пользователем и Stanomer. Настоящее Соглашение включает Стандартное лицензионное соглашение с конечным пользователем Apple (Standard EULA) посредством ссылки: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Данное Соглашение заключено исключительно между Пользователем и Stanomer.\n\nВы подтверждаете, что Apple и Google не несут никаких обязательств по техническому обслуживанию и поддержке приложения.\n\n3. Подписка и оплата\nОплата: Оплата списывается с Вашего аккаунта iTunes или Google Play после подтверждения покупки.\n\nПродление: Подписка продлевается автоматически, если автопродление не отключено как минимум за 24 часа до окончания текущего периода.\n\nУправление: Вы можете управлять подписками или отключить автопродление в настройках аккаунта после совершения покупки.\n\n4. Контент пользователя и правила поведения\nВы несете полную ответственность за вводимые Вами данные (суммы аренды, отчеты о неисправностях, договоры).\n\nЗапрещено загружать незаконный, оскорбительный или нарушающий чьи-либо права контент.\n\nStanomer оставляет за собой право удалить любой контент, нарушающий законы Республики Сербии или условия настоящего Соглашения.\n\n5. Конфиденциальность и защита данных (ZZPL, GDPR, KVKK)\nЗакон Сербии (ZZPL): Закон о защите персональных данных.\n\nGDPR: Общий регламент по защите данных (ЕС).\n\nKVKK: Закон о защите персональных данных (Турция).\n\nВаши данные защищены в соответствии с международными стандартами конфиденциальности независимо от Вашего местонахождения.\n\n6. Ограничение ответственности\nStanomer предоставляет платформу для управления арендой и не является стороной договоров аренды между собственниками и жильцами. Мы не несем ответственности за споры между пользователями или за транзакции, совершенные вне платформы.\n\n7. Прекращение действия соглашения\nСоглашение действует до тех пор, пока не будет расторгнуто Вами или Stanomer. Ваши права по данной лицензии автоматически аннулируются в случае нарушения любого из условий.",
   "support_title": "Поддержка",
-  "support_desc": "Свяжитесь с нами.",
+  "support_desc": "Свяжитесь с нами, если у вас возникли вопросы или есть отзыв.",
   "subject": "Тема",
   "category": "Категория",
   "message": "Сообщение",
   "support": "Поддержка",
   "bug": "Ошибка",
   "other": "Другое",
-  "messageSent": "Сообщение успешно отправлено!",
-  "errorSendingMessage": "Не удалось отправить сообщение.",
+  "messageSent": "Сообщение отправлено!",
+  "errorSendingMessage": "Не удалось отправить сообщение. Пожалуйста, попробуйте еще раз.",
   "requiredField": "Это поле обязательно",
   "invalidEmail": "Неверный адрес эл. почты",
-  "offlineMessage": "Вы сейчас не в сети.",
+  "offlineMessage": "Вы сейчас не в сети. Данные будут синхронизированы при подключении.",
   "retry": "ПОВТОРИТЬ",
-  "zzplConsentTitle": "Согласие на защиту данных",
-  "zzplAgreeAndContinue": "Я прочитал(а) и одобряю",
+  "zzplConsentTitle": "Защита персональных данных (ZZPL)",
+  "zzplAgreeAndContinue": "Принять и продолжить",
   "share": "Поделиться",
   "optional": "Необязательно",
   "sentInvitation": "Приглашение отправлено",
   "invitedOn": "Приглашен(а) {date}",
-  "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
+  "@invitedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "noEmailProvided": "Почта не указана",
-  "invoiceLocalOnlyDesc": "Документ сохраняется только на этом устройстве. Вы можете включить облачную загрузку в настройках.",
-  "invoiceCloudSecureDesc": "Документ надежно сохранен с шифрованием. Видеть его можете только вы и арендатор.",
-  "invoiceUploadLimitDesc": "PDF, JPG или PNG · макс. 10 МБ",
-  "billMissingLocalDesc": "Этот счет был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.",
-  "documentMissingLocalDesc": "Этот документ был сохранен локально на другом устройстве. Вы не можете просмотреть его здесь, так как загрузка в облако отключена.",
+  "invoiceLocalOnlyDesc": "Файл сохранен только на этом устройстве. Вы можете включить облачное резервное копирование в настройках.",
+  "invoiceCloudSecureDesc": "Файл надежно сохранен в облаке. Доступ есть только у вас и жильца.",
+  "invoiceUploadLimitDesc": "JPEG, PNG или PDF · макс. 10 МБ",
+  "billMissingLocalDesc": "Файл сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.",
+  "documentMissingLocalDesc": "Документ сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.",
   "cannotOpenDocument": "Не удалось открыть документ"
 }

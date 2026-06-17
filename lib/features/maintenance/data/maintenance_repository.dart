@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../domain/maintenance_message.dart';
+import '../../../core/utils/stream_utils.dart';
 
 final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
   return MaintenanceRepository(Supabase.instance.client);
@@ -25,13 +26,16 @@ class MaintenanceRepository {
   MaintenanceRepository(this._client);
 
   Stream<List<MaintenanceRequest>> getMaintenanceRequestsStream(String propertyId) {
-    return _client
-        .from('maintenance_requests')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId)
-        .order('created_at', ascending: false)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>)).toList());
+    return resilientStream(
+      () => _client
+          .from('maintenance_requests')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getMaintenanceRequestsStream($propertyId)',
+    );
   }
 
   Future<MaintenanceRequest?> getMaintenanceRequest(String requestId) async {
@@ -46,13 +50,16 @@ class MaintenanceRepository {
   }
 
   Stream<List<MaintenanceMessage>> getMaintenanceMessagesStream(String requestId) {
-    return _client
-        .from('maintenance_messages')
-        .stream(primaryKey: ['id'])
-        .eq('request_id', requestId)
-        .order('created_at', ascending: true)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => MaintenanceMessage.fromJson(json as Map<String, dynamic>)).toList());
+    return resilientStream(
+      () => _client
+          .from('maintenance_messages')
+          .stream(primaryKey: ['id'])
+          .eq('request_id', requestId)
+          .order('created_at', ascending: true)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceMessage.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getMaintenanceMessagesStream($requestId)',
+    );
   }
 
   Future<String> uploadMaintenancePhoto({

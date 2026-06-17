@@ -1,30 +1,61 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:stanomer/main.dart';
+import 'package:stanomer/core/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('AppLocalizations loads correct translations for supported locales', (WidgetTester tester) async {
+    final localesToTest = [
+      const Locale('en'),
+      const Locale('tr'),
+      const Locale('sr'),
+      const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
+      const Locale('ru'),
+    ];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    for (final locale in localesToTest) {
+      String? resolvedAppTitle;
+      String? resolvedSelectRole;
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                resolvedAppTitle = l10n.appTitle;
+                resolvedSelectRole = l10n.selectRole;
+                return Text(l10n.appTitle);
+              },
+            ),
+          ),
+        ),
+      );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // Trigger a frame to settle the UI
+      await tester.pumpAndSettle();
+
+      expect(resolvedAppTitle, isNotNull);
+      expect(resolvedAppTitle!.isNotEmpty, true);
+      expect(resolvedSelectRole, isNotNull);
+      expect(resolvedSelectRole!.isNotEmpty, true);
+
+      // Verify specific translations match expectations for key locales
+      if (locale.languageCode == 'tr') {
+        expect(resolvedAppTitle, 'Stanomer');
+        expect(resolvedSelectRole, 'Rolünüzü seçin');
+      } else if (locale.languageCode == 'sr' && locale.scriptCode == 'Cyrl') {
+        expect(resolvedAppTitle, 'Станомер');
+        expect(resolvedSelectRole, 'Изаберите своју улогу');
+      } else if (locale.languageCode == 'sr' && locale.scriptCode == null) {
+        expect(resolvedAppTitle, 'Stanomer');
+        expect(resolvedSelectRole, 'Izaberi svoju ulogu');
+      } else if (locale.languageCode == 'ru') {
+        expect(resolvedAppTitle, 'Stanomer');
+        expect(resolvedSelectRole, 'Выберите вашу роль');
+      }
+    }
   });
 }

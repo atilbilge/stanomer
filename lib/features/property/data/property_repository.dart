@@ -10,6 +10,8 @@ import '../domain/activity_log.dart';
 import '../domain/landlord_stats.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../../core/utils/stream_utils.dart';
+
 
 enum RentStatus {
   debt,
@@ -131,11 +133,21 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
       int pendingC = 0;
       int awaitingC = 0;
 
+      // Current-month filter for paid amounts
+      final now2 = DateTime.now();
+      final thisMonthStart = DateTime(now2.year, now2.month, 1);
+      final nextMonthStart = DateTime(now2.year, now2.month + 1, 1);
+
       for (var p in payments) {
         final cur = p.currency;
         if (p.status == 'paid') {
-          paidTotals[cur] = (paidTotals[cur] ?? 0) + p.amount;
-          paidC++;
+          // Only count paid payments whose due date falls in the current month
+          final isThisMonth = !p.dueDate.isBefore(thisMonthStart) &&
+              p.dueDate.isBefore(nextMonthStart);
+          if (isThisMonth) {
+            paidTotals[cur] = (paidTotals[cur] ?? 0) + p.amount;
+            paidC++;
+          }
         } else if (p.status == 'declared') {
           awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + p.amount;
           awaitingC++;
@@ -434,13 +446,16 @@ class PropertyRepository {
   }
 
   Stream<Property?> getPropertyStream(String id) {
-    return _client
-        .from('properties')
-        .stream(primaryKey: ['id'])
-        .eq('id', id)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .map((rows) => rows.isEmpty ? null : Property.fromJson(rows.first));
+    return resilientStream(
+      () => _client
+          .from('properties')
+          .stream(primaryKey: ['id'])
+          .eq('id', id)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .map((rows) => rows.isEmpty ? null : Property.fromJson(rows.first)),
+      debugName: 'getPropertyStream($id)',
+    );
   }
 
   Stream<List<Property>> getPropertiesStream({required String userId, String? role}) {
@@ -450,39 +465,43 @@ class PropertyRepository {
       print('DEBUG [Stream]: Inclusive stream started for user $userId');
     }
 
-    final query = _client.from('properties').stream(primaryKey: ['id']);
-    
-    // Apply filters based on role
-    final filteredQuery = (role == 'landlord') 
-        ? query.eq('landlord_id', userId)
-        : (role == 'tenant') 
-            ? query.eq('tenant_id', userId)
-            : query;
+    return resilientStream(
+      () {
+        final query = _client.from('properties').stream(primaryKey: ['id']);
+        final filteredQuery = (role == 'landlord') 
+            ? query.eq('landlord_id', userId)
+            : (role == 'tenant') 
+                ? query.eq('tenant_id', userId)
+                : query;
 
-    return filteredQuery
-        .order('created_at')
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .map((data) {
-      try {
-        final properties = data.map((json) => Property.fromJson(json as Map<String, dynamic>)).toList();
-        
-        // Deduplicate by ID to prevent transient UI glitches during inserts/updates
-        final seen = <String>{};
-        return properties.where((p) => seen.add(p.id)).toList();
-      } catch (e) {
-        print('DEBUG: Property Mapping Error: $e');
-        throw Exception('Data mapping error: $e');
-      }
-    });
+        return filteredQuery
+            .order('created_at')
+            .cast<dynamic>()
+            .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+            .map((data) {
+          try {
+            final properties = data.map((json) => Property.fromJson(json as Map<String, dynamic>)).toList();
+            final seen = <String>{};
+            return properties.where((p) => seen.add(p.id)).toList();
+          } catch (e) {
+            print('DEBUG: Property Mapping Error: $e');
+            throw Exception('Data mapping error: $e');
+          }
+        });
+      },
+      debugName: 'getPropertiesStream($userId, $role)',
+    );
   }
 
   Stream<Map<String, dynamic>?> getProfileStream(String userId) {
-    return _client
-        .from('profiles')
-        .stream(primaryKey: ['id'])
-        .eq('id', userId)
-        .map((rows) => rows.isEmpty ? null : rows.first);
+    return resilientStream(
+      () => _client
+          .from('profiles')
+          .stream(primaryKey: ['id'])
+          .eq('id', userId)
+          .map((rows) => rows.isEmpty ? null : rows.first),
+      debugName: 'getProfileStream($userId)',
+    );
   }
 
   Future<void> createProperty({
@@ -603,14 +622,17 @@ class PropertyRepository {
 
 
   Stream<List<Contract>> getPropertyContractsStream(String propertyId) {
-    return _client
-        .from('contracts')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId)
-        .order('created_at')
-        .map((data) {
-      return data.map((json) => Contract.fromJson(json as Map<String, dynamic>)).toList();
-    });
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .order('created_at')
+          .map((data) {
+        return data.map((json) => Contract.fromJson(json as Map<String, dynamic>)).toList();
+      }),
+      debugName: 'getPropertyContractsStream($propertyId)',
+    );
   }
 
   Future<void> cancelInvite(String id) async {
@@ -921,25 +943,28 @@ class PropertyRepository {
   /// Real-time stream of the active (or revision_requested) contract for a property.
   /// Uses Supabase realtime so all connected clients receive push updates.
   Stream<Contract?> getActiveContractStream(String propertyId) {
-    return _client
-        .from('contracts')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .map((rows) {
-          final relevant = rows.where((r) {
-            final status = r['status'] as String?;
-            return status == 'active' || status == 'revision_requested' || status == 'termination_requested' || status == 'inactive' || status == 'pending' || status == 'negotiating';
-          }).toList();
-          if (relevant.isEmpty) return null;
-          relevant.sort((a, b) {
-            final aTime = a['updated_at'] as String? ?? '';
-            final bTime = b['updated_at'] as String? ?? '';
-            return bTime.compareTo(aTime);
-          });
-          return Contract.fromJson(relevant.first as Map<String, dynamic>);
-        });
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .map((rows) {
+            final relevant = rows.where((r) {
+              final status = r['status'] as String?;
+              return status == 'active' || status == 'revision_requested' || status == 'termination_requested' || status == 'inactive' || status == 'pending' || status == 'negotiating';
+            }).toList();
+            if (relevant.isEmpty) return null;
+            relevant.sort((a, b) {
+              final aTime = a['updated_at'] as String? ?? '';
+              final bTime = b['updated_at'] as String? ?? '';
+              return bTime.compareTo(aTime);
+            });
+            return Contract.fromJson(relevant.first as Map<String, dynamic>);
+          }),
+      debugName: 'getActiveContractStream($propertyId)',
+    );
   }
 
   /// Internal one-shot fetch (kept for use inside repository methods).
@@ -958,21 +983,24 @@ class PropertyRepository {
 
   /// Real-time stream of proposed_changes for a specific contract.
   Stream<Map<String, dynamic>?> getContractProposalStream(String contractId) {
-    return _client
-        .from('contracts')
-        .stream(primaryKey: ['id'])
-        .eq('id', contractId)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .map((rows) {
-          if (rows.isEmpty) return null;
-          final changes = rows.first['proposed_changes'] as Map<String, dynamic>?;
-          if (changes == null) return null;
-          return {
-            'changes': changes,
-            'proposed_by': rows.first['proposed_by'],
-          };
-        });
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('id', contractId)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .map((rows) {
+            if (rows.isEmpty) return null;
+            final changes = rows.first['proposed_changes'] as Map<String, dynamic>?;
+            if (changes == null) return null;
+            return {
+              'changes': changes,
+              'proposed_by': rows.first['proposed_by'],
+            };
+          }),
+      debugName: 'getContractProposalStream($contractId)',
+    );
   }
 
   /// Landlord proposes a contract change. Stores in proposed_changes; sets status revision_requested.
@@ -1102,26 +1130,32 @@ class PropertyRepository {
   }
 
   Stream<List<Map<String, dynamic>>> getPendingContractsStreamForEmail(String email) {
-    return _client
-        .from('contracts')
-        .stream(primaryKey: ['id'])
-        .eq('invitee_email', email.trim().toLowerCase())
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .asyncMap((rows) => _filterAndEnrichContracts(rows));
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('invitee_email', email.trim().toLowerCase())
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .asyncMap((rows) => _filterAndEnrichContracts(rows)),
+      debugName: 'getPendingContractsStreamForEmail($email)',
+    );
   }
 
   /// Apple "Hide My Email" için: invitee_email yerine tenant_id ile pending kontratları getir.
   /// Kiracı daveti kabul etmeden önce tenant_id boş olduğundan bu stream başlangıçta boş döner;
   /// Supabase RPC email doğrulamasını bypass edince tenant_id set edilir ve bu stream devreye girer.
   Stream<List<Map<String, dynamic>>> getPendingContractsStreamForUserId(String userId) {
-    return _client
-        .from('contracts')
-        .stream(primaryKey: ['id'])
-        .eq('tenant_id', userId)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .asyncMap((rows) => _filterAndEnrichContracts(rows));
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('tenant_id', userId)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .asyncMap((rows) => _filterAndEnrichContracts(rows)),
+      debugName: 'getPendingContractsStreamForUserId($userId)',
+    );
   }
 
   Future<List<Map<String, dynamic>>> _filterAndEnrichContracts(List<Map<String, dynamic>> rows) async {
@@ -1152,13 +1186,16 @@ class PropertyRepository {
   }
 
   Stream<List<Map<String, dynamic>>> getPendingInvitationsStreamForEmail(String email) {
-    return _client
-        .from('invitations')
-        .stream(primaryKey: ['id'])
-        .eq('invitee_email', email.trim().toLowerCase())
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .asyncMap((rows) => _filterAndEnrichInvitations(rows));
+    return resilientStream(
+      () => _client
+          .from('invitations')
+          .stream(primaryKey: ['id'])
+          .eq('invitee_email', email.trim().toLowerCase())
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .asyncMap((rows) => _filterAndEnrichInvitations(rows)),
+      debugName: 'getPendingInvitationsStreamForEmail($email)',
+    );
   }
 
   /// invitations tablosu bu projede kullanılmıyor; her şey contracts tablosunda yürüyor.
@@ -1204,33 +1241,36 @@ class PropertyRepository {
   }
 
   Stream<List<RentPayment>> getRentPaymentsStream(String propertyId) {
-    return _client
-        .from('rent_payments')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId)
-        .order('due_date', ascending: false)
-        .map((data) {
-      // Map to domain objects
-      final list = (data as List).map((json) => RentPayment.fromJson(json as Map<String, dynamic>)).toList();
-      
-      // Perform STABLE sort in Dart: due_date desc, created_at asc, id asc
-      list.sort((a, b) {
-        // Primary: due_date desc
-        int cmp = b.dueDate.compareTo(a.dueDate);
-        if (cmp != 0) return cmp;
+    return resilientStream(
+      () => _client
+          .from('rent_payments')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .order('due_date', ascending: false)
+          .map((data) {
+        // Map to domain objects
+        final list = (data as List).map((json) => RentPayment.fromJson(json as Map<String, dynamic>)).toList();
         
-        // Secondary: created_at asc
-        if (a.createdAt != null && b.createdAt != null) {
-          cmp = a.createdAt!.compareTo(b.createdAt!);
+        // Perform STABLE sort in Dart: due_date desc, created_at asc, id asc
+        list.sort((a, b) {
+          // Primary: due_date desc
+          int cmp = b.dueDate.compareTo(a.dueDate);
           if (cmp != 0) return cmp;
-        }
+          
+          // Secondary: created_at asc
+          if (a.createdAt != null && b.createdAt != null) {
+            cmp = a.createdAt!.compareTo(b.createdAt!);
+            if (cmp != 0) return cmp;
+          }
+          
+          // Tertiary: id asc (for absolute stability)
+          return a.id.compareTo(b.id);
+        });
         
-        // Tertiary: id asc (for absolute stability)
-        return a.id.compareTo(b.id);
-      });
-      
-      return list;
-    });
+        return list;
+      }),
+      debugName: 'getRentPaymentsStream($propertyId)',
+    );
   }
 
   Future<void> declareRentAsPaid(String paymentId, String propertyId, String monthName, DateTime dueDate, {String? receiptUrl, String? note}) async {
@@ -1464,16 +1504,19 @@ class PropertyRepository {
   }
 
   Stream<List<ActivityLog>> getActivityLogsStream(String propertyId) {
-    return _client
-        .from('activity_logs')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId)
-        .order('created_at', ascending: false)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-        .map((data) {
-      return data.map((json) => ActivityLog.fromJson(json as Map<String, dynamic>)).toList();
-    });
+    return resilientStream(
+      () => _client
+          .from('activity_logs')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .map((data) {
+        return data.map((json) => ActivityLog.fromJson(json as Map<String, dynamic>)).toList();
+      }),
+      debugName: 'getActivityLogsStream($propertyId)',
+    );
   }
 
   Future<void> _logActivity(String propertyId, String type, Map<String, dynamic> metadata) async {

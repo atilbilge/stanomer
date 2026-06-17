@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/widgets/bottom_sheet_wrapper.dart';
 
 Future<FilePickerResult?> pickContractFile(BuildContext context) async {
   final l = AppLocalizations.of(context)!;
@@ -26,33 +27,36 @@ Future<FilePickerResult?> pickContractFile(BuildContext context) async {
 
   final source = await showModalBottomSheet<String>(
     context: context,
+    isDismissible: false,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(
-                titleText,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      return ResilientBottomSheetWrapper(
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  titleText,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.fileText),
-              title: Text(pdfText),
-              onTap: () => Navigator.pop(ctx, 'pdf'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.image),
-              title: Text(imgText),
-              onTap: () => Navigator.pop(ctx, 'image'),
-            ),
-            const SizedBox(height: 8),
-          ],
+              ListTile(
+                leading: const Icon(LucideIcons.fileText),
+                title: Text(pdfText),
+                onTap: () => Navigator.pop(ctx, 'pdf'),
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.image),
+                title: Text(imgText),
+                onTap: () => Navigator.pop(ctx, 'image'),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       );
     },

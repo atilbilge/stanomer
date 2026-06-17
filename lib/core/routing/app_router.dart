@@ -80,18 +80,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/add-property',
         builder: (context, state) => AddPropertyScreen(
-          property: state.extra as Property?,
+          property: state.extra is Property
+              ? state.extra as Property
+              : (state.extra is Map<String, dynamic>
+                  ? Property.fromJson(state.extra as Map<String, dynamic>)
+                  : null),
         ),
       ),
       GoRoute(
         path: '/property-detail',
         builder: (context, state) {
+          // Guard: extra can be null if iOS cleared navigation state while the
+          // app was backgrounded / the tablet was sleeping. Fall back to the
+          // Dashboard so the user sees a clean state instead of a crash.
+          if (state.extra == null) return const DashboardScreen();
+
           if (state.extra is Property) {
-            return PropertyDetailScreen(property: state.extra as Property);
+            return PropertyDetailScreen(property: state.extra! as Property);
           }
+
           final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          if (property == null) return const DashboardScreen();
+
           return PropertyDetailScreen(
-            property: extras['property'] as Property,
+            property: property,
             initialTabIndex: extras['initialTabIndex'] as int? ?? 0,
           );
         },
@@ -99,9 +117,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/invite-tenant',
         builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
           final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          if (property == null) return const DashboardScreen();
           return InviteTenantScreen(
-            property: extras['property'] as Property,
+            property: property,
             existingContract: extras['contract'] as Contract?,
             leaseTemplate: extras['leaseTemplate'] as Contract?,
           );
@@ -115,22 +141,40 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/maintenance',
-        builder: (context, state) => MaintenanceScreen(
-          property: state.extra as Property,
-        ),
+        builder: (context, state) {
+          if (state.extra == null || state.extra is! Property) {
+            return const DashboardScreen();
+          }
+          return MaintenanceScreen(
+            property: state.extra! as Property,
+          );
+        },
       ),
       GoRoute(
         path: '/maintenance/new',
-        builder: (context, state) => CreateMaintenanceRequestScreen(
-          property: state.extra as Property,
-        ),
+        builder: (context, state) {
+          if (state.extra == null || state.extra is! Property) {
+            return const DashboardScreen();
+          }
+          return CreateMaintenanceRequestScreen(
+            property: state.extra! as Property,
+          );
+        },
       ),
       GoRoute(
         path: '/property-settings',
         builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
           final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          if (property == null) return const DashboardScreen();
           return PropertySettingsScreen(
-            property: extras['property'] as Property,
+            property: property,
             initialTab: extras['initialTab'] as String? ?? 'contract',
           );
         },
@@ -138,10 +182,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/maintenance/detail',
         builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
           final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          final request = extras['request'] as MaintenanceRequest?;
+          if (property == null || request == null) return const DashboardScreen();
           return MaintenanceDetailScreen(
-            property: extras['property'] as Property,
-            request: extras['request'] as MaintenanceRequest,
+            property: property,
+            request: request,
           );
         },
       ),

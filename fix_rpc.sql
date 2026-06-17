@@ -53,9 +53,9 @@ BEGIN
     AND status = 'pending'
     AND date_trunc('month', due_date) < date_trunc('month', v_start_date);
 
-  -- Generate rows from start to 1 month from now
+  -- Generate rows from start up to and including the CURRENT month (not future)
   v_current_date := (date_trunc('month', v_start_date) + (v_due_day - 1) * interval '1 day')::date;
-  v_end_date     := (date_trunc('month', now() + interval '1 month') + (v_due_day - 1) * interval '1 day')::date;
+  v_end_date     := (date_trunc('month', now()) + (v_due_day - 1) * interval '1 day')::date;
 
   WHILE v_current_date <= v_end_date LOOP
 

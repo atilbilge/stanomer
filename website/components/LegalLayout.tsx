@@ -3,9 +3,9 @@
 import React from "react";
 import { useLanguage } from "./LanguageProvider";
 import { Navbar } from "./Navbar";
-import { Crown, Trash2, ShieldCheck, FileText, Headphones } from "lucide-react";
+import { Crown, Trash2, ShieldCheck, FileText, Headphones, History } from "lucide-react";
 
-export function LegalLayout({ children, activeTab }: { children: React.ReactNode, activeTab: "privacy" | "terms" | "support" }) {
+export function LegalLayout({ children, activeTab }: { children: React.ReactNode, activeTab: "privacy" | "terms" | "support" | "changelog" }) {
   const { t } = useLanguage();
 
   return (
@@ -36,6 +36,15 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
           >
             <FileText className="w-4 h-4" />
             {t("terms_title")}
+          </a>
+          <a
+            href="/changelog"
+            className={`px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 ${
+              activeTab === "changelog" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            <History className="w-4 h-4" />
+            {t("footer_changelog")}
           </a>
           <a
             href="/support"
@@ -83,6 +92,14 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
             <img src="/assets/logo.png" alt="Stanomer Logo" className="w-6 h-6 object-contain" />
             <span className="font-bold text-sm text-gray-800">Stanomer</span>
           </div>
+
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-[12px] font-medium text-gray-500">
+            <a href="/privacy" className="hover:text-brand-blue transition-colors">{t("footer_privacy")}</a>
+            <a href="/terms" className="hover:text-brand-blue transition-colors">{t("footer_terms")}</a>
+            <a href="/changelog" className="hover:text-brand-blue transition-colors">{t("footer_changelog")}</a>
+            <a href="/support" className="hover:text-brand-blue transition-colors">{t("footer_support")}</a>
+          </div>
+
           <p className="text-gray-500 text-xs">
             © 2026 Stanomer. All rights reserved.
           </p>

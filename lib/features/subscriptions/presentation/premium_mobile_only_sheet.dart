@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/widgets/bottom_sheet_wrapper.dart';
 
 const _appStoreUrl = 'https://apps.apple.com/app/stanomer/idXXXXXXXXX'; // Replace with real App Store ID
 const _playStoreUrl = 'https://play.google.com/store/apps/details?id=com.aboptima.stanomer';
@@ -10,9 +11,12 @@ const _playStoreUrl = 'https://play.google.com/store/apps/details?id=com.aboptim
 void showPremiumMobileOnlySheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
+    isDismissible: false,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (ctx) => const _PremiumMobileOnlySheet(),
+    builder: (ctx) => const ResilientBottomSheetWrapper(
+      child: _PremiumMobileOnlySheet(),
+    ),
   );
 }
 

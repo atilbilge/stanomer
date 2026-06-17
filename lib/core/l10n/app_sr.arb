@@ -1,27 +1,27 @@
 {
   "@@locale": "sr",
   "appTitle": "Stanomer",
-  "login": "Prijavite se",
-  "signup": "Registracija",
+  "login": "Prijavi se",
+  "signup": "Registruj se",
   "email": "E-pošta",
   "password": "Lozinka",
   "landlord": "Stanodavac",
   "tenant": "Stanar",
   "zzplConsent": "Pristajem na obradu mojih podataka u skladu sa Zakonom o zaštiti podataka o ličnosti (ZZPL) Srbije.",
-  "selectRole": "Izaberite svoju ulogu",
+  "selectRole": "Izaberi svoju ulogu",
   "fieldRequired": "Ovo polje je obavezno",
-  "consentRequired": "Morate prihvatiti ZZPL da biste nastavili",
-  "loginToAccount": "Prijavite se na svoj nalog",
-  "createAccount": "Napravite novi nalog",
-  "dontHaveAccount": "Nemate nalog? Registrujte se",
-  "alreadyHaveAccount": "Imate nalog? Prijavite se",
-  "continueWithGoogle": "Nastavite sa Google-om",
-  "continueWithApple": "Nastavite sa Apple-om",
+  "consentRequired": "Moraš prihvatiti ZZPL da nastaviš",
+  "loginToAccount": "Prijavi se na svoj nalog",
+  "createAccount": "Napravi novi nalog",
+  "dontHaveAccount": "Nemate nalog? Registruj se",
+  "alreadyHaveAccount": "Imaš nalog? Prijavi se",
+  "continueWithGoogle": "Nastavi sa Google-om",
+  "continueWithApple": "Nastavi sa Apple-om",
   "fullName": "Ime i prezime",
-  "errorSelectRole": "Molimo izaberite svoju ulogu",
+  "errorSelectRole": "Molimo izaberi svoju ulogu",
   "deleteAccount": "Obriši nalog",
-  "deleteAccountWarning": "Ova radnja je trajna i ne može se poništiti. Svi vaši podaci će biti obrisani.",
-  "confirmPasswordForDeletion": "Molimo unesite lozinku da potvrdite brisanje",
+  "deleteAccountWarning": "Ova radnja je trajna i ne može se poništiti. Svi tvoji podaci će biti obrisani.",
+  "confirmPasswordForDeletion": "Unesi lozinku da potvrdiš brisanje",
   "deleteButtonLabel": "Trajno obriši moj nalog",
   "cancel": "Otkaži",
   "invalidPassword": "Pogrešna lozinka",
@@ -30,13 +30,13 @@
   "profile": "Profil",
   "settingsHeader": "Podešavanja",
   "accountHeader": "Nalog",
-  "discoverPremium": "Istražite Premium",
+  "discoverPremium": "Istraži Premium",
   "unlimitedLeaseContracts": "Neograničeni najamni ugovori",
   "updateName": "Ažuriraj ime",
-  "updatePassword": "Ažuriraj lozinku",
+  "updatePassword": "Promeni lozinku",
   "oldPassword": "Trenutna lozinka",
   "newPassword": "Nova lozinka",
-  "saveChanges": "Sačuvaj izmene",
+  "saveChanges": "Sačuvaj",
   "passwordChangedSuccess": "Lozinka je uspešno promenjena",
   "profileUpdatedSuccess": "Profil je uspešno ažuriran",
   "role": "Uloga",
@@ -49,107 +49,156 @@
   "depositAmount": "Iznos depozita",
   "currency": "Valuta",
   "propertyName": "Naziv nekretnine",
-  "propertyNameHint": "npr. Apartman Beograd",
+  "propertyNameHint": "npr. Stan u Beogradu",
   "propertyAddedSuccess": "Nekretnina uspešno dodata",
   "propertyUpdatedSuccess": "Nekretnina uspešno ažurirana",
-  "noProperties": "Nema pronađenih nekretnina",
-  "addYourFirstProperty": "Dodajte svoju prvu nekretninu da biste започели praćenje!",
-  "editProperty": "Uredi nekretninu",
+  "noProperties": "Još uvek nema nekretnina",
+  "addYourFirstProperty": "Dodaj svoju prvu nekretninu da pokreneš praćenje!",
+  "editProperty": "Izmeni nekretninu",
   "delete": "Obriši",
   "confirmDeleteTitle": "Obriši nekretninu",
-  "confirmDeleteMessage": "Da li ste sigurni da želite da obrišete ovu nekretninu? Ova radnja se ne može poništiti.",
+  "confirmDeleteMessage": "Da li sigurno želiš da obrišeš ovu nekretninu? Ova akcija je nepovratna.",
   "propertyDeletedSuccess": "Nekretnina uspešno obrisana",
   "inviteTenant": "Pozovi stanara",
   "emailHint": "Unesite e-mail stanara",
-  "inviteCreatedSuccess": "Link za poziv je kreiran! Sada ga možete podeliti.",
-  "shareInviteLink": "Podeli link za poziv",
+  "inviteCreatedSuccess": "Pozivni link je kreiran! Možeš ga podeliti.",
+  "shareInviteLink": "Podeli pozivni link",
   "copyLink": "Kopiraj link",
-  "noInvitesYet": "Još uvek nema poslatih poziva",
+  "noInvitesYet": "Nema poslatih poziva",
   "cancelInvitation": "Otkaži poziv",
   "invitationCancelledSuccess": "Poziv je uspešno otkazan",
   "pendingInvite": "Poziv na čekanju",
-  "contractSentToTenant": "Ugovor poslat zakupcu",
+  "contractSentToTenant": "Ugovor je poslat stanaru",
   "overview": "Pregled",
-  "financials": "Finansije",
-  "propertySettings": "Podešavanja",
+  "financials": "Plaćanja",
+  "propertySettings": "Podešavanja nekretnine",
   "invitationHistory": "Istorija poziva",
   "invitationDetails": "Detalji poziva",
-  "acceptInvitation": "Da, iznajmio sam ovo",
+  "acceptInvitation": "Prihvati poziv",
   "declineInvitation": "Odbij poziv",
   "inviteNotFound": "Poziv nije pronađen ili je istekao",
-  "invitationAcceptedSuccess": "Dobrodošli kući! Poziv je prihvaćen.",
-  "pendingInvitationBanner": "Imate otvoren poziv za {property}",
-  "@pendingInvitationBanner": {"placeholders": {"property": {"type": "String"}}},
-  "invitedBy": "Pozvao vas je {name}",
-  "@invitedBy": {"placeholders": {"name": {"type": "String"}}},
+  "invitationAcceptedSuccess": "Dobrodošao/la kući! Poziv je prihvaćen.",
+  "pendingInvitationBanner": "Imaš poziv za {property}",
+  "@pendingInvitationBanner": {
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
+  "invitedBy": "{name} te je pozvao/la",
+  "@invitedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "yourName": "Vaše ime",
-  "yourNameHint": "Unesite svoje puno ime",
+  "yourNameHint": "Unesi svoje ime i prezime",
   "viewInvite": "Pogledaj poziv",
   "myProperties": "Moje nekretnine",
-  "tenantEmptyStateTitle": "Još uvek nemate dodeljenu nekretninu",
-  "tenantEmptyStateMessage": "Ako vam je stanodavac poslao poziv, on će se pojaviti ovde. Kliknite na dugme ispod da biste proverili nove pozive.",
+  "tenantEmptyStateTitle": "Još uvek nemaš dodeljen stan",
+  "tenantEmptyStateMessage": "Ako ti je vlasnik poslao poziv, videćeš ga ovde. Osveži listu klikom na dugme ispod.",
   "refresh": "Osveži",
   "invitationDeclinedSuccess": "Poziv je odbijen.",
   "confirmDeclineInviteTitle": "Odbiti poziv?",
-  "confirmDeclineInviteMessage": "Da li ste sigurni da želite da odbijete ovaj poziv? Biće uklonjen sa vaše liste na čekanju.",
+  "confirmDeclineInviteMessage": "Da li sigurno želiš da odbiješ ovaj poziv? Poziv će biti uklonjen sa liste.",
   "contractStartDate": "Datum početka ugovora",
   "contractEndDate": "Datum završetka ugovora",
-  "uploadContract": "Otpremi ugovor",
+  "uploadContract": "Učitaj ugovor",
   "viewContract": "Pogledaj ugovor",
   "contractFile": "Datoteka ugovora",
   "selectDate": "Izaberi datum",
-  "appLanguage": "Jezik aplikacije",
+  "appLanguage": "Jezik",
   "english": "Engleski",
   "serbianLatin": "Srpski (Latinica)",
   "serbianCyrillic": "Srpski (Ćirilica)",
   "turkish": "Turski",
   "russian": "Ruski",
-  "tenantMode": "Mod stanara",
-  "landlordMode": "Mod stanodavca",
-  "whatAreYou": "Kao šta želite da nastavite?",
-  "selectRoleToContinue": "Izaberite ulogu da biste započeli. Možete je promeniti bilo kada u zaglavlju iznad.",
+  "tenantMode": "Uloga stanara",
+  "landlordMode": "Uloga vlasnika",
+  "whatAreYou": "Izaberi svoju ulogu:",
+  "selectRoleToContinue": "Izaberi ulogu za početak. Možeš je promeniti bilo kada u meniju iznad.",
   "consentTextFullBody": "Korišćenjem aplikacije Stanomer, dajete izričit pristanak za obradu vaših podataka o ličnosti u skladu sa Zakonom o zaštiti podataka o ličnosti (ZZPL) Republike Srbije.\n\nKoji podaci se prikupljaju: Vaše ime, e-mail adresa, IP adresa i podaci iz ugovora o zakupu nepokretnosti.\n\nSvrha obrade: Podaci se koriste isključivo za olakšavanje komunikacije između stanodavca i zakupca, vođenje evidencije o plaćanju i kreiranje pravno valjanih zapisa.\n\nDeljenje podataka: Vaši podaci se ne prodaju trećim licima. Čuvaju se na sigurnim serverima u EU (Supabase Frankfurt).\n\nVaša prava: Imate pravo da u bilo kom trenutku zatražite pristup svojim podacima ili trajno brisanje vašeg naloga i svih povezanih podataka direktno putem aplikacije.",
   "removeTenant": "Ukloni stanara",
-  "removeTenantConfirmation": "Da li ste sigurni da želite da uklonite ovog stanara iz nekretnine? Ovo će raskinuti vezu i obrisati zapis o pozivu.",
+  "removeTenantConfirmation": "Da li želiš da ukloniš stanara? Ovo će prekinuti vezu i obrisati istoriju poziva.",
   "remove": "Ukloni",
-  "logRentDeclared": "Stanar je označio kiriju za {month} kao plaćenu.",
-  "@logRentDeclared": {"placeholders": {"month": {"type": "String"}}},
-  "logRentApproved": "Stanodavac je odobrio kiriju za {month}.",
-  "@logRentApproved": {"placeholders": {"month": {"type": "String"}}},
-  "logRentRejected": "Stanodavac je odbio kiriju za {month}.",
-  "@logRentRejected": {"placeholders": {"month": {"type": "String"}}},
-  "logMarkedAsPaid": "Stanodavac je označio {month} kao plaćeno.",
-  "@logMarkedAsPaid": {"placeholders": {"month": {"type": "String"}}},
-  "logMarkedAsPending": "Stanodavac je označio {month} na čekanju.",
-  "@logMarkedAsPending": {"placeholders": {"month": {"type": "String"}}},
-  "logAutoApproved": "Kirija za {month} je automatski odobrena od strane sistema nakon 5 dana.",
-  "@logAutoApproved": {"placeholders": {"month": {"type": "String"}}},
+  "logRentDeclared": "Stanar je prijavio uplatu za {month}.",
+  "@logRentDeclared": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logRentApproved": "Vlasnik je odobrio uplatu za {month}.",
+  "@logRentApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logRentRejected": "Vlasnik je odbio uplatu za {month}.",
+  "@logRentRejected": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logMarkedAsPaid": "Vlasnik je označio {month} kao plaćen.",
+  "@logMarkedAsPaid": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logMarkedAsPending": "Vlasnik je vratio {month} na čekanje.",
+  "@logMarkedAsPending": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "logAutoApproved": "Sistem je automatski odobrio uplatu za {month} posle 5 dana.",
+  "@logAutoApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "activity": "Aktivnosti",
-  "noContractsTitle": "Još uvek nema ugovora",
-  "noContractsMessage": "Da biste pratili kiriju i troškove, prvo pozovite stanara unošenjem detalja ugovora.",
+  "noContractsTitle": "Nema aktivnih ugovora",
+  "noContractsMessage": "Kako bi pratio kirije i račune, prvo unesi ugovor i pozovi stanara.",
   "inviteFirstTenant": "Pozovi zakupca",
   "confirmCancelInvitationTitle": "Otkaži poziv",
-  "confirmCancelInvitationMessage": "Da li ste sigurni da želite da povučete ovaj poziv? Ova akcija će ga trajno izbrisati.",
+  "confirmCancelInvitationMessage": "Da li želiš da otkažeš poziv? Link će postati nevažeći.",
   "confirmDeclineRevisionTitle": "Odbij zahtev za reviziju",
-  "confirmDeclineRevisionMessage": "Da li ste sigurni da želite da odbijete zahtev zakupca za reviziju? Ugovor će ostati na čekanju sa originalnim uslovima.",
+  "confirmDeclineRevisionMessage": "Da li želiš da odbijete izmene ugovora? Ugovor ostaje sa prvobitnim uslovima.",
   "activeContract": "Aktivni ugovor",
   "activeLease": "AKTIVNI UGOVOR",
   "invitationSent": "Poziv poslat",
   "accept": "Prihvati",
   "decline": "Odbij",
-  "declineRevisionRequest": "Odbij zahtev za reviziju",
+  "declineRevisionRequest": "Odbij izmene",
   "pendingHeader": "NA ČEKANJU",
   "awaitingHeader": "ČEKA ODOBRENJE",
+  "awaitingExplanation": "Potrebno je odobrenje stanodavca da bi se označilo kao plaćeno.",
   "paidHeader": "PLAĆENO",
-  "waitingForTenantPayment": "Čeka uplatu stanara",
-  "waitingForYourApproval": "Čeka vaše odobrenje",
-  "waitingForOwnerApproval": "Čeka odobrenje stanodavca",
-  "waitingForYourPayment": "Čeka vašu uplatu",
+  "waitingForTenantPayment": "Čeka se uplata stanara",
+  "waitingForYourApproval": "Čeka tvoje odobrenje",
+  "waitingForOwnerApproval": "Čeka se odobrenje vlasnika",
+  "waitingForYourPayment": "Čeka se tvoja uplata",
   "processCompleted": "Proces završen",
   "declared": "prijavljeno",
   "sent": "poslato",
   "noInvoice": "Bez računa",
-  "uploadInvoice": "Otpremi račun",
+  "uploadInvoice": "Učitaj račun",
   "awaitingInvoice": "Čeka se račun",
   "updateLabel": "Ažuriraj",
   "statusVacant": "Slobodno",
@@ -161,7 +210,13 @@
   "contractDetails": "Detalji ugovora",
   "pastContracts": "Prošli ugovori",
   "previousLeasesCount": "{count} prethodnih ugovora",
-  "@previousLeasesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@previousLeasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertySettingsLabel": "Podešavanja nekretnine",
   "propertyActions": "Akcije nekretnine",
   "leavePropertyConfirm": "Da li želite da napustite ovu nekretninu?",
@@ -173,14 +228,14 @@
   "dueDayOfMonth": "Dan dospeća u mesecu",
   "startDate": "Datum početka",
   "endDate": "Datum kraja",
-  "taxConfiguration": "Konfiguracija poreza",
+  "taxConfiguration": "Porez",
   "included": "Uključeno",
   "addedVat": "Dodato (+15%)",
   "expensesHeader": "TROŠKOVI",
   "extraPayment": "Dodatna uplata",
-  "utility": "Komunalno",
+  "utility": "Komunalne usluge",
   "owner": "Vlasnik",
-  "proposeChangesInfo": "Izmene će biti poslate {role} na odobrenje. Trenutni uslovi ostaju na snazi do prihvatanja.",
+  "proposeChangesInfo": "Izmene će biti poslate {role} na odobrenje. Stari uslovi važe dok se novi ne prihvate.",
   "@proposeChangesInfo": {
     "placeholders": {
       "role": {
@@ -190,13 +245,13 @@
   },
   "proposeChanges": "Predloži izmene",
   "declarePayment": "Prijavi uplatu",
-  "uploadReceipt": "Otpremi uplatnicu",
+  "uploadReceipt": "Učitaj uplatnicu",
   "paidInCash": "Plaćeno gotovinom",
-  "noFinancialRecords": "Još uvek nema finansijskih zapisa",
-  "noActiveContract": "Nije pronađen otpremljeni ugovor",
+  "noFinancialRecords": "Nema zabeleženih plaćanja",
+  "noActiveContract": "Nema aktivnih ugovora",
   "contractTermsInfo": "Aktivni uslovi ugovora. Sve izmene ovde stupaju na snagu samo kada se stanar i stanodavac slože.",
   "send": "Pošalji",
-  "totalRent": "Ukupna kirija",
+  "totalRent": "Ukupno",
   "infoTooltip": "Pokriva zajedničke komunalne usluge kao što su grejanje, voda i odvoz smeća.",
   "electricityTooltip": "Individualni troškovi potrošnje električne energije.",
   "internetTooltip": "Pretplatnički internet i TV paketi.",
@@ -204,7 +259,13 @@
   "declare": "Prijavi",
   "viewReceipt": "Vidi uplatnicu",
   "proposesChanges": "{name} predlaže sledeće izmene:",
-  "@proposesChanges": {"placeholders": {"name": {"type": "String"}}},
+  "@proposesChanges": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "awaitingApprovalInfo": "Vaš predlog izmena čeka odobrenje druge strane.",
   "propertyDetails": "DETALJI NEKRETNINE",
   "defaultLeaseTerms": "PODRAZUMEVANI USLOVI ZAKUPA",
@@ -213,67 +274,71 @@
   "enterDayBetween1and31": "Unesite dan između 1 i 31",
   "expenseConfiguration": "KONFIGURACIJA TROŠKOVA",
   "expenseInfostan": "Infostan",
-  "expenseElectricity": "Struja (Električna energija)",
+  "expenseElectricity": "Struja",
   "expenseInternetTV": "Internet/TV",
-  "expenseMaintenance": "Održavanje zgrade",
+  "expenseMaintenance": "Održavanje",
   "expenseTax": "Porez",
-  "tenantPaysTo": "Stanar plaća:",
+  "tenantPaysTo": "Plaća se:",
   "fileSelected": "Fajl izabran",
   "selectInvoice": "Izaberi račun",
   "amount": "Iznos",
   "setAmountAndUploadInvoice": "Unesite detalje računa",
   "save": "Sačuvaj",
-  "paymentDeclared": "Uplata je uspešno prijavljena.",
-  "dashboard": "Kontrolna tabla",
+  "paymentDeclared": "Uplata je prijavljena.",
+  "dashboard": "Dashboard",
   "parties": "STRANE",
-  "tenantEmail": "E-pošta stanara",
-  "existingContractTermsInfo": "Postojeći dogovoreni uslovi ugovora (kirija, datumi i troškovi) važiće i za ovog stanara.",
+  "tenantEmail": "E-mail stanara",
+  "existingContractTermsInfo": "Dogovoreni uslovi ugovora važiće i za ovog stanara.",
   "rentAndPayment": "KIRIJA I PLAĆANJE",
   "datesAndContract": "DATUMI I UGOVOR",
   "expenseSettingsHeader": "PODEŠAVANJE TROŠKOVA",
   "editContract": "Izmeni ugovor",
-  "sendRevision": "Pošalji reviziju",
-  "revisionSent": "Predlog revizije je poslat",
+  "sendRevision": "Pošalji izmene",
+  "revisionSent": "Predlog izmena je poslat",
   "existingFileKept": "Postojeći fajl je zadržan",
   "done": "Gotovo",
-  "startAndEndDatesMandatory": "Datum početka i završetka su obavezni",
-  "revisionRequested": "Tražena revizija",
+  "startAndEndDatesMandatory": "Datumi početka i kraja su obavezni",
+  "revisionRequested": "Tražene izmene",
   "statusActive": "Aktivno",
-  "statusPending": "Čeka odobrenje",
+  "statusPending": "Na čekanju",
   "statusDeclined": "Odbijeno",
   "statusExpired": "Isteklo",
   "statusNegotiating": "U pregovorima",
   "tenantPaysLandlord": "Stanar plaća stanodavcu",
   "tenantPaysUtility": "Stanar plaća komunalijama",
   "includedInRent": "Uključeno u kiriju",
-  "changesAccepted": "Promene su prihvaćene",
-  "changesDeclined": "Promene su odbijene",
-  "contractChangeProposal": "Predlog promene ugovora",
+  "changesAccepted": "Izmene su prihvaćene",
+  "changesDeclined": "Izmene su odbijene",
+  "contractChangeProposal": "Predlog izmena ugovora",
   "cancelProposal": "Otkaži predlog",
   "viewInvoice": "Pogledaj fakturu",
-  "decline": "Odbij",
-  "accept": "Prihvati",
   "paymentResponsibility": "ODGOVORNOST ZA PLAĆANJE",
   "tenantPaysDirectlyToUtility": "Stanar plaća direktno komunalnoj službi",
   "tenantPaysToLandlord": "Stanar plaća stanodavcu",
-  "selectPaymentReceiverWarning": "Molimo izaberite primaoca uplate pre nastavka.",
+  "selectPaymentReceiverWarning": "Izaberi primaoca uplate pre nego što nastaviš.",
   "progressSummary": "{completed} / {total} plaćeno • {sent} poslato",
   "@progressSummary": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"},
-      "sent": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "sent": {
+        "type": "int"
+      }
     }
   },
   "maintenance": "Održavanje",
   "issues": "Problemi",
   "newRequest": "Novi zahtev",
-  "reportIssue": "Prijavi kvar",
+  "reportIssue": "Prijavi problem",
   "issueTitle": "Naslov",
   "issueDescription": "Opis",
   "issueCategory": "Kategorija",
   "issuePriority": "Prioritet",
-  "statusInvestigating": "Na pregledu",
+  "statusInvestigating": "U toku",
   "statusResolved": "Rešeno",
   "priorityNormal": "Normalno",
   "priorityUrgent": "Hitno",
@@ -282,59 +347,72 @@
   "categoryHeating": "Grejanje",
   "categoryInternet": "Internet",
   "categoryOther": "Ostalo",
-  "noIssuesTitle": "Još nema prijavljenih kvarova",
-  "noIssuesMessage": "Sve je u redu! Nema prijavljenih zahteva za održavanje ove imovine.",
+  "noIssuesTitle": "Nema prijavljenih problema",
+  "noIssuesMessage": "Sve je u redu, nema zabeleženih problema.",
   "updateStatus": "Ažuriraj status",
-  "issueDetails": "Detalji kvara",
-  "logMaintenanceCreated": "Kreiran zahtev za održavanje: {title}",
-  "@logMaintenanceCreated": {"placeholders": {"title": {"type": "String"}}},
-  "logMaintenanceStatusUpdated": "Status održavanja ažuriran na {status}",
-  "@logMaintenanceStatusUpdated": {"placeholders": {"status": {"type": "String"}}},
-  "logMaintenanceReopened": "Zahtev za održavanje ponovo otvoren",
-  "logMaintenanceMessageAdded": "Dodata nova poruka zahtevu za održavanje",
+  "issueDetails": "Detalji problema",
+  "logMaintenanceCreated": "Prijavljen problem: {title}",
+  "@logMaintenanceCreated": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "logMaintenanceStatusUpdated": "Status problema je promenjen na {status}",
+  "@logMaintenanceStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "logMaintenanceReopened": "Problem je ponovo otvoren",
+  "logMaintenanceMessageAdded": "Dodata je nova poruka",
   "notifications": "Obaveštenja",
   "markAllAsRead": "Označi sve kao pročitano",
-  "noNotifications": "Još nema obaveštenja",
-  "documents": "Dokumenta",
+  "noNotifications": "Nema novih obaveštenja",
+  "documents": "Dokumenti",
   "mainContract": "Glavni ugovor",
   "addDocument": "Dodaj dokument",
   "enterDocumentName": "Unesite naziv dokumenta",
-  "noDocumentsYet": "Još uvek nema dokumenata",
+  "noDocumentsYet": "Nema učitanih dokumenata",
   "additionalDocuments": "Dodatna dokumenta",
   "deleteDocument": "Obriši dokument",
-  "deleteDocumentConfirm": "Da li ste sigurni da želite da obrišete ovaj dokument?",
+  "deleteDocumentConfirm": "Da li sigurno želiš da obrišeš ovaj dokument?",
   "uploadMainContract": "Otpremi ugovor",
   "manageDocuments": "Upravljaj dokumentima",
   "monthlyCollected": "Prikupljeno",
   "totalRentShort": "Kira",
   "delays": "Kašnjenja",
   "vacant": "Prazno",
-  "overdueReceivables": "Dospela",
+  "overdueReceivables": "Kašnjenja",
   "collectedByType": "Naplaćeno",
   "propertiesCount": "{count, plural, one{{count} nekretnina} other{{count} nekretnina}}",
-  "hasDebt": "Ima dug",
-  "paymentAwaitingApproval": "Čeka odobrenje",
+  "hasDebt": "Duguje",
+  "paymentAwaitingApproval": "Čeka proveru",
   "rent": "Kirija",
   "bills": "Računi",
   "waiting": "Na čekanju",
   "debtLabel": "Dug",
+  "totalDebt": "Ukupan dug",
   "paidLabel": "Plaćeno",
   "enterBill": "Unesi račun",
   "addContractAndTenant": "Dodaj ugovor i zakupca",
   "approve": "Potvrdi",
   "reject": "Odbij",
   "confirmApprovePaymentTitle": "Potvrdi uplatu",
-  "confirmApprovePaymentMessage": "Da li ste sigurni da želite da potvrdite ovu uplatu?",
+  "confirmApprovePaymentMessage": "Da li želiš da potvrdiš ovu uplatu?",
   "confirmRejectPaymentTitle": "Odbij uplatu",
-  "confirmRejectPaymentMessage": "Da li želite da odbijete ovu deklaraciju i tražite od zakupca da je ponovo prijavi?",
+  "confirmRejectPaymentMessage": "Da li želiš da odbiješ ovu prijavu i tražiš ponovno slanje?",
   "confirm": "Potvrdi",
   "terminateContract": "Raskini ugovor",
   "terminationDate": "Datum raskida",
   "confirmTerminationTitle": "Raskinuti ugovor?",
-  "confirmTerminationMessage": "Da li ste sigurni da želite da pošaljete zahtev za raskid ugovora na izabrani datum?",
-  "terminationRequestSent": "Zahtev za raskid ugovora je uspešno poslat.",
-  "statusInactive": "Pasivno / Završeno",
-  "terminationRequested": "Čeka se raskid",
+  "confirmTerminationMessage": "Da li želiš da pošalješ zahtev za raskid ugovora za izabrani datum?",
+  "terminationRequestSent": "Zahtev za raskid je poslat.",
+  "statusInactive": "Završeno",
+  "terminationRequested": "Raskid na čekanju",
   "approveTermination": "Potvrdi raskid",
   "declineTermination": "Odbij raskid",
   "contractTerminatedOn": "Ugovor je raskinut: {date}",
@@ -360,22 +438,26 @@
   "logRentDisputed": "Stanar je osporio uplatu za {month}: {reason}",
   "@logRentDisputed": {
     "placeholders": {
-      "month": {"type": "String"},
-      "reason": {"type": "String"}
+      "month": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "confirmDisputeTitle": "Ospori uplatu",
-  "disputeSentSuccess": "Vaš prigovor je poslat stanodavcu.",
+  "disputeSentSuccess": "Prigovor je poslat vlasniku stana.",
   "takeAction": "Preduzmi akciju",
   "ownerNote": "Vlasnikova beleška",
-  "explanationOptional": "Objašnjenje (Opciono)",
-  "explanationHint": "npr. Proverio sam brojilo...",
+  "explanationOptional": "Napomena (opciono)",
+  "explanationHint": "npr. Proverio sam struju...",
   "units": "Jedinice",
   "tenantsLabel": "Stanari",
-  "portfolioManagement": "Upravljanje portfolijom",
-  "paymentRequests": "Plaćanja i zahtevi",
+  "portfolioManagement": "Portfolijo",
+  "paymentRequests": "Zahtevi i plaćanja",
   "profileSettings": "Podešavanja profila",
-  "confirmSignOutMessage": "Da li ste sigurni da želite da se odjavite?",
+  "confirmSignOutMessage": "Da li želiš da se odjaviš?",
   "errorWithDetails": "Greška: {error}",
   "@errorWithDetails": {
     "placeholders": {
@@ -392,9 +474,9 @@
       }
     }
   },
-  "acceptTermsWarning": "Molimo prihvatite uslove pre nego što nastavite.",
-  "maintenanceRequestSuccess": "Zahtev za održavanje je uspešno poslat.",
-  "ok": "U redu",
+  "acceptTermsWarning": "Prihvati uslove pre nego što nastaviš.",
+  "maintenanceRequestSuccess": "Problem je uspešno prijavljen.",
+  "ok": "OK",
   "orLabel": "ILI",
   "errorUploadingPhoto": "Greška pri otpremanju fotografije: {error}",
   "@errorUploadingPhoto": {
@@ -429,10 +511,10 @@
     }
   },
   "nextPayment": "Sledeća uplata",
-  "payNow": "Plati odmah",
+  "payNow": "Prijavi uplatu",
   "upcomingLabel": "Predstojeće",
   "joinPropertyInvitation": "Poziv za pridruživanje nekretnini",
-  "feedbackSent": "Povratne informacije su poslate",
+  "feedbackSent": "Hvala na feedback-u!",
   "rentalProposal": "Predlog zakupa",
   "reviewContractTerms": "Molimo pregledajte uslove ugovora.",
   "expenseDistribution": "Raspodela troškova",
@@ -440,22 +522,23 @@
   "backToDashboard": "Nazad na kontrolnu tablu",
   "propertyDetailsHeader": "DETALJI NEKRETNINE",
   "defaultLeaseTermsHeader": "PODRAZUMEVANI USLOVI ZAKUPA",
-  "defaultLeaseTermsSubtitle": "Uslovi koji se koriste kao šablon za nove pozive.",
-  "proposeRevision": "Predloži reviziju",
-  "revisionTermsQuestion": "Koje uslove želite da promenite? (Zakupnina, dan dospeća, troškovi, itd.)",
-  "enterNotesHint": "Unesite svoje beleške ovde...",
+  "proposeRevision": "Predloži izmene",
+  "revisionTermsQuestion": "Koje uslove želiš da promeniš? (Kiriju, dan plaćanja, troškove...)",
+  "enterNotesHint": "Upiši svoju napomenu...",
   "submit": "Pošalji",
-  "invitedToJoinProperty": "Pozvani ste da se pridružite nekretnini {property}.",
+  "invitedToJoinProperty": "Pozvan/a si da se pridružiš objektu {property}.",
   "@invitedToJoinProperty": {
     "placeholders": {
-      "property": { "type": "String" }
+      "property": {
+        "type": "String"
+      }
     }
   },
-  "waitingForLandlord": "Čeka se odgovor stanodavca...",
+  "waitingForLandlord": "Čeka se odgovor vlasnika...",
   "day": "Dan",
   "notSelected": "Nije izabrano",
-  "acceptTermsAndDistribution": "Prihvatam uslove ugovora i raspodelu troškova.",
-  "datesMandatory": "Datum početka i završetka su obavezni",
+  "acceptTermsAndDistribution": "Prihvatam uslove ugovora i podelu troškova.",
+  "datesMandatory": "Datumi početka i kraja su obavezni",
   "partiesHeader": "STRANE",
   "leaseLockedWarning": "Postojeći dogovoreni uslovi zakupa (zakupnina, datumi i troškovi) će se primenjivati i na ovog zakupca.",
   "rentPaymentHeader": "ZAKUP I PLAĆANJE",
@@ -468,33 +551,39 @@
   "plannedEnd": "Planirani završetak: {date}",
   "@plannedEnd": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "yourApartment": "Vaš stan",
   "commentHint": "Dodajte komentar...",
   "issueResolvedStatus": "Ovaj kvara je označen kao rešen.",
-  "reopenIssue": "Još uvek postoji problem (Ponovo otvori)",
+  "reopenIssue": "Problem i dalje postoji (Otvori ponovo)",
   "deleteRequest": "Obriši zahtev",
   "terminationApproved": "Raskid odobren",
   "paymentDeclaredHand": "Plaćanje je prijavljeno kao lična dostava.",
   "fileUnreadable": "Nije moguće pročitati datoteku.",
-  "paymentDeclaredSuccess": "Uplata {title} je prijavljena.",
+  "paymentDeclaredSuccess": "Uplata za {title} je uspešno prijavljena.",
   "@paymentDeclaredSuccess": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "setAmountUploadInvoice": "Unesite detalje računa",
-  "yourMessage": "Vaša poruka:",
-  "revisionRequestLabel": "Zahtev za reviziju:",
+  "yourMessage": "Tvoja poruka:",
+  "revisionRequestLabel": "Zahtev za izmenama:",
   "noActivityLogs": "Još nema prijavljenih aktivnosti",
-  "landlordProposedChanges": "Stanodavac je predložio izmene ugovora. Dodirnite da pregledate.",
-  "tenantProposedChanges": "Stanar je predložio izmene ugovora. Dodirnite da pregledate.",
+  "landlordProposedChanges": "Vlasnik je predložio izmene ugovora. Dodirni da pogledaš.",
+  "tenantProposedChanges": "Stanar je predložio izmene ugovora. Dodirni da pogledaš.",
   "dueOn": "Dospeva: {date}",
   "@dueOn": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "item": "stavka",
@@ -503,14 +592,14 @@
   "awaitingApproval": "Čeka se odobrenje...",
   "contract": "Ugovor",
   "paidOn": "Plaćeno: {date}",
-  "cannotInviteSelf": "Ne možete pozvati sebe kao stanara.",
+  "cannotInviteSelf": "Ne možeš pozvati sopstveni e-mail.",
   "paywallTitle": "Stanomer Premium",
-  "paywallSubtitle": "Uklonite ograničenja u upravljanju nekretninama.",
+  "paywallSubtitle": "Ukloni sva ograničenja u vođenju nekretnina.",
   "unlimitedProperties": "Neograničeno dodavanje i upravljanje nekretninama",
-  "detailedReporting": "Brže i detaljnije izveštavanje",
+  "detailedReporting": "Napredno finansijsko izveštavanje",
   "extraStorage": "Više prostora za skladištenje",
-  "pdfContracts": "Generisanje PDF ugovora (Uskoro)",
-  "automatedRenewal": "Automatski obračun i obnova kirije (Uskoro)",
+  "pdfContracts": "PDF ugovori (Uskoro)",
+  "automatedRenewal": "Automatska obnova (Uskoro)",
   "restorePurchases": "Povrati kupovine",
   "limitReachedTitle": "Dostigli ste besplatni limit",
   "limitReachedSubtitle": "Pređite na Stanomer Premium za upravljanje sa više nekretnina.",
@@ -518,7 +607,7 @@
   "optionsLoadFailed": "Nije moguće učitati opcije pretplate.",
   "manageSubscription": "Upravljaj pretplatom",
   "premiumMobileOnly": "Potrebna mobilna aplikacija",
-  "premiumMobileOnlyDesc": "Stanomer Premium pretplata se može kupiti samo putem mobilne aplikacije. Preuzmite aplikaciju ispod da biste počeli s Premium-om.",
+  "premiumMobileOnlyDesc": "Stanomer Premium se kupuje samo kroz mobilnu aplikaciju. Preuzmi je preko linkova ispod.",
   "downloadOnAppStore": "Preuzmi na App Store-u",
   "downloadOnPlayStore": "Preuzmi na Google Play-u",
   "premiumFeatures": "Premium funkcije",
@@ -529,31 +618,37 @@
   "termsOfService": "Uslovi korišćenja i EULA",
   "termsOfServiceContent": "Stanomer – Ugovor o licenciranju sa krajnjim korisnikom (EULA) i Uslovi korišćenja\nPoslednji put ažurirano: 23. april 2026.\n\n1. Uvod\nOvaj Ugovor o licenciranju sa krajnjim korisnikom (\"Ugovor\") predstavlja pravni sporazum između Vas (\"Korisnik\") i aplikacije Stanomer. Instaliranjem ili korišćenjem aplikacije prihvatate odredbe ovog Ugovora.\n\n2. Apple i Google uslovi\nApple App Store: Ovaj Ugovor je zaključen isključivo između Korisnika i Stanomer-a. Ovaj ugovor uključuje Apple-ov standardni ugovor o licenci za krajnjeg korisnika (Standard EULA) putem reference: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nGoogle Play Store: Ovaj Ugovor je zaključen isključivo između Korisnika i Stanomer-a.\n\nPotvrđujete da Apple i Google nemaju nikakvu obavezu pružanja usluga održavanja i podrške u vezi sa aplikacijom.\n\n3. Pretplata i naplata\nPlaćanje: Plaćanje će biti naplaćeno sa Vašeg iTunes ili Google Play naloga prilikom potvrde kupovine.\n\nObnavljanje: Pretplate se automatski obnavljaju osim ako se automatsko obnavljanje ne isključi najmanje 24 sata pre kraja tekućeg perioda.\n\nUpravljanje: Možete upravljati pretplatama ili isključiti automatsko obnavljanje u podešavanjima naloga nakon kupovine.\n\n4. Korisnički sadržaj i ponašanje\nOdgovorni ste za podatke koje unosite (iznosi zakupa, izveštaji o šteti, ugovori).\n\nZabranjeno je otpremanje nezakonitog, uvredljivog ili kršećeg sadržaja.\n\nStanomer zadržava pravo da ukloni bilo koji sadržaj koji krši zakone Republike Srbije ili ove uslove.\n\n5. Privatnost i zaštita podataka (ZZPL, GDPR, KVKK)\nZakon Srbije (ZZPL): Zakon o zaštiti podataka o ličnosti.\n\nGDPR: Opšta uredba o zaštiti podataka o ličnosti (EU).\n\nKVKK: Zakon o zaštiti podataka o ličnosti (Turska).\n\nVaši podaci se štite u skladu sa globalnim principima privatnosti podataka, bez obzir na Vašu lokaciju.\n\n6. Ograničenje odgovornosti\nStanomer pruža platformu za upravljanje zakupom i nije strana u stvarnim ugovorima o zakupu između stanodavaca i zakupaca. Ne snosimo odgovornost za sporove između korisnika ili za finansijske transakcije obavljene van platforme.\n\n7. Prekid\nOvaj Ugovor važi dok ga ne raskinete Vi ili Stanomer. Vaša prava po ovoj licenci će automatski prestati ako se ne pridržavate bilo koje od njenih odredbi.",
   "support_title": "Podrška",
-  "support_desc": "Kontaktirajte nas za tehničku podršku ili povratne informacije.",
+  "support_desc": "Piši nam ako imaš pitanja ili feedback.",
   "subject": "Tema",
   "category": "Kategorija",
   "message": "Poruka",
   "support": "Podrška",
   "bug": "Prijava greške",
   "other": "Drugo",
-  "messageSent": "Poruka je uspešno poslata!",
+  "messageSent": "Poruka je poslata!",
   "errorSendingMessage": "Slanje poruke nije uspelo. Molimo pokušajte ponovo.",
   "requiredField": "Ovo polje je obavezno",
   "invalidEmail": "Nevažeća email adresa",
   "offlineMessage": "Trenutno ste van mreže. Možete nastaviti sa postojećim podacima. Biće ažurirano kada se povežete.",
   "retry": "OSVEŽI",
-  "zzplConsentTitle": "Pristanak za obradu podataka o ličnosti",
-  "zzplAgreeAndContinue": "Pročitao sam i prihvatam",
+  "zzplConsentTitle": "Zaštita podataka (ZZPL)",
+  "zzplAgreeAndContinue": "Prihvatam i nastavljam",
   "share": "Podeli",
   "optional": "Opciono",
   "sentInvitation": "Poslati poziv",
   "invitedOn": "Pozvan {date}",
-  "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
+  "@invitedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "noEmailProvided": "E-pošta nije navedena",
-  "invoiceLocalOnlyDesc": "Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.",
-  "invoiceCloudSecureDesc": "Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.",
+  "invoiceLocalOnlyDesc": "Račun se čuva samo lokalno. Možeš uključiti cloud backup u podešavanjima.",
+  "invoiceCloudSecureDesc": "Račun je sačuvan na cloud-u. Vide ga samo stanar i vlasnik.",
   "invoiceUploadLimitDesc": "JPEG, PNG ili PDF · maks. 10 MB",
-  "billMissingLocalDesc": "Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.",
-  "documentMissingLocalDesc": "Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.",
+  "billMissingLocalDesc": "Račun je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.",
+  "documentMissingLocalDesc": "Dokument je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.",
   "cannotOpenDocument": "Nije moguće otvoriti dokument"
 }

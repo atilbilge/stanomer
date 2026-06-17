@@ -436,6 +436,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get awaitingHeader => 'AWAITING';
 
   @override
+  String get awaitingExplanation =>
+      'Landlord approval is required to mark payments as paid.';
+
+  @override
   String get paidHeader => 'PAID';
 
   @override
@@ -940,6 +944,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtLabel => 'Debt';
+
+  @override
+  String get totalDebt => 'Total Debt';
 
   @override
   String get paidLabel => 'Paid';

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/notification_item.dart';
+import '../../../core/utils/stream_utils.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository(Supabase.instance.client);
@@ -28,13 +29,16 @@ class NotificationRepository {
     // We also trigger a cleanup of old notifications (>1 month) when streaming starts
     _client.rpc('delete_old_notifications').then((_) => null).catchError((_) => null);
 
-    return _client
-        .from('notifications')
-        .stream(primaryKey: ['id'])
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false)
-        .cast<dynamic>()
-        .map((data) => (data as List).map((json) => NotificationItem.fromJson(json as Map<String, dynamic>)).toList());
+    return resilientStream(
+      () => _client
+          .from('notifications')
+          .stream(primaryKey: ['id'])
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => NotificationItem.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'streamNotifications',
+    );
   }
 
   Future<void> createNotification({

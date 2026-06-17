@@ -52,3 +52,4 @@ app.*.map.json
 website/.next/
 website/node_modules/
 scratch/
+website/out/

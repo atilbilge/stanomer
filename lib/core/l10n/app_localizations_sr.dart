@@ -12,10 +12,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get appTitle => 'Stanomer';
 
   @override
-  String get login => 'Prijavite se';
+  String get login => 'Prijavi se';
 
   @override
-  String get signup => 'Registracija';
+  String get signup => 'Registruj se';
 
   @override
   String get email => 'E-pošta';
@@ -34,48 +34,47 @@ class AppLocalizationsSr extends AppLocalizations {
       'Pristajem na obradu mojih podataka u skladu sa Zakonom o zaštiti podataka o ličnosti (ZZPL) Srbije.';
 
   @override
-  String get selectRole => 'Izaberite svoju ulogu';
+  String get selectRole => 'Izaberi svoju ulogu';
 
   @override
   String get fieldRequired => 'Ovo polje je obavezno';
 
   @override
-  String get consentRequired => 'Morate prihvatiti ZZPL da biste nastavili';
+  String get consentRequired => 'Moraš prihvatiti ZZPL da nastaviš';
 
   @override
-  String get loginToAccount => 'Prijavite se na svoj nalog';
+  String get loginToAccount => 'Prijavi se na svoj nalog';
 
   @override
-  String get createAccount => 'Napravite novi nalog';
+  String get createAccount => 'Napravi novi nalog';
 
   @override
-  String get dontHaveAccount => 'Nemate nalog? Registrujte se';
+  String get dontHaveAccount => 'Nemate nalog? Registruj se';
 
   @override
-  String get alreadyHaveAccount => 'Imate nalog? Prijavite se';
+  String get alreadyHaveAccount => 'Imaš nalog? Prijavi se';
 
   @override
-  String get continueWithGoogle => 'Nastavite sa Google-om';
+  String get continueWithGoogle => 'Nastavi sa Google-om';
 
   @override
-  String get continueWithApple => 'Nastavite sa Apple-om';
+  String get continueWithApple => 'Nastavi sa Apple-om';
 
   @override
   String get fullName => 'Ime i prezime';
 
   @override
-  String get errorSelectRole => 'Molimo izaberite svoju ulogu';
+  String get errorSelectRole => 'Molimo izaberi svoju ulogu';
 
   @override
   String get deleteAccount => 'Obriši nalog';
 
   @override
   String get deleteAccountWarning =>
-      'Ova radnja je trajna i ne može se poništiti. Svi vaši podaci će biti obrisani.';
+      'Ova radnja je trajna i ne može se poništiti. Svi tvoji podaci će biti obrisani.';
 
   @override
-  String get confirmPasswordForDeletion =>
-      'Molimo unesite lozinku da potvrdite brisanje';
+  String get confirmPasswordForDeletion => 'Unesi lozinku da potvrdiš brisanje';
 
   @override
   String get deleteButtonLabel => 'Trajno obriši moj nalog';
@@ -112,7 +111,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get updateName => 'Ažuriraj ime';
 
   @override
-  String get updatePassword => 'Ažuriraj lozinku';
+  String get updatePassword => 'Promeni lozinku';
 
   @override
   String get oldPassword => 'Trenutna lozinka';
@@ -121,7 +120,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get newPassword => 'Nova lozinka';
 
   @override
-  String get saveChanges => 'Sačuvaj izmene';
+  String get saveChanges => 'Sačuvaj';
 
   @override
   String get passwordChangedSuccess => 'Lozinka je uspešno promenjena';
@@ -160,7 +159,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get propertyName => 'Naziv nekretnine';
 
   @override
-  String get propertyNameHint => 'npr. Apartman Beograd';
+  String get propertyNameHint => 'npr. Stan u Beogradu';
 
   @override
   String get propertyAddedSuccess => 'Nekretnina uspešno dodata';
@@ -169,14 +168,14 @@ class AppLocalizationsSr extends AppLocalizations {
   String get propertyUpdatedSuccess => 'Nekretnina uspešno ažurirana';
 
   @override
-  String get noProperties => 'Nema pronađenih nekretnina';
+  String get noProperties => 'Još uvek nema nekretnina';
 
   @override
   String get addYourFirstProperty =>
-      'Dodajte svoju prvu nekretninu da biste започели praćenje!';
+      'Dodaj svoju prvu nekretninu da pokreneš praćenje!';
 
   @override
-  String get editProperty => 'Uredi nekretninu';
+  String get editProperty => 'Izmeni nekretninu';
 
   @override
   String get delete => 'Obriši';
@@ -186,7 +185,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get confirmDeleteMessage =>
-      'Da li ste sigurni da želite da obrišete ovu nekretninu? Ova radnja se ne može poništiti.';
+      'Da li sigurno želiš da obrišeš ovu nekretninu? Ova akcija je nepovratna.';
 
   @override
   String get propertyDeletedSuccess => 'Nekretnina uspešno obrisana';
@@ -199,16 +198,16 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get inviteCreatedSuccess =>
-      'Link za poziv je kreiran! Sada ga možete podeliti.';
+      'Pozivni link je kreiran! Možeš ga podeliti.';
 
   @override
-  String get shareInviteLink => 'Podeli link za poziv';
+  String get shareInviteLink => 'Podeli pozivni link';
 
   @override
   String get copyLink => 'Kopiraj link';
 
   @override
-  String get noInvitesYet => 'Još uvek nema poslatih poziva';
+  String get noInvitesYet => 'Nema poslatih poziva';
 
   @override
   String get cancelInvitation => 'Otkaži poziv';
@@ -220,16 +219,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get pendingInvite => 'Poziv na čekanju';
 
   @override
-  String get contractSentToTenant => 'Ugovor poslat zakupcu';
+  String get contractSentToTenant => 'Ugovor je poslat stanaru';
 
   @override
   String get overview => 'Pregled';
 
   @override
-  String get financials => 'Finansije';
+  String get financials => 'Plaćanja';
 
   @override
-  String get propertySettings => 'Podešavanja';
+  String get propertySettings => 'Podešavanja nekretnine';
 
   @override
   String get invitationHistory => 'Istorija poziva';
@@ -238,7 +237,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get invitationDetails => 'Detalji poziva';
 
   @override
-  String get acceptInvitation => 'Da, iznajmio sam ovo';
+  String get acceptInvitation => 'Prihvati poziv';
 
   @override
   String get declineInvitation => 'Odbij poziv';
@@ -248,23 +247,23 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get invitationAcceptedSuccess =>
-      'Dobrodošli kući! Poziv je prihvaćen.';
+      'Dobrodošao/la kući! Poziv je prihvaćen.';
 
   @override
   String pendingInvitationBanner(String property) {
-    return 'Imate otvoren poziv za $property';
+    return 'Imaš poziv za $property';
   }
 
   @override
   String invitedBy(String name) {
-    return 'Pozvao vas je $name';
+    return '$name te je pozvao/la';
   }
 
   @override
   String get yourName => 'Vaše ime';
 
   @override
-  String get yourNameHint => 'Unesite svoje puno ime';
+  String get yourNameHint => 'Unesi svoje ime i prezime';
 
   @override
   String get viewInvite => 'Pogledaj poziv';
@@ -273,11 +272,11 @@ class AppLocalizationsSr extends AppLocalizations {
   String get myProperties => 'Moje nekretnine';
 
   @override
-  String get tenantEmptyStateTitle => 'Još uvek nemate dodeljenu nekretninu';
+  String get tenantEmptyStateTitle => 'Još uvek nemaš dodeljen stan';
 
   @override
   String get tenantEmptyStateMessage =>
-      'Ako vam je stanodavac poslao poziv, on će se pojaviti ovde. Kliknite na dugme ispod da biste proverili nove pozive.';
+      'Ako ti je vlasnik poslao poziv, videćeš ga ovde. Osveži listu klikom na dugme ispod.';
 
   @override
   String get refresh => 'Osveži';
@@ -290,7 +289,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get confirmDeclineInviteMessage =>
-      'Da li ste sigurni da želite da odbijete ovaj poziv? Biće uklonjen sa vaše liste na čekanju.';
+      'Da li sigurno želiš da odbiješ ovaj poziv? Poziv će biti uklonjen sa liste.';
 
   @override
   String get contractStartDate => 'Datum početka ugovora';
@@ -299,7 +298,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get contractEndDate => 'Datum završetka ugovora';
 
   @override
-  String get uploadContract => 'Otpremi ugovor';
+  String get uploadContract => 'Učitaj ugovor';
 
   @override
   String get viewContract => 'Pogledaj ugovor';
@@ -311,7 +310,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get selectDate => 'Izaberi datum';
 
   @override
-  String get appLanguage => 'Jezik aplikacije';
+  String get appLanguage => 'Jezik';
 
   @override
   String get english => 'Engleski';
@@ -329,17 +328,17 @@ class AppLocalizationsSr extends AppLocalizations {
   String get russian => 'Ruski';
 
   @override
-  String get tenantMode => 'Mod stanara';
+  String get tenantMode => 'Uloga stanara';
 
   @override
-  String get landlordMode => 'Mod stanodavca';
+  String get landlordMode => 'Uloga vlasnika';
 
   @override
-  String get whatAreYou => 'Kao šta želite da nastavite?';
+  String get whatAreYou => 'Izaberi svoju ulogu:';
 
   @override
   String get selectRoleToContinue =>
-      'Izaberite ulogu da biste započeli. Možete je promeniti bilo kada u zaglavlju iznad.';
+      'Izaberi ulogu za početak. Možeš je promeniti bilo kada u meniju iznad.';
 
   @override
   String get consentTextFullBody =>
@@ -350,50 +349,50 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get removeTenantConfirmation =>
-      'Da li ste sigurni da želite da uklonite ovog stanara iz nekretnine? Ovo će raskinuti vezu i obrisati zapis o pozivu.';
+      'Da li želiš da ukloniš stanara? Ovo će prekinuti vezu i obrisati istoriju poziva.';
 
   @override
   String get remove => 'Ukloni';
 
   @override
   String logRentDeclared(String month) {
-    return 'Stanar je označio kiriju za $month kao plaćenu.';
+    return 'Stanar je prijavio uplatu za $month.';
   }
 
   @override
   String logRentApproved(String month) {
-    return 'Stanodavac je odobrio kiriju za $month.';
+    return 'Vlasnik je odobrio uplatu za $month.';
   }
 
   @override
   String logRentRejected(String month) {
-    return 'Stanodavac je odbio kiriju za $month.';
+    return 'Vlasnik je odbio uplatu za $month.';
   }
 
   @override
   String logMarkedAsPaid(String month) {
-    return 'Stanodavac je označio $month kao plaćeno.';
+    return 'Vlasnik je označio $month kao plaćen.';
   }
 
   @override
   String logMarkedAsPending(String month) {
-    return 'Stanodavac je označio $month na čekanju.';
+    return 'Vlasnik je vratio $month na čekanje.';
   }
 
   @override
   String logAutoApproved(String month) {
-    return 'Kirija za $month je automatski odobrena od strane sistema nakon 5 dana.';
+    return 'Sistem je automatski odobrio uplatu za $month posle 5 dana.';
   }
 
   @override
   String get activity => 'Aktivnosti';
 
   @override
-  String get noContractsTitle => 'Još uvek nema ugovora';
+  String get noContractsTitle => 'Nema aktivnih ugovora';
 
   @override
   String get noContractsMessage =>
-      'Da biste pratili kiriju i troškove, prvo pozovite stanara unošenjem detalja ugovora.';
+      'Kako bi pratio kirije i račune, prvo unesi ugovor i pozovi stanara.';
 
   @override
   String get inviteFirstTenant => 'Pozovi zakupca';
@@ -403,14 +402,14 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get confirmCancelInvitationMessage =>
-      'Da li ste sigurni da želite da povučete ovaj poziv? Ova akcija će ga trajno izbrisati.';
+      'Da li želiš da otkažeš poziv? Link će postati nevažeći.';
 
   @override
   String get confirmDeclineRevisionTitle => 'Odbij zahtev za reviziju';
 
   @override
   String get confirmDeclineRevisionMessage =>
-      'Da li ste sigurni da želite da odbijete zahtev zakupca za reviziju? Ugovor će ostati na čekanju sa originalnim uslovima.';
+      'Da li želiš da odbijete izmene ugovora? Ugovor ostaje sa prvobitnim uslovima.';
 
   @override
   String get activeContract => 'Aktivni ugovor';
@@ -428,7 +427,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get decline => 'Odbij';
 
   @override
-  String get declineRevisionRequest => 'Odbij zahtev za reviziju';
+  String get declineRevisionRequest => 'Odbij izmene';
 
   @override
   String get pendingHeader => 'NA ČEKANJU';
@@ -437,19 +436,23 @@ class AppLocalizationsSr extends AppLocalizations {
   String get awaitingHeader => 'ČEKA ODOBRENJE';
 
   @override
+  String get awaitingExplanation =>
+      'Potrebno je odobrenje stanodavca da bi se označilo kao plaćeno.';
+
+  @override
   String get paidHeader => 'PLAĆENO';
 
   @override
-  String get waitingForTenantPayment => 'Čeka uplatu stanara';
+  String get waitingForTenantPayment => 'Čeka se uplata stanara';
 
   @override
-  String get waitingForYourApproval => 'Čeka vaše odobrenje';
+  String get waitingForYourApproval => 'Čeka tvoje odobrenje';
 
   @override
-  String get waitingForOwnerApproval => 'Čeka odobrenje stanodavca';
+  String get waitingForOwnerApproval => 'Čeka se odobrenje vlasnika';
 
   @override
-  String get waitingForYourPayment => 'Čeka vašu uplatu';
+  String get waitingForYourPayment => 'Čeka se tvoja uplata';
 
   @override
   String get processCompleted => 'Proces završen';
@@ -464,7 +467,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get noInvoice => 'Bez računa';
 
   @override
-  String get uploadInvoice => 'Otpremi račun';
+  String get uploadInvoice => 'Učitaj račun';
 
   @override
   String get awaitingInvoice => 'Čeka se račun';
@@ -537,7 +540,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get endDate => 'Datum kraja';
 
   @override
-  String get taxConfiguration => 'Konfiguracija poreza';
+  String get taxConfiguration => 'Porez';
 
   @override
   String get included => 'Uključeno';
@@ -552,14 +555,14 @@ class AppLocalizationsSr extends AppLocalizations {
   String get extraPayment => 'Dodatna uplata';
 
   @override
-  String get utility => 'Komunalno';
+  String get utility => 'Komunalne usluge';
 
   @override
   String get owner => 'Vlasnik';
 
   @override
   String proposeChangesInfo(String role) {
-    return 'Izmene će biti poslate $role na odobrenje. Trenutni uslovi ostaju na snazi do prihvatanja.';
+    return 'Izmene će biti poslate $role na odobrenje. Stari uslovi važe dok se novi ne prihvate.';
   }
 
   @override
@@ -569,16 +572,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get declarePayment => 'Prijavi uplatu';
 
   @override
-  String get uploadReceipt => 'Otpremi uplatnicu';
+  String get uploadReceipt => 'Učitaj uplatnicu';
 
   @override
   String get paidInCash => 'Plaćeno gotovinom';
 
   @override
-  String get noFinancialRecords => 'Još uvek nema finansijskih zapisa';
+  String get noFinancialRecords => 'Nema zabeleženih plaćanja';
 
   @override
-  String get noActiveContract => 'Nije pronađen otpremljeni ugovor';
+  String get noActiveContract => 'Nema aktivnih ugovora';
 
   @override
   String get contractTermsInfo =>
@@ -588,7 +591,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get send => 'Pošalji';
 
   @override
-  String get totalRent => 'Ukupna kirija';
+  String get totalRent => 'Ukupno';
 
   @override
   String get infoTooltip =>
@@ -628,7 +631,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get defaultLeaseTermsSubtitle =>
-      'Uslovi koji se koriste kao šablon za nove pozive.';
+      'Ciljni uslovi koji se koriste kao predložak za nova pozivanja.';
 
   @override
   String get invalidNumber => 'Nevažeći broj';
@@ -643,19 +646,19 @@ class AppLocalizationsSr extends AppLocalizations {
   String get expenseInfostan => 'Infostan';
 
   @override
-  String get expenseElectricity => 'Struja (Električna energija)';
+  String get expenseElectricity => 'Struja';
 
   @override
   String get expenseInternetTV => 'Internet/TV';
 
   @override
-  String get expenseMaintenance => 'Održavanje zgrade';
+  String get expenseMaintenance => 'Održavanje';
 
   @override
   String get expenseTax => 'Porez';
 
   @override
-  String get tenantPaysTo => 'Stanar plaća:';
+  String get tenantPaysTo => 'Plaća se:';
 
   @override
   String get fileSelected => 'Fajl izabran';
@@ -673,20 +676,20 @@ class AppLocalizationsSr extends AppLocalizations {
   String get save => 'Sačuvaj';
 
   @override
-  String get paymentDeclared => 'Uplata je uspešno prijavljena.';
+  String get paymentDeclared => 'Uplata je prijavljena.';
 
   @override
-  String get dashboard => 'Kontrolna tabla';
+  String get dashboard => 'Dashboard';
 
   @override
   String get parties => 'STRANE';
 
   @override
-  String get tenantEmail => 'E-pošta stanara';
+  String get tenantEmail => 'E-mail stanara';
 
   @override
   String get existingContractTermsInfo =>
-      'Postojeći dogovoreni uslovi ugovora (kirija, datumi i troškovi) važiće i za ovog stanara.';
+      'Dogovoreni uslovi ugovora važiće i za ovog stanara.';
 
   @override
   String get rentAndPayment => 'KIRIJA I PLAĆANJE';
@@ -701,10 +704,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get editContract => 'Izmeni ugovor';
 
   @override
-  String get sendRevision => 'Pošalji reviziju';
+  String get sendRevision => 'Pošalji izmene';
 
   @override
-  String get revisionSent => 'Predlog revizije je poslat';
+  String get revisionSent => 'Predlog izmena je poslat';
 
   @override
   String get existingFileKept => 'Postojeći fajl je zadržan';
@@ -713,17 +716,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get done => 'Gotovo';
 
   @override
-  String get startAndEndDatesMandatory =>
-      'Datum početka i završetka su obavezni';
+  String get startAndEndDatesMandatory => 'Datumi početka i kraja su obavezni';
 
   @override
-  String get revisionRequested => 'Tražena revizija';
+  String get revisionRequested => 'Tražene izmene';
 
   @override
   String get statusActive => 'Aktivno';
 
   @override
-  String get statusPending => 'Čeka odobrenje';
+  String get statusPending => 'Na čekanju';
 
   @override
   String get statusDeclined => 'Odbijeno';
@@ -744,13 +746,13 @@ class AppLocalizationsSr extends AppLocalizations {
   String get includedInRent => 'Uključeno u kiriju';
 
   @override
-  String get changesAccepted => 'Promene su prihvaćene';
+  String get changesAccepted => 'Izmene su prihvaćene';
 
   @override
-  String get changesDeclined => 'Promene su odbijene';
+  String get changesDeclined => 'Izmene su odbijene';
 
   @override
-  String get contractChangeProposal => 'Predlog promene ugovora';
+  String get contractChangeProposal => 'Predlog izmena ugovora';
 
   @override
   String get cancelProposal => 'Otkaži predlog';
@@ -770,7 +772,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get selectPaymentReceiverWarning =>
-      'Molimo izaberite primaoca uplate pre nastavka.';
+      'Izaberi primaoca uplate pre nego što nastaviš.';
 
   @override
   String progressSummary(int completed, int total, int sent) {
@@ -787,7 +789,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get newRequest => 'Novi zahtev';
 
   @override
-  String get reportIssue => 'Prijavi kvar';
+  String get reportIssue => 'Prijavi problem';
 
   @override
   String get issueTitle => 'Naslov';
@@ -802,7 +804,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get issuePriority => 'Prioritet';
 
   @override
-  String get statusInvestigating => 'Na pregledu';
+  String get statusInvestigating => 'U toku';
 
   @override
   String get statusResolved => 'Rešeno';
@@ -829,34 +831,32 @@ class AppLocalizationsSr extends AppLocalizations {
   String get categoryOther => 'Ostalo';
 
   @override
-  String get noIssuesTitle => 'Još nema prijavljenih kvarova';
+  String get noIssuesTitle => 'Nema prijavljenih problema';
 
   @override
-  String get noIssuesMessage =>
-      'Sve je u redu! Nema prijavljenih zahteva za održavanje ove imovine.';
+  String get noIssuesMessage => 'Sve je u redu, nema zabeleženih problema.';
 
   @override
   String get updateStatus => 'Ažuriraj status';
 
   @override
-  String get issueDetails => 'Detalji kvara';
+  String get issueDetails => 'Detalji problema';
 
   @override
   String logMaintenanceCreated(String title) {
-    return 'Kreiran zahtev za održavanje: $title';
+    return 'Prijavljen problem: $title';
   }
 
   @override
   String logMaintenanceStatusUpdated(String status) {
-    return 'Status održavanja ažuriran na $status';
+    return 'Status problema je promenjen na $status';
   }
 
   @override
-  String get logMaintenanceReopened => 'Zahtev za održavanje ponovo otvoren';
+  String get logMaintenanceReopened => 'Problem je ponovo otvoren';
 
   @override
-  String get logMaintenanceMessageAdded =>
-      'Dodata nova poruka zahtevu za održavanje';
+  String get logMaintenanceMessageAdded => 'Dodata je nova poruka';
 
   @override
   String get notifications => 'Obaveštenja';
@@ -865,10 +865,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get markAllAsRead => 'Označi sve kao pročitano';
 
   @override
-  String get noNotifications => 'Još nema obaveštenja';
+  String get noNotifications => 'Nema novih obaveštenja';
 
   @override
-  String get documents => 'Dokumenta';
+  String get documents => 'Dokumenti';
 
   @override
   String get mainContract => 'Glavni ugovor';
@@ -880,7 +880,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get enterDocumentName => 'Unesite naziv dokumenta';
 
   @override
-  String get noDocumentsYet => 'Još uvek nema dokumenata';
+  String get noDocumentsYet => 'Nema učitanih dokumenata';
 
   @override
   String get additionalDocuments => 'Dodatna dokumenta';
@@ -890,7 +890,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get deleteDocumentConfirm =>
-      'Da li ste sigurni da želite da obrišete ovaj dokument?';
+      'Da li sigurno želiš da obrišeš ovaj dokument?';
 
   @override
   String get uploadMainContract => 'Otpremi ugovor';
@@ -911,7 +911,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get vacant => 'Prazno';
 
   @override
-  String get overdueReceivables => 'Dospela';
+  String get overdueReceivables => 'Kašnjenja';
 
   @override
   String get collectedByType => 'Naplaćeno';
@@ -928,10 +928,10 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get hasDebt => 'Ima dug';
+  String get hasDebt => 'Duguje';
 
   @override
-  String get paymentAwaitingApproval => 'Čeka odobrenje';
+  String get paymentAwaitingApproval => 'Čeka proveru';
 
   @override
   String get rent => 'Kirija';
@@ -944,6 +944,9 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get debtLabel => 'Dug';
+
+  @override
+  String get totalDebt => 'Ukupan dug';
 
   @override
   String get paidLabel => 'Plaćeno';
@@ -965,14 +968,14 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get confirmApprovePaymentMessage =>
-      'Da li ste sigurni da želite da potvrdite ovu uplatu?';
+      'Da li želiš da potvrdiš ovu uplatu?';
 
   @override
   String get confirmRejectPaymentTitle => 'Odbij uplatu';
 
   @override
   String get confirmRejectPaymentMessage =>
-      'Da li želite da odbijete ovu deklaraciju i tražite od zakupca da je ponovo prijavi?';
+      'Da li želiš da odbiješ ovu prijavu i tražiš ponovno slanje?';
 
   @override
   String get confirm => 'Potvrdi';
@@ -988,17 +991,16 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get confirmTerminationMessage =>
-      'Da li ste sigurni da želite da pošaljete zahtev za raskid ugovora na izabrani datum?';
+      'Da li želiš da pošalješ zahtev za raskid ugovora za izabrani datum?';
 
   @override
-  String get terminationRequestSent =>
-      'Zahtev za raskid ugovora je uspešno poslat.';
+  String get terminationRequestSent => 'Zahtev za raskid je poslat.';
 
   @override
-  String get statusInactive => 'Pasivno / Završeno';
+  String get statusInactive => 'Završeno';
 
   @override
-  String get terminationRequested => 'Čeka se raskid';
+  String get terminationRequested => 'Raskid na čekanju';
 
   @override
   String get approveTermination => 'Potvrdi raskid';
@@ -1037,7 +1039,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get confirmDisputeTitle => 'Ospori uplatu';
 
   @override
-  String get disputeSentSuccess => 'Vaš prigovor je poslat stanodavcu.';
+  String get disputeSentSuccess => 'Prigovor je poslat vlasniku stana.';
 
   @override
   String get takeAction => 'Preduzmi akciju';
@@ -1046,10 +1048,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get ownerNote => 'Vlasnikova beleška';
 
   @override
-  String get explanationOptional => 'Objašnjenje (Opciono)';
+  String get explanationOptional => 'Napomena (opciono)';
 
   @override
-  String get explanationHint => 'npr. Proverio sam brojilo...';
+  String get explanationHint => 'npr. Proverio sam struju...';
 
   @override
   String get units => 'Jedinice';
@@ -1058,17 +1060,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get tenantsLabel => 'Stanari';
 
   @override
-  String get portfolioManagement => 'Upravljanje portfolijom';
+  String get portfolioManagement => 'Portfolijo';
 
   @override
-  String get paymentRequests => 'Plaćanja i zahtevi';
+  String get paymentRequests => 'Zahtevi i plaćanja';
 
   @override
   String get profileSettings => 'Podešavanja profila';
 
   @override
-  String get confirmSignOutMessage =>
-      'Da li ste sigurni da želite da se odjavite?';
+  String get confirmSignOutMessage => 'Da li želiš da se odjaviš?';
 
   @override
   String errorWithDetails(String error) {
@@ -1081,15 +1082,13 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get acceptTermsWarning =>
-      'Molimo prihvatite uslove pre nego što nastavite.';
+  String get acceptTermsWarning => 'Prihvati uslove pre nego što nastaviš.';
 
   @override
-  String get maintenanceRequestSuccess =>
-      'Zahtev za održavanje je uspešno poslat.';
+  String get maintenanceRequestSuccess => 'Problem je uspešno prijavljen.';
 
   @override
-  String get ok => 'U redu';
+  String get ok => 'OK';
 
   @override
   String get orLabel => 'ILI';
@@ -1118,7 +1117,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get nextPayment => 'Sledeća uplata';
 
   @override
-  String get payNow => 'Plati odmah';
+  String get payNow => 'Prijavi uplatu';
 
   @override
   String get upcomingLabel => 'Predstojeće';
@@ -1127,7 +1126,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get joinPropertyInvitation => 'Poziv za pridruživanje nekretnini';
 
   @override
-  String get feedbackSent => 'Povratne informacije su poslate';
+  String get feedbackSent => 'Hvala na feedback-u!';
 
   @override
   String get rentalProposal => 'Predlog zakupa';
@@ -1151,25 +1150,25 @@ class AppLocalizationsSr extends AppLocalizations {
   String get defaultLeaseTermsHeader => 'PODRAZUMEVANI USLOVI ZAKUPA';
 
   @override
-  String get proposeRevision => 'Predloži reviziju';
+  String get proposeRevision => 'Predloži izmene';
 
   @override
   String get revisionTermsQuestion =>
-      'Koje uslove želite da promenite? (Zakupnina, dan dospeća, troškovi, itd.)';
+      'Koje uslove želiš da promeniš? (Kiriju, dan plaćanja, troškove...)';
 
   @override
-  String get enterNotesHint => 'Unesite svoje beleške ovde...';
+  String get enterNotesHint => 'Upiši svoju napomenu...';
 
   @override
   String get submit => 'Pošalji';
 
   @override
   String invitedToJoinProperty(String property) {
-    return 'Pozvani ste da se pridružite nekretnini $property.';
+    return 'Pozvan/a si da se pridružiš objektu $property.';
   }
 
   @override
-  String get waitingForLandlord => 'Čeka se odgovor stanodavca...';
+  String get waitingForLandlord => 'Čeka se odgovor vlasnika...';
 
   @override
   String get day => 'Dan';
@@ -1179,10 +1178,10 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get acceptTermsAndDistribution =>
-      'Prihvatam uslove ugovora i raspodelu troškova.';
+      'Prihvatam uslove ugovora i podelu troškova.';
 
   @override
-  String get datesMandatory => 'Datum početka i završetka su obavezni';
+  String get datesMandatory => 'Datumi početka i kraja su obavezni';
 
   @override
   String get partiesHeader => 'STRANE';
@@ -1227,7 +1226,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get issueResolvedStatus => 'Ovaj kvara je označen kao rešen.';
 
   @override
-  String get reopenIssue => 'Još uvek postoji problem (Ponovo otvori)';
+  String get reopenIssue => 'Problem i dalje postoji (Otvori ponovo)';
 
   @override
   String get deleteRequest => 'Obriši zahtev';
@@ -1244,28 +1243,28 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String paymentDeclaredSuccess(String title) {
-    return 'Uplata $title je prijavljena.';
+    return 'Uplata za $title je uspešno prijavljena.';
   }
 
   @override
   String get setAmountUploadInvoice => 'Unesite detalje računa';
 
   @override
-  String get yourMessage => 'Vaša poruka:';
+  String get yourMessage => 'Tvoja poruka:';
 
   @override
-  String get revisionRequestLabel => 'Zahtev za reviziju:';
+  String get revisionRequestLabel => 'Zahtev za izmenama:';
 
   @override
   String get noActivityLogs => 'Još nema prijavljenih aktivnosti';
 
   @override
   String get landlordProposedChanges =>
-      'Stanodavac je predložio izmene ugovora. Dodirnite da pregledate.';
+      'Vlasnik je predložio izmene ugovora. Dodirni da pogledaš.';
 
   @override
   String get tenantProposedChanges =>
-      'Stanar je predložio izmene ugovora. Dodirnite da pregledate.';
+      'Stanar je predložio izmene ugovora. Dodirni da pogledaš.';
 
   @override
   String dueOn(String date) {
@@ -1293,30 +1292,29 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get cannotInviteSelf => 'Ne možete pozvati sebe kao stanara.';
+  String get cannotInviteSelf => 'Ne možeš pozvati sopstveni e-mail.';
 
   @override
   String get paywallTitle => 'Stanomer Premium';
 
   @override
-  String get paywallSubtitle =>
-      'Uklonite ograničenja u upravljanju nekretninama.';
+  String get paywallSubtitle => 'Ukloni sva ograničenja u vođenju nekretnina.';
 
   @override
   String get unlimitedProperties =>
       'Neograničeno dodavanje i upravljanje nekretninama';
 
   @override
-  String get detailedReporting => 'Brže i detaljnije izveštavanje';
+  String get detailedReporting => 'Napredno finansijsko izveštavanje';
 
   @override
   String get extraStorage => 'Više prostora za skladištenje';
 
   @override
-  String get pdfContracts => 'Generisanje PDF ugovora (Uskoro)';
+  String get pdfContracts => 'PDF ugovori (Uskoro)';
 
   @override
-  String get automatedRenewal => 'Automatski obračun i obnova kirije (Uskoro)';
+  String get automatedRenewal => 'Automatska obnova (Uskoro)';
 
   @override
   String get restorePurchases => 'Povrati kupovine';
@@ -1339,7 +1337,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get premiumMobileOnlyDesc =>
-      'Stanomer Premium pretplata se može kupiti samo putem mobilne aplikacije. Preuzmite aplikaciju ispod da biste počeli s Premium-om.';
+      'Stanomer Premium se kupuje samo kroz mobilnu aplikaciju. Preuzmi je preko linkova ispod.';
 
   @override
   String get downloadOnAppStore => 'Preuzmi na App Store-u';
@@ -1373,8 +1371,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get support_title => 'Podrška';
 
   @override
-  String get support_desc =>
-      'Kontaktirajte nas za tehničku podršku ili povratne informacije.';
+  String get support_desc => 'Piši nam ako imaš pitanja ili feedback.';
 
   @override
   String get subject => 'Tema';
@@ -1395,7 +1392,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get other => 'Drugo';
 
   @override
-  String get messageSent => 'Poruka je uspešno poslata!';
+  String get messageSent => 'Poruka je poslata!';
 
   @override
   String get errorSendingMessage =>
@@ -1415,10 +1412,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get retry => 'OSVEŽI';
 
   @override
-  String get zzplConsentTitle => 'Pristanak za obradu podataka o ličnosti';
+  String get zzplConsentTitle => 'Zaštita podataka (ZZPL)';
 
   @override
-  String get zzplAgreeAndContinue => 'Pročitao sam i prihvatam';
+  String get zzplAgreeAndContinue => 'Prihvatam i nastavljam';
 
   @override
   String get share => 'Podeli';
@@ -1439,22 +1436,22 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get invoiceLocalOnlyDesc =>
-      'Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.';
+      'Račun se čuva samo lokalno. Možeš uključiti cloud backup u podešavanjima.';
 
   @override
   String get invoiceCloudSecureDesc =>
-      'Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.';
+      'Račun je sačuvan na cloud-u. Vide ga samo stanar i vlasnik.';
 
   @override
   String get invoiceUploadLimitDesc => 'JPEG, PNG ili PDF · maks. 10 MB';
 
   @override
   String get billMissingLocalDesc =>
-      'Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.';
+      'Račun je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.';
 
   @override
   String get documentMissingLocalDesc =>
-      'Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.';
+      'Dokument je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.';
 
   @override
   String get cannotOpenDocument => 'Nije moguće otvoriti dokument';
@@ -1471,7 +1468,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get login => 'Пријавите се';
 
   @override
-  String get signup => 'Регистрација';
+  String get signup => 'Региструјте се';
 
   @override
   String get email => 'Е-пошта';
@@ -1511,10 +1508,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get alreadyHaveAccount => 'Имате налог? Пријавите се';
 
   @override
-  String get continueWithGoogle => 'Наставите са Гоогле-ом';
+  String get continueWithGoogle => 'Наставите са Google-ом';
 
   @override
-  String get continueWithApple => 'Наставите са Аппле-ом';
+  String get continueWithApple => 'Наставите са Apple-ом';
 
   @override
   String get fullName => 'Име и презиме';
@@ -1531,16 +1528,16 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmPasswordForDeletion =>
-      'Молимо унесите лозинку да потврдите брисање';
+      'Молимо Вас да унесете лозинку како бисте потврдили брисање';
 
   @override
   String get deleteButtonLabel => 'Трајно обриши мој налог';
 
   @override
-  String get cancel => 'Откажи';
+  String get cancel => 'Одустани';
 
   @override
-  String get invalidPassword => 'Погрешна лозинка';
+  String get invalidPassword => 'Нетачна лозинка';
 
   @override
   String get welcomeToStanomer => 'Добродошли у Станомер';
@@ -1559,7 +1556,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get accountHeader => 'Налог';
 
   @override
-  String get discoverPremium => 'Истражите Премиум';
+  String get discoverPremium => 'Сазнајте више о Премиуму';
 
   @override
   String get unlimitedLeaseContracts => 'Неограничени најамни уговори';
@@ -1577,7 +1574,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get newPassword => 'Нова лозинка';
 
   @override
-  String get saveChanges => 'Сачувај измене';
+  String get saveChanges => 'Сачувај';
 
   @override
   String get passwordChangedSuccess => 'Лозинка је успешно промењена';
@@ -1616,7 +1613,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get propertyName => 'Назив некретнине';
 
   @override
-  String get propertyNameHint => 'нпр. Апартман Београд';
+  String get propertyNameHint => 'нпр. Стан у Београду';
 
   @override
   String get propertyAddedSuccess => 'Некретнина успешно додата';
@@ -1629,7 +1626,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get addYourFirstProperty =>
-      'Додајте своју прву некретнину да бисте започели праћење!';
+      'Унесите свој први стан како бисте започели праћење плаћања!';
 
   @override
   String get editProperty => 'Уреди некретнину';
@@ -1642,7 +1639,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmDeleteMessage =>
-      'Да ли сте сигурни да желите да обришете ову некретнину? Ова радња се не може поништити.';
+      'Да ли сигурно желите да обришете овај стан? Ова одлука се не може поништити.';
 
   @override
   String get propertyDeletedSuccess => 'Некретнина успешно обрисана';
@@ -1651,20 +1648,20 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get inviteTenant => 'Позови станара';
 
   @override
-  String get emailHint => 'Унесите е-маил станара';
+  String get emailHint => 'Унесите е-маил адресу станара';
 
   @override
   String get inviteCreatedSuccess =>
-      'Линк за позив је креиран! Сада га можете поделити.';
+      'Позив је успешно направљен! Сада га можете послати станару.';
 
   @override
-  String get shareInviteLink => 'Подели линк за позив';
+  String get shareInviteLink => 'Пошаљите позив станару';
 
   @override
   String get copyLink => 'Копирај линк';
 
   @override
-  String get noInvitesYet => 'Још увек нема послатих позива';
+  String get noInvitesYet => 'Нема активних позива';
 
   @override
   String get cancelInvitation => 'Откажи позив';
@@ -1682,10 +1679,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get overview => 'Преглед';
 
   @override
-  String get financials => 'Финансије';
+  String get financials => 'Кирија и рачуни';
 
   @override
-  String get propertySettings => 'Подешавања';
+  String get propertySettings => 'Подешавања стана';
 
   @override
   String get invitationHistory => 'Историја позива';
@@ -1694,33 +1691,32 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get invitationDetails => 'Детаљи позива';
 
   @override
-  String get acceptInvitation => 'Да, изнајмио сам ово';
+  String get acceptInvitation => 'Прихватите позив';
 
   @override
-  String get declineInvitation => 'Одбиј позив';
+  String get declineInvitation => 'Одбијте позив';
 
   @override
   String get inviteNotFound => 'Позив није пронађен или је истекао';
 
   @override
-  String get invitationAcceptedSuccess =>
-      'Добродошли кући! Позив је прихваћен.';
+  String get invitationAcceptedSuccess => 'Добродошли! Позив је прихваћен.';
 
   @override
   String pendingInvitationBanner(String property) {
-    return 'Имате отворен позив за $property';
+    return 'Имате отворен позив за стан $property';
   }
 
   @override
   String invitedBy(String name) {
-    return 'Позвао вас је $name';
+    return 'Корисник $name Вас је позвао';
   }
 
   @override
   String get yourName => 'Ваше име';
 
   @override
-  String get yourNameHint => 'Унесите своје пуно име';
+  String get yourNameHint => 'Унесите Ваше име и презиме';
 
   @override
   String get viewInvite => 'Погледај позив';
@@ -1733,7 +1729,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get tenantEmptyStateMessage =>
-      'Ако вам је станодавац послао позив, он ће се појавити овде. Кликните на дугме испод да бисте проверили нове позиве.';
+      'Ако Вам је власник стана послао позив, он ће се појавити овде. Притисните дугме испод како бисте проверили нове позиве.';
 
   @override
   String get refresh => 'Освежи';
@@ -1746,7 +1742,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmDeclineInviteMessage =>
-      'Да ли сте сигурни да желите да одбијете овај позив? Биће уклоњен са ваше листе на чекању.';
+      'Да ли сигурно желите да одбијете овај позив? Позив ће бити избрисан са листе.';
 
   @override
   String get contractStartDate => 'Датум почетка уговора';
@@ -1755,7 +1751,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get contractEndDate => 'Датум завршетка уговора';
 
   @override
-  String get uploadContract => 'Отпреми уговор';
+  String get uploadContract => 'Приложи уговор';
 
   @override
   String get viewContract => 'Погледај уговор';
@@ -1767,7 +1763,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get selectDate => 'Изабери датум';
 
   @override
-  String get appLanguage => 'Језик апликације';
+  String get appLanguage => 'Језик';
 
   @override
   String get english => 'Енглески';
@@ -1785,17 +1781,17 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get russian => 'Руски';
 
   @override
-  String get tenantMode => 'Мод станара';
+  String get tenantMode => 'Улога станара';
 
   @override
-  String get landlordMode => 'Мод станодавца';
+  String get landlordMode => 'Улога власника/станодавца';
 
   @override
-  String get whatAreYou => 'Као шта желите да наставите?';
+  String get whatAreYou => 'Изаберите своју улогу у апликацији:';
 
   @override
   String get selectRoleToContinue =>
-      'Изаберите улогу да бисте започели. Можете је променити било када у заглављу изнад.';
+      'Изаберите улогу како бисте почели. Можете је променити касније у горњем делу екрана.';
 
   @override
   String get consentTextFullBody =>
@@ -1806,50 +1802,50 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get removeTenantConfirmation =>
-      'Да ли сте сигурни да желите да уклоните овог станара из некретнине? Ово ће раскинути везу и обрисати запис о позиву.';
+      'Да ли сигурно желите да уклоните овог станара? Ова ће прекинути везу и избрисати историју позива.';
 
   @override
   String get remove => 'Уклони';
 
   @override
   String logRentDeclared(String month) {
-    return 'Станар је означио кирију за $month као плаћену.';
+    return 'Станар је пријавио да је платио кирију за $month.';
   }
 
   @override
   String logRentApproved(String month) {
-    return 'Станодавац је одобрио кирију за $month.';
+    return 'Станодавац је потврдио уплату кирије за $month.';
   }
 
   @override
   String logRentRejected(String month) {
-    return 'Станодавац је одбио кирију за $month.';
+    return 'Станодавац је одбио пријаву плаћања за $month.';
   }
 
   @override
   String logMarkedAsPaid(String month) {
-    return 'Станодавац је означио $month као плаћено.';
+    return 'Станодавац је означио $month као плаћен.';
   }
 
   @override
   String logMarkedAsPending(String month) {
-    return 'Станодавац је означио $month на чекању.';
+    return 'Станодавац је вратио $month на чекање.';
   }
 
   @override
   String logAutoApproved(String month) {
-    return 'Кирија за $month је аутоматски одобрена од стране система након 5 дана.';
+    return 'Систем је аутоматски одобрио уплату за $month након 5 дана.';
   }
 
   @override
   String get activity => 'Активности';
 
   @override
-  String get noContractsTitle => 'Још увек нема уговора';
+  String get noContractsTitle => 'Нема уговора';
 
   @override
   String get noContractsMessage =>
-      'Да бисте пратили кирију и трошкове, прво позовите станара уношењем детаља уговора.';
+      'Да бисте пратили кирију и рачуне, прво морате унети уговор и позвати станара.';
 
   @override
   String get inviteFirstTenant => 'Позови закупца';
@@ -1859,14 +1855,14 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmCancelInvitationMessage =>
-      'Да ли сте сигурни да желите да повучете овај позив? Ова акција ће га трајно избрисати.';
+      'Да ли сигурно желите да повучете овај позив? Позив ће бити трајно избрисан.';
 
   @override
   String get confirmDeclineRevisionTitle => 'Одбиј захтев за ревизију';
 
   @override
   String get confirmDeclineRevisionMessage =>
-      'Да ли сте сигурни да желите да одбијете захтев закупца за ревизију? Уговор ће остати на чекању са оригиналним условима.';
+      'Да ли сигурно желите да одбијете захтев станара за измене? Уговор ће остати на чекању са првобитним условима.';
 
   @override
   String get activeContract => 'Активни уговор';
@@ -1884,28 +1880,32 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get decline => 'Одбиј';
 
   @override
-  String get declineRevisionRequest => 'Одбиј захтев за ревизију';
+  String get declineRevisionRequest => 'Одбијте измене';
 
   @override
-  String get pendingHeader => 'НА ЧЕКАНЈУ';
+  String get pendingHeader => 'НА ЧЕКАЊУ';
 
   @override
-  String get awaitingHeader => 'ЧЕКА ОДОБРЕНЈЕ';
+  String get awaitingHeader => 'ЧЕКА ОДОБРЕЊЕ';
+
+  @override
+  String get awaitingExplanation =>
+      'Потребно је одобрење станодавца да би се означило као плаћено.';
 
   @override
   String get paidHeader => 'ПЛАЋЕНО';
 
   @override
-  String get waitingForTenantPayment => 'Чека уплату станара';
+  String get waitingForTenantPayment => 'Чека се уплата станара';
 
   @override
-  String get waitingForYourApproval => 'Чека ваше одобрење';
+  String get waitingForYourApproval => 'Чека се Ваше одобрење';
 
   @override
-  String get waitingForOwnerApproval => 'Чека одобрење станодавца';
+  String get waitingForOwnerApproval => 'Чека се одобрење станодавца';
 
   @override
-  String get waitingForYourPayment => 'Чека вашу уплату';
+  String get waitingForYourPayment => 'Чека се Ваша уплата';
 
   @override
   String get processCompleted => 'Процес завршен';
@@ -1920,22 +1920,22 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get noInvoice => 'Без рачуна';
 
   @override
-  String get uploadInvoice => 'Отпреми рачун';
+  String get uploadInvoice => 'Приложи рачун';
 
   @override
   String get awaitingInvoice => 'Чека се рачун';
 
   @override
-  String get updateLabel => 'Ажурирај';
+  String get updateLabel => 'Aжурирај';
 
   @override
   String get statusVacant => 'Слободно';
 
   @override
-  String get pendingApproval => 'ЧЕКА ОДОБРЕНЈЕ';
+  String get pendingApproval => 'ЧЕКА ОДОБРЕЊЕ';
 
   @override
-  String get targetRent => 'ЦИЛЈНА КИРИЈА';
+  String get targetRent => 'ЦИЉНА КИРИЈА';
 
   @override
   String get contractInfo => 'Подаци о уговору';
@@ -1958,7 +1958,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get propertySettingsLabel => 'Подешавања некретнине';
+  String get propertySettingsLabel => 'Подешавања стана';
 
   @override
   String get propertyActions => 'Акције некретнине';
@@ -2015,7 +2015,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String proposeChangesInfo(String role) {
-    return 'Измене ће бити послате $role на одобрење. Тренутни услови остају на снази до прихватања.';
+    return 'Предложене измене ће бити послате кориснику ($role) на одобрење. Тренутни услови важе све док се нови не прихвате.';
   }
 
   @override
@@ -2025,13 +2025,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get declarePayment => 'Пријави уплату';
 
   @override
-  String get uploadReceipt => 'Отпреми уплатницу';
+  String get uploadReceipt => 'Приложите уплатницу';
 
   @override
   String get paidInCash => 'Плаћено готовином';
 
   @override
-  String get noFinancialRecords => 'Још увек нема финансијских записа';
+  String get noFinancialRecords => 'Нема забележених плаћања';
 
   @override
   String get noActiveContract => 'Није пронађен отпремљени уговор';
@@ -2044,7 +2044,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get send => 'Пошаљи';
 
   @override
-  String get totalRent => 'Укупна кирија';
+  String get totalRent => 'Укупно за плаћање';
 
   @override
   String get infoTooltip =>
@@ -2077,7 +2077,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
       'Ваш предлог измена чека одобрење друге стране.';
 
   @override
-  String get propertyDetails => 'ДЕТАЛЈИ НЕКРЕТНИНЕ';
+  String get propertyDetails => 'ДЕТАЉИ НЕКРЕТНИНЕ';
 
   @override
   String get defaultLeaseTerms => 'ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА';
@@ -2099,7 +2099,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get expenseInfostan => 'Инфостан';
 
   @override
-  String get expenseElectricity => 'Струја (Електрична енергија)';
+  String get expenseElectricity => 'Струја';
 
   @override
   String get expenseInternetTV => 'Интернет/ТВ';
@@ -2111,13 +2111,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get expenseTax => 'Порез';
 
   @override
-  String get tenantPaysTo => 'Станар плаћа:';
+  String get tenantPaysTo => 'Плаћа се:';
 
   @override
-  String get fileSelected => 'Фајл изабран';
+  String get fileSelected => 'Датотека је изабрана';
 
   @override
-  String get selectInvoice => 'Изабери рачун';
+  String get selectInvoice => 'Приложи рачун';
 
   @override
   String get amount => 'Износ';
@@ -2129,57 +2129,56 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get save => 'Сачувај';
 
   @override
-  String get paymentDeclared => 'Уплата је успешно пријављена.';
+  String get paymentDeclared => 'Уплата је пријављена.';
 
   @override
-  String get dashboard => 'Контролна табла';
+  String get dashboard => 'Преглед стања';
 
   @override
   String get parties => 'СТРАНЕ';
 
   @override
-  String get tenantEmail => 'Е-пошта станара';
+  String get tenantEmail => 'Е-маил адреса станара';
 
   @override
   String get existingContractTermsInfo =>
-      'Постојећи договорени услови уговора (кирија, датуми и трошкови) важиће и за овог станара.';
+      'Досадашњи услови уговора важиће и за овог станара.';
 
   @override
-  String get rentAndPayment => 'КИРИЈА И ПЛАЋАНЈЕ';
+  String get rentAndPayment => 'КИРИЈА И ПЛАЋАЊЕ';
 
   @override
   String get datesAndContract => 'ДАТУМИ И УГОВОР';
 
   @override
-  String get expenseSettingsHeader => 'ПОДЕШАВАНЈЕ ТРОШКОВА';
+  String get expenseSettingsHeader => 'ПОДЕШАВАЊЕ ТРОШКОВА';
 
   @override
   String get editContract => 'Измени уговор';
 
   @override
-  String get sendRevision => 'Пошаљи ревизију';
+  String get sendRevision => 'Пошаљи предложене измене';
 
   @override
-  String get revisionSent => 'Предлог ревизије је послат';
+  String get revisionSent => 'Предлог измена је послат';
 
   @override
-  String get existingFileKept => 'Постојећи фајл је задржан';
+  String get existingFileKept => 'Постојећи документ је сачуван';
 
   @override
   String get done => 'Готово';
 
   @override
-  String get startAndEndDatesMandatory =>
-      'Датум почетка и завршетка су обавезни';
+  String get startAndEndDatesMandatory => 'Датуми почетка и краја су обавезни';
 
   @override
-  String get revisionRequested => 'Тражена ревизија';
+  String get revisionRequested => 'Траже се измене';
 
   @override
   String get statusActive => 'Активно';
 
   @override
-  String get statusPending => 'Чека одобрење';
+  String get statusPending => 'На чекању';
 
   @override
   String get statusDeclined => 'Одбијено';
@@ -2200,33 +2199,33 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get includedInRent => 'Укључено у кирију';
 
   @override
-  String get changesAccepted => 'Промене су прихваћене';
+  String get changesAccepted => 'Измене су прихваћене';
 
   @override
-  String get changesDeclined => 'Промене су одбијене';
+  String get changesDeclined => 'Измене су одбијене';
 
   @override
-  String get contractChangeProposal => 'Предлог промене уговора';
+  String get contractChangeProposal => 'Предлог измена уговора';
 
   @override
-  String get cancelProposal => 'Откажи предлог';
+  String get cancelProposal => 'Повуци предлог';
 
   @override
   String get viewInvoice => 'Погледај фактуру';
 
   @override
-  String get paymentResponsibility => 'ОДГОВОРНОСТ ЗА ПЛАЋАНЈЕ';
+  String get paymentResponsibility => 'КО ПЛАЋА РАЧУНЕ';
 
   @override
   String get tenantPaysDirectlyToUtility =>
-      'Станар плаћа директно комуналној служби';
+      'Станар плаћа директно јавном предузећу/служби';
 
   @override
-  String get tenantPaysToLandlord => 'Станар плаћа станодавцу';
+  String get tenantPaysToLandlord => 'Станар плаћа станодавцу (уз кирију)';
 
   @override
   String get selectPaymentReceiverWarning =>
-      'Молимо изаберите примаоца уплате пре наставка.';
+      'Молимо Вас да изаберете коме се плаћа овај рачун.';
 
   @override
   String progressSummary(int completed, int total, int sent) {
@@ -2243,7 +2242,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get newRequest => 'Нови захтев';
 
   @override
-  String get reportIssue => 'Пријави квар';
+  String get reportIssue => 'Пријави квар / проблем';
 
   @override
   String get issueTitle => 'Наслов';
@@ -2258,7 +2257,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get issuePriority => 'Приоритет';
 
   @override
-  String get statusInvestigating => 'На прегледу';
+  String get statusInvestigating => 'Решава се';
 
   @override
   String get statusResolved => 'Решено';
@@ -2285,34 +2284,34 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get categoryOther => 'Остало';
 
   @override
-  String get noIssuesTitle => 'Још нема пријављених кварова';
+  String get noIssuesTitle => 'Нема пријављених кварова';
 
   @override
   String get noIssuesMessage =>
-      'Све је у реду! Нема пријављених захтева за одржавање ове имовине.';
+      'Нема забележених кварова нити проблема у овом стану.';
 
   @override
-  String get updateStatus => 'Ажурирај status';
+  String get updateStatus => 'Промени статус';
 
   @override
-  String get issueDetails => 'Детаљи квара';
+  String get issueDetails => 'Опис квара';
 
   @override
   String logMaintenanceCreated(String title) {
-    return 'Креиран захтев за одржавање: $title';
+    return 'Пријављен је нови квар: $title';
   }
 
   @override
   String logMaintenanceStatusUpdated(String status) {
-    return 'Статус одржавања ажуриран на $status';
+    return 'Статус поправке је промењен на $status';
   }
 
   @override
-  String get logMaintenanceReopened => 'Захтев за одржавање поново отворен';
+  String get logMaintenanceReopened => 'Квар је поново пријављен као нерешен';
 
   @override
   String get logMaintenanceMessageAdded =>
-      'Додата нова порука захтеву за одржавање';
+      'Додата је нова порука у вези поправке';
 
   @override
   String get notifications => 'Обавештења';
@@ -2321,13 +2320,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get markAllAsRead => 'Означи све као прочитано';
 
   @override
-  String get noNotifications => 'Још нема обавештења';
+  String get noNotifications => 'Нема нових обавештења';
 
   @override
-  String get documents => 'Документа';
+  String get documents => 'Документи';
 
   @override
-  String get mainContract => 'Главни уговор';
+  String get mainContract => 'Glavni ugovor';
 
   @override
   String get addDocument => 'Додај документ';
@@ -2336,7 +2335,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get enterDocumentName => 'Унесите назив документа';
 
   @override
-  String get noDocumentsYet => 'Још увек нема докумената';
+  String get noDocumentsYet => 'Нема приложених докумената';
 
   @override
   String get additionalDocuments => 'Додатна документа';
@@ -2346,13 +2345,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get deleteDocumentConfirm =>
-      'Да ли сте сигурни да желите да обришете овај документ?';
+      'Да ли сигурно желите да избришете овај документ?';
 
   @override
   String get uploadMainContract => 'Отпреми уговор';
 
   @override
-  String get manageDocuments => 'Управљај документима';
+  String get manageDocuments => 'Управљање документима';
 
   @override
   String get monthlyCollected => 'Прикупљено';
@@ -2367,7 +2366,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get vacant => 'Празно';
 
   @override
-  String get overdueReceivables => 'Доспела';
+  String get overdueReceivables => 'Неплаћено';
 
   @override
   String get collectedByType => 'Наплаћено';
@@ -2384,10 +2383,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get hasDebt => 'Има дуг';
+  String get hasDebt => 'Неплаћена дуговања';
 
   @override
-  String get paymentAwaitingApproval => 'Чека одобрење';
+  String get paymentAwaitingApproval => 'Чека потврду';
 
   @override
   String get rent => 'Кирија';
@@ -2400,6 +2399,9 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get debtLabel => 'Дуг';
+
+  @override
+  String get totalDebt => 'Укупан дуг';
 
   @override
   String get paidLabel => 'Плаћено';
@@ -2421,20 +2423,20 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmApprovePaymentMessage =>
-      'Да ли сте сигурни да желите да потврдите ову уплату?';
+      'Да ли сигурно желите да потврдите ову уплату?';
 
   @override
   String get confirmRejectPaymentTitle => 'Одбиј уплату';
 
   @override
   String get confirmRejectPaymentMessage =>
-      'Да ли желите да одбијете ову декларацију и тражите од закупца да је поново пријави?';
+      'Да ли желите да одбијете ову пријаву плаћања и затражите од станара да пошаље поново?';
 
   @override
   String get confirm => 'Потврди';
 
   @override
-  String get terminateContract => 'Раскини уговор';
+  String get terminateContract => 'Собразити раскид';
 
   @override
   String get terminationDate => 'Датум раскида';
@@ -2444,17 +2446,16 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmTerminationMessage =>
-      'Да ли сте сигурни да желите да пошаљете захтев за раскид уговора на изабрани датум?';
+      'Да ли сигурно желите да затражите раскид уговора за изабрани датум?';
 
   @override
-  String get terminationRequestSent =>
-      'Захтев за раскид уговора је успешно послат.';
+  String get terminationRequestSent => 'Захтев за раскид уговора је послат.';
 
   @override
-  String get statusInactive => 'Пасивно / Завршено';
+  String get statusInactive => 'Истекао / Прекинут';
 
   @override
-  String get terminationRequested => 'Чека се раскид';
+  String get terminationRequested => 'Чека се раскид уговора';
 
   @override
   String get approveTermination => 'Потврди раскид';
@@ -2469,7 +2470,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String contractWillEndOn(String date) {
-    return 'Уговор ће се завршити: $date';
+    return 'Событија уговор ће се завршити: $date';
   }
 
   @override
@@ -2490,22 +2491,23 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get confirmDisputeTitle => 'Оспори уплату';
+  String get confirmDisputeTitle => 'Оспорите пријаву уплате';
 
   @override
-  String get disputeSentSuccess => 'Ваш приговор је послат станодавцу.';
+  String get disputeSentSuccess =>
+      'Ваш приговор на износ је послат станодавцу.';
 
   @override
-  String get takeAction => 'Предузми акцију';
+  String get takeAction => 'Донесите одлуку / Изаберите опцију';
 
   @override
   String get ownerNote => 'Власникова белешка';
 
   @override
-  String get explanationOptional => 'Објашњење (Опционо)';
+  String get explanationOptional => 'Напомена (ако желите)';
 
   @override
-  String get explanationHint => 'нпр. Проверио сам бројило...';
+  String get explanationHint => 'нпр. Проверио сам стање на бројилу...';
 
   @override
   String get units => 'Јединице';
@@ -2514,7 +2516,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get tenantsLabel => 'Станари';
 
   @override
-  String get portfolioManagement => 'Управљање портфолијом';
+  String get portfolioManagement => 'Моји станови';
 
   @override
   String get paymentRequests => 'Плаћања и захтеви';
@@ -2524,7 +2526,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get confirmSignOutMessage =>
-      'Да ли сте сигурни да желите да се одјавите?';
+      'Да ли сигурно желите да се одјавите са Вашег налога?';
 
   @override
   String errorWithDetails(String error) {
@@ -2538,11 +2540,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get acceptTermsWarning =>
-      'Молимо прихватите услове пре него што наставите.';
+      'Молимо Вас да прихватите услове коришћења како бисте наставили.';
 
   @override
-  String get maintenanceRequestSuccess =>
-      'Захтев за одржавање је успешно послат.';
+  String get maintenanceRequestSuccess => 'Квар је успешно пријављен.';
 
   @override
   String get ok => 'У реду';
@@ -2562,7 +2563,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String errorReopeningRequest(String error) {
-    return 'Грешка при поновном отварању захтева: $error';
+    return 'Грешка при поновном омогућавању захтева: $error';
   }
 
   @override
@@ -2574,7 +2575,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get nextPayment => 'Следећа уплата';
 
   @override
-  String get payNow => 'Плати одмах';
+  String get payNow => 'Пријавите уплату';
 
   @override
   String get upcomingLabel => 'Предстојеће';
@@ -2583,7 +2584,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get joinPropertyInvitation => 'Позив за придруживање некретнини';
 
   @override
-  String get feedbackSent => 'Повратне информације су послате';
+  String get feedbackSent => 'Хвала Вам на Вашем мишљењу!';
 
   @override
   String get rentalProposal => 'Предлог закупа';
@@ -2601,31 +2602,31 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get backToDashboard => 'Назад на контролну таблу';
 
   @override
-  String get propertyDetailsHeader => 'ДЕТАЛЈИ НЕКРЕТНИНЕ';
+  String get propertyDetailsHeader => 'ДЕТАЉИ НЕКРЕТНИНЕ';
 
   @override
   String get defaultLeaseTermsHeader => 'ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА';
 
   @override
-  String get proposeRevision => 'Предложи ревизију';
+  String get proposeRevision => 'Предложите измене';
 
   @override
   String get revisionTermsQuestion =>
-      'Које услове желите да промените? (Закупнина, дан доспећа, трошкови, итд.)';
+      'Које одредбе уговора желите да измените? (Кирију, дан плаћања, рачуне...)';
 
   @override
-  String get enterNotesHint => 'Унесите своје белешке овде...';
+  String get enterNotesHint => 'Упишите Вашу напомену овде...';
 
   @override
   String get submit => 'Пошаљи';
 
   @override
   String invitedToJoinProperty(String property) {
-    return 'Позвани сте да се придружите некретнини $property.';
+    return 'Позвани сте да се пријавите за стан $property.';
   }
 
   @override
-  String get waitingForLandlord => 'Чека се одговор станодавца...';
+  String get waitingForLandlord => 'Чека се одговор власника стана...';
 
   @override
   String get day => 'Дан';
@@ -2635,7 +2636,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get acceptTermsAndDistribution =>
-      'Прихватам услове уговора и расподелу трошкова.';
+      'Прихватам услове уговора и расподелу заједничких рачуна.';
 
   @override
   String get datesMandatory => 'Датум почетка и завршетка су обавезни';
@@ -2651,7 +2652,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get rentPaymentHeader => 'ЗАКУП И ПЛАЋАНЈЕ';
 
   @override
-  String get loadingPlaceholder => 'Учитавање...';
+  String get loadingPlaceholder => 'Сачекајте, учитава се...';
 
   @override
   String get photos => 'Фотографије';
@@ -2683,7 +2684,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get issueResolvedStatus => 'Овај квара је означен као решен.';
 
   @override
-  String get reopenIssue => 'Још увек постоји проблем (Поново отвори)';
+  String get reopenIssue => 'Квар још није отклоњен (Пријави поново)';
 
   @override
   String get deleteRequest => 'Обриши захтев';
@@ -2699,7 +2700,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String paymentDeclaredSuccess(String title) {
-    return 'Уплата $title је пријављена.';
+    return 'Успешно сте пријавили плаћање за $title.';
   }
 
   @override
@@ -2709,18 +2710,18 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get yourMessage => 'Ваша порука:';
 
   @override
-  String get revisionRequestLabel => 'Захтев за ревизију:';
+  String get revisionRequestLabel => 'Захтев за измене уговора:';
 
   @override
   String get noActivityLogs => 'Још нема пријављених активности';
 
   @override
   String get landlordProposedChanges =>
-      'Станодавац је предложио измене уговора. Додирните да прегледате.';
+      'Станодавац је предложио измене уговора. Притисните овде да погледате.';
 
   @override
   String get tenantProposedChanges =>
-      'Станар је предложио измене уговора. Додирните да прегледате.';
+      'Станар је предложио измене уговора. Притисните овде да погледате.';
 
   @override
   String dueOn(String date) {
@@ -2734,7 +2735,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get items => 'ставке';
 
   @override
-  String get waitingForOtherParty => 'Чека се одобрење друге стране...';
+  String get waitingForOtherParty => 'Чека се потврда друге стране...';
 
   @override
   String get awaitingApproval => 'Чека се одобрење...';
@@ -2748,13 +2749,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get cannotInviteSelf => 'Не можете позвати себе као станара.';
+  String get cannotInviteSelf => 'Не можете позвати сопствену е-маил адресу.';
 
   @override
   String get paywallTitle => 'Станомер Премиум';
 
   @override
-  String get paywallSubtitle => 'Уклоните ограничења у управљању некретнинама.';
+  String get paywallSubtitle => 'Водите све своје станове без ограничења.';
 
   @override
   String get unlimitedProperties =>
@@ -2767,20 +2768,20 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get extraStorage => 'Више простора за складиштење';
 
   @override
-  String get pdfContracts => 'Генерисање ПДФ уговора (Ускоро)';
+  String get pdfContracts => 'Прављење уговора у ПДФ формату (Ускоро)';
 
   @override
-  String get automatedRenewal => 'Аутоматски обрачун и обнова кирије (Ускоро)';
+  String get automatedRenewal => 'Аутоматско рачунање кирије (Ускоро)';
 
   @override
   String get restorePurchases => 'Поврати куповине';
 
   @override
-  String get limitReachedTitle => 'Достигли сте бесплатни лимит';
+  String get limitReachedTitle => 'Искористили сте бесплатан лимит за станове';
 
   @override
   String get limitReachedSubtitle =>
-      'Пређите на Станомер Премиум за управљање са више некретнина.';
+      'Пређите на Станомер Премиум како бисте водили више станова истовремено.';
 
   @override
   String get optionsLoadFailed => 'Није могуће учитати опције претплате.';
@@ -2793,7 +2794,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get premiumMobileOnlyDesc =>
-      'Станомер Премиум претплата се може купити само путем мобилне апликације. Преузмите апликацију испод да бисте почели с Премиум-ом.';
+      'Станомер Премиум се може купити само преко мобилне апликације. Преузмите је преко линкова испод.';
 
   @override
   String get downloadOnAppStore => 'Преузми на Апп Сторе-у';
@@ -2821,14 +2822,14 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get termsOfServiceContent =>
-      'Станомер – Уговор о лиценцирању са крајњим корисником (ЕУЛА) и Услови коришћења\nПоследњи пут ажурирано: 23. април 2026.\n\n1. Увод\nОвај Уговор о лиценцирању са крајњим корисником (\"Уговор\") представља правни споразум између Вас (\"Корисник\") и апликације Станомер. Инсталирањем или коришћењем апликације прихватате одредбе овог Уговора.\n\n2. Аппле и Гоогле услови\nАппле Апп Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а. Овај уговор укључује Аппле-ов стандардни уговор о лиценци за крајњег корисника (Стандард ЕУЛА) путем референце: хттпс://www.аппле.цом/легал/интернет-сервицес/итунес/дев/стдеула/\n\nГоогле Плаy Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а.\n\nПотврђујете да Аппле и Гоогле немају никакву обавезу пружања услуга одржавања и подршке у вези са апликацијом.\n\n3. Претплата и наплата\nПлаћање: Плаћање ће бити наплаћено са Вашег иТунес или Гоогле Плаy налога приликом потврде куповине.\n\nОбнављање: Претплате се аутоматски обнављају осим ако се аутоматско обнављање не искључи најмање 24 сата пре краја текућег периода.\n\nУправљање: Можете управљати претплатама или искључити аутоматско обнављање у подешавањима налога након куповине.\n\n4. Кориснички садржај и понашање\nОдговорни сте за податке које уносите (износи закупа, извештаји о штети, уговори).\n\nЗабрањено је отпремање незаконитог, увредљивог или кршећег садржаја.\n\nСтаномер задржава право да уклони било који садржај који крши законе Републике Србије или ове услове.\n\n5. Приватност и заштита података (ЗЗПЛ, ГДПР, КВКК)\nЗакон Србије (ЗЗПЛ): Закон о заштити података о личности.\n\nГДПР: Општа уредба о заштити података о личности (ЕУ).\n\nКВКК: Закон о заштити података о личности (Турска).\n\nВаши подаци се штите у складу са глобалним принципима приватности података, без обзир на Вашу локацију.\n\n6. Ограничење одговорности\nСтаномер пружа платформу за управљање закупом и није страна у стварним уговорима о закупу између станодаваца и закупаца. Не сносимо одговорност за спорове између корисника или за финансијске трансакције обављене ван платформе.\n\n7. Прекид\nОвај Уговор важи док га не раскинете Ви или Станомер. Ваша права по овој лиценци ће аутоматски престати ако се не придржавате било које од њених одредби.';
+      'Станомер – Уговор о лиценцирању са крајњим корисником (ЕУЛА) и Услови коришћења\nПоследњи пут ажурирано: 23. април 2026.\n\n1. Увод\nОвај Уговор о лиценцирању са крајњим корисником (\"Уговор\") представља праван споразум између Вас (\"Корисник\") и апликације Станомер. Инсталирањем или коришћењем апликације прихватате одредбе овог Уговора.\n\n2. Аппле и Гоогле услови\nАппле Апп Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а. Овај уговор укључује Аппле-ов стандардни уговор о лиценци за крајњег корисника (Стандард ЕУЛА) путем референце: хттпс://www.аппле.цом/легал/интернет-сервицес/итунес/дев/стдеула/\n\nГоогле Плаy Сторе: Овај Уговор је закључен искључиво између Корисника и Станомер-а.\n\nПотврђујете да Аппле и Гоогле немају никакву обавезу пружања услуга одржавања и подршке у вези са апликацијом.\n\n3. Претплата и наплата\nПлаћање: Плаћање ће бити наплаћено са Вашег иТунес или Гоогле Плаy налога приликом потврде куповине.\n\nОбнављање: Претплате се аутоматски обнављају осим ако се аутоматско обнављање не искључи најмање 24 сата пре краја текућег периода.\n\nУправљање: Можете управљати претплатама или искључити аутоматско обнављање у подешавањима налога након куповине.\n\n4. Кориснички садржај и понашање\nОдговорни сте за податке које уносите (износи закупа, извештаји о штети, уговори).\n\nЗабрањено је отпремање незаконитог, увредљивог или кршећег садржаја.\n\nСтаномер задржава право да уклони било који садржај који крши законе Републике Србије или ове услове.\n\n5. Приватност и заштита података (ЗЗПЛ, ГДПР, КВКК)\nЗакон Србије (ЗЗПЛ): Закон о заштити података о личности.\n\nГДПР: Општа уредба о заштити података о личности (ЕУ).\n\nКВКК: Закон о заштити података о личности (Турска).\n\nВаши подаци се штите у складу са глобалним принципима приватности података, без обзир на Вашу локацију.\n\n6. Ограничење одговорности\nСтаномер пружа платформу за управљање закупом и није страна у стварним уговорима о закупу између станодаваца и закупаца. Не сносимо одговорност за спорове између корисника или за финансијске трансакције обављене ван платформе.\n\n7. Прекид\nОвај Уговор важи док га не раскинете Ви или Станомер. Ваша права по овој лиценци ће аутоматски престати ако се не придржавате било које од њених одредби.';
 
   @override
   String get support_title => 'Подршка';
 
   @override
   String get support_desc =>
-      'Контактирајте нас за техничку подршку или повратне информације.';
+      'Пишите нам уколико имате питања или потешкоћа са апликацијом.';
 
   @override
   String get subject => 'Тема';
@@ -2849,7 +2850,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get other => 'Друго';
 
   @override
-  String get messageSent => 'Порука је успешно послата!';
+  String get messageSent => 'Ваша порука је успешно послата!';
 
   @override
   String get errorSendingMessage =>
@@ -2869,10 +2870,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get retry => 'ОСВЕЖИ';
 
   @override
-  String get zzplConsentTitle => 'Пристанак за обраду података о личности';
+  String get zzplConsentTitle => 'Пристанак за заштиту Ваших података (ЗЗПЛ)';
 
   @override
-  String get zzplAgreeAndContinue => 'Прочитао сам и прихватам';
+  String get zzplAgreeAndContinue => 'Прочитао/ла сам и прихватам услове';
 
   @override
   String get share => 'Подели';
@@ -2893,22 +2894,22 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get invoiceLocalOnlyDesc =>
-      'Документ се чува само на овом уређају. Можете омогућити отпремање на облак у подешавањима.';
+      'Рачун се чува само на овом телефону. Можете укључити чување на облаку (cloud) у подешавањима.';
 
   @override
   String get invoiceCloudSecureDesc =>
-      'Документ је безбедно сачуван са енкрипцијом. Само ви и станар га можете видети.';
+      'Рачун је безбедно сачуван на облаку. Можете га видети само Ви и Ваш станар.';
 
   @override
   String get invoiceUploadLimitDesc => 'ЈПЕГ, ПНГ или ПДФ · макс 10 МБ';
 
   @override
   String get billMissingLocalDesc =>
-      'Овај рачун је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.';
+      'Рачун је сачуван на другом телефону. Укључите облак у подешавањима како бисте га видели овде.';
 
   @override
   String get documentMissingLocalDesc =>
-      'Овај документ је сачуван локално на другом уређају. Не можете га видети овде јер је слање у облак онемогућено.';
+      'Документ је сачуван на другом телефону. Укључите облак у подешавањима како бисте га видели овде.';
 
   @override
   String get cannotOpenDocument => 'Није могуће отворити документ';

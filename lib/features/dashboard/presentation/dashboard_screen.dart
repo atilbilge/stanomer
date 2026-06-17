@@ -11,12 +11,14 @@ import '../../auth/data/auth_providers.dart';
 import '../../property/data/property_repository.dart';
 import '../../property/domain/property.dart';
 import '../../property/domain/contract.dart';
+import '../../property/domain/rent_payment.dart';
 import '../../property/domain/landlord_stats.dart';
 import '../../../core/theme/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/utils/expense_utils.dart';
+import '../../../core/widgets/bottom_sheet_wrapper.dart';
 
 import '../../notifications/presentation/widgets/notification_badge.dart';
 import 'widgets/profile_pill.dart';
@@ -276,18 +278,13 @@ else if (propertiesAsync.hasError) ...[
                   const Center(child: CircularProgressIndicator()),
                 ],
               ] else if (role == 'tenant') ...[
-                Text(
-                  loc.myProperties,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                // Combined view of Invites + Accepted Properties
+                // ─── Tenant Dashboard: Landlord-mirrored layout ───────────────
                 () {
                   if (pendingInvitesAsync.hasValue && propertiesAsync.hasValue) {
                     final invites = pendingInvitesAsync.value!;
                     final properties = propertiesAsync.value!;
                     final tenantProperties = properties.where((p) => p.tenantId == user?.id).toList();
-                    
+
                     if (invites.isEmpty && tenantProperties.isEmpty) {
                       return _TenantEmptyState(
                         onRefresh: () async {
@@ -299,22 +296,23 @@ else if (propertiesAsync.hasError) ...[
                       );
                     }
 
-                    // Safely constrain index before returning UI
+                    // Safely constrain index
                     if (_selectedTenantPropertyIndex >= tenantProperties.length) {
                       _selectedTenantPropertyIndex = 0;
                     }
-                    
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Show Invites first
+                        // ── 0. Pending invitations (if any) ──────────────────
                         ...invites.map((invite) {
                           final p = invite['properties'] as Map<String, dynamic>?;
                           if (p == null) return const SizedBox.shrink();
                           return _InvitationCard(invite: invite, propertyData: p);
                         }),
-                        
+
                         if (tenantProperties.isNotEmpty) ...[
+                          // ── Property tab switcher (only when > 1 property) ──
                           if (tenantProperties.length > 1) ...[
                             _buildPropertyTabs(tenantProperties),
                             const SizedBox(height: 16),
@@ -325,72 +323,115 @@ else if (propertiesAsync.hasError) ...[
                               final property = tenantProperties[_selectedTenantPropertyIndex];
                               final contractAsync = ref.watch(activeContractProvider(property.id));
                               final financialStatusAsync = ref.watch(propertyFinancialStatusProvider(property.id));
-                              
+                              final paymentsAsync = ref.watch(rentPaymentsProvider(property.id));
+
+                              if (contractAsync.isLoading) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              if (contractAsync.hasError) {
+                                return AppErrorView(
+                                  error: contractAsync.error!,
+                                  onRetry: () => ref.invalidate(activeContractProvider(property.id)),
+                                );
+                              }
+
+                              final contract = contractAsync.value;
+
+                              if (contract == null) {
+                                // Has property but no active contract yet
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    _SectionHeader(
+                                      title: loc.myProperties,
+                                      count: tenantProperties.length,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _TenantPropertyCard(property: property),
+                                  ],
+                                );
+                              }
+
+                              final financialStatus = financialStatusAsync.value;
+                              // Awaiting payments with their titles for the secondary card
+                              final awaitingPayments = (paymentsAsync.value ?? [])
+                                  .where((p) => p.status == 'declared')
+                                  .toList();
+
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  if (contractAsync.hasValue) ...[
-                                    () {
-                                      final contract = contractAsync.value;
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        children: [
-                                          if (contract != null) ...[
-                                            InkWell(
-                                              onTap: () => context.push('/property-detail', extra: property),
-                                              borderRadius: BorderRadius.circular(24),
-                                              child: _TenantHero(property: property, contract: contract),
-                                            ),
-                                            const SizedBox(height: 24),
-                                            if (financialStatusAsync.hasValue) 
-                                              _TenantPaymentCard(
-                                                property: property,
-                                                contract: contract,
-                                                financialStatus: financialStatusAsync.value!,
-                                              ),
-                                            const SizedBox(height: 32),
-                                            // Payment History Section
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  loc.paymentHistory,
-                                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontSize: 22,
-                                                    letterSpacing: -0.5,
-                                                  ),
-                                                ),
-                                                const Spacer(),
-                                                TextButton(
-                                                  onPressed: () => context.push('/property-detail', extra: {
-                                                    'property': property,
-                                                    'initialTabIndex': 1,
-                                                  }),
-                                                  child: Text(
-                                                    loc.viewAll,
-                                                    style: const TextStyle(color: StanomerColors.tenant, fontWeight: FontWeight.bold),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 16),
-                                            // Quick list of last 3 payments (mock or derived)
-                                            _PropertyHistoryList(propertyId: property.id, limit: 5),
-                                          ] else ...[
-                                            // User has property but contract is not active yet
-                                            _TenantPropertyCard(property: property),
-                                          ],
-                                        ],
-                                      );
-                                    }(),
-                                  ] else if (contractAsync.hasError) ...[
-                                    AppErrorView(
-                                      error: contractAsync.error!,
-                                      onRetry: () => ref.invalidate(activeContractProvider(property.id)),
+                                  // ── 1. Hero — Toplam Borç ─────────────────
+                                  InkWell(
+                                    onTap: () => context.push('/property-detail', extra: property),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: _TenantHero(
+                                      property: property,
+                                      contract: contract,
+                                      financialStatus: financialStatus,
                                     ),
-                                  ] else ...[
-                                    const Center(child: CircularProgressIndicator()),
-                                  ],
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // ── 2. Awaiting summary card (only if relevant) ─
+                                  if (financialStatus != null && financialStatus.awaitingCount > 0)
+                                    _TenantAwaitingCard(
+                                      financialStatus: financialStatus,
+                                      awaitingPayments: awaitingPayments,
+                                      onTap: () => context.push('/property-detail', extra: {
+                                        'property': property,
+                                        'initialTabIndex': 1,
+                                      }),
+                                    ),
+
+                                  const SizedBox(height: 20),
+
+                                  // ── 3. My Properties ──────────────────────
+                                  _SectionHeader(
+                                    title: loc.myProperties,
+                                    count: tenantProperties.length,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ...tenantProperties.map((p) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _TenantPropertyCard(property: p),
+                                  )),
+
+                                  const SizedBox(height: 20),
+
+                                  // ── 4. Payment History ────────────────────
+                                  Row(
+                                    children: [
+                                      Text(
+                                        loc.paymentHistory,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                          color: Color(0xFF333333),
+                                          letterSpacing: -0.3,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      TextButton(
+                                        onPressed: () => context.push('/property-detail', extra: {
+                                          'property': property,
+                                          'initialTabIndex': 1,
+                                        }),
+                                        child: Text(
+                                          loc.viewAll,
+                                          style: const TextStyle(
+                                            color: StanomerColors.tenant,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _PropertyHistoryList(propertyId: property.id, limit: 5),
+                                  const SizedBox(height: 16),
                                 ],
                               );
                             },
@@ -488,46 +529,49 @@ else if (propertiesAsync.hasError) ...[
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
       backgroundColor: Colors.transparent,
-      builder: (context) => RoleSwitcherBottomSheet(
-        userName: userName,
-        userEmail: userEmail,
-        activeRole: currentRole,
-        onRoleSelected: (newRole) {
-          Navigator.pop(context);
-          if (newRole != currentRole) {
-            _updateRole(newRole);
-          }
-        },
-        onProfileTap: () {
-          Navigator.pop(context);
-          context.push('/profile');
-        },
-        onSignOutTap: () async {
-          Navigator.pop(context);
-          final loc = AppLocalizations.of(context)!;
-          final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(loc.logout),
-              content: Text(loc.confirmSignOutMessage),
-              actions: [
-                TextButton(
-                  child: Text(loc.cancel),
-                  onPressed: () => Navigator.pop(context, false),
-                ),
-                TextButton(
-                  child: Text(loc.logout),
-                  style: TextButton.styleFrom(foregroundColor: StanomerColors.alertPrimary),
-                  onPressed: () => Navigator.pop(context, true),
-                ),
-              ],
-            ),
-          );
-          if (confirmed == true) {
-            await ref.read(authRepositoryProvider).signOut();
-          }
-        },
+      builder: (context) => ResilientBottomSheetWrapper(
+        child: RoleSwitcherBottomSheet(
+          userName: userName,
+          userEmail: userEmail,
+          activeRole: currentRole,
+          onRoleSelected: (newRole) {
+            Navigator.pop(context);
+            if (newRole != currentRole) {
+              _updateRole(newRole);
+            }
+          },
+          onProfileTap: () {
+            Navigator.pop(context);
+            context.push('/profile');
+          },
+          onSignOutTap: () async {
+            Navigator.pop(context);
+            final loc = AppLocalizations.of(context)!;
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(loc.logout),
+                content: Text(loc.confirmSignOutMessage),
+                actions: [
+                  TextButton(
+                    child: Text(loc.cancel),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                  TextButton(
+                    child: Text(loc.logout),
+                    style: TextButton.styleFrom(foregroundColor: StanomerColors.alertPrimary),
+                    onPressed: () => Navigator.pop(context, true),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true) {
+              await ref.read(authRepositoryProvider).signOut();
+            }
+          },
+        ),
       ),
     );
   }
@@ -756,34 +800,64 @@ class _KpiGrid extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return statsAsync.when(
-      data: (stats) => GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 3,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: 1.1,
-        children: [
-          _KpiCard(
-            icon: LucideIcons.wallet,
-            value: CurrencyUtils.formatCurrencyMap(stats.collectedByType['Kira'] ?? {}, useSymbols: true),
-            label: loc.rent,
-            valueColor: const Color(0xFF0F6E56),
-          ),
-          _KpiCard(
-            icon: LucideIcons.clock,
-            value: stats.delaysCount.toString(),
-            label: loc.delays,
-            valueColor: stats.delaysCount > 0 ? const Color(0xFFA32D2D) : null,
-            iconColor: stats.delaysCount > 0 ? const Color(0xFFE24B4A) : null,
-          ),
-          _KpiCard(
-            icon: LucideIcons.layout,
-            value: stats.vacantCount.toString(),
-            label: loc.vacant,
-          ),
-        ],
-      ),
+      data: (stats) {
+        final hasDelays = stats.delaysCount > 0;
+        final hasAwaiting = stats.awaitingApprovalCount > 0;
+        return Column(
+          children: [
+            // Top row: 3 KPI boxes
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 3,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.1,
+              children: [
+                // Toplanan kira
+                _KpiCard(
+                  icon: LucideIcons.wallet,
+                  value: CurrencyUtils.formatCurrencyMap(
+                    stats.collectedByType['Kira'] ?? {}, useSymbols: true),
+                  label: loc.rent,
+                  valueColor: const Color(0xFF0F6E56),
+                ),
+                // Gecikmiş — alarm kart
+                _KpiCard(
+                  icon: LucideIcons.alertTriangle,
+                  value: stats.delaysCount.toString(),
+                  label: loc.delays,
+                  valueColor: hasDelays ? const Color(0xFFA32D2D) : null,
+                  iconColor: hasDelays ? const Color(0xFFE24B4A) : null,
+                  isAlert: hasDelays,
+                ),
+                // Boş daire
+                _KpiCard(
+                  icon: LucideIcons.doorOpen,
+                  value: stats.vacantCount.toString(),
+                  label: loc.vacant,
+                  valueColor: stats.vacantCount > 0 ? const Color(0xFF7C4B00) : null,
+                  iconColor: stats.vacantCount > 0 ? Colors.orange : null,
+                ),
+              ],
+            ),
+            // Onay bekliyor banner — sadece varsa görünür
+            if (hasAwaiting) ...[
+              const SizedBox(height: 8),
+              _KpiCard(
+                icon: LucideIcons.clock,
+                value: '${stats.awaitingApprovalCount}',
+                label: loc.awaitingApproval,
+                isAlert: false,
+                isWide: true,
+                subtitle: stats.latestAwaitingTitle,
+                valueColor: const Color(0xFF854F0B),
+                iconColor: Colors.orange,
+              ),
+            ],
+          ],
+        );
+      },
       loading: () => const SizedBox(height: 80),
       error: (_, __) => const SizedBox.shrink(),
     );
@@ -796,6 +870,9 @@ class _KpiCard extends StatelessWidget {
   final String label;
   final Color? valueColor;
   final Color? iconColor;
+  final bool isAlert;
+  final bool isWide;
+  final String? subtitle;
 
   const _KpiCard({
     required this.icon,
@@ -803,16 +880,86 @@ class _KpiCard extends StatelessWidget {
     required this.label,
     this.valueColor,
     this.iconColor,
+    this.isAlert = false,
+    this.isWide = false,
+    this.subtitle,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = isAlert
+        ? const Color(0xFFFCEBEB)
+        : Colors.white;
+    final borderColor = isAlert
+        ? const Color(0xFFF5C6C6)
+        : const Color(0xFFEEEEEE);
+
+    if (isWide) {
+      // Geniş (full-width) banner stili — onay bekleyen için
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF8E6),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFFAC775), width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAC775),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 14, color: const Color(0xFF633806)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF854F0B),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF633806),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: valueColor ?? const Color(0xFF854F0B),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5),
+        border: Border.all(color: borderColor, width: isAlert ? 1 : 0.5),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -825,7 +972,7 @@ class _KpiCard extends StatelessWidget {
               value,
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w500,
+                fontWeight: isAlert ? FontWeight.w700 : FontWeight.w500,
                 color: valueColor ?? const Color(0xFF333333),
                 height: 1,
               ),
@@ -834,10 +981,11 @@ class _KpiCard extends StatelessWidget {
           const SizedBox(height: 3),
           Text(
             label.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF999999),
+              color: isAlert ? const Color(0xFFA32D2D) : const Color(0xFF999999),
               letterSpacing: 0.5,
+              fontWeight: isAlert ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
         ],
@@ -1679,31 +1827,104 @@ class _TenantEmptyState extends StatelessWidget {
 class _TenantHero extends StatelessWidget {
   final Property property;
   final Contract contract;
+  final PropertyFinancialState? financialStatus;
 
-  const _TenantHero({required this.property, required this.contract});
+  const _TenantHero({
+    required this.property,
+    required this.contract,
+    this.financialStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    
+    final now = DateTime.now();
+    final nextDue = DateTime(now.year, now.month, contract.dueDay);
+    final dueDate = nextDue.isBefore(now)
+        ? DateTime(now.year, now.month + 1, contract.dueDay)
+        : nextDue;
+    final daysLeft = dueDate.difference(now).inDays;
+
+    final rentStatus = financialStatus?.rentStatus;
+    final pendingTotals = financialStatus?.pendingTotals ?? {};
+    final awaitingTotals = financialStatus?.awaitingTotals ?? {};
+
+    final hasDebt = pendingTotals.values.any((v) => v > 0);
+    final hasAwaiting = awaitingTotals.values.any((v) => v > 0);
+    final isAllPaid = !hasDebt && !hasAwaiting &&
+        (financialStatus?.paidCount ?? 0) > 0;
+    final isOverdue = rentStatus == RentStatus.debt ||
+        financialStatus?.billStatus == BillStatus.debt;
+
+    // Hero rengi
+    final Color heroColor;
+    if (isOverdue || hasDebt) {
+      heroColor = const Color(0xFFC0392B);
+    } else if (isAllPaid) {
+      heroColor = const Color(0xFF0F6E56);
+    } else {
+      heroColor = StanomerColors.tenant;
+    }
+
+    // Hangi tutarları göster?
+    final String heroLabel;
+    final String heroAmount;
+    if (hasDebt) {
+      heroLabel = loc.totalDebt.toUpperCase();
+      heroAmount = CurrencyUtils.formatCurrencyMap(
+          pendingTotals, useSymbols: true, separator: ' + ');
+    } else if (hasAwaiting && !hasDebt) {
+      heroLabel = loc.awaitingHeader.toUpperCase();
+      heroAmount = CurrencyUtils.formatCurrencyMap(
+          awaitingTotals, useSymbols: true, separator: ' + ');
+    } else {
+      heroLabel = loc.paidLabel.toUpperCase();
+      heroAmount = CurrencyUtils.formatCurrencyMap(
+          financialStatus?.paidTotals ?? {}, useSymbols: true, separator: ' + ');
+    }
+
+    // Status badge
+    Widget? statusBadge;
+    if (isOverdue || hasDebt) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.alertTriangle,
+        label: loc.debtLabel,
+        bgColor: Colors.white.withValues(alpha: 0.2),
+        textColor: Colors.white,
+      );
+    } else if (isAllPaid) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.circleCheck,
+        label: loc.paidLabel,
+        bgColor: Colors.white.withValues(alpha: 0.2),
+        textColor: Colors.white,
+      );
+    } else if (hasAwaiting) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.clock,
+        label: loc.awaitingHeader,
+        bgColor: Colors.white.withValues(alpha: 0.2),
+        textColor: Colors.white,
+      );
+    } else if (daysLeft <= 3) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.alertCircle,
+        label: daysLeft == 0 ? loc.dueDayOfMonth : '$daysLeft gün',
+        bgColor: Colors.white.withValues(alpha: 0.25),
+        textColor: Colors.white,
+      );
+    }
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: StanomerColors.tenant,
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            StanomerColors.tenant,
-            const Color(0xFF1D8A5A), // Darker green
-          ],
-        ),
+        color: heroColor,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: StanomerColors.tenant.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: heroColor.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1711,52 +1932,135 @@ class _TenantHero extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            right: -20,
-            top: -20,
-            child: Icon(LucideIcons.home, size: 150, color: Colors.white.withValues(alpha: 0.05)),
+            right: -10,
+            top: -10,
+            child: Opacity(
+              opacity: 0.07,
+              child: const Icon(LucideIcons.home, size: 120, color: Colors.white),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
-            child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        loc.yourApartment.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      heroLabel,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.8,
                       ),
-                      Text(
-                        property.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Icon(LucideIcons.calendar, size: 14, color: Colors.white.withValues(alpha: 0.6)),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${loc.contract}: ${DateFormat('dd MMM yyyy', loc.localeName).format(contract.startDate!)}',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                    if (statusBadge != null) statusBadge,
+                  ],
                 ),
-                Icon(LucideIcons.chevronRight, color: Colors.white.withValues(alpha: 0.5), size: 24),
+                const SizedBox(height: 6),
+                // Multi-currency tutarları satır satır göster
+                ...() {
+                  final totals = hasDebt
+                      ? pendingTotals
+                      : (hasAwaiting ? awaitingTotals : (financialStatus?.paidTotals ?? {}));
+                  final currencies = totals.keys.toList()..sort();
+                  if (currencies.isEmpty) {
+                    return [
+                      const Text('0,00',
+                          style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w600)),
+                    ];
+                  }
+                  return currencies.map((cur) {
+                    final amount = totals[cur]!;
+                    final isFirst = cur == currencies.first;
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        if (!isFirst)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Text(
+                              '+ ',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        Text(
+                          CurrencyUtils.formatAmount(amount, cur, useSymbol: true),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isFirst ? 30 : 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList();
+                }(),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    _HeroMetaItem(
+                      icon: LucideIcons.home,
+                      value: property.name,
+                      label: '',
+                    ),
+                    const SizedBox(width: 16),
+                    _HeroMetaItem(
+                      icon: LucideIcons.calendar,
+                      value: DateFormat('dd MMM', loc.localeName).format(dueDate),
+                      label: loc.dueDayOfMonth.toLowerCase(),
+                    ),
+                  ],
+                ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStatusBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color bgColor;
+  final Color textColor;
+
+  const _HeroStatusBadge({
+    required this.icon,
+    required this.label,
+    required this.bgColor,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: textColor),
+          const SizedBox(width: 5),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: textColor,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -1926,6 +2230,125 @@ class _TenantPaymentCard extends StatelessWidget {
     );
   }
 }
+class _TenantAwaitingCard extends StatelessWidget {
+  final PropertyFinancialState financialStatus;
+  final List<RentPayment> awaitingPayments;
+  final VoidCallback onTap;
+
+  const _TenantAwaitingCard({
+    required this.financialStatus,
+    required this.awaitingPayments,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final awaitingVal = CurrencyUtils.formatCurrencyMap(
+        financialStatus.awaitingTotals, useSymbols: true, separator: ' + ');
+
+    // Group by title to show types
+    final typeGroups = <String, int>{};
+    for (final p in awaitingPayments) {
+      typeGroups[p.title] = (typeGroups[p.title] ?? 0) + 1;
+    }
+    final typesSummary = typeGroups.entries
+        .map((e) => e.value > 1 ? '${e.key} ×${e.value}' : e.key)
+        .join(', ');
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF8E6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFAC775)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAC775),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(LucideIcons.clock, size: 16, color: Color(0xFF633806)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${financialStatus.awaitingCount} ${loc.awaitingHeader}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF854F0B),
+                        ),
+                      ),
+                      if (typesSummary.isNotEmpty)
+                        Text(
+                          typesSummary,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFA0621A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  awaitingVal,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF854F0B),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(LucideIcons.chevronRight, size: 14, color: Color(0xFF854F0B)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Divider(height: 1, color: Color(0xFFFEEFC3)),
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 1.5),
+                  child: Icon(LucideIcons.alertCircle, size: 12, color: Color(0xFFA0621A)),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    loc.awaitingExplanation,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      height: 1.3,
+                      color: Color(0xFFA0621A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 class _PropertyCard extends ConsumerWidget {
   final Property property;
   final bool isLandlord;
@@ -2100,6 +2523,63 @@ class _PropertyCard extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      if (!isLandlord) ...[
+                        const SizedBox(height: 12),
+                        const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            // Landlord Info
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(LucideIcons.user, size: 12, color: StanomerColors.textTertiary),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      property.landlordName ?? loc.owner,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: StanomerColors.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Date Info
+                            activeContractAsync.when(
+                              data: (contract) {
+                                if (contract?.startDate == null) return const SizedBox.shrink();
+                                final startStr = DateFormat('dd.MM.yyyy').format(contract!.startDate!);
+                                final endStr = contract.endDate != null 
+                                    ? DateFormat('dd.MM.yyyy').format(contract.endDate!) 
+                                    : '∞';
+                                return Row(
+                                  children: [
+                                    const Icon(LucideIcons.calendar, size: 12, color: StanomerColors.textTertiary),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '$startStr - $endStr',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: StanomerColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

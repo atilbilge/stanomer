@@ -14,6 +14,7 @@ import '../../subscriptions/data/subscription_service.dart';
 import '../../subscriptions/presentation/premium_mobile_only_sheet.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../core/services/document_storage_service.dart';
+import '../../../core/widgets/bottom_sheet_wrapper.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -342,56 +343,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: StanomerRadius.xl)),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(loc.appLanguage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            ),
-            ListTile(
-              leading: const Text('🇬🇧', style: TextStyle(fontSize: 20)),
-              title: Text(loc.english),
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('en'));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
-              title: Text(loc.serbianLatin),
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
-              title: Text(loc.serbianCyrillic),
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Text('🇹🇷', style: TextStyle(fontSize: 20)),
-              title: Text(loc.turkish),
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('tr'));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Text('🇷🇺', style: TextStyle(fontSize: 20)),
-              title: Text(loc.russian),
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('ru'));
-                Navigator.pop(context);
-              },
-            ),
-          ],
+      builder: (context) => ResilientBottomSheetWrapper(
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(loc.appLanguage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              ),
+              ListTile(
+                leading: const Text('🇬🇧', style: TextStyle(fontSize: 20)),
+                title: Text(loc.english),
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
+                title: Text(loc.serbianLatin),
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text('🇷🇸', style: TextStyle(fontSize: 20)),
+                title: Text(loc.serbianCyrillic),
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(const Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text('🇹🇷', style: TextStyle(fontSize: 20)),
+                title: Text(loc.turkish),
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(const Locale('tr'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text('🇷🇺', style: TextStyle(fontSize: 20)),
+                title: Text(loc.russian),
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(const Locale('ru'));
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

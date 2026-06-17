@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 class CurrencyUtils {
-  static String formatCurrencyMap(Map<String, double> totals, {bool useSymbols = false}) {
+  static String formatCurrencyMap(Map<String, double> totals, {bool useSymbols = false, String separator = '\n'}) {
     if (totals.isEmpty) return '0,00';
 
     final List<String> segments = [];
@@ -15,7 +15,7 @@ class CurrencyUtils {
       segments.add(formattedAmount);
     }
 
-    return segments.isEmpty ? '0,00' : segments.join('\n');
+    return segments.isEmpty ? '0,00' : segments.join(separator);
   }
 
   static String formatAmount(double amount, String currency, {bool useSymbol = false}) {

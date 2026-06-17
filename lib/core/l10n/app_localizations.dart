@@ -112,13 +112,13 @@ abstract class AppLocalizations {
   /// No description provided for @login.
   ///
   /// In sr, this message translates to:
-  /// **'Prijavite se'**
+  /// **'Prijavi se'**
   String get login;
 
   /// No description provided for @signup.
   ///
   /// In sr, this message translates to:
-  /// **'Registracija'**
+  /// **'Registruj se'**
   String get signup;
 
   /// No description provided for @email.
@@ -154,7 +154,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectRole.
   ///
   /// In sr, this message translates to:
-  /// **'Izaberite svoju ulogu'**
+  /// **'Izaberi svoju ulogu'**
   String get selectRole;
 
   /// No description provided for @fieldRequired.
@@ -166,43 +166,43 @@ abstract class AppLocalizations {
   /// No description provided for @consentRequired.
   ///
   /// In sr, this message translates to:
-  /// **'Morate prihvatiti ZZPL da biste nastavili'**
+  /// **'Moraš prihvatiti ZZPL da nastaviš'**
   String get consentRequired;
 
   /// No description provided for @loginToAccount.
   ///
   /// In sr, this message translates to:
-  /// **'Prijavite se na svoj nalog'**
+  /// **'Prijavi se na svoj nalog'**
   String get loginToAccount;
 
   /// No description provided for @createAccount.
   ///
   /// In sr, this message translates to:
-  /// **'Napravite novi nalog'**
+  /// **'Napravi novi nalog'**
   String get createAccount;
 
   /// No description provided for @dontHaveAccount.
   ///
   /// In sr, this message translates to:
-  /// **'Nemate nalog? Registrujte se'**
+  /// **'Nemate nalog? Registruj se'**
   String get dontHaveAccount;
 
   /// No description provided for @alreadyHaveAccount.
   ///
   /// In sr, this message translates to:
-  /// **'Imate nalog? Prijavite se'**
+  /// **'Imaš nalog? Prijavi se'**
   String get alreadyHaveAccount;
 
   /// No description provided for @continueWithGoogle.
   ///
   /// In sr, this message translates to:
-  /// **'Nastavite sa Google-om'**
+  /// **'Nastavi sa Google-om'**
   String get continueWithGoogle;
 
   /// No description provided for @continueWithApple.
   ///
   /// In sr, this message translates to:
-  /// **'Nastavite sa Apple-om'**
+  /// **'Nastavi sa Apple-om'**
   String get continueWithApple;
 
   /// No description provided for @fullName.
@@ -214,7 +214,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorSelectRole.
   ///
   /// In sr, this message translates to:
-  /// **'Molimo izaberite svoju ulogu'**
+  /// **'Molimo izaberi svoju ulogu'**
   String get errorSelectRole;
 
   /// No description provided for @deleteAccount.
@@ -226,13 +226,13 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountWarning.
   ///
   /// In sr, this message translates to:
-  /// **'Ova radnja je trajna i ne može se poništiti. Svi vaši podaci će biti obrisani.'**
+  /// **'Ova radnja je trajna i ne može se poništiti. Svi tvoji podaci će biti obrisani.'**
   String get deleteAccountWarning;
 
   /// No description provided for @confirmPasswordForDeletion.
   ///
   /// In sr, this message translates to:
-  /// **'Molimo unesite lozinku da potvrdite brisanje'**
+  /// **'Unesi lozinku da potvrdiš brisanje'**
   String get confirmPasswordForDeletion;
 
   /// No description provided for @deleteButtonLabel.
@@ -304,7 +304,7 @@ abstract class AppLocalizations {
   /// No description provided for @updatePassword.
   ///
   /// In sr, this message translates to:
-  /// **'Ažuriraj lozinku'**
+  /// **'Promeni lozinku'**
   String get updatePassword;
 
   /// No description provided for @oldPassword.
@@ -322,7 +322,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveChanges.
   ///
   /// In sr, this message translates to:
-  /// **'Sačuvaj izmene'**
+  /// **'Sačuvaj'**
   String get saveChanges;
 
   /// No description provided for @passwordChangedSuccess.
@@ -400,7 +400,7 @@ abstract class AppLocalizations {
   /// No description provided for @propertyNameHint.
   ///
   /// In sr, this message translates to:
-  /// **'npr. Apartman Beograd'**
+  /// **'npr. Stan u Beogradu'**
   String get propertyNameHint;
 
   /// No description provided for @propertyAddedSuccess.
@@ -418,19 +418,19 @@ abstract class AppLocalizations {
   /// No description provided for @noProperties.
   ///
   /// In sr, this message translates to:
-  /// **'Nema pronađenih nekretnina'**
+  /// **'Još uvek nema nekretnina'**
   String get noProperties;
 
   /// No description provided for @addYourFirstProperty.
   ///
   /// In sr, this message translates to:
-  /// **'Dodajte svoju prvu nekretninu da biste започели praćenje!'**
+  /// **'Dodaj svoju prvu nekretninu da pokreneš praćenje!'**
   String get addYourFirstProperty;
 
   /// No description provided for @editProperty.
   ///
   /// In sr, this message translates to:
-  /// **'Uredi nekretninu'**
+  /// **'Izmeni nekretninu'**
   String get editProperty;
 
   /// No description provided for @delete.
@@ -448,7 +448,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDeleteMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da obrišete ovu nekretninu? Ova radnja se ne može poništiti.'**
+  /// **'Da li sigurno želiš da obrišeš ovu nekretninu? Ova akcija je nepovratna.'**
   String get confirmDeleteMessage;
 
   /// No description provided for @propertyDeletedSuccess.
@@ -472,13 +472,13 @@ abstract class AppLocalizations {
   /// No description provided for @inviteCreatedSuccess.
   ///
   /// In sr, this message translates to:
-  /// **'Link za poziv je kreiran! Sada ga možete podeliti.'**
+  /// **'Pozivni link je kreiran! Možeš ga podeliti.'**
   String get inviteCreatedSuccess;
 
   /// No description provided for @shareInviteLink.
   ///
   /// In sr, this message translates to:
-  /// **'Podeli link za poziv'**
+  /// **'Podeli pozivni link'**
   String get shareInviteLink;
 
   /// No description provided for @copyLink.
@@ -490,7 +490,7 @@ abstract class AppLocalizations {
   /// No description provided for @noInvitesYet.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek nema poslatih poziva'**
+  /// **'Nema poslatih poziva'**
   String get noInvitesYet;
 
   /// No description provided for @cancelInvitation.
@@ -514,7 +514,7 @@ abstract class AppLocalizations {
   /// No description provided for @contractSentToTenant.
   ///
   /// In sr, this message translates to:
-  /// **'Ugovor poslat zakupcu'**
+  /// **'Ugovor je poslat stanaru'**
   String get contractSentToTenant;
 
   /// No description provided for @overview.
@@ -526,13 +526,13 @@ abstract class AppLocalizations {
   /// No description provided for @financials.
   ///
   /// In sr, this message translates to:
-  /// **'Finansije'**
+  /// **'Plaćanja'**
   String get financials;
 
   /// No description provided for @propertySettings.
   ///
   /// In sr, this message translates to:
-  /// **'Podešavanja'**
+  /// **'Podešavanja nekretnine'**
   String get propertySettings;
 
   /// No description provided for @invitationHistory.
@@ -550,7 +550,7 @@ abstract class AppLocalizations {
   /// No description provided for @acceptInvitation.
   ///
   /// In sr, this message translates to:
-  /// **'Da, iznajmio sam ovo'**
+  /// **'Prihvati poziv'**
   String get acceptInvitation;
 
   /// No description provided for @declineInvitation.
@@ -568,19 +568,19 @@ abstract class AppLocalizations {
   /// No description provided for @invitationAcceptedSuccess.
   ///
   /// In sr, this message translates to:
-  /// **'Dobrodošli kući! Poziv je prihvaćen.'**
+  /// **'Dobrodošao/la kući! Poziv je prihvaćen.'**
   String get invitationAcceptedSuccess;
 
   /// No description provided for @pendingInvitationBanner.
   ///
   /// In sr, this message translates to:
-  /// **'Imate otvoren poziv za {property}'**
+  /// **'Imaš poziv za {property}'**
   String pendingInvitationBanner(String property);
 
   /// No description provided for @invitedBy.
   ///
   /// In sr, this message translates to:
-  /// **'Pozvao vas je {name}'**
+  /// **'{name} te je pozvao/la'**
   String invitedBy(String name);
 
   /// No description provided for @yourName.
@@ -592,7 +592,7 @@ abstract class AppLocalizations {
   /// No description provided for @yourNameHint.
   ///
   /// In sr, this message translates to:
-  /// **'Unesite svoje puno ime'**
+  /// **'Unesi svoje ime i prezime'**
   String get yourNameHint;
 
   /// No description provided for @viewInvite.
@@ -610,13 +610,13 @@ abstract class AppLocalizations {
   /// No description provided for @tenantEmptyStateTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek nemate dodeljenu nekretninu'**
+  /// **'Još uvek nemaš dodeljen stan'**
   String get tenantEmptyStateTitle;
 
   /// No description provided for @tenantEmptyStateMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Ako vam je stanodavac poslao poziv, on će se pojaviti ovde. Kliknite na dugme ispod da biste proverili nove pozive.'**
+  /// **'Ako ti je vlasnik poslao poziv, videćeš ga ovde. Osveži listu klikom na dugme ispod.'**
   String get tenantEmptyStateMessage;
 
   /// No description provided for @refresh.
@@ -640,7 +640,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDeclineInviteMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da odbijete ovaj poziv? Biće uklonjen sa vaše liste na čekanju.'**
+  /// **'Da li sigurno želiš da odbiješ ovaj poziv? Poziv će biti uklonjen sa liste.'**
   String get confirmDeclineInviteMessage;
 
   /// No description provided for @contractStartDate.
@@ -658,7 +658,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadContract.
   ///
   /// In sr, this message translates to:
-  /// **'Otpremi ugovor'**
+  /// **'Učitaj ugovor'**
   String get uploadContract;
 
   /// No description provided for @viewContract.
@@ -682,7 +682,7 @@ abstract class AppLocalizations {
   /// No description provided for @appLanguage.
   ///
   /// In sr, this message translates to:
-  /// **'Jezik aplikacije'**
+  /// **'Jezik'**
   String get appLanguage;
 
   /// No description provided for @english.
@@ -718,25 +718,25 @@ abstract class AppLocalizations {
   /// No description provided for @tenantMode.
   ///
   /// In sr, this message translates to:
-  /// **'Mod stanara'**
+  /// **'Uloga stanara'**
   String get tenantMode;
 
   /// No description provided for @landlordMode.
   ///
   /// In sr, this message translates to:
-  /// **'Mod stanodavca'**
+  /// **'Uloga vlasnika'**
   String get landlordMode;
 
   /// No description provided for @whatAreYou.
   ///
   /// In sr, this message translates to:
-  /// **'Kao šta želite da nastavite?'**
+  /// **'Izaberi svoju ulogu:'**
   String get whatAreYou;
 
   /// No description provided for @selectRoleToContinue.
   ///
   /// In sr, this message translates to:
-  /// **'Izaberite ulogu da biste započeli. Možete je promeniti bilo kada u zaglavlju iznad.'**
+  /// **'Izaberi ulogu za početak. Možeš je promeniti bilo kada u meniju iznad.'**
   String get selectRoleToContinue;
 
   /// No description provided for @consentTextFullBody.
@@ -754,7 +754,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeTenantConfirmation.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da uklonite ovog stanara iz nekretnine? Ovo će raskinuti vezu i obrisati zapis o pozivu.'**
+  /// **'Da li želiš da ukloniš stanara? Ovo će prekinuti vezu i obrisati istoriju poziva.'**
   String get removeTenantConfirmation;
 
   /// No description provided for @remove.
@@ -766,37 +766,37 @@ abstract class AppLocalizations {
   /// No description provided for @logRentDeclared.
   ///
   /// In sr, this message translates to:
-  /// **'Stanar je označio kiriju za {month} kao plaćenu.'**
+  /// **'Stanar je prijavio uplatu za {month}.'**
   String logRentDeclared(String month);
 
   /// No description provided for @logRentApproved.
   ///
   /// In sr, this message translates to:
-  /// **'Stanodavac je odobrio kiriju za {month}.'**
+  /// **'Vlasnik je odobrio uplatu za {month}.'**
   String logRentApproved(String month);
 
   /// No description provided for @logRentRejected.
   ///
   /// In sr, this message translates to:
-  /// **'Stanodavac je odbio kiriju za {month}.'**
+  /// **'Vlasnik je odbio uplatu za {month}.'**
   String logRentRejected(String month);
 
   /// No description provided for @logMarkedAsPaid.
   ///
   /// In sr, this message translates to:
-  /// **'Stanodavac je označio {month} kao plaćeno.'**
+  /// **'Vlasnik je označio {month} kao plaćen.'**
   String logMarkedAsPaid(String month);
 
   /// No description provided for @logMarkedAsPending.
   ///
   /// In sr, this message translates to:
-  /// **'Stanodavac je označio {month} na čekanju.'**
+  /// **'Vlasnik je vratio {month} na čekanje.'**
   String logMarkedAsPending(String month);
 
   /// No description provided for @logAutoApproved.
   ///
   /// In sr, this message translates to:
-  /// **'Kirija za {month} je automatski odobrena od strane sistema nakon 5 dana.'**
+  /// **'Sistem je automatski odobrio uplatu za {month} posle 5 dana.'**
   String logAutoApproved(String month);
 
   /// No description provided for @activity.
@@ -808,13 +808,13 @@ abstract class AppLocalizations {
   /// No description provided for @noContractsTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek nema ugovora'**
+  /// **'Nema aktivnih ugovora'**
   String get noContractsTitle;
 
   /// No description provided for @noContractsMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da biste pratili kiriju i troškove, prvo pozovite stanara unošenjem detalja ugovora.'**
+  /// **'Kako bi pratio kirije i račune, prvo unesi ugovor i pozovi stanara.'**
   String get noContractsMessage;
 
   /// No description provided for @inviteFirstTenant.
@@ -832,7 +832,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmCancelInvitationMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da povučete ovaj poziv? Ova akcija će ga trajno izbrisati.'**
+  /// **'Da li želiš da otkažeš poziv? Link će postati nevažeći.'**
   String get confirmCancelInvitationMessage;
 
   /// No description provided for @confirmDeclineRevisionTitle.
@@ -844,7 +844,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDeclineRevisionMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da odbijete zahtev zakupca za reviziju? Ugovor će ostati na čekanju sa originalnim uslovima.'**
+  /// **'Da li želiš da odbijete izmene ugovora? Ugovor ostaje sa prvobitnim uslovima.'**
   String get confirmDeclineRevisionMessage;
 
   /// No description provided for @activeContract.
@@ -880,7 +880,7 @@ abstract class AppLocalizations {
   /// No description provided for @declineRevisionRequest.
   ///
   /// In sr, this message translates to:
-  /// **'Odbij zahtev za reviziju'**
+  /// **'Odbij izmene'**
   String get declineRevisionRequest;
 
   /// No description provided for @pendingHeader.
@@ -895,6 +895,12 @@ abstract class AppLocalizations {
   /// **'ČEKA ODOBRENJE'**
   String get awaitingHeader;
 
+  /// No description provided for @awaitingExplanation.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potrebno je odobrenje stanodavca da bi se označilo kao plaćeno.'**
+  String get awaitingExplanation;
+
   /// No description provided for @paidHeader.
   ///
   /// In sr, this message translates to:
@@ -904,25 +910,25 @@ abstract class AppLocalizations {
   /// No description provided for @waitingForTenantPayment.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka uplatu stanara'**
+  /// **'Čeka se uplata stanara'**
   String get waitingForTenantPayment;
 
   /// No description provided for @waitingForYourApproval.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka vaše odobrenje'**
+  /// **'Čeka tvoje odobrenje'**
   String get waitingForYourApproval;
 
   /// No description provided for @waitingForOwnerApproval.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka odobrenje stanodavca'**
+  /// **'Čeka se odobrenje vlasnika'**
   String get waitingForOwnerApproval;
 
   /// No description provided for @waitingForYourPayment.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka vašu uplatu'**
+  /// **'Čeka se tvoja uplata'**
   String get waitingForYourPayment;
 
   /// No description provided for @processCompleted.
@@ -952,7 +958,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadInvoice.
   ///
   /// In sr, this message translates to:
-  /// **'Otpremi račun'**
+  /// **'Učitaj račun'**
   String get uploadInvoice;
 
   /// No description provided for @awaitingInvoice.
@@ -1090,7 +1096,7 @@ abstract class AppLocalizations {
   /// No description provided for @taxConfiguration.
   ///
   /// In sr, this message translates to:
-  /// **'Konfiguracija poreza'**
+  /// **'Porez'**
   String get taxConfiguration;
 
   /// No description provided for @included.
@@ -1120,7 +1126,7 @@ abstract class AppLocalizations {
   /// No description provided for @utility.
   ///
   /// In sr, this message translates to:
-  /// **'Komunalno'**
+  /// **'Komunalne usluge'**
   String get utility;
 
   /// No description provided for @owner.
@@ -1132,7 +1138,7 @@ abstract class AppLocalizations {
   /// No description provided for @proposeChangesInfo.
   ///
   /// In sr, this message translates to:
-  /// **'Izmene će biti poslate {role} na odobrenje. Trenutni uslovi ostaju na snazi do prihvatanja.'**
+  /// **'Izmene će biti poslate {role} na odobrenje. Stari uslovi važe dok se novi ne prihvate.'**
   String proposeChangesInfo(String role);
 
   /// No description provided for @proposeChanges.
@@ -1150,7 +1156,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadReceipt.
   ///
   /// In sr, this message translates to:
-  /// **'Otpremi uplatnicu'**
+  /// **'Učitaj uplatnicu'**
   String get uploadReceipt;
 
   /// No description provided for @paidInCash.
@@ -1162,13 +1168,13 @@ abstract class AppLocalizations {
   /// No description provided for @noFinancialRecords.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek nema finansijskih zapisa'**
+  /// **'Nema zabeleženih plaćanja'**
   String get noFinancialRecords;
 
   /// No description provided for @noActiveContract.
   ///
   /// In sr, this message translates to:
-  /// **'Nije pronađen otpremljeni ugovor'**
+  /// **'Nema aktivnih ugovora'**
   String get noActiveContract;
 
   /// No description provided for @contractTermsInfo.
@@ -1186,7 +1192,7 @@ abstract class AppLocalizations {
   /// No description provided for @totalRent.
   ///
   /// In sr, this message translates to:
-  /// **'Ukupna kirija'**
+  /// **'Ukupno'**
   String get totalRent;
 
   /// No description provided for @infoTooltip.
@@ -1252,7 +1258,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultLeaseTermsSubtitle.
   ///
   /// In sr, this message translates to:
-  /// **'Uslovi koji se koriste kao šablon za nove pozive.'**
+  /// **'Ciljni uslovi koji se koriste kao predložak za nova pozivanja.'**
   String get defaultLeaseTermsSubtitle;
 
   /// No description provided for @invalidNumber.
@@ -1282,7 +1288,7 @@ abstract class AppLocalizations {
   /// No description provided for @expenseElectricity.
   ///
   /// In sr, this message translates to:
-  /// **'Struja (Električna energija)'**
+  /// **'Struja'**
   String get expenseElectricity;
 
   /// No description provided for @expenseInternetTV.
@@ -1294,7 +1300,7 @@ abstract class AppLocalizations {
   /// No description provided for @expenseMaintenance.
   ///
   /// In sr, this message translates to:
-  /// **'Održavanje zgrade'**
+  /// **'Održavanje'**
   String get expenseMaintenance;
 
   /// No description provided for @expenseTax.
@@ -1306,7 +1312,7 @@ abstract class AppLocalizations {
   /// No description provided for @tenantPaysTo.
   ///
   /// In sr, this message translates to:
-  /// **'Stanar plaća:'**
+  /// **'Plaća se:'**
   String get tenantPaysTo;
 
   /// No description provided for @fileSelected.
@@ -1342,13 +1348,13 @@ abstract class AppLocalizations {
   /// No description provided for @paymentDeclared.
   ///
   /// In sr, this message translates to:
-  /// **'Uplata je uspešno prijavljena.'**
+  /// **'Uplata je prijavljena.'**
   String get paymentDeclared;
 
   /// No description provided for @dashboard.
   ///
   /// In sr, this message translates to:
-  /// **'Kontrolna tabla'**
+  /// **'Dashboard'**
   String get dashboard;
 
   /// No description provided for @parties.
@@ -1360,13 +1366,13 @@ abstract class AppLocalizations {
   /// No description provided for @tenantEmail.
   ///
   /// In sr, this message translates to:
-  /// **'E-pošta stanara'**
+  /// **'E-mail stanara'**
   String get tenantEmail;
 
   /// No description provided for @existingContractTermsInfo.
   ///
   /// In sr, this message translates to:
-  /// **'Postojeći dogovoreni uslovi ugovora (kirija, datumi i troškovi) važiće i za ovog stanara.'**
+  /// **'Dogovoreni uslovi ugovora važiće i za ovog stanara.'**
   String get existingContractTermsInfo;
 
   /// No description provided for @rentAndPayment.
@@ -1396,13 +1402,13 @@ abstract class AppLocalizations {
   /// No description provided for @sendRevision.
   ///
   /// In sr, this message translates to:
-  /// **'Pošalji reviziju'**
+  /// **'Pošalji izmene'**
   String get sendRevision;
 
   /// No description provided for @revisionSent.
   ///
   /// In sr, this message translates to:
-  /// **'Predlog revizije je poslat'**
+  /// **'Predlog izmena je poslat'**
   String get revisionSent;
 
   /// No description provided for @existingFileKept.
@@ -1420,13 +1426,13 @@ abstract class AppLocalizations {
   /// No description provided for @startAndEndDatesMandatory.
   ///
   /// In sr, this message translates to:
-  /// **'Datum početka i završetka su obavezni'**
+  /// **'Datumi početka i kraja su obavezni'**
   String get startAndEndDatesMandatory;
 
   /// No description provided for @revisionRequested.
   ///
   /// In sr, this message translates to:
-  /// **'Tražena revizija'**
+  /// **'Tražene izmene'**
   String get revisionRequested;
 
   /// No description provided for @statusActive.
@@ -1438,7 +1444,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusPending.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka odobrenje'**
+  /// **'Na čekanju'**
   String get statusPending;
 
   /// No description provided for @statusDeclined.
@@ -1480,19 +1486,19 @@ abstract class AppLocalizations {
   /// No description provided for @changesAccepted.
   ///
   /// In sr, this message translates to:
-  /// **'Promene su prihvaćene'**
+  /// **'Izmene su prihvaćene'**
   String get changesAccepted;
 
   /// No description provided for @changesDeclined.
   ///
   /// In sr, this message translates to:
-  /// **'Promene su odbijene'**
+  /// **'Izmene su odbijene'**
   String get changesDeclined;
 
   /// No description provided for @contractChangeProposal.
   ///
   /// In sr, this message translates to:
-  /// **'Predlog promene ugovora'**
+  /// **'Predlog izmena ugovora'**
   String get contractChangeProposal;
 
   /// No description provided for @cancelProposal.
@@ -1528,7 +1534,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectPaymentReceiverWarning.
   ///
   /// In sr, this message translates to:
-  /// **'Molimo izaberite primaoca uplate pre nastavka.'**
+  /// **'Izaberi primaoca uplate pre nego što nastaviš.'**
   String get selectPaymentReceiverWarning;
 
   /// No description provided for @progressSummary.
@@ -1558,7 +1564,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportIssue.
   ///
   /// In sr, this message translates to:
-  /// **'Prijavi kvar'**
+  /// **'Prijavi problem'**
   String get reportIssue;
 
   /// No description provided for @issueTitle.
@@ -1588,7 +1594,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusInvestigating.
   ///
   /// In sr, this message translates to:
-  /// **'Na pregledu'**
+  /// **'U toku'**
   String get statusInvestigating;
 
   /// No description provided for @statusResolved.
@@ -1642,13 +1648,13 @@ abstract class AppLocalizations {
   /// No description provided for @noIssuesTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Još nema prijavljenih kvarova'**
+  /// **'Nema prijavljenih problema'**
   String get noIssuesTitle;
 
   /// No description provided for @noIssuesMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Sve je u redu! Nema prijavljenih zahteva za održavanje ove imovine.'**
+  /// **'Sve je u redu, nema zabeleženih problema.'**
   String get noIssuesMessage;
 
   /// No description provided for @updateStatus.
@@ -1660,31 +1666,31 @@ abstract class AppLocalizations {
   /// No description provided for @issueDetails.
   ///
   /// In sr, this message translates to:
-  /// **'Detalji kvara'**
+  /// **'Detalji problema'**
   String get issueDetails;
 
   /// No description provided for @logMaintenanceCreated.
   ///
   /// In sr, this message translates to:
-  /// **'Kreiran zahtev za održavanje: {title}'**
+  /// **'Prijavljen problem: {title}'**
   String logMaintenanceCreated(String title);
 
   /// No description provided for @logMaintenanceStatusUpdated.
   ///
   /// In sr, this message translates to:
-  /// **'Status održavanja ažuriran na {status}'**
+  /// **'Status problema je promenjen na {status}'**
   String logMaintenanceStatusUpdated(String status);
 
   /// No description provided for @logMaintenanceReopened.
   ///
   /// In sr, this message translates to:
-  /// **'Zahtev za održavanje ponovo otvoren'**
+  /// **'Problem je ponovo otvoren'**
   String get logMaintenanceReopened;
 
   /// No description provided for @logMaintenanceMessageAdded.
   ///
   /// In sr, this message translates to:
-  /// **'Dodata nova poruka zahtevu za održavanje'**
+  /// **'Dodata je nova poruka'**
   String get logMaintenanceMessageAdded;
 
   /// No description provided for @notifications.
@@ -1702,13 +1708,13 @@ abstract class AppLocalizations {
   /// No description provided for @noNotifications.
   ///
   /// In sr, this message translates to:
-  /// **'Još nema obaveštenja'**
+  /// **'Nema novih obaveštenja'**
   String get noNotifications;
 
   /// No description provided for @documents.
   ///
   /// In sr, this message translates to:
-  /// **'Dokumenta'**
+  /// **'Dokumenti'**
   String get documents;
 
   /// No description provided for @mainContract.
@@ -1732,7 +1738,7 @@ abstract class AppLocalizations {
   /// No description provided for @noDocumentsYet.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek nema dokumenata'**
+  /// **'Nema učitanih dokumenata'**
   String get noDocumentsYet;
 
   /// No description provided for @additionalDocuments.
@@ -1750,7 +1756,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteDocumentConfirm.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da obrišete ovaj dokument?'**
+  /// **'Da li sigurno želiš da obrišeš ovaj dokument?'**
   String get deleteDocumentConfirm;
 
   /// No description provided for @uploadMainContract.
@@ -1792,7 +1798,7 @@ abstract class AppLocalizations {
   /// No description provided for @overdueReceivables.
   ///
   /// In sr, this message translates to:
-  /// **'Dospela'**
+  /// **'Kašnjenja'**
   String get overdueReceivables;
 
   /// No description provided for @collectedByType.
@@ -1810,13 +1816,13 @@ abstract class AppLocalizations {
   /// No description provided for @hasDebt.
   ///
   /// In sr, this message translates to:
-  /// **'Ima dug'**
+  /// **'Duguje'**
   String get hasDebt;
 
   /// No description provided for @paymentAwaitingApproval.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka odobrenje'**
+  /// **'Čeka proveru'**
   String get paymentAwaitingApproval;
 
   /// No description provided for @rent.
@@ -1842,6 +1848,12 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Dug'**
   String get debtLabel;
+
+  /// No description provided for @totalDebt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ukupan dug'**
+  String get totalDebt;
 
   /// No description provided for @paidLabel.
   ///
@@ -1882,7 +1894,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmApprovePaymentMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da potvrdite ovu uplatu?'**
+  /// **'Da li želiš da potvrdiš ovu uplatu?'**
   String get confirmApprovePaymentMessage;
 
   /// No description provided for @confirmRejectPaymentTitle.
@@ -1894,7 +1906,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmRejectPaymentMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li želite da odbijete ovu deklaraciju i tražite od zakupca da je ponovo prijavi?'**
+  /// **'Da li želiš da odbiješ ovu prijavu i tražiš ponovno slanje?'**
   String get confirmRejectPaymentMessage;
 
   /// No description provided for @confirm.
@@ -1924,25 +1936,25 @@ abstract class AppLocalizations {
   /// No description provided for @confirmTerminationMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da pošaljete zahtev za raskid ugovora na izabrani datum?'**
+  /// **'Da li želiš da pošalješ zahtev za raskid ugovora za izabrani datum?'**
   String get confirmTerminationMessage;
 
   /// No description provided for @terminationRequestSent.
   ///
   /// In sr, this message translates to:
-  /// **'Zahtev za raskid ugovora je uspešno poslat.'**
+  /// **'Zahtev za raskid je poslat.'**
   String get terminationRequestSent;
 
   /// No description provided for @statusInactive.
   ///
   /// In sr, this message translates to:
-  /// **'Pasivno / Završeno'**
+  /// **'Završeno'**
   String get statusInactive;
 
   /// No description provided for @terminationRequested.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka se raskid'**
+  /// **'Raskid na čekanju'**
   String get terminationRequested;
 
   /// No description provided for @approveTermination.
@@ -2008,7 +2020,7 @@ abstract class AppLocalizations {
   /// No description provided for @disputeSentSuccess.
   ///
   /// In sr, this message translates to:
-  /// **'Vaš prigovor je poslat stanodavcu.'**
+  /// **'Prigovor je poslat vlasniku stana.'**
   String get disputeSentSuccess;
 
   /// No description provided for @takeAction.
@@ -2026,13 +2038,13 @@ abstract class AppLocalizations {
   /// No description provided for @explanationOptional.
   ///
   /// In sr, this message translates to:
-  /// **'Objašnjenje (Opciono)'**
+  /// **'Napomena (opciono)'**
   String get explanationOptional;
 
   /// No description provided for @explanationHint.
   ///
   /// In sr, this message translates to:
-  /// **'npr. Proverio sam brojilo...'**
+  /// **'npr. Proverio sam struju...'**
   String get explanationHint;
 
   /// No description provided for @units.
@@ -2050,13 +2062,13 @@ abstract class AppLocalizations {
   /// No description provided for @portfolioManagement.
   ///
   /// In sr, this message translates to:
-  /// **'Upravljanje portfolijom'**
+  /// **'Portfolijo'**
   String get portfolioManagement;
 
   /// No description provided for @paymentRequests.
   ///
   /// In sr, this message translates to:
-  /// **'Plaćanja i zahtevi'**
+  /// **'Zahtevi i plaćanja'**
   String get paymentRequests;
 
   /// No description provided for @profileSettings.
@@ -2068,7 +2080,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmSignOutMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Da li ste sigurni da želite da se odjavite?'**
+  /// **'Da li želiš da se odjaviš?'**
   String get confirmSignOutMessage;
 
   /// No description provided for @errorWithDetails.
@@ -2086,19 +2098,19 @@ abstract class AppLocalizations {
   /// No description provided for @acceptTermsWarning.
   ///
   /// In sr, this message translates to:
-  /// **'Molimo prihvatite uslove pre nego što nastavite.'**
+  /// **'Prihvati uslove pre nego što nastaviš.'**
   String get acceptTermsWarning;
 
   /// No description provided for @maintenanceRequestSuccess.
   ///
   /// In sr, this message translates to:
-  /// **'Zahtev za održavanje je uspešno poslat.'**
+  /// **'Problem je uspešno prijavljen.'**
   String get maintenanceRequestSuccess;
 
   /// No description provided for @ok.
   ///
   /// In sr, this message translates to:
-  /// **'U redu'**
+  /// **'OK'**
   String get ok;
 
   /// No description provided for @orLabel.
@@ -2140,7 +2152,7 @@ abstract class AppLocalizations {
   /// No description provided for @payNow.
   ///
   /// In sr, this message translates to:
-  /// **'Plati odmah'**
+  /// **'Prijavi uplatu'**
   String get payNow;
 
   /// No description provided for @upcomingLabel.
@@ -2158,7 +2170,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackSent.
   ///
   /// In sr, this message translates to:
-  /// **'Povratne informacije su poslate'**
+  /// **'Hvala na feedback-u!'**
   String get feedbackSent;
 
   /// No description provided for @rentalProposal.
@@ -2206,19 +2218,19 @@ abstract class AppLocalizations {
   /// No description provided for @proposeRevision.
   ///
   /// In sr, this message translates to:
-  /// **'Predloži reviziju'**
+  /// **'Predloži izmene'**
   String get proposeRevision;
 
   /// No description provided for @revisionTermsQuestion.
   ///
   /// In sr, this message translates to:
-  /// **'Koje uslove želite da promenite? (Zakupnina, dan dospeća, troškovi, itd.)'**
+  /// **'Koje uslove želiš da promeniš? (Kiriju, dan plaćanja, troškove...)'**
   String get revisionTermsQuestion;
 
   /// No description provided for @enterNotesHint.
   ///
   /// In sr, this message translates to:
-  /// **'Unesite svoje beleške ovde...'**
+  /// **'Upiši svoju napomenu...'**
   String get enterNotesHint;
 
   /// No description provided for @submit.
@@ -2230,13 +2242,13 @@ abstract class AppLocalizations {
   /// No description provided for @invitedToJoinProperty.
   ///
   /// In sr, this message translates to:
-  /// **'Pozvani ste da se pridružite nekretnini {property}.'**
+  /// **'Pozvan/a si da se pridružiš objektu {property}.'**
   String invitedToJoinProperty(String property);
 
   /// No description provided for @waitingForLandlord.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka se odgovor stanodavca...'**
+  /// **'Čeka se odgovor vlasnika...'**
   String get waitingForLandlord;
 
   /// No description provided for @day.
@@ -2254,13 +2266,13 @@ abstract class AppLocalizations {
   /// No description provided for @acceptTermsAndDistribution.
   ///
   /// In sr, this message translates to:
-  /// **'Prihvatam uslove ugovora i raspodelu troškova.'**
+  /// **'Prihvatam uslove ugovora i podelu troškova.'**
   String get acceptTermsAndDistribution;
 
   /// No description provided for @datesMandatory.
   ///
   /// In sr, this message translates to:
-  /// **'Datum početka i završetka su obavezni'**
+  /// **'Datumi početka i kraja su obavezni'**
   String get datesMandatory;
 
   /// No description provided for @partiesHeader.
@@ -2344,7 +2356,7 @@ abstract class AppLocalizations {
   /// No description provided for @reopenIssue.
   ///
   /// In sr, this message translates to:
-  /// **'Još uvek postoji problem (Ponovo otvori)'**
+  /// **'Problem i dalje postoji (Otvori ponovo)'**
   String get reopenIssue;
 
   /// No description provided for @deleteRequest.
@@ -2374,7 +2386,7 @@ abstract class AppLocalizations {
   /// No description provided for @paymentDeclaredSuccess.
   ///
   /// In sr, this message translates to:
-  /// **'Uplata {title} je prijavljena.'**
+  /// **'Uplata za {title} je uspešno prijavljena.'**
   String paymentDeclaredSuccess(String title);
 
   /// No description provided for @setAmountUploadInvoice.
@@ -2386,13 +2398,13 @@ abstract class AppLocalizations {
   /// No description provided for @yourMessage.
   ///
   /// In sr, this message translates to:
-  /// **'Vaša poruka:'**
+  /// **'Tvoja poruka:'**
   String get yourMessage;
 
   /// No description provided for @revisionRequestLabel.
   ///
   /// In sr, this message translates to:
-  /// **'Zahtev za reviziju:'**
+  /// **'Zahtev za izmenama:'**
   String get revisionRequestLabel;
 
   /// No description provided for @noActivityLogs.
@@ -2404,13 +2416,13 @@ abstract class AppLocalizations {
   /// No description provided for @landlordProposedChanges.
   ///
   /// In sr, this message translates to:
-  /// **'Stanodavac je predložio izmene ugovora. Dodirnite da pregledate.'**
+  /// **'Vlasnik je predložio izmene ugovora. Dodirni da pogledaš.'**
   String get landlordProposedChanges;
 
   /// No description provided for @tenantProposedChanges.
   ///
   /// In sr, this message translates to:
-  /// **'Stanar je predložio izmene ugovora. Dodirnite da pregledate.'**
+  /// **'Stanar je predložio izmene ugovora. Dodirni da pogledaš.'**
   String get tenantProposedChanges;
 
   /// No description provided for @dueOn.
@@ -2458,7 +2470,7 @@ abstract class AppLocalizations {
   /// No description provided for @cannotInviteSelf.
   ///
   /// In sr, this message translates to:
-  /// **'Ne možete pozvati sebe kao stanara.'**
+  /// **'Ne možeš pozvati sopstveni e-mail.'**
   String get cannotInviteSelf;
 
   /// No description provided for @paywallTitle.
@@ -2470,7 +2482,7 @@ abstract class AppLocalizations {
   /// No description provided for @paywallSubtitle.
   ///
   /// In sr, this message translates to:
-  /// **'Uklonite ograničenja u upravljanju nekretninama.'**
+  /// **'Ukloni sva ograničenja u vođenju nekretnina.'**
   String get paywallSubtitle;
 
   /// No description provided for @unlimitedProperties.
@@ -2482,7 +2494,7 @@ abstract class AppLocalizations {
   /// No description provided for @detailedReporting.
   ///
   /// In sr, this message translates to:
-  /// **'Brže i detaljnije izveštavanje'**
+  /// **'Napredno finansijsko izveštavanje'**
   String get detailedReporting;
 
   /// No description provided for @extraStorage.
@@ -2494,13 +2506,13 @@ abstract class AppLocalizations {
   /// No description provided for @pdfContracts.
   ///
   /// In sr, this message translates to:
-  /// **'Generisanje PDF ugovora (Uskoro)'**
+  /// **'PDF ugovori (Uskoro)'**
   String get pdfContracts;
 
   /// No description provided for @automatedRenewal.
   ///
   /// In sr, this message translates to:
-  /// **'Automatski obračun i obnova kirije (Uskoro)'**
+  /// **'Automatska obnova (Uskoro)'**
   String get automatedRenewal;
 
   /// No description provided for @restorePurchases.
@@ -2542,7 +2554,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumMobileOnlyDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Stanomer Premium pretplata se može kupiti samo putem mobilne aplikacije. Preuzmite aplikaciju ispod da biste počeli s Premium-om.'**
+  /// **'Stanomer Premium se kupuje samo kroz mobilnu aplikaciju. Preuzmi je preko linkova ispod.'**
   String get premiumMobileOnlyDesc;
 
   /// No description provided for @downloadOnAppStore.
@@ -2608,7 +2620,7 @@ abstract class AppLocalizations {
   /// No description provided for @support_desc.
   ///
   /// In sr, this message translates to:
-  /// **'Kontaktirajte nas za tehničku podršku ili povratne informacije.'**
+  /// **'Piši nam ako imaš pitanja ili feedback.'**
   String get support_desc;
 
   /// No description provided for @subject.
@@ -2650,7 +2662,7 @@ abstract class AppLocalizations {
   /// No description provided for @messageSent.
   ///
   /// In sr, this message translates to:
-  /// **'Poruka je uspešno poslata!'**
+  /// **'Poruka je poslata!'**
   String get messageSent;
 
   /// No description provided for @errorSendingMessage.
@@ -2686,13 +2698,13 @@ abstract class AppLocalizations {
   /// No description provided for @zzplConsentTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Pristanak za obradu podataka o ličnosti'**
+  /// **'Zaštita podataka (ZZPL)'**
   String get zzplConsentTitle;
 
   /// No description provided for @zzplAgreeAndContinue.
   ///
   /// In sr, this message translates to:
-  /// **'Pročitao sam i prihvatam'**
+  /// **'Prihvatam i nastavljam'**
   String get zzplAgreeAndContinue;
 
   /// No description provided for @share.
@@ -2728,13 +2740,13 @@ abstract class AppLocalizations {
   /// No description provided for @invoiceLocalOnlyDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Dokument se čuva samo na ovom uređaju. Možete omogućiti otpremanje na oblak u podešavanjima.'**
+  /// **'Račun se čuva samo lokalno. Možeš uključiti cloud backup u podešavanjima.'**
   String get invoiceLocalOnlyDesc;
 
   /// No description provided for @invoiceCloudSecureDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Dokument je bezbedno sačuvan sa enkripcijom. Samo vi i stanar ga možete videti.'**
+  /// **'Račun je sačuvan na cloud-u. Vide ga samo stanar i vlasnik.'**
   String get invoiceCloudSecureDesc;
 
   /// No description provided for @invoiceUploadLimitDesc.
@@ -2746,13 +2758,13 @@ abstract class AppLocalizations {
   /// No description provided for @billMissingLocalDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Ovaj račun je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.'**
+  /// **'Račun je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.'**
   String get billMissingLocalDesc;
 
   /// No description provided for @documentMissingLocalDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Ovaj dokument je sačuvan lokalno na drugom uređaju. Ne možete ga videti ovde jer je slanje u oblak onemogućeno.'**
+  /// **'Dokument je sačuvan lokalno na drugom uređaju. Uključi cloud backup da ga vidiš ovde.'**
   String get documentMissingLocalDesc;
 
   /// No description provided for @cannotOpenDocument.
