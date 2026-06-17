@@ -46,42 +46,53 @@ const initLanguage = () => {
 // Navbar shadow on scroll
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) {
-        navbar.style.boxShadow = 'var(--shadow)';
-    } else {
-        navbar.style.boxShadow = 'none';
-    }
-});
-
-// Mobile Menu Toggle
-const menuToggle = document.getElementById('menuToggle');
-const navLinks = document.getElementById('navLinks');
-const menuIcon = document.getElementById('menuIcon');
-
-menuToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-    const isActive = navLinks.classList.contains('active');
-    
-    // Switch icon
-    menuIcon.setAttribute('data-lucide', isActive ? 'x' : 'menu');
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-});
-
-// Close menu when clicking links
-navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        menuIcon.setAttribute('data-lucide', 'menu');
-        if (window.lucide) {
-            lucide.createIcons();
+    if (navbar) {
+        if (window.scrollY > 50) {
+            navbar.style.boxShadow = 'var(--shadow)';
+        } else {
+            navbar.style.boxShadow = 'none';
         }
-    });
+    }
 });
+
+// ── OS Detection & Button Visibility ──────────────────────────────────────────
+const applyOSVisibility = () => {
+    const ua = window.navigator.userAgent || window.navigator.vendor || '';
+    const platform = window.navigator.platform || '';
+
+    const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /android/i.test(ua);
+
+    const ids = {
+        heroAppStore:    document.getElementById('heroAppStore'),
+        heroGooglePlay:  document.getElementById('heroGooglePlay'),
+        heroWebAppWrap:  document.getElementById('heroWebAppWrap'),
+        footerAppStore:  document.getElementById('footerAppStore'),
+        footerGooglePlay:document.getElementById('footerGooglePlay'),
+        footerWebAppWrap:document.getElementById('footerWebAppWrap'),
+    };
+
+    if (isIOS) {
+        // Show only App Store
+        if (ids.heroGooglePlay)   ids.heroGooglePlay.style.display  = 'none';
+        if (ids.heroWebAppWrap)   ids.heroWebAppWrap.style.display   = 'none';
+        if (ids.footerGooglePlay) ids.footerGooglePlay.style.display = 'none';
+        if (ids.footerWebAppWrap) ids.footerWebAppWrap.style.display  = 'none';
+    } else if (isAndroid) {
+        // Show only Google Play
+        if (ids.heroAppStore)    ids.heroAppStore.style.display    = 'none';
+        if (ids.heroWebAppWrap)  ids.heroWebAppWrap.style.display   = 'none';
+        if (ids.footerAppStore)  ids.footerAppStore.style.display   = 'none';
+        if (ids.footerWebAppWrap)ids.footerWebAppWrap.style.display  = 'none';
+    }
+    // Desktop: all three visible by default — no changes needed
+};
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
     initLanguage();
+    applyOSVisibility();
     if (window.lucide) lucide.createIcons();
 });

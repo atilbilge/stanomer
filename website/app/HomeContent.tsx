@@ -1,11 +1,27 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "../components/LanguageProvider";
 import { Apple, Play, Shield, Cloud, Heart, ClipboardList, FileText, Bell, Wrench, Globe } from "lucide-react";
 
 export function HomeContent() {
   const { t } = useLanguage();
+  const [deviceOS, setDeviceOS] = useState<string | null>(null);
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent || window.navigator.vendor;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) || 
+      (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+    const isAndroid = /android/i.test(userAgent);
+    
+    if (isIOS) {
+      setDeviceOS('ios');
+    } else if (isAndroid) {
+      setDeviceOS('android');
+    } else {
+      setDeviceOS('desktop');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-transparent text-gray-900">
@@ -25,22 +41,40 @@ export function HomeContent() {
             {t("hero_desc")}
           </p>
           
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-black border border-white/10 text-white rounded-lg font-bold text-sm hover:opacity-80 transition-all">
-              <Apple className="w-5 h-5" />
-              App Store
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-200 transition-all">
-              <Play className="w-5 h-5 fill-current" />
-              Google Play
-            </a>
-          </div>
+          {deviceOS === null || deviceOS === 'desktop' ? (
+            <>
+              <div className="flex flex-wrap justify-center gap-3 mb-8">
+                <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-black border border-white/10 text-white rounded-lg font-bold text-sm hover:opacity-80 transition-all">
+                  <Apple className="w-5 h-5" />
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-200 transition-all">
+                  <Play className="w-5 h-5 fill-current" />
+                  Google Play
+                </a>
+              </div>
 
-          <div className="mb-6">
-            <a href="/app" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
-              {t("btn_web_app")}
-            </a>
-          </div>
+              <div className="mb-6">
+                <a href="/app" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
+                  {t("btn_web_app")}
+                </a>
+              </div>
+            </>
+          ) : deviceOS === 'ios' ? (
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-8 py-3.5 bg-black border border-white/10 text-white rounded-xl font-bold text-base hover:opacity-80 transition-all">
+                <Apple className="w-6 h-6" />
+                App Store
+              </a>
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-8 py-3.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-xl font-bold text-base hover:bg-gray-200 transition-all">
+                <Play className="w-6 h-6 fill-current" />
+                Google Play
+              </a>
+            </div>
+          )}
 
           <p className="text-[12px] text-gray-500">
             {t("hero_note")}
@@ -162,22 +196,39 @@ export function HomeContent() {
           <h2 className="text-[24px] font-bold text-gray-900 mb-3">{t("footer_cta_title")}</h2>
           <p className="text-[14px] text-gray-700 leading-relaxed mb-8" dangerouslySetInnerHTML={{ __html: t("footer_cta_desc") }} />
           
-          <div className="flex flex-wrap justify-center gap-3 mb-6">
-            <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-black border border-white/10 text-white rounded-lg font-bold text-sm hover:opacity-80 transition-all">
-              <Apple className="w-5 h-5" />
-              App Store
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-200 transition-all">
-              <Play className="w-5 h-5 fill-current" />
-              Google Play
-            </a>
-          </div>
-
-          <div className="mb-6">
-            <a href="/app" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
-              {t("btn_web_app")}
-            </a>
-          </div>
+          {deviceOS === null || deviceOS === 'desktop' ? (
+            <>
+              <div className="flex flex-wrap justify-center gap-3 mb-6">
+                <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-black border border-white/10 text-white rounded-lg font-bold text-sm hover:opacity-80 transition-all">
+                  <Apple className="w-5 h-5" />
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-200 transition-all">
+                  <Play className="w-5 h-5 fill-current" />
+                  Google Play
+                </a>
+              </div>
+              <div className="mb-6">
+                <a href="/app" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-[15px] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
+                  {t("btn_web_app")}
+                </a>
+              </div>
+            </>
+          ) : deviceOS === 'ios' ? (
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" className="flex items-center gap-2 px-8 py-3.5 bg-black border border-white/10 text-white rounded-xl font-bold text-base hover:opacity-80 transition-all">
+                <Apple className="w-6 h-6" />
+                App Store
+              </a>
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" className="flex items-center gap-2 px-8 py-3.5 bg-gray-100 border border-gray-200 text-gray-900 rounded-xl font-bold text-base hover:bg-gray-200 transition-all">
+                <Play className="w-6 h-6 fill-current" />
+                Google Play
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
