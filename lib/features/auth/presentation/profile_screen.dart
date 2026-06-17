@@ -635,6 +635,14 @@ class _SettingsGroup extends ConsumerWidget {
 
   String _getCloudSubtitle(BuildContext context, bool isCloudAllowed) {
     final code = Localizations.localeOf(context).languageCode;
+    if (kIsWeb) {
+      switch (code) {
+        case 'tr': return 'Web uygulamasında belgeler bulutta saklanır (Değiştirilemez).';
+        case 'sr': return 'Na vebu se dokumenti čuvaju u oblaku (Ne može se menjati).';
+        case 'ru': return 'В веб-приложении документы сохраняются в облаке (Нельзя изменить).';
+        default: return 'Web app requires cloud storage (Read-only).';
+      }
+    }
     if (isCloudAllowed) {
       switch (code) {
         case 'tr': return 'Belgeler (sözleşmeler, faturalar) bulutta yedeklenir.';
@@ -692,7 +700,7 @@ class _SettingsGroup extends ConsumerWidget {
             title: _getCloudTitle(context),
             subtitle: _getCloudSubtitle(context, isCloudAllowed),
             value: isCloudAllowed,
-            onChanged: (val) {
+            onChanged: kIsWeb ? null : (val) {
               ref.read(cloudUploadAllowedProvider.notifier).toggle(val);
             },
           ),

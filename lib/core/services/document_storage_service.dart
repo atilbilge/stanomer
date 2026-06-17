@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -19,15 +20,20 @@ final cloudUploadAllowedProvider = StateNotifierProvider<CloudUploadAllowedNotif
 class CloudUploadAllowedNotifier extends StateNotifier<bool> {
   final DocumentStorageService _service;
 
-  CloudUploadAllowedNotifier(this._service) : super(false) {
+  CloudUploadAllowedNotifier(this._service) : super(kIsWeb) {
     _loadPreference();
   }
 
   Future<void> _loadPreference() async {
+    if (kIsWeb) {
+      state = true;
+      return;
+    }
     state = await _service.getCloudUploadAllowed();
   }
 
   Future<void> toggle(bool allowed) async {
+    if (kIsWeb) return;
     await _service.setCloudUploadAllowed(allowed);
     state = allowed;
   }
@@ -73,6 +79,7 @@ class DocumentStorageService {
 
   /// Retrieves the persisted preference. Default is false (Privacy-First Approach).
   Future<bool> getCloudUploadAllowed() async {
+    if (kIsWeb) return true;
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getBool(_storagePrefKey) ?? false;
@@ -84,6 +91,7 @@ class DocumentStorageService {
 
   /// Persists the storage preference.
   Future<void> setCloudUploadAllowed(bool allowed) async {
+    if (kIsWeb) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_storagePrefKey, allowed);
