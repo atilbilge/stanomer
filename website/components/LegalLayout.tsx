@@ -18,41 +18,41 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
       {/* Main Content */}
       <main className="flex-grow max-w-[680px] mx-auto px-4 sm:px-8 py-8 md:py-12 w-full bg-white/80 backdrop-blur-[16px] rounded-2xl md:rounded-3xl border border-gray-200 shadow-xl my-4 md:my-8">
         {/* Tab Switcher */}
-        <div className="flex gap-1 bg-gray-100/80 p-1 rounded-xl mb-8 md:mb-12 w-full md:w-fit overflow-x-auto whitespace-nowrap border border-gray-200/50 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-1 bg-gray-100/80 p-1 rounded-xl mb-8 md:mb-12 w-full sm:w-fit border border-gray-200/50">
           <a
             href="/privacy"
-            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
+            className={`px-3 sm:px-6 py-2.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "privacy" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
             {t("privacy_title")}
           </a>
           <a
             href="/terms"
-            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
+            className={`px-3 sm:px-6 py-2.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "terms" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4 flex-shrink-0" />
             {t("terms_title")}
           </a>
           <a
             href="/changelog"
-            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
+            className={`px-3 sm:px-6 py-2.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "changelog" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            <History className="w-4 h-4" />
+            <History className="w-4 h-4 flex-shrink-0" />
             {t("footer_changelog")}
           </a>
           <a
             href="/support"
-            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
+            className={`px-3 sm:px-6 py-2.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "support" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            <Headphones className="w-4 h-4" />
+            <Headphones className="w-4 h-4 flex-shrink-0" />
             {t("support_title")}
           </a>
         </div>
