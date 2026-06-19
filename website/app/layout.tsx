@@ -12,6 +12,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Stanomer | Legal",
   description: "Privacy Policy and Terms of Use for Stanomer PropTech.",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

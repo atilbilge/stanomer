@@ -44,7 +44,7 @@ const translations = {
         "feature_5_desc": "Yabancı uyruklu kiracınız mı var? Uygulama onun diliyle de çalışır.",
         "footer_cta_title": "Bugün Başlayın, Fark Hissedin",
         "footer_cta_desc": "Tek mülkünüz varsa tamamen ücretsiz. Kurulum yok, karmaşık ayar yok.<br>WhatsApp'ı kullanabiliyorsanız Stanomer'i de kullanabilirsiniz.",
-        "btn_web_app": "Web Uygulamasına Git →",
+        "btn_web_app": "Web Uygulamasını Aç",
         "footer_rights": "Tüm hakları saklıdır.",
         "footer_privacy": "Gizlilik Politikası",
         "footer_terms": "Kullanım Şartları"
@@ -94,7 +94,7 @@ const translations = {
         "feature_5_desc": "Have a foreign tenant? The app works in their language too.",
         "footer_cta_title": "Start Today, Feel the Difference",
         "footer_cta_desc": "Completely free if you have one property. No setup, no complex settings.<br>If you can use WhatsApp, you can use Stanomer.",
-        "btn_web_app": "Go to Web App →",
+        "btn_web_app": "Open Web App",
         "footer_rights": "All rights reserved.",
         "footer_privacy": "Privacy Policy",
         "footer_terms": "Terms of Use"
@@ -144,7 +144,7 @@ const translations = {
         "feature_5_desc": "Imate stranog stanara? Aplikacija radi i na njegovom jeziku.",
         "footer_cta_title": "Započnite danas, osetite razliku",
         "footer_cta_desc": "Potpuno besplatno za jednu nekretninu. Nema komplikovanih podešavanja.<br>Ako znate da koristite Viber, znaćete i Stanomer.",
-        "btn_web_app": "Idi na Web Aplikaciju →",
+        "btn_web_app": "Otvori Web Aplikaciju",
         "footer_rights": "Sva prava zadržana.",
         "footer_privacy": "Politika privatnosti",
         "footer_terms": "Uslovi korišćenja"
@@ -194,7 +194,7 @@ const translations = {
         "feature_5_desc": "Имате страног станара? Апликација ради и на његовом језику.",
         "footer_cta_title": "Започните данас, осетите разлику",
         "footer_cta_desc": "Потпуно бесплатно за једну некретнину. Нема компликованих подешавања.<br>Ако знате да користите Viber, знаћете и Станомер.",
-        "btn_web_app": "Иди на Web Апликацију →",
+        "btn_web_app": "Отвори Веб Апликацију",
         "footer_rights": "Сва права задржана.",
         "footer_privacy": "Политика приватности",
         "footer_terms": "Услови коришћења"
@@ -244,7 +244,7 @@ const translations = {
         "feature_5_desc": "У вас иностранный арендатор? Приложение работает и на его языке.",
         "footer_cta_title": "Начните сегодня, почувствуйте разницу",
         "footer_cta_desc": "Абсолютно бесплатно для одной недвижимости. Никаких сложных настроек.<br>Если вы умеете пользоваться Viber, вы сможете пользоваться и Stanomer.",
-        "btn_web_app": "Перейти в Веб-приложение →",
+        "btn_web_app": "Открыть веб-приложение",
         "footer_rights": "Все права защищены.",
         "footer_privacy": "Политика конфиденциальности",
         "footer_terms": "Условия использования"

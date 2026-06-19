@@ -566,3 +566,58 @@ a {
     color: var(--color-text-primary) !important;
     border-color: rgba(0, 0, 0, 0.08);
 }
+
+/* Badges Container & Store Link/Button Styling */
+.badge-container {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Butonlar arası nefes alma boşluğu */
+    flex-wrap: wrap; /* Mobilde taşmayı önler */
+    justify-content: center; /* Ortalayalım */
+    margin-bottom: 1.5rem;
+}
+
+.badge-link {
+    display: inline-flex;
+    transition: opacity 0.2s ease;
+}
+
+.badge-link:hover, .web-app-button:hover {
+    opacity: 0.85;
+}
+
+.store-badge {
+    height: 40px; 
+    width: auto;  
+    display: block;
+}
+
+/* Özel Web App Butonu Tasarımı */
+.web-app-button {
+    height: 40px; /* SVG logolarla birebir aynı yükseklik */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* İkon ve yazı arası boşluk */
+    background-color: #000000; /* Mağaza rozetleriyle uyumlu siyah */
+    color: #ffffff !important;
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 0 20px;
+    border-radius: 24px; /* Yumuşatılmış, modern köşeler */
+    box-sizing: border-box;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    border: 1px solid #000000;
+}
+
+.web-app-button:active {
+    transform: scale(0.98);
+}
+
+.web-icon {
+    opacity: 0.9;
+}
+
