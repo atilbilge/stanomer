@@ -44,10 +44,10 @@ export function HomeContent() {
           {deviceOS === null || deviceOS === 'desktop' ? (
             <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
               <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-[135px] block" />
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-[135px] block" />
               </a>
               <a href="/app" className="h-10 inline-flex items-center justify-center gap-2 bg-black text-white hover:opacity-85 active:scale-[0.98] font-medium text-[14px] tracking-[0.3px] px-5 rounded-[24px] border border-black transition-all duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
@@ -61,13 +61,13 @@ export function HomeContent() {
           ) : deviceOS === 'ios' ? (
             <div className="flex flex-wrap justify-center gap-4 mb-6">
               <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-[135px] block" />
               </a>
             </div>
           ) : (
             <div className="flex flex-wrap justify-center gap-4 mb-6">
               <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-[135px] block" />
               </a>
             </div>
           )}
@@ -195,10 +195,10 @@ export function HomeContent() {
           {deviceOS === null || deviceOS === 'desktop' ? (
             <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
               <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-[135px] block" />
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-[135px] block" />
               </a>
               <a href="/app" className="h-10 inline-flex items-center justify-center gap-2 bg-black text-white hover:opacity-85 active:scale-[0.98] font-medium text-[14px] tracking-[0.3px] px-5 rounded-[24px] border border-black transition-all duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
@@ -212,13 +212,13 @@ export function HomeContent() {
           ) : deviceOS === 'ios' ? (
             <div className="flex flex-wrap justify-center gap-4 mb-6">
               <a href="https://apps.apple.com/us/app/stanomer/id6762311157" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="Download on the App Store" className="h-10 w-[135px] block" />
               </a>
             </div>
           ) : (
             <div className="flex flex-wrap justify-center gap-4 mb-6">
               <a href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer" target="_blank" rel="noopener noreferrer" className="inline-flex transition-opacity hover:opacity-85">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-auto block" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" className="h-10 w-[135px] block" />
               </a>
             </div>
           )}
