@@ -115,7 +115,7 @@
     "captcha_placeholder": "What is the result?",
     "captcha_error": "Security check failed.",
     "hero_badge": "Digital Rental Ledger",
-    "hero_title": "End the Era of <br>Rental Notes in Paper & Pen!",
+    "hero_title": "<span class='text-brand-blue italic'>End the Era</span> of <br>Rental Notes in Paper & Pen!",
     "hero_desc": "Don't bother searching for receipts on WhatsApp or looking at scrap papers. Stanomer does all your rent tracking for you — it's very simple to use.",
     "btn_web_app": "Open Web App",
     "hero_note": "Completely free if you have a single property. No credit card required.",
