@@ -20,7 +20,7 @@ export function SupportContent() {
             <h2 className="text-[30px] font-bold text-gray-900">{t("support_title")}</h2>
           </div>
           
-          <div className="bg-white/40 border border-gray-200/80 rounded-2xl p-8 md:p-12 shadow-md">
+          <div className="bg-white/40 border border-gray-200/80 rounded-2xl p-5 sm:p-8 md:p-12 shadow-md">
             <p className="text-[17px] text-gray-600 mb-10 leading-relaxed max-w-2xl">
               {t("support_desc")}
             </p>

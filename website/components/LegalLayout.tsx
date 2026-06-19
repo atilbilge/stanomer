@@ -16,12 +16,12 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
       <div className="h-[80px]" />
 
       {/* Main Content */}
-      <main className="flex-grow max-w-[680px] mx-auto px-8 py-12 w-full bg-white/80 backdrop-blur-[16px] rounded-3xl border border-gray-200 shadow-xl my-8">
+      <main className="flex-grow max-w-[680px] mx-auto px-4 sm:px-8 py-8 md:py-12 w-full bg-white/80 backdrop-blur-[16px] rounded-2xl md:rounded-3xl border border-gray-200 shadow-xl my-4 md:my-8">
         {/* Tab Switcher */}
-        <div className="flex gap-1 bg-gray-100/80 p-1 rounded-xl mb-12 w-fit border border-gray-200/50">
+        <div className="flex gap-1 bg-gray-100/80 p-1 rounded-xl mb-8 md:mb-12 w-full md:w-fit overflow-x-auto whitespace-nowrap border border-gray-200/50 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <a
             href="/privacy"
-            className={`px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
               activeTab === "privacy" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -30,7 +30,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
           </a>
           <a
             href="/terms"
-            className={`px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
               activeTab === "terms" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -39,7 +39,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
           </a>
           <a
             href="/changelog"
-            className={`px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
               activeTab === "changelog" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -48,7 +48,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
           </a>
           <a
             href="/support"
-            className={`px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 md:px-6 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-2 flex-shrink-0 ${
               activeTab === "support" ? "bg-white text-gray-900 border border-gray-200/60 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -62,7 +62,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
         </div>
 
         {/* Legal Sections */}
-        <section className="mt-16 grid md:grid-cols-2 gap-6 pt-16 border-t border-gray-200">
+        <section className="mt-8 md:mt-16 grid md:grid-cols-2 gap-6 pt-8 md:pt-16 border-t border-gray-200">
           <div className="p-6 rounded-2xl bg-brand-green/10 border border-brand-green/20">
             <div className="w-10 h-10 rounded-full bg-brand-green/20 flex items-center justify-center mb-4">
               <Crown className="w-5 h-5 text-brand-green" />

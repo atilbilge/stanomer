@@ -278,11 +278,11 @@ function ChangelogContent() {
         </div>
       </header>
 
-      <div className="relative pl-8 border-l border-gray-200 ml-2">
+      <div className="relative pl-6 sm:pl-8 border-l border-gray-200 ml-1 sm:ml-2">
         {/* SÜRÜM 1.3 */}
         <div className="relative mb-16">
           {/* dot */}
-          <div className="absolute -left-[42px] top-1.5 w-5 h-5 rounded-full bg-brand-blue border-4 border-white shadow-[0_0_0_6px_rgba(59,130,246,0.15)]"></div>
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-brand-blue border-4 border-white shadow-[0_0_0_6px_rgba(59,130,246,0.15)]"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v1.3.0</span>
@@ -381,7 +381,7 @@ function ChangelogContent() {
 
         {/* SÜRÜM 1.2 */}
         <div className="relative mb-16">
-          <div className="absolute -left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v1.2.0</span>
@@ -413,7 +413,7 @@ function ChangelogContent() {
 
         {/* SÜRÜM 1.1 */}
         <div className="relative mb-16">
-          <div className="absolute -left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v1.1.0</span>
@@ -445,7 +445,7 @@ function ChangelogContent() {
 
         {/* SÜRÜM 1.0 */}
         <div className="relative">
-          <div className="absolute -left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-gray-300 shadow-[0_0_0_4px_#ffffff]"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v1.0.0</span>
