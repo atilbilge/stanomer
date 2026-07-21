@@ -22,10 +22,8 @@ function TermsContent() {
 
 export default function TermsPage() {
   return (
-    <LanguageProvider>
-      <LegalLayout activeTab="terms">
-        <TermsContent />
-      </LegalLayout>
-    </LanguageProvider>
+    <LegalLayout activeTab="terms">
+      <TermsContent />
+    </LegalLayout>
   );
 }

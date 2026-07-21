@@ -482,10 +482,8 @@ function ChangelogContent() {
 
 export default function ChangelogPage() {
   return (
-    <LanguageProvider>
-      <LegalLayout activeTab="changelog">
-        <ChangelogContent />
-      </LegalLayout>
-    </LanguageProvider>
+    <LegalLayout activeTab="changelog">
+      <ChangelogContent />
+    </LegalLayout>
   );
 }

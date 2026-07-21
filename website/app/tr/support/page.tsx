@@ -21,9 +21,5 @@ function TrSupportInner() {
 }
 
 export default function TrSupportPage() {
-  return (
-    <LanguageProvider>
-      <TrSupportInner />
-    </LanguageProvider>
-  );
+  return <TrSupportInner />;
 }

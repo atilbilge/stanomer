@@ -16,7 +16,7 @@ export function Navbar() {
         </a>
 
         {/* Language Switcher */}
-        <div className="flex items-center gap-[0.75rem]">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {[
             { code: "EN", label: "EN" },
             { code: "SR_LAT", label: "SR" },
@@ -26,9 +26,12 @@ export function Navbar() {
           ].map((l) => (
             <button
               key={l.code}
+              type="button"
               onClick={() => setLang(l.code as any)}
-              className={`text-[13px] font-semibold transition-all px-1.5 py-0.5 rounded ${
-                lang === l.code ? "text-brand-blue bg-brand-blue/10" : "text-gray-500 hover:text-gray-900"
+              className={`text-[12px] sm:text-[13px] font-semibold transition-all px-2 py-1 rounded-md cursor-pointer ${
+                lang === l.code 
+                  ? "text-brand-blue bg-brand-blue/15 shadow-sm font-bold border border-brand-blue/20" 
+                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               {l.label}

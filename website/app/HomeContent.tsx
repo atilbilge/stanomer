@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../components/LanguageProvider";
+import { InteractiveFlow } from "../components/InteractiveFlow";
 import { Shield, Cloud, Heart, ClipboardList, FileText, Bell, Wrench, Globe } from "lucide-react";
 
 export function HomeContent() {
@@ -113,6 +114,9 @@ export function HomeContent() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Dual Flow Section */}
+      <InteractiveFlow />
 
       {/* Steps */}
       <section className="max-w-[680px] mx-auto px-6 py-6 w-full">

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { LanguageProvider } from "../components/LanguageProvider";
 import { Navbar } from "../components/Navbar";
 import { HomeContent } from "./HomeContent";
 
@@ -15,10 +14,10 @@ export const metadata: Metadata = {
 
 export default function RootPage() {
   return (
-    <LanguageProvider>
+    <>
       <Navbar />
       <div className="h-[80px]" />
       <HomeContent />
-    </LanguageProvider>
+    </>
   );
 }

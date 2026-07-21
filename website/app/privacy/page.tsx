@@ -55,10 +55,8 @@ function PrivacyContent() {
 
 export default function PrivacyPage() {
   return (
-    <LanguageProvider>
-      <LegalLayout activeTab="privacy">
-        <PrivacyContent />
-      </LegalLayout>
-    </LanguageProvider>
+    <LegalLayout activeTab="privacy">
+      <PrivacyContent />
+    </LegalLayout>
   );
 }

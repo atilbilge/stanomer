@@ -1,0 +1,689 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useLanguage } from "./LanguageProvider";
+import { 
+  Building, 
+  QrCode, 
+  UserCheck, 
+  Calendar, 
+  Clock, 
+  CheckCircle2, 
+  Receipt, 
+  Bell, 
+  Send, 
+  ChevronLeft, 
+  ChevronRight, 
+  Play, 
+  Pause,
+  ShieldCheck,
+  Sparkles,
+  Wifi,
+  Signal,
+  Battery
+} from "lucide-react";
+
+export function InteractiveFlow() {
+  const { t } = useLanguage();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setCurrentStep((prev) => (prev + 1) % 9);
+      }, 4500);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const handleNext = () => {
+    setCurrentStep((prev) => (prev + 1) % 9);
+  };
+
+  const handlePrev = () => {
+    setCurrentStep((prev) => (prev - 1 + 9) % 9);
+  };
+
+  return (
+    <section className="max-w-[680px] mx-auto px-4 sm:px-6 py-6 w-full">
+      <div className="text-center mb-5">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20 text-brand-blue text-[11px] font-bold uppercase tracking-wider mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
+          {t("how_it_works_label")}
+        </div>
+        <h2 className="text-[22px] sm:text-[26px] font-extrabold text-gray-900 leading-tight tracking-tight mb-1.5">
+          {t("how_it_works_title")}
+        </h2>
+        <p className="text-[13px] text-gray-600 max-w-[500px] mx-auto leading-relaxed">
+          {t("how_it_works_subtitle")}
+        </p>
+      </div>
+
+      {/* Control & Step Selection Bar */}
+      <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-2xl p-3.5 mb-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          {/* Step Selector Dots / Buttons */}
+          <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none justify-start sm:justify-center">
+            {Array.from({ length: 9 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setCurrentStep(idx);
+                  setIsPlaying(false);
+                }}
+                className={`flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center justify-center ${
+                  currentStep === idx
+                    ? "bg-brand-blue text-white shadow-md shadow-brand-blue/30 scale-105"
+                    : idx < currentStep
+                    ? "bg-brand-blue/15 text-brand-blue hover:bg-brand-blue/25"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-colors"
+            >
+              {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              {isPlaying ? t("flow_btn_pause") : t("flow_btn_play")}
+            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  handlePrev();
+                  setIsPlaying(false);
+                }}
+                className="w-7 h-7 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 transition-colors"
+                aria-label="Previous step"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  handleNext();
+                  setIsPlaying(false);
+                }}
+                className="w-7 h-7 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 transition-colors"
+                aria-label="Next step"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Current Step Description Card */}
+        <div className="mt-2.5 pt-2.5 border-t border-gray-150 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+          <div className="flex items-start gap-2">
+            <div className="w-5 h-5 rounded-md bg-brand-blue/10 text-brand-blue font-bold flex items-center justify-center text-[11px] flex-shrink-0 mt-0.5">
+              {currentStep + 1}
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-gray-900">
+                {t(`flow_step_${currentStep + 1}_title`)}
+              </h3>
+              <p className="text-[11px] text-gray-600 leading-snug mt-0.5">
+                {t(`flow_step_${currentStep + 1}_desc`)}
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-semibold text-gray-400 self-end sm:self-center flex-shrink-0">
+            {currentStep + 1} / 9
+          </span>
+        </div>
+      </div>
+
+      {/* Dual Phone Screenshots Container */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-start justify-items-center w-full">
+        {/* Left Side: Landlord Phone Frame */}
+        <div className="flex flex-col items-center w-full max-w-[280px]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
+            <h4 className="text-[11px] font-bold text-gray-900 uppercase tracking-wider">
+              {t("role_landlord_badge")}
+            </h4>
+          </div>
+
+          <div className="relative w-full bg-slate-900 border-[6px] border-slate-800 rounded-[38px] shadow-[0_20px_50px_-15px_rgba(59,130,246,0.18)] overflow-hidden transition-all duration-300 ring-1 ring-slate-700/50">
+            {/* Phone Notch */}
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-20 h-3.5 bg-black rounded-full z-30 flex items-center justify-between px-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-800 border border-slate-700" />
+              <div className="w-1 h-1 rounded-full bg-blue-900/80" />
+            </div>
+
+            {/* Status Bar */}
+            <div className="pt-2 px-4 pb-1 flex justify-between items-center text-[10px] font-semibold text-gray-800 z-20 relative bg-white border-b border-gray-100">
+              <span>09:41</span>
+              <div className="flex items-center gap-1 text-gray-700">
+                <Signal className="w-3 h-3" />
+                <Wifi className="w-3 h-3" />
+                <Battery className="w-3.5 h-3.5" />
+              </div>
+            </div>
+
+            {/* App Top Header Bar */}
+            <div className="px-3.5 py-1.5 bg-white border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="Stanomer" className="w-3.5 h-3.5 object-contain" />
+                <span className="text-xs font-bold text-gray-900">Stanomer</span>
+              </div>
+              <span className="text-[9px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                {t("mockup_landlord_badge")}
+              </span>
+            </div>
+
+            {/* Simulated Phone Screen Viewport */}
+            <div className="bg-slate-50/80 p-3.5 h-[370px] overflow-hidden flex flex-col justify-start gap-2.5 relative scrollbar-none">
+              {renderLandlordContent(currentStep, t)}
+            </div>
+
+            {/* Home Indicator Bar */}
+            <div className="py-1.5 bg-white flex justify-center border-t border-gray-100">
+              <div className="w-20 h-1 bg-gray-300 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Tenant Phone Frame */}
+        <div className="flex flex-col items-center w-full max-w-[280px]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <h4 className="text-[11px] font-bold text-gray-900 uppercase tracking-wider">
+              {t("role_tenant_badge")}
+            </h4>
+          </div>
+
+          <div className="relative w-full bg-slate-900 border-[6px] border-slate-800 rounded-[38px] shadow-[0_20px_50px_-15px_rgba(16,185,129,0.18)] overflow-hidden transition-all duration-300 ring-1 ring-slate-700/50">
+            {/* Phone Notch */}
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-20 h-3.5 bg-black rounded-full z-30 flex items-center justify-between px-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-800 border border-slate-700" />
+              <div className="w-1 h-1 rounded-full bg-emerald-900/80" />
+            </div>
+
+            {/* Status Bar */}
+            <div className="pt-2 px-4 pb-1 flex justify-between items-center text-[10px] font-semibold text-gray-800 z-20 relative bg-white border-b border-gray-100">
+              <span>09:41</span>
+              <div className="flex items-center gap-1 text-gray-700">
+                <Signal className="w-3 h-3" />
+                <Wifi className="w-3 h-3" />
+                <Battery className="w-3.5 h-3.5" />
+              </div>
+            </div>
+
+            {/* App Top Header Bar */}
+            <div className="px-3.5 py-1.5 bg-white border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="Stanomer" className="w-3.5 h-3.5 object-contain" />
+                <span className="text-xs font-bold text-gray-900">Stanomer</span>
+              </div>
+              <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                {t("mockup_tenant_badge")}
+              </span>
+            </div>
+
+            {/* Simulated Phone Screen Viewport */}
+            <div className="bg-slate-50/80 p-3.5 h-[370px] overflow-hidden flex flex-col justify-start gap-2.5 relative scrollbar-none">
+              {renderTenantContent(currentStep, t)}
+            </div>
+
+            {/* Home Indicator Bar */}
+            <div className="py-1.5 bg-white flex justify-center border-t border-gray-100">
+              <div className="w-20 h-1 bg-gray-300 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function renderLandlordContent(step: number, t: (k: string) => string) {
+  switch (step) {
+    case 0:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-brand-blue" />
+                Beograd Daire 12
+              </span>
+              <span className="text-[9px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_new_property")}
+              </span>
+            </div>
+            <div className="text-[11px] text-gray-600 space-y-0.5">
+              <p>{t("mockup_address")}</p>
+              <p className="font-semibold text-gray-900">{t("mockup_rent_amount")}</p>
+              <p className="text-[10px] text-gray-500">{t("mockup_contract_start")}</p>
+            </div>
+          </div>
+          <div className="bg-blue-50 border-2 border-blue-400 rounded-xl p-2.5 text-center animate-pulse ring-2 ring-blue-400/60 shadow-[0_0_12px_rgba(59,130,246,0.25)]">
+            <p className="text-xs text-blue-900 font-semibold mb-1.5">
+              {t("mockup_contract_saved")}
+            </p>
+            <div className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-blue bg-white px-2.5 py-1 rounded-lg border border-blue-200 shadow-sm">
+              <QrCode className="w-3 h-3" />
+              {t("mockup_generate_code")}
+            </div>
+          </div>
+        </div>
+      );
+
+    case 1:
+      return (
+        <div className="space-y-2.5 animate-fadeIn text-center my-auto">
+          <div className="bg-white border-2 border-brand-blue rounded-xl p-3 shadow-md animate-pulse ring-2 ring-blue-400/60">
+            <h4 className="text-xs font-bold text-gray-800 mb-0.5">{t("mockup_qr_title")}</h4>
+            <p className="text-[10px] text-gray-500 mb-2">{t("mockup_qr_subtitle")}</p>
+            
+            <div className="w-28 h-28 mx-auto bg-white border-2 border-brand-blue/30 rounded-xl p-2 flex flex-col items-center justify-center shadow-inner">
+              <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-white p-2">
+                <QrCode className="w-14 h-14 text-blue-400" />
+              </div>
+            </div>
+            <p className="text-[9px] text-gray-400 mt-1.5 font-mono">stanomer.com/invite?token=c98a72f</p>
+          </div>
+          <button className="w-full py-1.5 bg-brand-blue text-white rounded-xl text-xs font-bold shadow-sm animate-bounce">
+            {t("mockup_share")}
+          </button>
+        </div>
+      );
+
+    case 2:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-xs mb-1">
+              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+              {t("mockup_tenant_opened")}
+            </div>
+            <p className="text-[11px] text-emerald-700">
+              {t("mockup_tenant_joined_desc")}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-bold text-gray-800">{t("mockup_active_contract")}</span>
+              <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">{t("mockup_status_approved")}</span>
+            </div>
+            <div className="text-[11px] text-gray-600 space-y-0.5">
+              <p>Kiracı: Marko Jovanović</p>
+              <p>Ev: Beograd Daire 12</p>
+              <p className="font-semibold text-gray-900">{t("mockup_rent_amount")}</p>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 3:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="flex items-center justify-between text-xs font-bold text-gray-800">
+            <span className="flex items-center gap-1.5 text-[11px]">
+              <Calendar className="w-3.5 h-3.5 text-brand-blue" />
+              {t("mockup_receivables_schedule")}
+            </span>
+            <span className="text-[10px] text-brand-blue font-bold">{t("mockup_total")}</span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-2.5 flex items-center justify-between text-[11px] animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+              <div>
+                <p className="font-bold text-amber-900">{t("mockup_1st_month_rent")}</p>
+                <p className="text-[9px] text-amber-700">{t("mockup_due_date_august")}</p>
+              </div>
+              <span className="text-[9px] bg-amber-200/80 text-amber-800 font-bold px-1.5 py-0.5 rounded-md">
+                {t("mockup_status_pending")}
+              </span>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] opacity-75">
+              <div>
+                <p className="font-semibold text-gray-800">{t("mockup_2nd_month_rent")}</p>
+                <p className="text-[9px] text-gray-500">{t("mockup_due_date_september")}</p>
+              </div>
+              <span className="text-[9px] bg-gray-100 text-gray-600 font-semibold px-1.5 py-0.5 rounded-md">
+                {t("mockup_status_upcoming")}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 4:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 shadow-md animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                {t("mockup_awaiting_approval")}
+              </span>
+              <span className="text-[9px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_awaiting_approval")}
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-800 mb-1">{t("mockup_tenant_marked_paid")}</p>
+            <p className="text-[9px] text-amber-700 italic">{t("mockup_receipt_attached")}</p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 text-center shadow-sm">
+            <p className="text-[11px] text-gray-600">{t("mockup_check_bank_transfer")}</p>
+          </div>
+        </div>
+      );
+
+    case 5:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs mb-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              {t("mockup_payment_approved_title")}
+            </div>
+            <p className="text-[11px] text-emerald-800">
+              {t("mockup_payment_approved_desc")}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] shadow-sm">
+            <div>
+              <p className="font-bold text-gray-900">{t("mockup_1st_month_rent")}</p>
+              <p className="text-[9px] text-gray-500">{t("mockup_approval_time")}</p>
+            </div>
+            <span className="text-[9px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> {t("mockup_status_paid")}
+            </span>
+          </div>
+        </div>
+      );
+
+    case 6:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-blue-50 border-2 border-blue-400 rounded-xl p-3 animate-pulse ring-2 ring-blue-400/60 shadow-[0_0_12px_rgba(59,130,246,0.25)]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                <Receipt className="w-3.5 h-3.5 text-brand-blue" />
+                {t("mockup_bill_added")}
+              </span>
+              <span className="text-[9px] bg-blue-200 text-blue-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_bill_electricity")}
+              </span>
+            </div>
+            <div className="text-[11px] text-blue-800 space-y-0.5">
+              <p className="font-bold">{t("mockup_bill_amount")}</p>
+              <p className="text-[9px]">{t("mockup_due_date_august")}</p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center gap-2 text-[11px] text-gray-700 shadow-sm">
+            <Bell className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
+            <span>{t("mockup_bill_notification_sent")}</span>
+          </div>
+        </div>
+      );
+
+    case 7:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 shadow-sm animate-pulse ring-2 ring-amber-400/60">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                {t("mockup_bill_awaiting_approval")}
+              </span>
+              <span className="text-[9px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_awaiting_approval")}
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-800">
+              {t("mockup_tenant_marked_bill_paid")}
+            </p>
+          </div>
+
+          <button className="w-full py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 animate-bounce">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            {t("mockup_approve_bill_button")}
+          </button>
+        </div>
+      );
+
+    case 8:
+      return (
+        <div className="space-y-2.5 animate-fadeIn text-center my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3.5 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-1.5">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h4 className="text-xs font-bold text-emerald-900 mb-0.5">{t("mockup_all_payments_completed")}</h4>
+            <p className="text-[10px] text-emerald-700 leading-snug">
+              {t("mockup_all_payments_desc")}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] shadow-sm">
+            <span className="text-gray-600">{t("mockup_balance")}</span>
+            <span className="font-bold text-emerald-600">{t("mockup_balance_value")}</span>
+          </div>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
+function renderTenantContent(step: number, t: (k: string) => string) {
+  switch (step) {
+    case 0:
+      return (
+        <div className="space-y-2.5 animate-fadeIn text-center my-auto py-5">
+          <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
+            <Building className="w-5 h-5 opacity-50" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-gray-700 mb-0.5">{t("mockup_tenant_no_properties_title")}</h4>
+            <p className="text-[10px] text-gray-500 max-w-[190px] mx-auto leading-tight">
+              {t("mockup_tenant_no_properties_desc")}
+            </p>
+          </div>
+        </div>
+      );
+
+    case 1:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <div className="flex items-center gap-1.5 text-blue-900 font-bold text-xs mb-1.5">
+              <Send className="w-3.5 h-3.5 text-brand-blue" />
+              {t("mockup_tenant_invite_arrived")}
+            </div>
+            <p className="text-[11px] text-blue-800 mb-2">
+              {t("mockup_tenant_invited_you")}
+            </p>
+            <div className="bg-white border border-blue-200 rounded-lg p-1.5 text-center shadow-sm">
+              <span className="text-[11px] font-bold text-brand-blue">
+                {t("mockup_click_link_inspect")}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 2:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-emerald-600" />
+                Beograd Daire 12
+              </span>
+              <span className="text-[9px] bg-emerald-200 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_tenant_joined")}
+              </span>
+            </div>
+            <div className="text-[11px] text-emerald-800 space-y-0.5">
+              <p>{t("mockup_landlord_name")}</p>
+              <p className="font-bold">{t("mockup_rent_amount")}</p>
+              <p className="text-[9px] text-emerald-700">{t("mockup_payment_day_15")}</p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2 text-center text-[11px] text-gray-700 font-semibold shadow-sm">
+            {t("mockup_contract_ready_phone")}
+          </div>
+        </div>
+      );
+
+    case 3:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="flex items-center justify-between text-xs font-bold text-gray-800">
+            <span className="flex items-center gap-1.5 text-[11px]">
+              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+              {t("mockup_upcoming_debts")}
+            </span>
+            <span className="text-[9px] text-amber-600 font-bold">{t("mockup_first_payment_august")}</span>
+          </div>
+
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+            <div className="flex items-center justify-between mb-1.5">
+              <div>
+                <p className="font-bold text-amber-900 text-xs">{t("mockup_1st_month_rent")}</p>
+                <p className="text-[9px] text-amber-700">{t("mockup_rent_amount")}</p>
+              </div>
+              <span className="text-[9px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded-md">
+                {t("mockup_payment_due_badge")}
+              </span>
+            </div>
+            <button className="w-full mt-1 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm animate-bounce">
+              {t("mockup_mark_paid_button")}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 4:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 animate-pulse ring-2 ring-amber-400/60">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                {t("mockup_tenant_payment_declared")}
+              </span>
+              <span className="text-[9px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_awaiting_approval")}
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-800 mb-1.5">
+              {t("mockup_tenant_rent_submitted")}
+            </p>
+            <div className="bg-white/80 border border-amber-200 rounded-lg p-1.5 text-[9px] text-gray-600 flex items-center gap-1.5">
+              <Receipt className="w-3 h-3 text-amber-600" />
+              {t("mockup_receipt_uploaded")}
+            </div>
+          </div>
+        </div>
+      );
+
+    case 5:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                {t("mockup_landlord_approved_title")}
+              </span>
+              <span className="text-[9px] bg-emerald-200 text-emerald-900 font-bold px-1.5 py-0.5 rounded-full">
+                {t("mockup_status_paid")}
+              </span>
+            </div>
+            <p className="text-[11px] text-emerald-800">
+              {t("mockup_tenant_rent_approved_desc")}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] text-gray-700 shadow-sm">
+            <span>{t("mockup_rent_debt")}</span>
+            <span className="font-bold text-emerald-600">{t("mockup_rent_debt_cleared")}</span>
+          </div>
+        </div>
+      );
+
+    case 6:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 shadow-md animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+            <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs mb-1">
+              <Bell className="w-3.5 h-3.5 text-amber-600" />
+              {t("mockup_new_bill_notification")}
+            </div>
+            <p className="text-[11px] text-amber-800 mb-1.5">
+              {t("mockup_landlord_added_bill")}
+            </p>
+            <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-amber-200 text-[11px]">
+              <span className="font-semibold text-gray-800">{t("mockup_bill_electricity")}</span>
+              <span className="font-bold text-amber-900">€45</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 7:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 animate-pulse ring-2 ring-amber-400/60">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                {t("mockup_tenant_bill_declared")}
+              </span>
+              <span className="text-[9px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_awaiting_approval")}
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-800">
+              {t("mockup_tenant_bill_submitted")}
+            </p>
+          </div>
+        </div>
+      );
+
+    case 8:
+      return (
+        <div className="space-y-2.5 animate-fadeIn text-center my-auto">
+          <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3.5 animate-pulse ring-2 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-1.5">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <h4 className="text-xs font-bold text-emerald-900 mb-0.5">{t("mockup_tenant_all_current_title")}</h4>
+            <p className="text-[10px] text-emerald-700 leading-snug">
+              {t("mockup_tenant_all_current_desc")}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] shadow-sm">
+            <span className="text-gray-600">{t("mockup_payable_debt")}</span>
+            <span className="font-bold text-emerald-600">€0</span>
+          </div>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
