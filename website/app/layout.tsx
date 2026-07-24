@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/favicon.png",
   },
+  verification: {
+    other: {
+      "yandex-verification": "d17cff3e7f334900",
+    },
+  },
 };
 
 export default function RootLayout({
