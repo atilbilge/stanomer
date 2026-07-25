@@ -13,6 +13,7 @@ import 'core/theme/app_theme.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/subscriptions/data/subscription_service.dart';
 import 'core/providers/lifecycle_provider.dart';
+import 'core/widgets/web_responsive_wrapper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -142,6 +143,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        return WebResponsiveWrapper(child: child ?? const SizedBox.shrink());
+      },
     );
   }
 }
