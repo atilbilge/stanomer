@@ -27,6 +27,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/guide/ugovor-o-zakupu-stana-srbija",
     "/guide/ugovor-o-zakupu-stana-srbija-cirilica",
     "/guide/serbia-lease-agreement-guide-ru",
+    // Digital Nomads & Beli Karton Guides
+    "/guide/dijital-gocmenlere-ev-kiralama-beli-karton",
+    "/guide/renting-to-foreigners-digital-nomads-beli-karton",
+    "/guide/izdavanje-stana-strancima-beli-karton",
+    "/guide/izdavanje-stana-strancima-beli-karton-cirilica",
+    "/guide/renting-to-foreigners-digital-nomads-beli-karton-ru",
     // Aliases
     "/belgrad-kiralik-daire-rehberi",
     "/belgrade-apartment-rental-guide",
@@ -43,6 +49,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/ugovor-o-zakupu-stana-srbija",
     "/ugovor-o-zakupu-stana-srbija-cirilica",
     "/serbia-lease-agreement-guide-ru",
+    "/dijital-gocmenlere-ev-kiralama-beli-karton",
+    "/renting-to-foreigners-digital-nomads-beli-karton",
+    "/izdavanje-stana-strancima-beli-karton",
+    "/izdavanje-stana-strancima-beli-karton-cirilica",
+    "/renting-to-foreigners-digital-nomads-beli-karton-ru",
     // Legal & Support
     "/privacy",
     "/terms",

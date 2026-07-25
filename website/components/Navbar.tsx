@@ -28,18 +28,31 @@ const leaseAgreementGuideRoutes: Record<Language, string> = {
   RU: "/guide/serbia-lease-agreement-guide-ru"
 };
 
+const beliKartonGuideRoutes: Record<Language, string> = {
+  TR: "/guide/dijital-gocmenlere-ev-kiralama-beli-karton",
+  EN: "/guide/renting-to-foreigners-digital-nomads-beli-karton",
+  SR_LAT: "/guide/izdavanje-stana-strancima-beli-karton",
+  SR_CYR: "/guide/izdavanje-stana-strancima-beli-karton-cirilica",
+  RU: "/guide/renting-to-foreigners-digital-nomads-beli-karton-ru"
+};
+
 export function Navbar() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
 
-  const isLeaseAgreementGuide = !!pathname && (
+  const isBeliKartonGuide = !!pathname && (
+    pathname.includes("beli-karton") ||
+    pathname.includes("digital-nomads") ||
+    pathname.includes("strancima")
+  );
+  const isLeaseAgreementGuide = !!pathname && !isBeliKartonGuide && (
     pathname.includes("lease-agreement") ||
     pathname.includes("ugovor-o-zakupu") ||
     pathname.includes("kira-sozlesmesi")
   );
-  const isNoviSadGuide = !!pathname && !isLeaseAgreementGuide && (pathname.includes("novi-sad") || pathname.includes("upravljanje-nekretninama"));
-  const isBelgradeGuide = !!pathname && !isLeaseAgreementGuide && (
+  const isNoviSadGuide = !!pathname && !isLeaseAgreementGuide && !isBeliKartonGuide && (pathname.includes("novi-sad") || pathname.includes("upravljanje-nekretninama"));
+  const isBelgradeGuide = !!pathname && !isLeaseAgreementGuide && !isBeliKartonGuide && (
     pathname.includes("belgrade") || 
     pathname.includes("belgrad") || 
     pathname.includes("beograd")
@@ -47,7 +60,10 @@ export function Navbar() {
 
   const handleLanguageClick = (targetLang: Language) => {
     setLang(targetLang);
-    if (isLeaseAgreementGuide) {
+    if (isBeliKartonGuide) {
+      const targetPath = beliKartonGuideRoutes[targetLang] || beliKartonGuideRoutes.EN;
+      router.push(targetPath);
+    } else if (isLeaseAgreementGuide) {
       const targetPath = leaseAgreementGuideRoutes[targetLang] || leaseAgreementGuideRoutes.EN;
       router.push(targetPath);
     } else if (isNoviSadGuide) {

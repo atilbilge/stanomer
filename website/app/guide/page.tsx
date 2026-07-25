@@ -16,6 +16,53 @@ interface GuideItem {
 }
 
 const allGuides: GuideItem[] = [
+  // Beli Karton & Digital Nomads Guides
+  {
+    lang: "TR",
+    city: "Belgrade & Novi Sad",
+    flag: "🇹🇷",
+    badge: "Türkçe Rehber",
+    title: "Dijital Göçmenler ve Yabancılara Ev Kiralamak: Beli Karton Süreci ve Güvenli Mülk Yönetimi",
+    description: "Belgrad ve Novi Sad'da yabancılara ve dijital göçmenlere ev kiralarken bilmeniz gerekenler: Beli Karton (Beyaz Kart) bildirimi ve dijital süreç yönetimi.",
+    path: "/guide/dijital-gocmenlere-ev-kiralama-beli-karton"
+  },
+  {
+    lang: "EN",
+    city: "Belgrade & Novi Sad",
+    flag: "🇬🇧",
+    badge: "English Guide",
+    title: "Renting to Foreigners and Digital Nomads in Belgrade and Novi Sad: A Guide",
+    description: "Everything you need to know about the Beli Karton (White Card) process, communication, and tracking rent when leasing to expats in Serbia.",
+    path: "/guide/renting-to-foreigners-digital-nomads-beli-karton"
+  },
+  {
+    lang: "SR_LAT",
+    city: "Beograd & Novi Sad",
+    flag: "🇷🇸",
+    badge: "Srpski (Latinica)",
+    title: "Kako bezbedno izdati stan strancima i digitalnim nomadima u Beogradu i Novom Sadu",
+    description: "Sve što treba da znate o procesu prijave (Beli karton), komunikaciji i praćenju kirija kada izdajete stan strancima u Srbiji.",
+    path: "/guide/izdavanje-stana-strancima-beli-karton"
+  },
+  {
+    lang: "SR_CYR",
+    city: "Београд & Нови Сад",
+    flag: "🇷🇸",
+    badge: "Српски (Ћирилица)",
+    title: "Како безбедно издати стан странцима и дигиталним номадима у Београду и Новом Саду",
+    description: "Све што треба да знате о процесу пријаве (Бели картон), комуникацији и праћењу кирија када издајете стан странцима у Србији.",
+    path: "/guide/izdavanje-stana-strancima-beli-karton-cirilica"
+  },
+  {
+    lang: "RU",
+    city: "Белград & Нови-Сад",
+    flag: "🇷🇺",
+    badge: "Русский Гайд",
+    title: "Как безопасно сдать квартиру иностранцам и цифровым кочевникам в Белграде и Нови-Саде",
+    description: "Все, что нужно знать о процессе оформления «Белого картона», коммуникации и отслеживании арендной платы при сдаче жилья экспатам в Сербии.",
+    path: "/guide/renting-to-foreigners-digital-nomads-beli-karton-ru"
+  },
+
   // Serbia Lease Agreement Guides
   {
     lang: "TR",

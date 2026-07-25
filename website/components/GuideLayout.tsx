@@ -197,7 +197,7 @@ export function GuideLayout({
                   ? "Похожие руководства по Сербии"
                   : "Povezani vodiči u Srbiji"}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                 <a 
                   href={currentLang === "TR" ? "/guide/belgrad-kiralik-daire-rehberi" : currentLang === "EN" ? "/guide/belgrade-apartment-rental-guide" : currentLang === "SR_CYR" ? "/guide/vodic-za-izdavanje-stanova-beograd-cirilica" : currentLang === "RU" ? "/guide/belgrade-apartment-rental-guide-ru" : "/guide/vodic-za-izdavanje-stanova-beograd"}
                   className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
@@ -214,7 +214,13 @@ export function GuideLayout({
                   href={currentLang === "TR" ? "/guide/sirbistan-kira-sozlesmesi-rehberi" : currentLang === "EN" ? "/guide/serbia-lease-agreement-guide" : currentLang === "SR_CYR" ? "/guide/ugovor-o-zakupu-stana-srbija-cirilica" : currentLang === "RU" ? "/guide/serbia-lease-agreement-guide-ru" : "/guide/ugovor-o-zakupu-stana-srbija"}
                   className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
                 >
-                  📝 {currentLang === "TR" ? "Kira Sözleşmesi Rehberi" : currentLang === "EN" ? "Lease Agreement Guide" : currentLang === "SR_CYR" ? "Водич за Уговор" : currentLang === "RU" ? "Гайд по Договору" : "Vodič za Ugovor"}
+                  📝 {currentLang === "TR" ? "Kira Sözleşmesi" : currentLang === "EN" ? "Lease Agreement" : currentLang === "SR_CYR" ? "Водич за Уговор" : currentLang === "RU" ? "Гайд по Договору" : "Vodič za Ugovor"}
+                </a>
+                <a 
+                  href={currentLang === "TR" ? "/guide/dijital-gocmenlere-ev-kiralama-beli-karton" : currentLang === "EN" ? "/guide/renting-to-foreigners-digital-nomads-beli-karton" : currentLang === "SR_CYR" ? "/guide/izdavanje-stana-strancima-beli-karton-cirilica" : currentLang === "RU" ? "/guide/renting-to-foreigners-digital-nomads-beli-karton-ru" : "/guide/izdavanje-stana-strancima-beli-karton"}
+                  className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
+                >
+                  🌐 {currentLang === "TR" ? "Beli Karton Rehberi" : currentLang === "EN" ? "Beli Karton Guide" : currentLang === "SR_CYR" ? "Бели картон водич" : currentLang === "RU" ? "Гайд Белы Картон" : "Beli karton vodič"}
                 </a>
               </div>
             </section>
