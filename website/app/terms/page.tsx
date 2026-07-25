@@ -95,9 +95,9 @@ function TermsContent() {
           const hasAppleLink = body.includes("apple.com");
 
           // Format body by highlighting subkeys like "Apple App Store:", "Ödeme:", etc.
-          let formattedContent = [body];
+          let formattedContent: React.ReactNode[] = [body];
           subKeyKeywords.forEach((keyword) => {
-            const newContent: (string | React.ReactNode)[] = [];
+            const newContent: React.ReactNode[] = [];
             formattedContent.forEach((item) => {
               if (typeof item === "string" && item.includes(keyword)) {
                 const parts = item.split(keyword);
