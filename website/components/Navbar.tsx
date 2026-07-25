@@ -20,13 +20,26 @@ const noviSadGuideRoutes: Record<Language, string> = {
   RU: "/guide/novi-sad-property-management-guide-ru"
 };
 
+const leaseAgreementGuideRoutes: Record<Language, string> = {
+  TR: "/guide/sirbistan-kira-sozlesmesi-rehberi",
+  EN: "/guide/serbia-lease-agreement-guide",
+  SR_LAT: "/guide/ugovor-o-zakupu-stana-srbija",
+  SR_CYR: "/guide/ugovor-o-zakupu-stana-srbija-cirilica",
+  RU: "/guide/serbia-lease-agreement-guide-ru"
+};
+
 export function Navbar() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
 
-  const isNoviSadGuide = !!pathname && (pathname.includes("novi-sad") || pathname.includes("upravljanje-nekretninama"));
-  const isBelgradeGuide = !!pathname && (
+  const isLeaseAgreementGuide = !!pathname && (
+    pathname.includes("lease-agreement") ||
+    pathname.includes("ugovor-o-zakupu") ||
+    pathname.includes("kira-sozlesmesi")
+  );
+  const isNoviSadGuide = !!pathname && !isLeaseAgreementGuide && (pathname.includes("novi-sad") || pathname.includes("upravljanje-nekretninama"));
+  const isBelgradeGuide = !!pathname && !isLeaseAgreementGuide && (
     pathname.includes("belgrade") || 
     pathname.includes("belgrad") || 
     pathname.includes("beograd")
@@ -34,7 +47,10 @@ export function Navbar() {
 
   const handleLanguageClick = (targetLang: Language) => {
     setLang(targetLang);
-    if (isNoviSadGuide) {
+    if (isLeaseAgreementGuide) {
+      const targetPath = leaseAgreementGuideRoutes[targetLang] || leaseAgreementGuideRoutes.EN;
+      router.push(targetPath);
+    } else if (isNoviSadGuide) {
       const targetPath = noviSadGuideRoutes[targetLang] || noviSadGuideRoutes.EN;
       router.push(targetPath);
     } else if (isBelgradeGuide) {

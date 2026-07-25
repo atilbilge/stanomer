@@ -197,18 +197,24 @@ export function GuideLayout({
                   ? "Похожие руководства по Сербии"
                   : "Povezani vodiči u Srbiji"}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <a 
                   href={currentLang === "TR" ? "/guide/belgrad-kiralik-daire-rehberi" : currentLang === "EN" ? "/guide/belgrade-apartment-rental-guide" : currentLang === "SR_CYR" ? "/guide/vodic-za-izdavanje-stanova-beograd-cirilica" : currentLang === "RU" ? "/guide/belgrade-apartment-rental-guide-ru" : "/guide/vodic-za-izdavanje-stanova-beograd"}
                   className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
                 >
-                  🏙️ {currentLang === "TR" ? "Belgrad Kiralık Daire Rehberi" : currentLang === "EN" ? "Belgrade Rental Guide" : currentLang === "SR_CYR" ? "Водич за Београд" : currentLang === "RU" ? "Гайд по Белграду" : "Vodič za Beograd"}
+                  🏙️ {currentLang === "TR" ? "Belgrad Rehberi" : currentLang === "EN" ? "Belgrade Guide" : currentLang === "SR_CYR" ? "Водич за Београд" : currentLang === "RU" ? "Гайд по Белграду" : "Vodič za Beograd"}
                 </a>
                 <a 
                   href={currentLang === "TR" ? "/guide/novi-sad-mulk-yonetimi-rehberi" : currentLang === "EN" ? "/guide/novi-sad-property-management-guide" : currentLang === "SR_CYR" ? "/guide/upravljanje-nekretninama-novi-sad-cirilica" : currentLang === "RU" ? "/guide/novi-sad-property-management-guide-ru" : "/guide/upravljanje-nekretninama-novi-sad"}
                   className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
                 >
-                  🏡 {currentLang === "TR" ? "Novi Sad Mülk Yönetim Rehberi" : currentLang === "EN" ? "Novi Sad Property Guide" : currentLang === "SR_CYR" ? "Водич за Нови Сад" : currentLang === "RU" ? "Гайд по Нови-Саду" : "Vodič za Novi Sad"}
+                  🏡 {currentLang === "TR" ? "Novi Sad Rehberi" : currentLang === "EN" ? "Novi Sad Guide" : currentLang === "SR_CYR" ? "Водич за Нови Сад" : currentLang === "RU" ? "Гайд по Нови-Саду" : "Vodič za Novi Sad"}
+                </a>
+                <a 
+                  href={currentLang === "TR" ? "/guide/sirbistan-kira-sozlesmesi-rehberi" : currentLang === "EN" ? "/guide/serbia-lease-agreement-guide" : currentLang === "SR_CYR" ? "/guide/ugovor-o-zakupu-stana-srbija-cirilica" : currentLang === "RU" ? "/guide/serbia-lease-agreement-guide-ru" : "/guide/ugovor-o-zakupu-stana-srbija"}
+                  className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-brand-blue hover:text-brand-blue font-medium transition-all"
+                >
+                  📝 {currentLang === "TR" ? "Kira Sözleşmesi Rehberi" : currentLang === "EN" ? "Lease Agreement Guide" : currentLang === "SR_CYR" ? "Водич за Уговор" : currentLang === "RU" ? "Гайд по Договору" : "Vodič za Ugovor"}
                 </a>
               </div>
             </section>

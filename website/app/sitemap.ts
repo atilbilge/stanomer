@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/guide/upravljanje-nekretninama-novi-sad",
     "/guide/upravljanje-nekretninama-novi-sad-cirilica",
     "/guide/novi-sad-property-management-guide-ru",
+    // Lease Agreement Guides
+    "/guide/sirbistan-kira-sozlesmesi-rehberi",
+    "/guide/serbia-lease-agreement-guide",
+    "/guide/ugovor-o-zakupu-stana-srbija",
+    "/guide/ugovor-o-zakupu-stana-srbija-cirilica",
+    "/guide/serbia-lease-agreement-guide-ru",
     // Aliases
     "/belgrad-kiralik-daire-rehberi",
     "/belgrade-apartment-rental-guide",
@@ -32,6 +38,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/upravljanje-nekretninama-novi-sad",
     "/upravljanje-nekretninama-novi-sad-cirilica",
     "/novi-sad-property-management-guide-ru",
+    "/sirbistan-kira-sozlesmesi-rehberi",
+    "/serbia-lease-agreement-guide",
+    "/ugovor-o-zakupu-stana-srbija",
+    "/ugovor-o-zakupu-stana-srbija-cirilica",
+    "/serbia-lease-agreement-guide-ru",
     // Legal & Support
     "/privacy",
     "/terms",

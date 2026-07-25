@@ -16,6 +16,53 @@ interface GuideItem {
 }
 
 const allGuides: GuideItem[] = [
+  // Serbia Lease Agreement Guides
+  {
+    lang: "TR",
+    city: "Serbia",
+    flag: "🇹🇷",
+    badge: "Türkçe Rehber",
+    title: "Sırbistan'da Kira Sözleşmesi (Ugovor o Zakupu): Ev Sahiplerinin Bilmesi Gereken 4 Kritik Madde",
+    description: "Sırbistan'da ev kiralarken hukuki olarak kendinizi nasıl korursunuz? Ugovor o zakupu maddeleri, depozito hakları ve dijital süreç yönetimi.",
+    path: "/guide/sirbistan-kira-sozlesmesi-rehberi"
+  },
+  {
+    lang: "EN",
+    city: "Serbia",
+    flag: "🇬🇧",
+    badge: "English Guide",
+    title: "Lease Agreements in Serbia: Critical Points Every Landlord Must Know",
+    description: "How to legally protect yourself when renting out an apartment in Serbia? A comprehensive guide on lease clauses, deposit rights, and property management.",
+    path: "/guide/serbia-lease-agreement-guide"
+  },
+  {
+    lang: "SR_LAT",
+    city: "Srbija",
+    flag: "🇷🇸",
+    badge: "Srpski (Latinica)",
+    title: "Ugovor o zakupu stana u Srbiji: Šta svaki stanodavac mora da zna",
+    description: "Kako pravno da se zaštitite prilikom izdavanja stana u Srbiji? Sveobuhvatni vodič o stavkama ugovora o zakupu, depozitu i upravljanju procesima.",
+    path: "/guide/ugovor-o-zakupu-stana-srbija"
+  },
+  {
+    lang: "SR_CYR",
+    city: "Србија",
+    flag: "🇷🇸",
+    badge: "Српски (Ћирилица)",
+    title: "Уговор о закупу стана у Србији: Шта сваки станодавац мора да зна",
+    description: "Како правно да се заштите приликом издавања стана у Србији? Свеобухватни водич о ставкама уговора о закупу, депозиту и управљању процесима.",
+    path: "/guide/ugovor-o-zakupu-stana-srbija-cirilica"
+  },
+  {
+    lang: "RU",
+    city: "Сербия",
+    flag: "🇷🇺",
+    badge: "Русский Гайд",
+    title: "Договор аренды в Сербии: что должен знать каждый арендодатель",
+    description: "Как юридически защитить себя при сдаче квартиры в Сербии? Подробное руководство по условиям договора аренды, депозиту и управлению недвижимостью.",
+    path: "/guide/serbia-lease-agreement-guide-ru"
+  },
+
   // Novi Sad Guides
   {
     lang: "TR",
