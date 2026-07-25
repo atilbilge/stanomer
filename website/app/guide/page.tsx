@@ -7,7 +7,7 @@ import { BookOpen, ArrowRight, Building2, Globe2, ChevronDown, ChevronUp } from 
 
 interface GuideItem {
   lang: Language;
-  city: "Belgrade" | "Novi Sad";
+  city: "Belgrade" | "Novi Sad" | "Serbia" | "Srbija" | "Србија" | "Сербия" | string;
   flag: string;
   badge: string;
   title: string;
