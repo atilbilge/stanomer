@@ -20,35 +20,125 @@ import {
   Sparkles,
   Wifi,
   Signal,
-  Battery
+  Battery,
+  Wrench,
+  Camera,
+  MessageCircle,
+  AlertTriangle
 } from "lucide-react";
 
+// Step structure:
+// 0 → Main Step 1: Property Entry
+// 1 → Main Step 2: QR Invite
+// 2 → Main Step 3: Tenant Connection
+// 3 → Main Step 4: Payment Plan
+// 4 → Main Step 5 / Sub-step 5a: Tenant marks rent paid
+// 5 → Sub-step 5b: Landlord approves rent
+// 6 → Sub-step 5c: Landlord adds utility bill
+// 7 → Sub-step 5d: Tenant pays bill
+// 8 → Sub-step 5e: Landlord approves bill — all clear
+// 9 → Main Step 6: Maintenance tracking
+
+const TOTAL_STEPS = 10;
+
+// Maps step index → display label shown in the dot nav
+// 0→1, 1→2, 2→3
+// 3→4a, 4→4b, 5→4c  (Step 4 sub-steps: payment plan / mark / approve)
+// 6→5a, 7→5b, 8→5c  (Step 5 sub-steps: bill entry / pay / approve)
+// 9→6
+function getStepLabel(idx: number): string {
+  if (idx <= 2) return String(idx + 1);           // 1, 2, 3
+  if (idx <= 5) return ["4a", "4b", "4c"][idx - 3]; // 4a, 4b, 4c
+  if (idx <= 8) return ["5a", "5b", "5c"][idx - 6]; // 5a, 5b, 5c
+  return "6";
+}
+
+// Maps step index → main step number for the description panel
+function getMainStepNum(idx: number): string {
+  if (idx <= 2) return String(idx + 1);
+  if (idx <= 5) return "4";
+  if (idx <= 8) return "5";
+  return "6";
+}
+
+// Translation key for the current step description
+function getStepTranslationKey(idx: number): string {
+  // indices 0-2 → flow_step_1/2/3
+  if (idx < 3) return `flow_step_${idx + 1}`;
+  // Step 4 sub-steps reuse existing translation keys
+  const keyMap: Record<number, string> = {
+    3: "flow_step_4",   // 4a: Automatic Payment Plan
+    4: "flow_step_5a",  // 4b: Tenant marks rent paid
+    5: "flow_step_5b",  // 4c: Landlord approves rent
+    6: "flow_step_5c",  // 5a: Utility bill entry
+    7: "flow_step_5d",  // 5b: Tenant pays bill
+    8: "flow_step_5e",  // 5c: Full approval — zero conflict
+    9: "flow_step_6",   // 6:  Maintenance tracking
+  };
+  return keyMap[idx];
+}
+
 export function InteractiveFlow() {
-  const { t } = useLanguage();
-  const [currentStep, setCurrentStep] = useState(0);
+  const { lang, t } = useLanguage();
+  const [currentStep, setCurrentStep] = useState(0); // 0-9
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Derive main step (1-6) and sub-step index from currentStep
+  const activeMain = currentStep <= 2 ? currentStep + 1
+    : currentStep <= 5 ? 4
+    : currentStep <= 8 ? 5
+    : 6;
+
+  // First render-index of each main step
+  const firstIndexOf = (main: number) =>
+    main <= 3 ? main - 1 : main === 4 ? 3 : main === 5 ? 6 : 9;
+
+  // Navigate to a main step (goes to its first sub-step if applicable)
+  const goToMain = (main: number) => {
+    setCurrentStep(firstIndexOf(main));
+    setIsPlaying(false);
+  };
+
+  // Navigate to a specific sub-step within step 4 or 5
+  const goToSub = (main: number, sub: number) => {
+    setCurrentStep((main === 4 ? 3 : 6) + sub);
+    setIsPlaying(false);
+  };
+
+  const infographicImages: Record<string, string> = {
+    TR: "/assets/how_it_works_tr.png",
+    EN: "/assets/how_it_works_en.png",
+    RU: "/assets/how_it_works_ru.jpg",
+    SR_LAT: "/assets/how_it_works_sr.png",
+    SR_CYR: "/assets/how_it_works_sr.png",
+  };
+
+  const currentInfographic = infographicImages[lang] || infographicImages.EN;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
-        setCurrentStep((prev) => (prev + 1) % 9);
+        setCurrentStep((prev) => (prev + 1) % TOTAL_STEPS);
       }, 4500);
     }
     return () => clearInterval(interval);
   }, [isPlaying]);
 
   const handleNext = () => {
-    setCurrentStep((prev) => (prev + 1) % 9);
+    setCurrentStep((prev) => (prev + 1) % TOTAL_STEPS);
   };
 
   const handlePrev = () => {
-    setCurrentStep((prev) => (prev - 1 + 9) % 9);
+    setCurrentStep((prev) => (prev - 1 + TOTAL_STEPS) % TOTAL_STEPS);
   };
 
+  const stepKey = getStepTranslationKey(currentStep);
+
   return (
-    <section className="max-w-[680px] mx-auto px-4 sm:px-6 py-6 w-full">
-      <div className="text-center mb-5">
+    <section id="how-it-works" className="max-w-[680px] mx-auto px-4 sm:px-6 py-6 w-full">
+      <div className="text-center mb-6">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20 text-brand-blue text-[11px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
           {t("how_it_works_label")}
@@ -61,29 +151,110 @@ export function InteractiveFlow() {
         </p>
       </div>
 
+      {/* Language Specific Process Infographic */}
+      <div className="mb-8 bg-white/80 backdrop-blur-[16px] border border-gray-200/90 rounded-2xl p-2.5 shadow-sm overflow-hidden group">
+        <div 
+          onClick={() => setIsZoomed(true)}
+          className="relative cursor-pointer overflow-hidden rounded-xl bg-gray-50 border border-gray-100 hover:shadow-md transition-all duration-300"
+        >
+          <img 
+            src={currentInfographic} 
+            alt={t("how_it_works_title")} 
+            className="w-full h-auto object-cover group-hover:scale-[1.01] transition-transform duration-300"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 bg-black/75 text-white text-[11px] font-semibold px-3 py-1.5 rounded-full backdrop-blur-md transition-opacity shadow-lg">
+              🔍 {lang === "TR" ? "Büyütmek için tıklayın" : lang === "RU" ? "Нажмите для увеличения" : lang === "SR_LAT" || lang === "SR_CYR" ? "Kliknite za uvećanje" : "Click to enlarge"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Lightbox / Zoom Modal */}
+      {isZoomed && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out animate-fadeIn"
+          onClick={() => setIsZoomed(false)}
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center">
+            <button 
+              onClick={() => setIsZoomed(false)}
+              className="absolute -top-10 right-0 text-white font-bold text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full backdrop-blur-md transition-colors"
+            >
+              ✕ {lang === "TR" ? "Kapat" : lang === "RU" ? "Закрыть" : lang === "SR_LAT" || lang === "SR_CYR" ? "Zatvori" : "Close"}
+            </button>
+            <img 
+              src={currentInfographic} 
+              alt={t("how_it_works_title")} 
+              className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Control & Step Selection Bar */}
       <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-2xl p-3.5 mb-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          {/* Step Selector Dots / Buttons */}
-          <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none justify-start sm:justify-center">
-            {Array.from({ length: 9 }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setCurrentStep(idx);
-                  setIsPlaying(false);
-                }}
-                className={`flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center justify-center ${
-                  currentStep === idx
-                    ? "bg-brand-blue text-white shadow-md shadow-brand-blue/30 scale-105"
-                    : idx < currentStep
-                    ? "bg-brand-blue/15 text-brand-blue hover:bg-brand-blue/25"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-              >
-                {idx + 1}
-              </button>
-            ))}
+
+          {/* ── Main step navigator ── */}
+          <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+
+            {/* Row 1: Main dots 1-6 */}
+            <div className="flex items-center gap-1.5 justify-center">
+              {[1, 2, 3, 4, 5, 6].map((main) => {
+                const isActive = activeMain === main;
+                const isPast  = activeMain > main;
+                const hasSubs = main === 4 || main === 5;
+                return (
+                  <button
+                    key={main}
+                    onClick={() => goToMain(main)}
+                    title={`Step ${main}`}
+                    className={`flex-shrink-0 w-7 h-7 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center justify-center gap-0.5
+                      ${isActive
+                        ? "bg-brand-blue text-white shadow-md shadow-brand-blue/30 scale-105"
+                        : isPast
+                        ? "bg-brand-blue/15 text-brand-blue hover:bg-brand-blue/25"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      }`}
+                  >
+                    {main}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Row 2: Sub-step dots — only shown when step 4 or 5 is active */}
+            {(activeMain === 4 || activeMain === 5) && (
+              <div className="flex items-center gap-1 justify-center animate-fadeIn">
+                {(activeMain === 4
+                  ? [["4a",0],["4b",1],["4c",2]]
+                  : [["5a",0],["5b",1],["5c",2]]
+                ).map(([label, sub]) => {
+                  const idx = (activeMain === 4 ? 3 : 6) + (sub as number);
+                  return (
+                    <button
+                      key={label as string}
+                      onClick={() => goToSub(activeMain, sub as number)}
+                      className={`flex-shrink-0 w-9 h-5 rounded-full text-[10px] font-bold transition-all duration-200 flex items-center justify-center
+                        ${currentStep === idx
+                          ? activeMain === 4
+                            ? "bg-amber-500 text-white shadow-sm scale-105"
+                            : "bg-sky-500 text-white shadow-sm scale-105"
+                          : currentStep > idx
+                          ? activeMain === 4
+                            ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                            : "bg-sky-100 text-sky-700 hover:bg-sky-200"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        }`}
+                    >
+                      {label as string}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Navigation Controls */}
@@ -123,20 +294,27 @@ export function InteractiveFlow() {
         {/* Current Step Description Card */}
         <div className="mt-2.5 pt-2.5 border-t border-gray-150 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
           <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-md bg-brand-blue/10 text-brand-blue font-bold flex items-center justify-center text-[11px] flex-shrink-0 mt-0.5">
-              {currentStep + 1}
+            <div className={`min-w-[22px] h-5 rounded-md font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 px-1
+              ${currentStep >= 3 && currentStep <= 5
+                ? "bg-amber-100 text-amber-700"
+                : currentStep >= 6 && currentStep <= 8
+                ? "bg-blue-100 text-blue-700"
+                : currentStep === 9
+                ? "bg-rose-100 text-rose-700"
+                : "bg-brand-blue/10 text-brand-blue"}`}>
+              {getStepLabel(currentStep)}
             </div>
             <div>
               <h3 className="text-xs font-bold text-gray-900">
-                {t(`flow_step_${currentStep + 1}_title`)}
+                {t(`${stepKey}_title`)}
               </h3>
               <p className="text-[11px] text-gray-600 leading-snug mt-0.5">
-                {t(`flow_step_${currentStep + 1}_desc`)}
+                {t(`${stepKey}_desc`)}
               </p>
             </div>
           </div>
           <span className="text-[10px] font-semibold text-gray-400 self-end sm:self-center flex-shrink-0">
-            {currentStep + 1} / 9
+            {currentStep + 1} / {TOTAL_STEPS}
           </span>
         </div>
       </div>
@@ -261,6 +439,7 @@ export function InteractiveFlow() {
 
 function renderLandlordContent(step: number, t: (k: string) => string) {
   switch (step) {
+    // ─── Step 1: Property Entry ──────────────────────────────────────
     case 0:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -292,13 +471,13 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Step 2: QR Invite ───────────────────────────────────────────
     case 1:
       return (
         <div className="space-y-2.5 animate-fadeIn text-center my-auto">
           <div className="bg-white border-2 border-brand-blue rounded-xl p-3 shadow-md animate-pulse ring-2 ring-blue-400/60">
             <h4 className="text-xs font-bold text-gray-800 mb-0.5">{t("mockup_qr_title")}</h4>
             <p className="text-[10px] text-gray-500 mb-2">{t("mockup_qr_subtitle")}</p>
-            
             <div className="w-28 h-28 mx-auto bg-white border-2 border-brand-blue/30 rounded-xl p-2 flex flex-col items-center justify-center shadow-inner">
               <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-white p-2">
                 <QrCode className="w-14 h-14 text-blue-400" />
@@ -312,6 +491,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Step 3: Tenant Connected ────────────────────────────────────
     case 2:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -320,11 +500,8 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
               <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
               {t("mockup_tenant_opened")}
             </div>
-            <p className="text-[11px] text-emerald-700">
-              {t("mockup_tenant_joined_desc")}
-            </p>
+            <p className="text-[11px] text-emerald-700">{t("mockup_tenant_joined_desc")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="font-bold text-gray-800">{t("mockup_active_contract")}</span>
@@ -339,6 +516,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Step 4: Payment Plan ────────────────────────────────────────
     case 3:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -349,7 +527,6 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
             </span>
             <span className="text-[10px] text-brand-blue font-bold">{t("mockup_total")}</span>
           </div>
-
           <div className="space-y-2">
             <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-2.5 flex items-center justify-between text-[11px] animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
               <div>
@@ -360,7 +537,6 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
                 {t("mockup_status_pending")}
               </span>
             </div>
-
             <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] opacity-75">
               <div>
                 <p className="font-semibold text-gray-800">{t("mockup_2nd_month_rent")}</p>
@@ -374,6 +550,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5a: Tenant marks rent paid → landlord awaits ──────
     case 4:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -390,13 +567,13 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
             <p className="text-[11px] text-amber-800 mb-1">{t("mockup_tenant_marked_paid")}</p>
             <p className="text-[9px] text-amber-700 italic">{t("mockup_receipt_attached")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2.5 text-center shadow-sm">
             <p className="text-[11px] text-gray-600">{t("mockup_check_bank_transfer")}</p>
           </div>
         </div>
       );
 
+    // ─── Sub-step 5b: Landlord approves rent ────────────────────────
     case 5:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -405,11 +582,8 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               {t("mockup_payment_approved_title")}
             </div>
-            <p className="text-[11px] text-emerald-800">
-              {t("mockup_payment_approved_desc")}
-            </p>
+            <p className="text-[11px] text-emerald-800">{t("mockup_payment_approved_desc")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] shadow-sm">
             <div>
               <p className="font-bold text-gray-900">{t("mockup_1st_month_rent")}</p>
@@ -422,6 +596,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5c: Landlord adds utility bill ─────────────────────
     case 6:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -440,7 +615,6 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
               <p className="text-[9px]">{t("mockup_due_date_august")}</p>
             </div>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2.5 flex items-center gap-2 text-[11px] text-gray-700 shadow-sm">
             <Bell className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
             <span>{t("mockup_bill_notification_sent")}</span>
@@ -448,6 +622,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5d: Tenant paid bill, landlord awaits ──────────────
     case 7:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -461,11 +636,8 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
                 {t("mockup_awaiting_approval")}
               </span>
             </div>
-            <p className="text-[11px] text-amber-800">
-              {t("mockup_tenant_marked_bill_paid")}
-            </p>
+            <p className="text-[11px] text-amber-800">{t("mockup_tenant_marked_bill_paid")}</p>
           </div>
-
           <button className="w-full py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 animate-bounce">
             <CheckCircle2 className="w-3.5 h-3.5" />
             {t("mockup_approve_bill_button")}
@@ -473,6 +645,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5e: All payments done ─────────────────────────────
     case 8:
       return (
         <div className="space-y-2.5 animate-fadeIn text-center my-auto">
@@ -481,14 +654,50 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h4 className="text-xs font-bold text-emerald-900 mb-0.5">{t("mockup_all_payments_completed")}</h4>
-            <p className="text-[10px] text-emerald-700 leading-snug">
-              {t("mockup_all_payments_desc")}
-            </p>
+            <p className="text-[10px] text-emerald-700 leading-snug">{t("mockup_all_payments_desc")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] shadow-sm">
             <span className="text-gray-600">{t("mockup_balance")}</span>
             <span className="font-bold text-emerald-600">{t("mockup_balance_value")}</span>
+          </div>
+        </div>
+      );
+
+    // ─── Step 6: Maintenance — Landlord sees notification + photo ────
+    case 9:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          <div className="bg-rose-50 border-2 border-rose-400 rounded-xl p-3 animate-pulse ring-2 ring-rose-400/60 shadow-[0_0_12px_rgba(244,63,94,0.25)]">
+            <div className="flex items-center gap-1.5 text-rose-900 font-bold text-xs mb-1.5">
+              <Bell className="w-3.5 h-3.5 text-rose-500" />
+              {t("mockup_maintenance_notif")}
+            </div>
+            {/* Fake photo thumbnail */}
+            <div className="bg-white border border-rose-200 rounded-lg p-2 flex items-center gap-2 mb-2">
+              <div className="w-10 h-10 rounded-md bg-rose-100 flex items-center justify-center flex-shrink-0">
+                <Camera className="w-5 h-5 text-rose-400" />
+              </div>
+              <div className="text-[10px] text-gray-600">
+                <p className="font-semibold text-gray-800">{t("mockup_maintenance_title")}</p>
+                <p className="text-[9px] text-gray-500">{t("mockup_maintenance_desc")}</p>
+              </div>
+            </div>
+            <div className="text-[9px] text-rose-700 italic">{t("mockup_maintenance_photo")}</div>
+          </div>
+
+          {/* Landlord replies */}
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 shadow-sm">
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-3.5 h-3.5 text-brand-blue" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-gray-800 mb-0.5">{t("mockup_landlord_badge")}</p>
+                <p className="text-[11px] text-gray-700 bg-brand-blue/10 px-2 py-1 rounded-lg rounded-tl-none">
+                  {t("mockup_maintenance_landlord_reply")}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -500,6 +709,7 @@ function renderLandlordContent(step: number, t: (k: string) => string) {
 
 function renderTenantContent(step: number, t: (k: string) => string) {
   switch (step) {
+    // ─── Step 1: No property yet ─────────────────────────────────────
     case 0:
       return (
         <div className="space-y-2.5 animate-fadeIn text-center my-auto py-5">
@@ -515,6 +725,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Step 2: Invite arrived ──────────────────────────────────────
     case 1:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -523,9 +734,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
               <Send className="w-3.5 h-3.5 text-brand-blue" />
               {t("mockup_tenant_invite_arrived")}
             </div>
-            <p className="text-[11px] text-blue-800 mb-2">
-              {t("mockup_tenant_invited_you")}
-            </p>
+            <p className="text-[11px] text-blue-800 mb-2">{t("mockup_tenant_invited_you")}</p>
             <div className="bg-white border border-blue-200 rounded-lg p-1.5 text-center shadow-sm">
               <span className="text-[11px] font-bold text-brand-blue">
                 {t("mockup_click_link_inspect")}
@@ -535,6 +744,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Step 3: Joined ──────────────────────────────────────────────
     case 2:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -554,13 +764,13 @@ function renderTenantContent(step: number, t: (k: string) => string) {
               <p className="text-[9px] text-emerald-700">{t("mockup_payment_day_15")}</p>
             </div>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2 text-center text-[11px] text-gray-700 font-semibold shadow-sm">
             {t("mockup_contract_ready_phone")}
           </div>
         </div>
       );
 
+    // ─── Step 4: Upcoming payment ────────────────────────────────────
     case 3:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -571,7 +781,6 @@ function renderTenantContent(step: number, t: (k: string) => string) {
             </span>
             <span className="text-[9px] text-amber-600 font-bold">{t("mockup_first_payment_august")}</span>
           </div>
-
           <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 animate-pulse ring-2 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
             <div className="flex items-center justify-between mb-1.5">
               <div>
@@ -589,6 +798,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5a: Tenant submitted payment ───────────────────────
     case 4:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -602,9 +812,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
                 {t("mockup_awaiting_approval")}
               </span>
             </div>
-            <p className="text-[11px] text-amber-800 mb-1.5">
-              {t("mockup_tenant_rent_submitted")}
-            </p>
+            <p className="text-[11px] text-amber-800 mb-1.5">{t("mockup_tenant_rent_submitted")}</p>
             <div className="bg-white/80 border border-amber-200 rounded-lg p-1.5 text-[9px] text-gray-600 flex items-center gap-1.5">
               <Receipt className="w-3 h-3 text-amber-600" />
               {t("mockup_receipt_uploaded")}
@@ -613,6 +821,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5b: Landlord approved rent ─────────────────────────
     case 5:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -626,11 +835,8 @@ function renderTenantContent(step: number, t: (k: string) => string) {
                 {t("mockup_status_paid")}
               </span>
             </div>
-            <p className="text-[11px] text-emerald-800">
-              {t("mockup_tenant_rent_approved_desc")}
-            </p>
+            <p className="text-[11px] text-emerald-800">{t("mockup_tenant_rent_approved_desc")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] text-gray-700 shadow-sm">
             <span>{t("mockup_rent_debt")}</span>
             <span className="font-bold text-emerald-600">{t("mockup_rent_debt_cleared")}</span>
@@ -638,6 +844,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5c: New bill notification ──────────────────────────
     case 6:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -646,9 +853,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
               <Bell className="w-3.5 h-3.5 text-amber-600" />
               {t("mockup_new_bill_notification")}
             </div>
-            <p className="text-[11px] text-amber-800 mb-1.5">
-              {t("mockup_landlord_added_bill")}
-            </p>
+            <p className="text-[11px] text-amber-800 mb-1.5">{t("mockup_landlord_added_bill")}</p>
             <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-amber-200 text-[11px]">
               <span className="font-semibold text-gray-800">{t("mockup_bill_electricity")}</span>
               <span className="font-bold text-amber-900">€45</span>
@@ -657,6 +862,7 @@ function renderTenantContent(step: number, t: (k: string) => string) {
         </div>
       );
 
+    // ─── Sub-step 5d: Tenant submitted bill payment ───────────────────
     case 7:
       return (
         <div className="space-y-2.5 animate-fadeIn my-auto">
@@ -670,13 +876,12 @@ function renderTenantContent(step: number, t: (k: string) => string) {
                 {t("mockup_awaiting_approval")}
               </span>
             </div>
-            <p className="text-[11px] text-amber-800">
-              {t("mockup_tenant_bill_submitted")}
-            </p>
+            <p className="text-[11px] text-amber-800">{t("mockup_tenant_bill_submitted")}</p>
           </div>
         </div>
       );
 
+    // ─── Sub-step 5e: All done ────────────────────────────────────────
     case 8:
       return (
         <div className="space-y-2.5 animate-fadeIn text-center my-auto">
@@ -685,14 +890,55 @@ function renderTenantContent(step: number, t: (k: string) => string) {
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <h4 className="text-xs font-bold text-emerald-900 mb-0.5">{t("mockup_tenant_all_current_title")}</h4>
-            <p className="text-[10px] text-emerald-700 leading-snug">
-              {t("mockup_tenant_all_current_desc")}
-            </p>
+            <p className="text-[10px] text-emerald-700 leading-snug">{t("mockup_tenant_all_current_desc")}</p>
           </div>
-
           <div className="bg-white border border-gray-200 rounded-xl p-2 flex justify-between text-[11px] shadow-sm">
             <span className="text-gray-600">{t("mockup_payable_debt")}</span>
             <span className="font-bold text-emerald-600">€0</span>
+          </div>
+        </div>
+      );
+
+    // ─── Step 6: Maintenance — Tenant reports + resolves ─────────────
+    case 9:
+      return (
+        <div className="space-y-2.5 animate-fadeIn my-auto">
+          {/* Tenant opens a new issue report */}
+          <div className="bg-rose-50 border-2 border-rose-300 rounded-xl p-3 shadow-sm">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                {t("mockup_maintenance_open")}
+              </span>
+              <span className="text-[9px] bg-rose-200 text-rose-800 font-bold px-1.5 py-0.5 rounded">
+                {t("mockup_maintenance_badge")}
+              </span>
+            </div>
+            <p className="text-[11px] text-rose-800 mb-1.5">{t("mockup_maintenance_desc")}</p>
+            {/* Photo upload area */}
+            <div className="bg-white border-2 border-dashed border-rose-200 rounded-lg p-2 flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded bg-rose-50 flex items-center justify-center flex-shrink-0">
+                <Camera className="w-4 h-4 text-rose-400" />
+              </div>
+              <p className="text-[9px] text-rose-600 font-medium">{t("mockup_maintenance_photo")}</p>
+            </div>
+          </div>
+
+          {/* Landlord's reply visible to tenant */}
+          <div className="bg-white border border-gray-200 rounded-xl p-2.5 shadow-sm">
+            <div className="flex items-start gap-2 mb-2">
+              <div className="w-5 h-5 rounded-full bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Wrench className="w-3 h-3 text-brand-blue" />
+              </div>
+              <p className="text-[11px] text-gray-700 bg-brand-blue/10 px-2 py-1 rounded-lg rounded-tl-none">
+                {t("mockup_maintenance_landlord_reply")}
+              </p>
+            </div>
+            {/* Resolve button */}
+            <button className="w-full py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-bold shadow-sm flex items-center justify-center gap-1.5 animate-bounce">
+              <CheckCircle2 className="w-3 h-3" />
+              {t("mockup_maintenance_resolved_btn")}
+            </button>
           </div>
         </div>
       );

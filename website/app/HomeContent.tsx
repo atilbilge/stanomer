@@ -118,25 +118,6 @@ export function HomeContent() {
       {/* Interactive Dual Flow Section */}
       <InteractiveFlow />
 
-      {/* Steps */}
-      <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
-        <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-2xl p-8">
-          <h2 className="text-[20px] font-bold text-gray-900 mb-6">{t("steps_title")}</h2>
-          <div className="space-y-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-4">
-                <div className="w-8 h-8 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center text-[13px] font-bold text-gray-900 flex-shrink-0">
-                  {i}
-                </div>
-                <div>
-                  <h4 className="text-[15px] font-bold text-gray-900 mb-1">{t(`step_${i}_title`)}</h4>
-                  <p className="text-[14px] text-gray-700 leading-relaxed">{t(`step_${i}_desc`)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Trust Grid */}
       <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
