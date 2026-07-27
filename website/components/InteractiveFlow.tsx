@@ -137,14 +137,22 @@ export function InteractiveFlow() {
   const stepKey = getStepTranslationKey(currentStep);
 
   return (
-    <section id="how-it-works" className="max-w-[680px] mx-auto px-4 sm:px-6 py-6 w-full">
+    <section id={t("how_it_works_slug")} className="max-w-[680px] mx-auto px-4 sm:px-6 py-6 w-full relative">
+      {/* Anchor targets for all language URL variants */}
+      <div id="how-it-works" className="absolute -top-24" />
+      <div id="stanomer-nasil-calisir" className="absolute -top-24" />
+      <div id="kako-stanomer-radi" className="absolute -top-24" />
+      <div id="kak-rabotaet-stanomer" className="absolute -top-24" />
+
       <div className="text-center mb-6">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20 text-brand-blue text-[11px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
           {t("how_it_works_label")}
         </div>
         <h2 className="text-[22px] sm:text-[26px] font-extrabold text-gray-900 leading-tight tracking-tight mb-1.5">
-          {t("how_it_works_title")}
+          <a href={`#${t("how_it_works_slug")}`} className="hover:text-brand-blue transition-colors">
+            {t("how_it_works_title")}
+          </a>
         </h2>
         <p className="text-[13px] text-gray-600 max-w-[500px] mx-auto leading-relaxed">
           {t("how_it_works_subtitle")}
