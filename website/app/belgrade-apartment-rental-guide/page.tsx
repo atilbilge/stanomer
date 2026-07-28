@@ -1,3 +1,23 @@
-import Page, { metadata } from "../guide/belgrade-apartment-rental-guide/page";
-export { metadata };
-export default Page;
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+  alternates: {
+    canonical: "https://www.stanomer.online/guide/belgrade-apartment-rental-guide",
+  },
+};
+
+export default function RedirectPage() {
+  const targetUrl = "https://www.stanomer.online/guide/belgrade-apartment-rental-guide";
+  return (
+    <html>
+      <head>
+        <meta httpEquiv="refresh" content={`0; url=${targetUrl}`} />
+        <link rel="canonical" href={targetUrl} />
+      </head>
+      <body>
+        <p>Redirecting to <a href={targetUrl}>{targetUrl}</a>...</p>
+      </body>
+    </html>
+  );
+}
