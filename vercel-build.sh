@@ -54,7 +54,7 @@ echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
 flutter clean
 rm -rf build/
 cp .env.prod .env
-flutter build web --release -t lib/main.dart --base-href /app/ --dart-define-from-file=.env.prod
+flutter build web --release -t lib/main.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=https://ustcsvvkzsmsgzbptvpm.supabase.co --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g --dart-define-from-file=.env.prod
 mkdir -p build/web_prod
 cp -r build/web/* build/web_prod/
 
@@ -62,7 +62,7 @@ cp -r build/web/* build/web_prod/
 echo "Step 5: Building DEV Flutter Web (--base-href /dev-app/)..."
 rm -rf build/web
 cp .env.dev .env
-flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define-from-file=.env.dev
+flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define=ENVIRONMENT=dev --dart-define=SUPABASE_URL=https://thvbpifahvasyzmngpzp.supabase.co --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU --dart-define-from-file=.env.dev
 mkdir -p build/web_dev
 cp -r build/web/* build/web_dev/
 
