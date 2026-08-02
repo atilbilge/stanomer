@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "--- VERCEL DIAGNOSTIC BUILD START ---"
+echo "--- VERCEL DUAL BUILD START (/app & /dev-app) ---"
 
 # Skip root check and optimize for CI
 export BOT=true
@@ -16,21 +16,21 @@ if [ -z "$SUPABASE_URL" ]; then
   exit 1
 fi
 
-echo "Target Branch: $VERCEL_GIT_COMMIT_REF | Vercel Env: $VERCEL_ENV"
+# Use DEV specific Supabase credentials if set, otherwise fallback to main
+SUPABASE_DEV_URL="${SUPABASE_DEV_URL:-$SUPABASE_URL}"
+SUPABASE_DEV_ANON_KEY="${SUPABASE_DEV_ANON_KEY:-$SUPABASE_ANON_KEY}"
 
-if [ "$VERCEL_GIT_COMMIT_REF" = "dev" ] || [ "$VERCEL_ENV" = "preview" ]; then
-  echo ">>> Preparing DEV environment variables... <<<"
-  echo "SUPABASE_URL=$SUPABASE_URL" > .env.dev
-  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.dev
-  echo "SUPABASE_URL=$SUPABASE_URL" > .env
-  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
-else
-  echo ">>> Preparing PRODUCTION environment variables... <<<"
-  echo "SUPABASE_URL=$SUPABASE_URL" > .env.prod
-  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.prod
-  echo "SUPABASE_URL=$SUPABASE_URL" > .env
-  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
-fi
+echo "Preparing .env.prod..."
+echo "SUPABASE_URL=$SUPABASE_URL" > .env.prod
+echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.prod
+
+echo "Preparing .env.dev..."
+echo "SUPABASE_URL=$SUPABASE_DEV_URL" > .env.dev
+echo "SUPABASE_ANON_KEY=$SUPABASE_DEV_ANON_KEY" >> .env.dev
+
+# Default .env
+echo "SUPABASE_URL=$SUPABASE_URL" > .env
+echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
 
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
@@ -48,24 +48,25 @@ export PATH="$(pwd)/flutter/bin:$PATH"
 echo "Flutter Binary Location: $(which flutter)"
 flutter --version
 
-# 3. Environment Cleanup (Critical for low memory builds)
-echo "Step 3: Cleaning Environment..."
-flutter clean
-rm -rf build/
-
-# 4. Configure Flutter for Web & Resolve Dependencies
-echo "Step 4: Configuring Web & Resolving Dependencies..."
+# 3. Configure Flutter for Web & Resolve Dependencies
+echo "Step 3: Configuring Web & Resolving Dependencies..."
 flutter config --enable-web
 flutter pub get
 
-# 5. Build Flutter Web
-if [ "$VERCEL_GIT_COMMIT_REF" = "dev" ] || [ "$VERCEL_ENV" = "preview" ]; then
-  echo "Step 5: Building Flutter Web for DEV (lib/main_dev.dart)..."
-  flutter build web --release -t lib/main_dev.dart --base-href /app/ --dart-define-from-file=.env.dev
-else
-  echo "Step 5: Building Flutter Web for PRODUCTION (lib/main.dart)..."
-  flutter build web --release -t lib/main.dart --base-href /app/ --dart-define-from-file=.env.prod
-fi
+# 4. Build Production Flutter Web (/app/)
+echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
+flutter clean
+rm -rf build/
+flutter build web --release -t lib/main.dart --base-href /app/ --dart-define-from-file=.env.prod
+mkdir -p build/web_prod
+cp -r build/web/* build/web_prod/
+
+# 5. Build Dev Flutter Web (/dev-app/)
+echo "Step 5: Building DEV Flutter Web (--base-href /dev-app/)..."
+rm -rf build/web
+flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define-from-file=.env.dev
+mkdir -p build/web_dev
+cp -r build/web/* build/web_dev/
 
 # 6. Build Next.js Website (Legal Pages)
 echo "Step 6: Building Next.js Website..."
@@ -78,6 +79,7 @@ cd ..
 echo "Step 7: Preparing public directory..."
 rm -rf public
 mkdir -p public/app
+mkdir -p public/dev-app
 
 # 8. Final Distribution
 echo "Step 8: Copying Assets..."
@@ -95,12 +97,20 @@ else
   exit 1
 fi
 
-# Copy Flutter web build
-if [ -d "build/web" ]; then
-  cp -r build/web/* public/app/
+# Copy Production Flutter web build
+if [ -d "build/web_prod" ]; then
+  cp -r build/web_prod/* public/app/
 else
-  echo "Error: Flutter web build not found!"
+  echo "Error: Production Flutter web build not found!"
   exit 1
 fi
 
-echo "--- VERCEL DIAGNOSTIC BUILD COMPLETE! ---"
+# Copy Dev Flutter web build
+if [ -d "build/web_dev" ]; then
+  cp -r build/web_dev/* public/dev-app/
+else
+  echo "Error: Dev Flutter web build not found!"
+  exit 1
+fi
+
+echo "--- VERCEL DUAL BUILD COMPLETE! (/app & /dev-app are ready) ---"
