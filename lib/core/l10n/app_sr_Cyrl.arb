@@ -98,6 +98,7 @@
   "yourNameHint": "Унесите Ваше име и презиме",
   "viewInvite": "Погледај позив",
   "myProperties": "Моје некретнине",
+  "myProperty": "Моја некретнина",
   "tenantEmptyStateTitle": "Још увек немате додељену некретнину",
   "tenantEmptyStateMessage": "Ако Вам је власник стана послао позив, он ће се појавити овде. Притисните дугме испод како бисте проверили нове позиве.",
   "refresh": "Освежи",
@@ -650,5 +651,195 @@
   "invoiceUploadLimitDesc": "ЈПЕГ, ПНГ или ПДФ · макс 10 МБ",
   "billMissingLocalDesc": "Рачун је сачуван на другом телефону. Укључите облак у подешавањима како бисте га видели овде.",
   "documentMissingLocalDesc": "Документ је сачуван на другом телефону. Укључите облак у подешавањима како бисте га видели овде.",
-  "cannotOpenDocument": "Није могуће отворити документ"
+  "cannotOpenDocument": "Није могуће отворити документ",
+  "agencyAccount": "Налог агенције",
+  "managedProperties": "Управљане некретнине",
+  "paymentApprovalQueue": "Ред за одобрење плаћања",
+  "noPendingPaymentApprovals": "Нема плаћања на чекању",
+  "noManagedPropertiesYet": "Још нема управљаних некретнина",
+  "vacant": "Празан",
+  "occupied": "Заузето",
+  "dueDateShort": "Рок: {date}",
+  "@dueDateShort": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "payment": "Плаћање",
+  "insightPendingApprovalsTitle": "Чекају одобрење",
+  "insightPendingApprovalsDesc": "Имате некретнине за које станодавац или закупци још нису прихватили позив.",
+  "insightPendingApprovalsAction": "Прикажи повезане некретнине",
+  "insightWithoutContractsTitle": "Некретнине без уговора",
+  "insightWithoutContractsDesc": "Имате некретнине регистроване у систему, али за њих још није приложен уговор.",
+  "insightWithoutContractsAction": "Прикажи повезане некретнине",
+  "insightExpiredContractsTitle": "Истекли уговори",
+  "insightExpiredContractsDesc": "Имате некретнине са истеклим уговорима који нису обновљени. Молимо предузмите мере.",
+  "insightExpiredContractsAction": "Прикажи повезане некретнине",
+  "insightExpiringContractsTitle": "Уговори који ускоро истичу",
+  "insightExpiringContractsDesc": "Имате некретнине којима је остало мање од месец дана до истека последњег активног уговора.",
+  "insightExpiringContractsAction": "Прикажи повезане некретнине",
+  "tabHome": "Почетна",
+  "tabFinance": "Финансије",
+  "tabRequests": "Захтеви",
+  "tabPortfolio": "Портфолио",
+  "agencyAddProperty": "Додај некретнину",
+  "searchAndFilterPanel": "ПАНЕЛ ЗА ПРЕТРАГУ И ФИЛТРИРАЊЕ",
+  "searchPlaceholder": "Претражи власника, станара, град или некретнину...",
+  "filterAppliedLabel": "Примењен филтер: {title}",
+  "@filterAppliedLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noPropertiesMatchingFilter": "Нема некретнина које одговарају филтеру",
+  "groupNone": "Груписање Јок",
+  "groupByLandlord": "Групиши: Власник",
+  "groupByCity": "Групиши: Град",
+  "groupByStatus": "Групиши: Статус",
+  "groupByDebtConsent": "Групиши: Дуг / Одобрење",
+  "sortByNewest": "Сортирај: Најновије",
+  "sortByNameAsc": "Сортирај: Некретнина А-Ш",
+  "sortByCityAsc": "Сортирај: Град А-Ш",
+  "sortByLandlordAsc": "Сортирај: Власник А-Ш",
+  "allPropertiesGroup": "Све некретнине",
+  "groupLandlordPendingInvite": "Власници који чекају позивницу",
+  "groupUnspecifiedCity": "Град није наведен",
+  "groupStatusOccupied": "Изнајмљене некретнине",
+  "groupStatusVacant": "Празне некретнине",
+  "groupStatusLandlordPending": "Власник чека позивницу",
+  "groupDebtPending": "Некретнине са дугом",
+  "groupConsentPending": "Чека одобрење / пристанак",
+  "groupActiveClean": "Некретнине без дуга",
+  "filterAllCount": "Све ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterHasDebtCount": "⚠️ Са дугом ({count})",
+  "@filterHasDebtCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOccupiedCount": "🟢 Заузето ({count})",
+  "@filterOccupiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterVacantCount": "🟡 Слободно ({count})",
+  "@filterVacantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterActiveLabel": "Филтер активан ✓",
+  "financeAndPaymentsHeader": "ФИНАНСИЈЕ И ПЛАЋАЊА",
+  "financialSummaryTitle": "Финансијски преглед",
+  "pendingPaymentsSummary": "{count} одобрења плаћања на чекању",
+  "@pendingPaymentsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "financePlaceholderDesc": "Финансијски дијаграми, праћење закупнине и историја плаћања биће ускоро доступни.",
+  "maintenanceRequestsHeader": "ЗАХТЕВИ ЗА ОДРЖАВАЊЕ И ПОПРАВКЕ",
+  "requestManagementTitle": "Управљање захтевима",
+  "requestsPlaceholderDesc": "Захтеви за поправку и подршку од станара и власника ускоро ће се управљати са овог картица.",
+  "noOpenRequestsYet": "Нема отворених захтева",
+  "actionableInsightsHeader": "ПОРУКЕ ЗА АКЦИЈУ",
+  "inviteTenantOrAddContract": "Позови станара / Додај уговор",
+  "ownershipQrOrLink": "Власнички QR / Линк",
+  "changeLandlord": "Промени власника",
+  "pendingDebtWarning": "Дуговање чека одобрење агенције или уплату станара",
+  "landlordLabel": "Власник: ",
+  "invitePending": "Чека позивницу",
+  "tenantLabel": "Станар: ",
+  "vacantLabel": "Слободно",
+  "latestContractNone": "Последњи уговор: Нема",
+  "unlimited": "Неодређено",
+  "contractDateRange": "Уговор: {dates}",
+  "@contractDateRange": {
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "cashPayment": "Готовинско плаћање",
+  "changeLandlordDialogTitle": "Промени власника / Пошаљи позивницу",
+  "changeLandlordDialogDesc": "Унесите контакт податке новог власника. Постојеће власништво биће ресетовано и генерисан нови QR/Линк.",
+  "phone": "Број телефона",
+  "error": "Грешка",
+  "changeAndGenerateQr": "Промени и генериши QR",
+  "financePendingApprovals": "Чекају одобрење",
+  "financeOverduePayments": "Дуговања у кашњењу",
+  "financePaidThisMonth": "Одобрено овог месеца",
+  "financeUpcoming7Days": "Надолазећа (7 дана)",
+  "tabPendingQueue": "Ред за одобрење",
+  "tabOverdueList": "Дужници",
+  "tabAllHistory": "Историја плаћања",
+  "approvePayment": "Одобри",
+  "rejectPayment": "Одбиј",
+  "markAsCashPaid": "Означи као плаћено готовином",
+  "sendReminder": "Пошаљи подсетник",
+  "daysOverdue": "Касни {count} дана",
+  "@daysOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewReceipt": "Прикажи уплатницу",
+  "noFinanceRecords": "Нема записа у овој категорији",
+  "reminderMessageCopied": "Порука подсетника је копирана",
+  "tenantNoPropertyTitle": "Још нисте повезани са некретнином.",
+  "tenantNoPropertyTooltip": "Још нисте повезани са некретнином.",
+  "tenantNoPropertyMaintenanceTooltip": "Још нисте повезани са некретнином.\nДа бисте поднели захтев за одржавање, прво се придружите некретнини.",
+  "joinWithQrCode": "Придружи се дому путем QR / позивног кода",
+  "agencyPropertyTakeoverQr": "Преузми некретнину агенције путем QR кода",
+  "welcomeUser": "Добродошли, {userName} 👋",
+  "@welcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "overduePaymentReminderMessage": "Поштовани/а {tenantName}, ваша уплата од {amount} {currency} за некретнину {propertyName} је прекорачила рок. Молимо вас да извршите уплату и пошаљете уплатницу.",
+  "@overduePaymentReminderMessage": {
+    "placeholders": {
+      "tenantName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "heroHeadline": "Управљајте вашим некретнинама из једног панела",
+  "heroSubtitle": "Праћење станара, евиденција уплата и детаљи о некретнинама — све на једном месту.",
+  "forgotPassword": "Заборавили сте лозинку?"
 }

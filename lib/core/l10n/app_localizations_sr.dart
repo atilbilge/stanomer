@@ -269,6 +269,9 @@ class AppLocalizationsSr extends AppLocalizations {
   String get viewInvite => 'Pogledaj poziv';
 
   @override
+  String get myProperty => 'Moja nekretnina';
+
+  @override
   String get myProperties => 'Moje nekretnine';
 
   @override
@@ -612,7 +615,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get declare => 'Prijavi';
 
   @override
-  String get viewReceipt => 'Vidi uplatnicu';
+  String get viewReceipt => 'Prikaži uplatnicu';
 
   @override
   String proposesChanges(String name) {
@@ -1455,6 +1458,353 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get cannotOpenDocument => 'Nije moguće otvoriti dokument';
+
+  @override
+  String get agencyAccount => 'Nalog agencije';
+
+  @override
+  String get managedProperties => 'Upravljane nekretnine';
+
+  @override
+  String get paymentApprovalQueue => 'Red za odobrenje plaćanja';
+
+  @override
+  String get noPendingPaymentApprovals => 'Nema plaćanja na čekanju';
+
+  @override
+  String get noManagedPropertiesYet => 'Još nema upravljanih nekretnina';
+
+  @override
+  String get occupied => 'Zauzeto';
+
+  @override
+  String dueDateShort(String date) {
+    return 'Rok: $date';
+  }
+
+  @override
+  String get payment => 'Plaćanje';
+
+  @override
+  String get insightPendingApprovalsTitle => 'Čekaju odobrenje';
+
+  @override
+  String get insightPendingApprovalsDesc =>
+      'Imate nekretnine za koje stanodavac ili zakupci još nisu prihvatili poziv.';
+
+  @override
+  String get insightPendingApprovalsAction => 'Prikaži povezane nekretnine';
+
+  @override
+  String get insightWithoutContractsTitle => 'Nekretnine bez ugovora';
+
+  @override
+  String get insightWithoutContractsDesc =>
+      'Imate nekretnine registrovane u sistemu, ali za njih još nije priložen ugovor.';
+
+  @override
+  String get insightWithoutContractsAction => 'Prikaži povezane nekretnine';
+
+  @override
+  String get insightExpiredContractsTitle => 'Istekli ugovori';
+
+  @override
+  String get insightExpiredContractsDesc =>
+      'Imate nekretnine sa isteklim ugovorima koji nisu obnovljeni. Molimo preduzmite mere.';
+
+  @override
+  String get insightExpiredContractsAction => 'Prikaži povezane nekretnine';
+
+  @override
+  String get insightExpiringContractsTitle => 'Ugovori koji uskoro ističu';
+
+  @override
+  String get insightExpiringContractsDesc =>
+      'Imate nekretnine kojima je ostalo manje od mesec dana do isteka poslednjeg aktivnog ugovora.';
+
+  @override
+  String get insightExpiringContractsAction => 'Prikaži povezane nekretnine';
+
+  @override
+  String get tabHome => 'Početna';
+
+  @override
+  String get tabFinance => 'Finansije';
+
+  @override
+  String get tabRequests => 'Zahtevi';
+
+  @override
+  String get tabPortfolio => 'Portfolio';
+
+  @override
+  String get agencyAddProperty => 'Dodaj nekretninu';
+
+  @override
+  String get searchAndFilterPanel => 'PANEL ZA PRETRAGU I FILTRIRANJE';
+
+  @override
+  String get searchPlaceholder =>
+      'Pretraži vlasnika, stanara, grad ili nekretninu...';
+
+  @override
+  String filterAppliedLabel(String title) {
+    return 'Primenjen filter: $title';
+  }
+
+  @override
+  String get noPropertiesMatchingFilter =>
+      'Nema nekretnina koje odgovaraju filteru';
+
+  @override
+  String get groupNone => 'Grupljanje Yok';
+
+  @override
+  String get groupByLandlord => 'Grupiši: Vlasnik';
+
+  @override
+  String get groupByCity => 'Grupiši: Grad';
+
+  @override
+  String get groupByStatus => 'Grupiši: Status';
+
+  @override
+  String get groupByDebtConsent => 'Grupiši: Dug / Odobrenje';
+
+  @override
+  String get sortByNewest => 'Sortiraj: Najnovije';
+
+  @override
+  String get sortByNameAsc => 'Sortiraj: Nekretnina A-Z';
+
+  @override
+  String get sortByCityAsc => 'Sortiraj: Grad A-Z';
+
+  @override
+  String get sortByLandlordAsc => 'Sortiraj: Vlasnik A-Z';
+
+  @override
+  String get allPropertiesGroup => 'Sve nekretnine';
+
+  @override
+  String get groupLandlordPendingInvite => 'Vlasnici koji čekaju pozivnicu';
+
+  @override
+  String get groupUnspecifiedCity => 'Grad nije naveden';
+
+  @override
+  String get groupStatusOccupied => 'Iznajmljene nekretnine';
+
+  @override
+  String get groupStatusVacant => 'Prazne nekretnine';
+
+  @override
+  String get groupStatusLandlordPending => 'Vlasnik čeka pozivnicu';
+
+  @override
+  String get groupDebtPending => 'Nekretnine sa dugom';
+
+  @override
+  String get groupConsentPending => 'Čeka odobrenje / pristanak';
+
+  @override
+  String get groupActiveClean => 'Nekretnine bez duga';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Sve ($count)';
+  }
+
+  @override
+  String filterHasDebtCount(int count) {
+    return '⚠️ Sa dugom ($count)';
+  }
+
+  @override
+  String filterOccupiedCount(int count) {
+    return '🟢 Zauzeto ($count)';
+  }
+
+  @override
+  String filterVacantCount(int count) {
+    return '🟡 Slobodno ($count)';
+  }
+
+  @override
+  String get filterActiveLabel => 'Filter aktivan ✓';
+
+  @override
+  String get financeAndPaymentsHeader => 'FINANSIJE I PLAĆANJA';
+
+  @override
+  String get financialSummaryTitle => 'Finansijski pregled';
+
+  @override
+  String pendingPaymentsSummary(int count) {
+    return '$count odobrenja plaćanja na čekanju';
+  }
+
+  @override
+  String get financePlaceholderDesc =>
+      'Finansijski dijagrami, praćenje zakupnine i istorija plaćanja biće uskoro dostupni.';
+
+  @override
+  String get maintenanceRequestsHeader => 'ZAHTEVI ZA ODRŽAVANJE I POPRAVKE';
+
+  @override
+  String get requestManagementTitle => 'Upravljanje zahtevima';
+
+  @override
+  String get requestsPlaceholderDesc =>
+      'Zahtevi za popravku i podršku od stanara i vlasnika uskoro će se upravljati sa ovog kartica.';
+
+  @override
+  String get noOpenRequestsYet => 'Nema otvorenih zahteva';
+
+  @override
+  String get actionableInsightsHeader => 'PORUKE ZA AKCIJU';
+
+  @override
+  String get inviteTenantOrAddContract => 'Pozovi stanara / Dodaj ugovor';
+
+  @override
+  String get ownershipQrOrLink => 'Vlasnički QR / Link';
+
+  @override
+  String get changeLandlord => 'Promeni vlasnika';
+
+  @override
+  String get pendingDebtWarning =>
+      'Dugovanje čeka odobrenje agencije ili uplatu stanara';
+
+  @override
+  String get landlordLabel => 'Vlasnik: ';
+
+  @override
+  String get invitePending => 'Čeka pozivnicu';
+
+  @override
+  String get tenantLabel => 'Stanar: ';
+
+  @override
+  String get vacantLabel => 'Slobodno';
+
+  @override
+  String get latestContractNone => 'Poslednji ugovor: Nema';
+
+  @override
+  String get unlimited => 'Neodređeno';
+
+  @override
+  String contractDateRange(String dates) {
+    return 'Ugovor: $dates';
+  }
+
+  @override
+  String get cashPayment => 'Gotovinsko plaćanje';
+
+  @override
+  String get changeLandlordDialogTitle =>
+      'Promeni vlasnika / Pošalji pozivnicu';
+
+  @override
+  String get changeLandlordDialogDesc =>
+      'Unesite kontakt podatke novog vlasnika. Postojeće vlasništvo biće resetovano i generisan novi QR/Link.';
+
+  @override
+  String get phone => 'Broj telefona';
+
+  @override
+  String get error => 'Greška';
+
+  @override
+  String get changeAndGenerateQr => 'Promeni i generiši QR';
+
+  @override
+  String get financePendingApprovals => 'Čekaju odobrenje';
+
+  @override
+  String get financeOverduePayments => 'Dugovanja u kašnjenju';
+
+  @override
+  String get financePaidThisMonth => 'Odobreno ovog meseca';
+
+  @override
+  String get financeUpcoming7Days => 'Nadolazeća (7 dana)';
+
+  @override
+  String get tabPendingQueue => 'Red za odobrenje';
+
+  @override
+  String get tabOverdueList => 'Dužnici';
+
+  @override
+  String get tabAllHistory => 'Istorija plaćanja';
+
+  @override
+  String get approvePayment => 'Odobri';
+
+  @override
+  String get rejectPayment => 'Odbij';
+
+  @override
+  String get markAsCashPaid => 'Označi kao plaćeno gotovinom';
+
+  @override
+  String get sendReminder => 'Pošalji podsetnik';
+
+  @override
+  String daysOverdue(int count) {
+    return 'Kasni $count dana';
+  }
+
+  @override
+  String get noFinanceRecords => 'Nema zapisa u ovoj kategoriji';
+
+  @override
+  String get reminderMessageCopied => 'Poruka podsetnika je kopirana';
+
+  @override
+  String get tenantNoPropertyTitle => 'Još niste povezani sa nekretninom.';
+
+  @override
+  String get tenantNoPropertyTooltip => 'Još niste povezani sa nekretninom.';
+
+  @override
+  String get tenantNoPropertyMaintenanceTooltip =>
+      'Još niste povezani sa nekretninom.\nDa biste podneli zahtev za održavanje, prvo se pridružite nekretnini.';
+
+  @override
+  String get joinWithQrCode => 'Pridruži se domu putem QR / pozivnog koda';
+
+  @override
+  String get agencyPropertyTakeoverQr =>
+      'Preuzmi nekretninu agencije putem QR koda';
+
+  @override
+  String welcomeUser(String userName) {
+    return 'Dobrodošli, $userName 👋';
+  }
+
+  @override
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  ) {
+    return 'Poštovani/a $tenantName, vaša uplata od $amount $currency za nekretninu $propertyName je prekoračila rok. Molimo vas da izvršite uplatu i pošaljete uplatnicu.';
+  }
+
+  @override
+  String get heroHeadline => 'Upravljajte vašim nekretninama iz jednog panela';
+
+  @override
+  String get heroSubtitle =>
+      'Praćenje stanara, evidencija uplata i detalji o nekretninama — sve na jednom mestu.';
+
+  @override
+  String get forgotPassword => 'Zaboravili ste lozinku?';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -1720,6 +2070,9 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get viewInvite => 'Погледај позив';
+
+  @override
+  String get myProperty => 'Моја некретнина';
 
   @override
   String get myProperties => 'Моје некретнине';
@@ -2065,7 +2418,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get declare => 'Пријави';
 
   @override
-  String get viewReceipt => 'Види уплатницу';
+  String get viewReceipt => 'Прикажи уплатницу';
 
   @override
   String proposesChanges(String name) {
@@ -2363,7 +2716,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get delays => 'Кашњења';
 
   @override
-  String get vacant => 'Празно';
+  String get vacant => 'Празан';
 
   @override
   String get overdueReceivables => 'Неплаћено';
@@ -2913,4 +3266,350 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get cannotOpenDocument => 'Није могуће отворити документ';
+
+  @override
+  String get agencyAccount => 'Налог агенције';
+
+  @override
+  String get managedProperties => 'Управљане некретнине';
+
+  @override
+  String get paymentApprovalQueue => 'Ред за одобрење плаћања';
+
+  @override
+  String get noPendingPaymentApprovals => 'Нема плаћања на чекању';
+
+  @override
+  String get noManagedPropertiesYet => 'Још нема управљаних некретнина';
+
+  @override
+  String get occupied => 'Заузето';
+
+  @override
+  String dueDateShort(String date) {
+    return 'Рок: $date';
+  }
+
+  @override
+  String get payment => 'Плаћање';
+
+  @override
+  String get insightPendingApprovalsTitle => 'Чекају одобрење';
+
+  @override
+  String get insightPendingApprovalsDesc =>
+      'Имате некретнине за које станодавац или закупци још нису прихватили позив.';
+
+  @override
+  String get insightPendingApprovalsAction => 'Прикажи повезане некретнине';
+
+  @override
+  String get insightWithoutContractsTitle => 'Некретнине без уговора';
+
+  @override
+  String get insightWithoutContractsDesc =>
+      'Имате некретнине регистроване у систему, али за њих још није приложен уговор.';
+
+  @override
+  String get insightWithoutContractsAction => 'Прикажи повезане некретнине';
+
+  @override
+  String get insightExpiredContractsTitle => 'Истекли уговори';
+
+  @override
+  String get insightExpiredContractsDesc =>
+      'Имате некретнине са истеклим уговорима који нису обновљени. Молимо предузмите мере.';
+
+  @override
+  String get insightExpiredContractsAction => 'Прикажи повезане некретнине';
+
+  @override
+  String get insightExpiringContractsTitle => 'Уговори који ускоро истичу';
+
+  @override
+  String get insightExpiringContractsDesc =>
+      'Имате некретнине којима је остало мање од месец дана до истека последњег активног уговора.';
+
+  @override
+  String get insightExpiringContractsAction => 'Прикажи повезане некретнине';
+
+  @override
+  String get tabHome => 'Почетна';
+
+  @override
+  String get tabFinance => 'Финансије';
+
+  @override
+  String get tabRequests => 'Захтеви';
+
+  @override
+  String get tabPortfolio => 'Портфолио';
+
+  @override
+  String get agencyAddProperty => 'Додај некретнину';
+
+  @override
+  String get searchAndFilterPanel => 'ПАНЕЛ ЗА ПРЕТРАГУ И ФИЛТРИРАЊЕ';
+
+  @override
+  String get searchPlaceholder =>
+      'Претражи власника, станара, град или некретнину...';
+
+  @override
+  String filterAppliedLabel(String title) {
+    return 'Примењен филтер: $title';
+  }
+
+  @override
+  String get noPropertiesMatchingFilter =>
+      'Нема некретнина које одговарају филтеру';
+
+  @override
+  String get groupNone => 'Груписање Јок';
+
+  @override
+  String get groupByLandlord => 'Групиши: Власник';
+
+  @override
+  String get groupByCity => 'Групиши: Град';
+
+  @override
+  String get groupByStatus => 'Групиши: Статус';
+
+  @override
+  String get groupByDebtConsent => 'Групиши: Дуг / Одобрење';
+
+  @override
+  String get sortByNewest => 'Сортирај: Најновије';
+
+  @override
+  String get sortByNameAsc => 'Сортирај: Некретнина А-Ш';
+
+  @override
+  String get sortByCityAsc => 'Сортирај: Град А-Ш';
+
+  @override
+  String get sortByLandlordAsc => 'Сортирај: Власник А-Ш';
+
+  @override
+  String get allPropertiesGroup => 'Све некретнине';
+
+  @override
+  String get groupLandlordPendingInvite => 'Власници који чекају позивницу';
+
+  @override
+  String get groupUnspecifiedCity => 'Град није наведен';
+
+  @override
+  String get groupStatusOccupied => 'Изнајмљене некретнине';
+
+  @override
+  String get groupStatusVacant => 'Празне некретнине';
+
+  @override
+  String get groupStatusLandlordPending => 'Власник чека позивницу';
+
+  @override
+  String get groupDebtPending => 'Некретнине са дугом';
+
+  @override
+  String get groupConsentPending => 'Чека одобрење / пристанак';
+
+  @override
+  String get groupActiveClean => 'Некретнине без дуга';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Све ($count)';
+  }
+
+  @override
+  String filterHasDebtCount(int count) {
+    return '⚠️ Са дугом ($count)';
+  }
+
+  @override
+  String filterOccupiedCount(int count) {
+    return '🟢 Заузето ($count)';
+  }
+
+  @override
+  String filterVacantCount(int count) {
+    return '🟡 Слободно ($count)';
+  }
+
+  @override
+  String get filterActiveLabel => 'Филтер активан ✓';
+
+  @override
+  String get financeAndPaymentsHeader => 'ФИНАНСИЈЕ И ПЛАЋАЊА';
+
+  @override
+  String get financialSummaryTitle => 'Финансијски преглед';
+
+  @override
+  String pendingPaymentsSummary(int count) {
+    return '$count одобрења плаћања на чекању';
+  }
+
+  @override
+  String get financePlaceholderDesc =>
+      'Финансијски дијаграми, праћење закупнине и историја плаћања биће ускоро доступни.';
+
+  @override
+  String get maintenanceRequestsHeader => 'ЗАХТЕВИ ЗА ОДРЖАВАЊЕ И ПОПРАВКЕ';
+
+  @override
+  String get requestManagementTitle => 'Управљање захтевима';
+
+  @override
+  String get requestsPlaceholderDesc =>
+      'Захтеви за поправку и подршку од станара и власника ускоро ће се управљати са овог картица.';
+
+  @override
+  String get noOpenRequestsYet => 'Нема отворених захтева';
+
+  @override
+  String get actionableInsightsHeader => 'ПОРУКЕ ЗА АКЦИЈУ';
+
+  @override
+  String get inviteTenantOrAddContract => 'Позови станара / Додај уговор';
+
+  @override
+  String get ownershipQrOrLink => 'Власнички QR / Линк';
+
+  @override
+  String get changeLandlord => 'Промени власника';
+
+  @override
+  String get pendingDebtWarning =>
+      'Дуговање чека одобрење агенције или уплату станара';
+
+  @override
+  String get landlordLabel => 'Власник: ';
+
+  @override
+  String get invitePending => 'Чека позивницу';
+
+  @override
+  String get tenantLabel => 'Станар: ';
+
+  @override
+  String get vacantLabel => 'Слободно';
+
+  @override
+  String get latestContractNone => 'Последњи уговор: Нема';
+
+  @override
+  String get unlimited => 'Неодређено';
+
+  @override
+  String contractDateRange(String dates) {
+    return 'Уговор: $dates';
+  }
+
+  @override
+  String get cashPayment => 'Готовинско плаћање';
+
+  @override
+  String get changeLandlordDialogTitle => 'Промени власника / Пошаљи позивницу';
+
+  @override
+  String get changeLandlordDialogDesc =>
+      'Унесите контакт податке новог власника. Постојеће власништво биће ресетовано и генерисан нови QR/Линк.';
+
+  @override
+  String get phone => 'Број телефона';
+
+  @override
+  String get error => 'Грешка';
+
+  @override
+  String get changeAndGenerateQr => 'Промени и генериши QR';
+
+  @override
+  String get financePendingApprovals => 'Чекају одобрење';
+
+  @override
+  String get financeOverduePayments => 'Дуговања у кашњењу';
+
+  @override
+  String get financePaidThisMonth => 'Одобрено овог месеца';
+
+  @override
+  String get financeUpcoming7Days => 'Надолазећа (7 дана)';
+
+  @override
+  String get tabPendingQueue => 'Ред за одобрење';
+
+  @override
+  String get tabOverdueList => 'Дужници';
+
+  @override
+  String get tabAllHistory => 'Историја плаћања';
+
+  @override
+  String get approvePayment => 'Одобри';
+
+  @override
+  String get rejectPayment => 'Одбиј';
+
+  @override
+  String get markAsCashPaid => 'Означи као плаћено готовином';
+
+  @override
+  String get sendReminder => 'Пошаљи подсетник';
+
+  @override
+  String daysOverdue(int count) {
+    return 'Касни $count дана';
+  }
+
+  @override
+  String get noFinanceRecords => 'Нема записа у овој категорији';
+
+  @override
+  String get reminderMessageCopied => 'Порука подсетника је копирана';
+
+  @override
+  String get tenantNoPropertyTitle => 'Још нисте повезани са некретнином.';
+
+  @override
+  String get tenantNoPropertyTooltip => 'Још нисте повезани са некретнином.';
+
+  @override
+  String get tenantNoPropertyMaintenanceTooltip =>
+      'Још нисте повезани са некретнином.\nДа бисте поднели захтев за одржавање, прво се придружите некретнини.';
+
+  @override
+  String get joinWithQrCode => 'Придружи се дому путем QR / позивног кода';
+
+  @override
+  String get agencyPropertyTakeoverQr =>
+      'Преузми некретнину агенције путем QR кода';
+
+  @override
+  String welcomeUser(String userName) {
+    return 'Добродошли, $userName 👋';
+  }
+
+  @override
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  ) {
+    return 'Поштовани/а $tenantName, ваша уплата од $amount $currency за некретнину $propertyName је прекорачила рок. Молимо вас да извршите уплату и пошаљете уплатницу.';
+  }
+
+  @override
+  String get heroHeadline => 'Управљајте вашим некретнинама из једног панела';
+
+  @override
+  String get heroSubtitle =>
+      'Праћење станара, евиденција уплата и детаљи о некретнинама — све на једном месту.';
+
+  @override
+  String get forgotPassword => 'Заборавили сте лозинку?';
 }

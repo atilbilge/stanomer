@@ -9,11 +9,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../agency/presentation/agency_dashboard_screen.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:stanomer/core/utils/expense_utils.dart';
+import '../../auth/data/auth_providers.dart';
+import 'widgets/ownership_share_sheet.dart';
+import 'join_property_sheet.dart';
 
 class AddPropertyScreen extends ConsumerStatefulWidget {
   final Property? property;
@@ -27,9 +31,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
   final _rentController = TextEditingController();
   final _depositController = TextEditingController();
   final _dueDayController = TextEditingController(text: '1');
+  final _landlordNameController = TextEditingController();
+  final _landlordPhoneController = TextEditingController();
+  final _landlordEmailController = TextEditingController();
   String _selectedCurrency = 'EUR';
   String _depositCurrency = 'EUR';
   bool _isLoading = false;
@@ -49,12 +57,16 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       final p = widget.property!;
       _nameController.text = p.name;
       _addressController.text = p.address;
+      _cityController.text = p.city ?? '';
       _rentController.text = p.defaultMonthlyRent.toStringAsFixed(0);
       _depositController.text = p.defaultDepositAmount?.toStringAsFixed(0) ?? '';
       _selectedCurrency = p.currency;
       _depositCurrency = p.defaultDepositCurrency;
       _nameManuallyEdited = true;
       _dueDayController.text = p.defaultDueDay.toString();
+      _landlordNameController.text = p.landlordName ?? '';
+      _landlordPhoneController.text = p.landlordPhone ?? '';
+      _landlordEmailController.text = p.landlordEmail ?? '';
       if (p.expensesTemplate.isNotEmpty) {
         _expenses = List.from(p.expensesTemplate.where((e) => e.name != 'Porez (Tax)'));
       }
@@ -67,9 +79,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     _addressController.removeListener(_onAddressChanged);
     _nameController.dispose();
     _addressController.dispose();
+    _cityController.dispose();
     _rentController.dispose();
     _depositController.dispose();
     _dueDayController.dispose();
+    _landlordNameController.dispose();
+    _landlordPhoneController.dispose();
+    _landlordEmailController.dispose();
     super.dispose();
   }
 
@@ -92,10 +108,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       final repo = ref.read(propertyRepositoryProvider);
       final isEdit = widget.property != null;
 
+      Property? createdProp;
+      final cityText = _cityController.text.trim();
+      final cityVal = cityText.isEmpty ? null : cityText;
+
       if (isEdit) {
         await repo.updateProperty(widget.property!.copyWith(
           address: _addressController.text.trim(),
           name: _nameController.text.trim(),
+          city: cityVal,
           defaultMonthlyRent: double.parse(_rentController.text),
           defaultDepositAmount: _depositController.text.isNotEmpty 
               ? double.parse(_depositController.text) 
@@ -105,11 +126,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           defaultDueDay: int.tryParse(_dueDayController.text) ?? 1,
           taxType: TaxType.included,
           expensesTemplate: _expenses,
+          landlordName: _landlordNameController.text.trim(),
+          landlordPhone: _landlordPhoneController.text.trim(),
+          landlordEmail: _landlordEmailController.text.trim(),
         ));
       } else {
-        await repo.createProperty(
+        createdProp = await repo.createProperty(
           address: _addressController.text.trim(),
           name: _nameController.text.trim(),
+          city: cityVal,
           defaultMonthlyRent: double.parse(_rentController.text),
           defaultDepositAmount: _depositController.text.isNotEmpty 
               ? double.parse(_depositController.text) 
@@ -119,16 +144,36 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           defaultDueDay: int.tryParse(_dueDayController.text) ?? 1,
           taxType: TaxType.included,
           expensesTemplate: _expenses,
+          landlordName: _landlordNameController.text.trim(),
+          landlordPhone: _landlordPhoneController.text.trim(),
+          landlordEmail: _landlordEmailController.text.trim(),
         );
       }
       
       if (mounted) {
-        // propertiesStreamProvider is a Supabase .stream(), it updates automatically
         ref.invalidate(propertiesFutureProvider);
+        ref.invalidate(agencyPropertiesProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(isEdit ? loc.propertyUpdatedSuccess : loc.propertyAddedSuccess)),
         );
+
+        final userRole = ref.read(userRoleProvider);
+        final isAgency = userRole == 'agency';
+
         context.pop();
+
+        if (isAgency && createdProp != null) {
+          final token = await repo.getLandlordOwnershipInviteToken(createdProp.id);
+          if (token != null && token.isNotEmpty && context.mounted) {
+            OwnershipShareSheet.show(
+              context,
+              propertyName: createdProp.name,
+              landlordName: _landlordNameController.text.trim(),
+              landlordEmail: _landlordEmailController.text.trim(),
+              token: token,
+            );
+          }
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -144,8 +189,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-
     final isEdit = widget.property != null;
+    final userRole = ref.watch(userRoleProvider);
+    final isAgency = userRole == 'agency';
 
     return Scaffold(
       appBar: AppBar(
@@ -158,6 +204,71 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (!isAgency && !isEdit) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: StanomerColors.brandPrimary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
+                              color: StanomerColors.brandPrimary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(LucideIcons.qrCode, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Acentenin Eklediği Mülkü Devralın',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: StanomerColors.textPrimary),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Acente tarafından girilen mülkü QR kod okutarak veya davet kodu ile hesabınıza ekleyin.',
+                                  style: TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            context.pop();
+                            JoinPropertySheet.show(context);
+                          },
+                          icon: const Icon(LucideIcons.scanLine, size: 18),
+                          label: const Text('QR Kod Okut / Davet Kodu Gir', style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: StanomerColors.brandPrimary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+              ],
+
               // --- SECTION: PROPERTY DETAILS ---
               _buildSectionHeader(
                 loc.propertyDetailsHeader,
@@ -175,6 +286,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _cityController,
+                decoration: InputDecoration(
+                  labelText: loc.localeName == 'tr' ? 'Şehir (İl / Şehir)' : 'City',
+                  hintText: loc.localeName == 'tr' ? 'Örn: İstanbul, Belgrad' : 'e.g. Istanbul, Belgrade',
+                  prefixIcon: const Icon(LucideIcons.building, size: 20),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: loc.propertyName,
@@ -184,6 +304,44 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 onChanged: (val) => _nameManuallyEdited = true,
                 validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
               ),
+
+              if (isAgency) ...[
+                const SizedBox(height: 32),
+                _buildSectionHeader(
+                  'Ev Sahibi İletişim Bilgileri',
+                  LucideIcons.userCheck,
+                  subtitle: 'Acente mülk eklerken ev sahibi bilgileri girilir. Kayıttan sonra ev sahibine sahiplik QR/Linki gönderilir.',
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _landlordNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ev Sahibinin Adı Soyadı *',
+                    prefixIcon: Icon(LucideIcons.user, size: 20),
+                  ),
+                  validator: (val) => isAgency && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _landlordEmailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ev Sahibinin E-posta Adresi',
+                    hintText: 'ornek@email.com (İsteğe bağlı)',
+                    prefixIcon: Icon(LucideIcons.mail, size: 20),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _landlordPhoneController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ev Sahibinin Telefon Numarası',
+                    hintText: '+90 5xx xxx xx xx',
+                    prefixIcon: Icon(LucideIcons.phone, size: 20),
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+              ],
               
               const SizedBox(height: 40),
               

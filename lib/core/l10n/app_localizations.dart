@@ -601,6 +601,12 @@ abstract class AppLocalizations {
   /// **'Pogledaj poziv'**
   String get viewInvite;
 
+  /// No description provided for @myProperty.
+  ///
+  /// In sr, this message translates to:
+  /// **'Moja nekretnina'**
+  String get myProperty;
+
   /// No description provided for @myProperties.
   ///
   /// In sr, this message translates to:
@@ -1228,7 +1234,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewReceipt.
   ///
   /// In sr, this message translates to:
-  /// **'Vidi uplatnicu'**
+  /// **'Prikaži uplatnicu'**
   String get viewReceipt;
 
   /// No description provided for @proposesChanges.
@@ -2772,6 +2778,623 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Nije moguće otvoriti dokument'**
   String get cannotOpenDocument;
+
+  /// No description provided for @agencyAccount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nalog agencije'**
+  String get agencyAccount;
+
+  /// No description provided for @managedProperties.
+  ///
+  /// In sr, this message translates to:
+  /// **'Upravljane nekretnine'**
+  String get managedProperties;
+
+  /// No description provided for @paymentApprovalQueue.
+  ///
+  /// In sr, this message translates to:
+  /// **'Red za odobrenje plaćanja'**
+  String get paymentApprovalQueue;
+
+  /// No description provided for @noPendingPaymentApprovals.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema plaćanja na čekanju'**
+  String get noPendingPaymentApprovals;
+
+  /// No description provided for @noManagedPropertiesYet.
+  ///
+  /// In sr, this message translates to:
+  /// **'Još nema upravljanih nekretnina'**
+  String get noManagedPropertiesYet;
+
+  /// No description provided for @occupied.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zauzeto'**
+  String get occupied;
+
+  /// No description provided for @dueDateShort.
+  ///
+  /// In sr, this message translates to:
+  /// **'Rok: {date}'**
+  String dueDateShort(String date);
+
+  /// No description provided for @payment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćanje'**
+  String get payment;
+
+  /// No description provided for @insightPendingApprovalsTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čekaju odobrenje'**
+  String get insightPendingApprovalsTitle;
+
+  /// No description provided for @insightPendingApprovalsDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Imate nekretnine za koje stanodavac ili zakupci još nisu prihvatili poziv.'**
+  String get insightPendingApprovalsDesc;
+
+  /// No description provided for @insightPendingApprovalsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prikaži povezane nekretnine'**
+  String get insightPendingApprovalsAction;
+
+  /// No description provided for @insightWithoutContractsTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nekretnine bez ugovora'**
+  String get insightWithoutContractsTitle;
+
+  /// No description provided for @insightWithoutContractsDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Imate nekretnine registrovane u sistemu, ali za njih još nije priložen ugovor.'**
+  String get insightWithoutContractsDesc;
+
+  /// No description provided for @insightWithoutContractsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prikaži povezane nekretnine'**
+  String get insightWithoutContractsAction;
+
+  /// No description provided for @insightExpiredContractsTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Istekli ugovori'**
+  String get insightExpiredContractsTitle;
+
+  /// No description provided for @insightExpiredContractsDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Imate nekretnine sa isteklim ugovorima koji nisu obnovljeni. Molimo preduzmite mere.'**
+  String get insightExpiredContractsDesc;
+
+  /// No description provided for @insightExpiredContractsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prikaži povezane nekretnine'**
+  String get insightExpiredContractsAction;
+
+  /// No description provided for @insightExpiringContractsTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovori koji uskoro ističu'**
+  String get insightExpiringContractsTitle;
+
+  /// No description provided for @insightExpiringContractsDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Imate nekretnine kojima je ostalo manje od mesec dana do isteka poslednjeg aktivnog ugovora.'**
+  String get insightExpiringContractsDesc;
+
+  /// No description provided for @insightExpiringContractsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prikaži povezane nekretnine'**
+  String get insightExpiringContractsAction;
+
+  /// No description provided for @tabHome.
+  ///
+  /// In sr, this message translates to:
+  /// **'Početna'**
+  String get tabHome;
+
+  /// No description provided for @tabFinance.
+  ///
+  /// In sr, this message translates to:
+  /// **'Finansije'**
+  String get tabFinance;
+
+  /// No description provided for @tabRequests.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zahtevi'**
+  String get tabRequests;
+
+  /// No description provided for @tabPortfolio.
+  ///
+  /// In sr, this message translates to:
+  /// **'Portfolio'**
+  String get tabPortfolio;
+
+  /// No description provided for @agencyAddProperty.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaj nekretninu'**
+  String get agencyAddProperty;
+
+  /// No description provided for @searchAndFilterPanel.
+  ///
+  /// In sr, this message translates to:
+  /// **'PANEL ZA PRETRAGU I FILTRIRANJE'**
+  String get searchAndFilterPanel;
+
+  /// No description provided for @searchPlaceholder.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pretraži vlasnika, stanara, grad ili nekretninu...'**
+  String get searchPlaceholder;
+
+  /// No description provided for @filterAppliedLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Primenjen filter: {title}'**
+  String filterAppliedLabel(String title);
+
+  /// No description provided for @noPropertiesMatchingFilter.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema nekretnina koje odgovaraju filteru'**
+  String get noPropertiesMatchingFilter;
+
+  /// No description provided for @groupNone.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grupljanje Yok'**
+  String get groupNone;
+
+  /// No description provided for @groupByLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grupiši: Vlasnik'**
+  String get groupByLandlord;
+
+  /// No description provided for @groupByCity.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grupiši: Grad'**
+  String get groupByCity;
+
+  /// No description provided for @groupByStatus.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grupiši: Status'**
+  String get groupByStatus;
+
+  /// No description provided for @groupByDebtConsent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grupiši: Dug / Odobrenje'**
+  String get groupByDebtConsent;
+
+  /// No description provided for @sortByNewest.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Najnovije'**
+  String get sortByNewest;
+
+  /// No description provided for @sortByNameAsc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Nekretnina A-Z'**
+  String get sortByNameAsc;
+
+  /// No description provided for @sortByCityAsc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Grad A-Z'**
+  String get sortByCityAsc;
+
+  /// No description provided for @sortByLandlordAsc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Vlasnik A-Z'**
+  String get sortByLandlordAsc;
+
+  /// No description provided for @allPropertiesGroup.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve nekretnine'**
+  String get allPropertiesGroup;
+
+  /// No description provided for @groupLandlordPendingInvite.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnici koji čekaju pozivnicu'**
+  String get groupLandlordPendingInvite;
+
+  /// No description provided for @groupUnspecifiedCity.
+  ///
+  /// In sr, this message translates to:
+  /// **'Grad nije naveden'**
+  String get groupUnspecifiedCity;
+
+  /// No description provided for @groupStatusOccupied.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznajmljene nekretnine'**
+  String get groupStatusOccupied;
+
+  /// No description provided for @groupStatusVacant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prazne nekretnine'**
+  String get groupStatusVacant;
+
+  /// No description provided for @groupStatusLandlordPending.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik čeka pozivnicu'**
+  String get groupStatusLandlordPending;
+
+  /// No description provided for @groupDebtPending.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nekretnine sa dugom'**
+  String get groupDebtPending;
+
+  /// No description provided for @groupConsentPending.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje / pristanak'**
+  String get groupConsentPending;
+
+  /// No description provided for @groupActiveClean.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nekretnine bez duga'**
+  String get groupActiveClean;
+
+  /// No description provided for @filterAllCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve ({count})'**
+  String filterAllCount(int count);
+
+  /// No description provided for @filterHasDebtCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'⚠️ Sa dugom ({count})'**
+  String filterHasDebtCount(int count);
+
+  /// No description provided for @filterOccupiedCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'🟢 Zauzeto ({count})'**
+  String filterOccupiedCount(int count);
+
+  /// No description provided for @filterVacantCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'🟡 Slobodno ({count})'**
+  String filterVacantCount(int count);
+
+  /// No description provided for @filterActiveLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Filter aktivan ✓'**
+  String get filterActiveLabel;
+
+  /// No description provided for @financeAndPaymentsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'FINANSIJE I PLAĆANJA'**
+  String get financeAndPaymentsHeader;
+
+  /// No description provided for @financialSummaryTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Finansijski pregled'**
+  String get financialSummaryTitle;
+
+  /// No description provided for @pendingPaymentsSummary.
+  ///
+  /// In sr, this message translates to:
+  /// **'{count} odobrenja plaćanja na čekanju'**
+  String pendingPaymentsSummary(int count);
+
+  /// No description provided for @financePlaceholderDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Finansijski dijagrami, praćenje zakupnine i istorija plaćanja biće uskoro dostupni.'**
+  String get financePlaceholderDesc;
+
+  /// No description provided for @maintenanceRequestsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'ZAHTEVI ZA ODRŽAVANJE I POPRAVKE'**
+  String get maintenanceRequestsHeader;
+
+  /// No description provided for @requestManagementTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Upravljanje zahtevima'**
+  String get requestManagementTitle;
+
+  /// No description provided for @requestsPlaceholderDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zahtevi za popravku i podršku od stanara i vlasnika uskoro će se upravljati sa ovog kartica.'**
+  String get requestsPlaceholderDesc;
+
+  /// No description provided for @noOpenRequestsYet.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema otvorenih zahteva'**
+  String get noOpenRequestsYet;
+
+  /// No description provided for @actionableInsightsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'PORUKE ZA AKCIJU'**
+  String get actionableInsightsHeader;
+
+  /// No description provided for @inviteTenantOrAddContract.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pozovi stanara / Dodaj ugovor'**
+  String get inviteTenantOrAddContract;
+
+  /// No description provided for @ownershipQrOrLink.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnički QR / Link'**
+  String get ownershipQrOrLink;
+
+  /// No description provided for @changeLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Promeni vlasnika'**
+  String get changeLandlord;
+
+  /// No description provided for @pendingDebtWarning.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dugovanje čeka odobrenje agencije ili uplatu stanara'**
+  String get pendingDebtWarning;
+
+  /// No description provided for @landlordLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik: '**
+  String get landlordLabel;
+
+  /// No description provided for @invitePending.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka pozivnicu'**
+  String get invitePending;
+
+  /// No description provided for @tenantLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar: '**
+  String get tenantLabel;
+
+  /// No description provided for @vacantLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Slobodno'**
+  String get vacantLabel;
+
+  /// No description provided for @latestContractNone.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poslednji ugovor: Nema'**
+  String get latestContractNone;
+
+  /// No description provided for @unlimited.
+  ///
+  /// In sr, this message translates to:
+  /// **'Neodređeno'**
+  String get unlimited;
+
+  /// No description provided for @contractDateRange.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor: {dates}'**
+  String contractDateRange(String dates);
+
+  /// No description provided for @cashPayment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Gotovinsko plaćanje'**
+  String get cashPayment;
+
+  /// No description provided for @changeLandlordDialogTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Promeni vlasnika / Pošalji pozivnicu'**
+  String get changeLandlordDialogTitle;
+
+  /// No description provided for @changeLandlordDialogDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite kontakt podatke novog vlasnika. Postojeće vlasništvo biće resetovano i generisan novi QR/Link.'**
+  String get changeLandlordDialogDesc;
+
+  /// No description provided for @phone.
+  ///
+  /// In sr, this message translates to:
+  /// **'Broj telefona'**
+  String get phone;
+
+  /// No description provided for @error.
+  ///
+  /// In sr, this message translates to:
+  /// **'Greška'**
+  String get error;
+
+  /// No description provided for @changeAndGenerateQr.
+  ///
+  /// In sr, this message translates to:
+  /// **'Promeni i generiši QR'**
+  String get changeAndGenerateQr;
+
+  /// No description provided for @financePendingApprovals.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čekaju odobrenje'**
+  String get financePendingApprovals;
+
+  /// No description provided for @financeOverduePayments.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dugovanja u kašnjenju'**
+  String get financeOverduePayments;
+
+  /// No description provided for @financePaidThisMonth.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobreno ovog meseca'**
+  String get financePaidThisMonth;
+
+  /// No description provided for @financeUpcoming7Days.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nadolazeća (7 dana)'**
+  String get financeUpcoming7Days;
+
+  /// No description provided for @tabPendingQueue.
+  ///
+  /// In sr, this message translates to:
+  /// **'Red za odobrenje'**
+  String get tabPendingQueue;
+
+  /// No description provided for @tabOverdueList.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dužnici'**
+  String get tabOverdueList;
+
+  /// No description provided for @tabAllHistory.
+  ///
+  /// In sr, this message translates to:
+  /// **'Istorija plaćanja'**
+  String get tabAllHistory;
+
+  /// No description provided for @approvePayment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobri'**
+  String get approvePayment;
+
+  /// No description provided for @rejectPayment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbij'**
+  String get rejectPayment;
+
+  /// No description provided for @markAsCashPaid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Označi kao plaćeno gotovinom'**
+  String get markAsCashPaid;
+
+  /// No description provided for @sendReminder.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pošalji podsetnik'**
+  String get sendReminder;
+
+  /// No description provided for @daysOverdue.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kasni {count} dana'**
+  String daysOverdue(int count);
+
+  /// No description provided for @noFinanceRecords.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema zapisa u ovoj kategoriji'**
+  String get noFinanceRecords;
+
+  /// No description provided for @reminderMessageCopied.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poruka podsetnika je kopirana'**
+  String get reminderMessageCopied;
+
+  /// No description provided for @tenantNoPropertyTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Još niste povezani sa nekretninom.'**
+  String get tenantNoPropertyTitle;
+
+  /// No description provided for @tenantNoPropertyTooltip.
+  ///
+  /// In sr, this message translates to:
+  /// **'Još niste povezani sa nekretninom.'**
+  String get tenantNoPropertyTooltip;
+
+  /// No description provided for @tenantNoPropertyMaintenanceTooltip.
+  ///
+  /// In sr, this message translates to:
+  /// **'Još niste povezani sa nekretninom.\nDa biste podneli zahtev za održavanje, prvo se pridružite nekretnini.'**
+  String get tenantNoPropertyMaintenanceTooltip;
+
+  /// No description provided for @joinWithQrCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pridruži se domu putem QR / pozivnog koda'**
+  String get joinWithQrCode;
+
+  /// No description provided for @agencyPropertyTakeoverQr.
+  ///
+  /// In sr, this message translates to:
+  /// **'Preuzmi nekretninu agencije putem QR koda'**
+  String get agencyPropertyTakeoverQr;
+
+  /// No description provided for @welcomeUser.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dobrodošli, {userName} 👋'**
+  String welcomeUser(String userName);
+
+  /// No description provided for @overduePaymentReminderMessage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poštovani/a {tenantName}, vaša uplata od {amount} {currency} za nekretninu {propertyName} je prekoračila rok. Molimo vas da izvršite uplatu i pošaljete uplatnicu.'**
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  );
+
+  /// No description provided for @heroHeadline.
+  ///
+  /// In sr, this message translates to:
+  /// **'Upravljajte vašim nekretninama iz jednog panela'**
+  String get heroHeadline;
+
+  /// No description provided for @heroSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Praćenje stanara, evidencija uplata i detalji o nekretninama — sve na jednom mestu.'**
+  String get heroSubtitle;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zaboravili ste lozinku?'**
+  String get forgotPassword;
 }
 
 class _AppLocalizationsDelegate

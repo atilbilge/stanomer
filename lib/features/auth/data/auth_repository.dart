@@ -187,6 +187,10 @@ class AuthRepository {
     ));
   }
 
+  Future<void> resetPassword(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
   Future<void> deleteAccount() async {
     await _client.rpc('delete_own_account');
     await signOut();

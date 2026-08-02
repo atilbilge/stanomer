@@ -269,6 +269,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewInvite => 'View Invite';
 
   @override
+  String get myProperty => 'My Property';
+
+  @override
   String get myProperties => 'My Properties';
 
   @override
@@ -1457,4 +1460,352 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotOpenDocument => 'Cannot Open Document';
+
+  @override
+  String get agencyAccount => 'Agency Account';
+
+  @override
+  String get managedProperties => 'Managed Properties';
+
+  @override
+  String get paymentApprovalQueue => 'Payment Approval Queue';
+
+  @override
+  String get noPendingPaymentApprovals => 'No pending payment approvals';
+
+  @override
+  String get noManagedPropertiesYet => 'No managed properties yet';
+
+  @override
+  String get occupied => 'Occupied';
+
+  @override
+  String dueDateShort(String date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String get payment => 'Payment';
+
+  @override
+  String get insightPendingApprovalsTitle => 'Pending Approvals';
+
+  @override
+  String get insightPendingApprovalsDesc =>
+      'You have properties where the landlord or tenants have not yet approved the invitation.';
+
+  @override
+  String get insightPendingApprovalsAction => 'View Related Properties';
+
+  @override
+  String get insightWithoutContractsTitle => 'Properties Without Contracts';
+
+  @override
+  String get insightWithoutContractsDesc =>
+      'You have properties registered in the system but no contracts have been attached yet.';
+
+  @override
+  String get insightWithoutContractsAction => 'View Related Properties';
+
+  @override
+  String get insightExpiredContractsTitle => 'Expired Contracts';
+
+  @override
+  String get insightExpiredContractsDesc =>
+      'You have properties with expired and unrenewed contracts. Please take action.';
+
+  @override
+  String get insightExpiredContractsAction => 'View Related Properties';
+
+  @override
+  String get insightExpiringContractsTitle => 'Expiring Contracts';
+
+  @override
+  String get insightExpiringContractsDesc =>
+      'You have properties with less than one month remaining on their latest active contract.';
+
+  @override
+  String get insightExpiringContractsAction => 'View Related Properties';
+
+  @override
+  String get tabHome => 'Home';
+
+  @override
+  String get tabFinance => 'Finance';
+
+  @override
+  String get tabRequests => 'Requests';
+
+  @override
+  String get tabPortfolio => 'Portfolio';
+
+  @override
+  String get agencyAddProperty => 'Add Property';
+
+  @override
+  String get searchAndFilterPanel => 'SEARCH AND FILTER PANEL';
+
+  @override
+  String get searchPlaceholder =>
+      'Search landlord, tenant, city or property...';
+
+  @override
+  String filterAppliedLabel(String title) {
+    return 'Filter Applied: $title';
+  }
+
+  @override
+  String get noPropertiesMatchingFilter =>
+      'No properties match the selected filter';
+
+  @override
+  String get groupNone => 'No Grouping';
+
+  @override
+  String get groupByLandlord => 'Group: Landlord';
+
+  @override
+  String get groupByCity => 'Group: City';
+
+  @override
+  String get groupByStatus => 'Group: Status';
+
+  @override
+  String get groupByDebtConsent => 'Group: Debt / Approval';
+
+  @override
+  String get sortByNewest => 'Sort: Newest';
+
+  @override
+  String get sortByNameAsc => 'Sort: Property A-Z';
+
+  @override
+  String get sortByCityAsc => 'Sort: City A-Z';
+
+  @override
+  String get sortByLandlordAsc => 'Sort: Landlord A-Z';
+
+  @override
+  String get allPropertiesGroup => 'All Properties';
+
+  @override
+  String get groupLandlordPendingInvite => 'Landlords Pending Invite';
+
+  @override
+  String get groupUnspecifiedCity => 'Unspecified City';
+
+  @override
+  String get groupStatusOccupied => 'Occupied Properties';
+
+  @override
+  String get groupStatusVacant => 'Vacant Properties';
+
+  @override
+  String get groupStatusLandlordPending => 'Landlord Invite Pending';
+
+  @override
+  String get groupDebtPending => 'Properties with Outstanding Debt';
+
+  @override
+  String get groupConsentPending => 'Consent / Approval Pending';
+
+  @override
+  String get groupActiveClean => 'Clean / Debt-Free Properties';
+
+  @override
+  String filterAllCount(int count) {
+    return 'All ($count)';
+  }
+
+  @override
+  String filterHasDebtCount(int count) {
+    return '⚠️ Has Debt ($count)';
+  }
+
+  @override
+  String filterOccupiedCount(int count) {
+    return '🟢 Occupied ($count)';
+  }
+
+  @override
+  String filterVacantCount(int count) {
+    return '🟡 Vacant ($count)';
+  }
+
+  @override
+  String get filterActiveLabel => 'Filter Active ✓';
+
+  @override
+  String get financeAndPaymentsHeader => 'FINANCE AND PAYMENTS';
+
+  @override
+  String get financialSummaryTitle => 'Financial Summary';
+
+  @override
+  String pendingPaymentsSummary(int count) {
+    return '$count pending payment approvals';
+  }
+
+  @override
+  String get financePlaceholderDesc =>
+      'Financial charts, rent tracking and payment history will be listed here soon.';
+
+  @override
+  String get maintenanceRequestsHeader => 'MAINTENANCE AND REPAIR REQUESTS';
+
+  @override
+  String get requestManagementTitle => 'Request Management';
+
+  @override
+  String get requestsPlaceholderDesc =>
+      'Maintenance and support requests from tenants and landlords will soon be managed from this tab.';
+
+  @override
+  String get noOpenRequestsYet => 'No open requests yet';
+
+  @override
+  String get actionableInsightsHeader => 'ACTIONABLE INSIGHTS';
+
+  @override
+  String get inviteTenantOrAddContract => 'Invite Tenant / Add Contract';
+
+  @override
+  String get ownershipQrOrLink => 'Ownership QR / Link';
+
+  @override
+  String get changeLandlord => 'Change Landlord';
+
+  @override
+  String get pendingDebtWarning =>
+      'Pending Debt Awaiting Agency Approval or Tenant Payment';
+
+  @override
+  String get landlordLabel => 'Landlord: ';
+
+  @override
+  String get invitePending => 'Invite Pending';
+
+  @override
+  String get tenantLabel => 'Tenant: ';
+
+  @override
+  String get vacantLabel => 'Vacant';
+
+  @override
+  String get latestContractNone => 'Latest Contract: None';
+
+  @override
+  String get unlimited => 'Unlimited';
+
+  @override
+  String contractDateRange(String dates) {
+    return 'Contract: $dates';
+  }
+
+  @override
+  String get cashPayment => 'Cash Payment';
+
+  @override
+  String get changeLandlordDialogTitle => 'Change Landlord / Send Invite';
+
+  @override
+  String get changeLandlordDialogDesc =>
+      'Enter the new landlord contact info. Existing ownership will be reset and a new QR/Link generated.';
+
+  @override
+  String get phone => 'Phone Number';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get changeAndGenerateQr => 'Change & Generate QR';
+
+  @override
+  String get financePendingApprovals => 'Pending Approvals';
+
+  @override
+  String get financeOverduePayments => 'Overdue Payments';
+
+  @override
+  String get financePaidThisMonth => 'Paid This Month';
+
+  @override
+  String get financeUpcoming7Days => 'Upcoming (7 Days)';
+
+  @override
+  String get tabPendingQueue => 'Approval Queue';
+
+  @override
+  String get tabOverdueList => 'Overdue Debtors';
+
+  @override
+  String get tabAllHistory => 'Payment History';
+
+  @override
+  String get approvePayment => 'Approve';
+
+  @override
+  String get rejectPayment => 'Reject';
+
+  @override
+  String get markAsCashPaid => 'Mark as Cash Paid';
+
+  @override
+  String get sendReminder => 'Send Reminder';
+
+  @override
+  String daysOverdue(int count) {
+    return '$count days overdue';
+  }
+
+  @override
+  String get noFinanceRecords => 'No records found in this category';
+
+  @override
+  String get reminderMessageCopied => 'Reminder message copied';
+
+  @override
+  String get tenantNoPropertyTitle =>
+      'You are not yet connected to a property.';
+
+  @override
+  String get tenantNoPropertyTooltip =>
+      'You are not yet connected to a property.';
+
+  @override
+  String get tenantNoPropertyMaintenanceTooltip =>
+      'You are not yet connected to a property.\nYou need to join a property first to create a maintenance request.';
+
+  @override
+  String get joinWithQrCode => 'Join Home with QR / Invite Code';
+
+  @override
+  String get agencyPropertyTakeoverQr => 'Take Over Agency\'s Property via QR';
+
+  @override
+  String welcomeUser(String userName) {
+    return 'Welcome, $userName 👋';
+  }
+
+  @override
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  ) {
+    return 'Dear $tenantName, your payment of $amount $currency for $propertyName property is overdue. Please make the payment and upload your receipt.';
+  }
+
+  @override
+  String get heroHeadline =>
+      'Manage your rental properties from a single panel';
+
+  @override
+  String get heroSubtitle =>
+      'Tenant tracking, payment records, and property details — all in one place.';
+
+  @override
+  String get forgotPassword => 'Forgot your password?';
 }

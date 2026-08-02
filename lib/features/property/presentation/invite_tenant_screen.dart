@@ -560,12 +560,15 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Widget _buildExpensesSection(AppLocalizations loc, Color roleColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: StanomerColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: StanomerColors.borderDefault),
-      ),
+    return Material(
+      color: StanomerColors.bgCard,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: StanomerColors.borderDefault),
+        ),
       child: Column(
         children: _expenses.map((expense) {
           final index = _expenses.indexOf(expense);
@@ -637,6 +640,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
             ],
           );
         }).toList().cast<Widget>(),
+        ),
       ),
     );
   }

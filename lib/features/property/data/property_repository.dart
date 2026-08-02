@@ -1,5 +1,6 @@
 import 'package:universal_io/io.dart' as io;
 import 'dart:typed_data';
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/data/auth_providers.dart';
@@ -11,6 +12,7 @@ import '../domain/landlord_stats.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../core/utils/stream_utils.dart';
+import '../../../core/utils/invite_utils.dart';
 
 
 enum RentStatus {
@@ -415,7 +417,10 @@ class PropertyRepository {
 
   PropertyRepository(this._client);
 
-  Future<List<Property>> getProperties({String? role}) async {
+  /// Expose the Supabase client for derived repositories (e.g. AgencyRepository)
+  SupabaseClient get client => _client;
+
+  Future<List<Property>> getProperties({String? role, String? agencyId}) async {
     final user = _client.auth.currentUser;
     if (user == null) return [];
 
@@ -426,6 +431,9 @@ class PropertyRepository {
         query = query.eq('landlord_id', user.id);
       } else if (role == 'tenant') {
         query = query.eq('tenant_id', user.id);
+      } else if (role == 'agency') {
+        // Agency: fetch all properties where agency_id = current user
+        query = query.eq('agency_id', agencyId ?? user.id);
       } else {
         query = query.or('landlord_id.eq.${user.id},tenant_id.eq.${user.id}');
       }
@@ -472,7 +480,9 @@ class PropertyRepository {
             ? query.eq('landlord_id', userId)
             : (role == 'tenant') 
                 ? query.eq('tenant_id', userId)
-                : query;
+                : (role == 'agency')
+                    ? query.eq('agency_id', userId)
+                    : query;
 
         return filteredQuery
             .order('created_at')
@@ -504,9 +514,10 @@ class PropertyRepository {
     );
   }
 
-  Future<void> createProperty({
+  Future<Property> createProperty({
     required String address,
     required String name,
+    String? city,
     required double defaultMonthlyRent,
     double? defaultDepositAmount,
     required String currency,
@@ -514,28 +525,154 @@ class PropertyRepository {
     int defaultDueDay = 1,
     TaxType taxType = TaxType.included,
     required List<ExpenseItem> expensesTemplate,
+    String? landlordName,
+    String? landlordPhone,
+    String? landlordEmail,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
 
-    await _client.from('properties').insert({
-      'address': address,
+    final profile = await _client.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    final String? roleFromProfile = profile?['role'] as String?;
+    final String? roleFromMeta = user.userMetadata?['role'] as String?;
+    final isAgency = roleFromProfile == 'agency' || roleFromMeta == 'agency';
+
+    final Map<String, dynamic> insertPayload = {
+      'title': name,
       'name': name,
+      'address': address,
+      'city': city,
       'default_monthly_rent': defaultMonthlyRent,
       'default_deposit_amount': defaultDepositAmount,
       'currency': currency,
       'default_deposit_currency': defaultDepositCurrency,
-      'landlord_id': user.id,
       'default_due_day': defaultDueDay,
       'tax_type': taxType.name,
       'expenses_template': expensesTemplate.map((e) => e.toJson()).toList(),
+    };
+
+    if (isAgency) {
+      insertPayload['landlord_id'] = null;
+      insertPayload['agency_id'] = user.id;
+      insertPayload['landlord_name'] = landlordName;
+      insertPayload['landlord_phone'] = landlordPhone;
+      insertPayload['landlord_email'] = landlordEmail;
+    } else {
+      insertPayload['landlord_id'] = user.id;
+    }
+
+    final res = await _client.from('properties').insert(insertPayload).select().single();
+    final createdProp = Property.fromJson(res);
+
+    if (isAgency) {
+      await createLandlordOwnershipInvite(
+        propertyId: createdProp.id,
+        landlordEmail: landlordEmail,
+        landlordName: landlordName,
+        landlordPhone: landlordPhone,
+      );
+    }
+
+    return createdProp;
+  }
+
+  /// Creates a landlord ownership invitation token & record for an agency-managed property
+  Future<String> createLandlordOwnershipInvite({
+    required String propertyId,
+    String? landlordEmail,
+    String? landlordName,
+    String? landlordPhone,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    final token = 'landlord_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(99999)}';
+
+    await _client.from('invitations').insert({
+      'property_id': propertyId,
+      'inviter_id': user.id,
+      'agency_id': user.id,
+      'inviter_name': user.userMetadata?['full_name'] ?? 'Agency',
+      'invitee_email': (landlordEmail != null && landlordEmail.trim().isNotEmpty) ? landlordEmail.trim() : null,
+      'token': token,
+      'target_role': 'landlord',
+      'status': 'pending',
+      'expires_at': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
     });
+
+    return token;
+  }
+
+  /// Fetches latest landlord ownership invitation token for a property
+  Future<String?> getLandlordOwnershipInviteToken(String propertyId) async {
+    try {
+      final res = await _client
+          .from('invitations')
+          .select('token')
+          .eq('property_id', propertyId)
+          .eq('target_role', 'landlord')
+          .eq('status', 'pending')
+          .order('created_at', ascending: false)
+          .maybeSingle();
+
+      return res?['token'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Claims landlord ownership for a property using invitation token
+  Future<bool> claimLandlordOwnership({required String token}) async {
+    try {
+      final res = await _client.rpc('claim_landlord_ownership', params: {'p_token': token});
+      if (res is Map && res['success'] == true) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error claiming landlord ownership: $e');
+      return false;
+    }
+  }
+
+  /// Reassigns/changes landlord for a property and generates a new ownership invitation token
+  Future<String> changePropertyLandlord({
+    required String propertyId,
+    required String newLandlordEmail,
+    required String newLandlordName,
+    String? newLandlordPhone,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    await _client.from('properties').update({
+      'landlord_id': null,
+      'landlord_name': newLandlordName,
+      'landlord_email': newLandlordEmail,
+      'landlord_phone': newLandlordPhone,
+    }).eq('id', propertyId);
+
+    // Cancel old pending landlord invites
+    await _client
+        .from('invitations')
+        .update({'status': 'cancelled'})
+        .eq('property_id', propertyId)
+        .eq('target_role', 'landlord')
+        .eq('status', 'pending');
+
+    return await createLandlordOwnershipInvite(
+      propertyId: propertyId,
+      landlordEmail: newLandlordEmail,
+      landlordName: newLandlordName,
+      landlordPhone: newLandlordPhone,
+    );
   }
 
   Future<void> updateProperty(Property property) async {
     await _client.from('properties').update({
-      'address': property.address,
+      'title': property.name,
       'name': property.name,
+      'address': property.address,
       'default_monthly_rent': property.defaultMonthlyRent,
       'default_deposit_amount': property.defaultDepositAmount,
       'currency': property.currency,
@@ -597,13 +734,13 @@ class PropertyRepository {
     else if (cleanFileName.toLowerCase().endsWith('.png')) contentType = 'image/png';
 
     if (bytes != null) {
-      await _client.storage.from('receipts').uploadBinary(
+      await _client.storage.from('rent-receipts').uploadBinary(
         path, 
         bytes,
         fileOptions: FileOptions(contentType: contentType),
       );
     } else if (filePath != null) {
-      await _client.storage.from('receipts').upload(
+      await _client.storage.from('rent-receipts').upload(
         path, 
         io.File(filePath),
         fileOptions: FileOptions(contentType: contentType),
@@ -612,7 +749,7 @@ class PropertyRepository {
       throw Exception('Missing file data');
     }
 
-    return _client.storage.from('receipts').getPublicUrl(path);
+    return _client.storage.from('rent-receipts').getPublicUrl(path);
   }
 
   Future<void> deleteProperty(String id) async {
@@ -654,8 +791,62 @@ class PropertyRepository {
     ]);
   }
 
-  Future<Map<String, dynamic>> getInviteByToken(String token) async {
+  Future<Map<String, dynamic>> getInviteByToken(String rawToken) async {
+    final token = extractToken(rawToken);
+    if (token.isEmpty) {
+      throw Exception('Geçersiz davet kodu veya bağlantısı.');
+    }
+
     try {
+      final currentUser = _client.auth.currentUser;
+
+      // 1) Try RPC get_invite_details (SECURITY DEFINER, bypasses RLS filters)
+      try {
+        final rpcResult = await _client.rpc('get_invite_details', params: {
+          'p_token': token,
+        });
+
+        if (rpcResult != null && rpcResult is Map<String, dynamic>) {
+          final propData = rpcResult['properties'] as Map<String, dynamic>?;
+          final existingTenantId = propData?['tenant_id'] as String?;
+          final targetRole = rpcResult['target_role'] as String? ?? 'tenant';
+          final inviteType = rpcResult['type'] as String? ?? 'contract';
+
+          if (targetRole == 'landlord' || inviteType == 'landlord_ownership') {
+            return {
+              ...rpcResult,
+              'type': 'landlord_ownership',
+            };
+          }
+
+          if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
+            throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
+          }
+
+          return {
+            ...rpcResult,
+            'tenant_id': currentUser?.id ?? rpcResult['tenant_id'],
+            'type': inviteType,
+          };
+        }
+      } catch (rpcErr) {
+        print('DEBUG [getInviteByToken]: RPC get_invite_details fallback: $rpcErr');
+      }
+
+      // 2) Pre-claim contract if unassigned so RLS allows reading it
+      if (currentUser != null) {
+        try {
+          await _client
+              .from('contracts')
+              .update({'tenant_id': currentUser.id})
+              .eq('token', token)
+              .isFilter('tenant_id', null)
+              .inFilter('status', ['pending', 'negotiating']);
+        } catch (e) {
+          print('DEBUG [getInviteByToken]: tenant_id pre-claim failed silently: $e');
+        }
+      }
+
       final contractResponse = await _client
           .from('contracts')
           .select('*, properties(*)')
@@ -663,21 +854,12 @@ class PropertyRepository {
           .maybeSingle();
 
       if (contractResponse != null) {
-        // Apple "Hide My Email" fix:
-        // Kiracı linki açtığında tenant_id'yi hemen yaz (pending aşamasında bile).
-        // Bu sayede uid-bazlı stream devreye girerek dashboard'da invite kartı görünür.
-        final currentUser = _client.auth.currentUser;
         final currentTenantId = contractResponse['tenant_id'];
-        if (currentUser != null && currentTenantId == null) {
-          try {
-            await _client
-                .from('contracts')
-                .update({'tenant_id': currentUser.id})
-                .eq('token', token)
-                .inFilter('status', ['pending', 'negotiating']);
-          } catch (e) {
-            print('DEBUG [getInviteByToken]: tenant_id pre-claim failed silently: $e');
-          }
+        final propData = contractResponse['properties'] as Map<String, dynamic>?;
+        final existingTenantId = propData?['tenant_id'] as String?;
+
+        if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
+          throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
         }
 
         return {
@@ -687,7 +869,36 @@ class PropertyRepository {
         };
       }
 
-      throw Exception('Invitation not found');
+      final inviteResponse = await _client
+          .from('invitations')
+          .select('*, properties(*)')
+          .eq('token', token)
+          .maybeSingle();
+
+      if (inviteResponse != null) {
+        final targetRole = inviteResponse['target_role'] as String? ?? 'tenant';
+
+        if (targetRole == 'landlord') {
+          return {
+            ...inviteResponse,
+            'type': 'landlord_ownership',
+          };
+        }
+
+        final propData = inviteResponse['properties'] as Map<String, dynamic>?;
+        final existingTenantId = propData?['tenant_id'] as String?;
+
+        if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
+          throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
+        }
+
+        return {
+          ...inviteResponse,
+          'type': 'invitation',
+        };
+      }
+
+      throw Exception('Davet bulunamadı veya süresi dolmuş.');
     } catch (e) {
       rethrow;
     }
@@ -712,13 +923,15 @@ class PropertyRepository {
       if (invite != null) {
         final propertyId = invite['property_id'] as String;
         final landlordId = await _getLandlordId(propertyId);
-        await _createNotification(
-          userId: landlordId,
-          title: 'Invitation Accepted',
-          body: 'A tenant has accepted the invitation for your property.',
-          type: 'contract',
-          relatedId: propertyId,
-        );
+        if (landlordId != null && landlordId.isNotEmpty) {
+          await _createNotification(
+            userId: landlordId,
+            title: 'Invitation Accepted',
+            body: 'A tenant has accepted the invitation for your property.',
+            type: 'contract',
+            relatedId: propertyId,
+          );
+        }
       }
 
       print('DEBUG: Successfully accepted invitation via RPC');
@@ -770,9 +983,13 @@ class PropertyRepository {
 
     final token = DateTime.now().millisecondsSinceEpoch.toString(); 
 
-    final data = await _client.from('contracts').insert({
+    final propRes = await _client.from('properties').select('landlord_id, agency_id').eq('id', propertyId).maybeSingle();
+    final propLandlordId = propRes?['landlord_id'] as String?;
+    final propAgencyId = propRes?['agency_id'] as String?;
+
+    final Map<String, dynamic> insertPayload = {
       'property_id': propertyId,
-      'landlord_id': user.id,
+      'landlord_id': propLandlordId ?? user.id,
       'inviter_name': inviterName,
       'invitee_email': inviteeEmail.trim().toLowerCase(),
       'monthly_rent': monthlyRent,
@@ -787,7 +1004,16 @@ class PropertyRepository {
       'contract_url': contractUrl,
       'token': token,
       'status': 'pending',
-    }).select().single();
+    };
+
+    final profile = await _client.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    final userRole = profile?['role'] as String?;
+
+    if (userRole == 'agency' || propAgencyId == user.id) {
+      insertPayload['agency_id'] = user.id;
+    }
+
+    final data = await _client.from('contracts').insert(insertPayload).select().single();
 
     final contract = Contract.fromJson(data);
 
@@ -831,15 +1057,24 @@ class PropertyRepository {
 
     final token = DateTime.now().millisecondsSinceEpoch.toString();
     
-    await _client.from('invitations').insert({
+    final profile = await _client.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    final userRole = profile?['role'] as String?;
+
+    final Map<String, dynamic> insertPayload = {
       'property_id': propertyId,
       'inviter_id': user.id,
-      'inviter_name': inviterName ?? 'Landlord',
+      'inviter_name': inviterName ?? (userRole == 'agency' ? 'Agency' : 'Landlord'),
       'invitee_email': inviteeEmail.trim().toLowerCase(),
       'token': token,
       'status': 'pending',
       'expires_at': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-    });
+    };
+
+    if (userRole == 'agency') {
+      insertPayload['agency_id'] = user.id;
+    }
+
+    await _client.from('invitations').insert(insertPayload);
 
     return token;
   }
@@ -1290,38 +1525,48 @@ class PropertyRepository {
     });
 
     final landlordId = await _getLandlordId(propertyId);
-    await _createNotification(
-      userId: landlordId,
-      title: 'Rent Declared',
-      body: 'Tenant has declared rent as paid for $monthName${receiptUrl == 'CASH' ? ' (Cash)' : ''}',
-      type: 'rent',
-      relatedId: propertyId,
-    );
+    if (landlordId != null && landlordId.isNotEmpty) {
+      await _createNotification(
+        userId: landlordId,
+        title: 'Rent Declared',
+        body: 'Tenant has declared rent as paid for $monthName${receiptUrl == 'CASH' ? ' (Cash)' : ''}',
+        type: 'rent',
+        relatedId: propertyId,
+      );
+    }
   }
 
   Future<void> approveRentPayment(String paymentId, String propertyId, String monthName, DateTime dueDate) async {
     await _client.from('rent_payments').update({
       'status': 'paid',
-      'paid_at': DateTime.now().toIso8601String(),
       'dispute_reason': null,
-      'disputed_at': null,
     }).eq('id', paymentId);
 
-    await _logActivity(propertyId, 'rent_approved', {
-      'payment_id': paymentId,
-      'month': monthName,
-      'due_date': dueDate.toIso8601String(),
-    });
+    if (propertyId.isNotEmpty) {
+      try {
+        await _logActivity(propertyId, 'rent_approved', {
+          'payment_id': paymentId,
+          'month': monthName,
+          'due_date': dueDate.toIso8601String(),
+        });
+      } catch (e) {
+        print('Error logging activity for rent approval: $e');
+      }
 
-    final tenantId = await _getTenantId(propertyId);
-    if (tenantId != null) {
-      await _createNotification(
-        userId: tenantId,
-        title: 'Rent Approved',
-        body: 'Landlord has approved your rent payment for $monthName',
-        type: 'rent',
-        relatedId: propertyId,
-      );
+      try {
+        final tenantId = await _getTenantId(propertyId);
+        if (tenantId != null && tenantId.isNotEmpty) {
+          await _createNotification(
+            userId: tenantId,
+            title: 'Rent Approved',
+            body: 'Rent payment for $monthName has been approved.',
+            type: 'rent',
+            relatedId: propertyId,
+          );
+        }
+      } catch (e) {
+        print('Error creating notification for rent approval: $e');
+      }
     }
   }
 
@@ -1329,9 +1574,7 @@ class PropertyRepository {
     await _client.from('rent_payments').update({
       'status': 'pending',
       'declared_at': null,
-      'paid_at': null,
       'dispute_reason': null,
-      'disputed_at': null,
     }).eq('id', paymentId);
 
     await _logActivity(propertyId, 'rent_rejected', {
@@ -1341,7 +1584,7 @@ class PropertyRepository {
     });
 
     final tenantId = await _getTenantId(propertyId);
-    if (tenantId != null) {
+    if (tenantId != null && tenantId.isNotEmpty) {
       await _createNotification(
         userId: tenantId,
         title: 'Rent Payment Rejected',
@@ -1356,7 +1599,6 @@ class PropertyRepository {
     await _client.from('rent_payments').update({
       'status': 'disputed',
       'dispute_reason': reason,
-      'disputed_at': DateTime.now().toIso8601String(),
     }).eq('id', paymentId);
 
     await _logActivity(propertyId, 'rent_disputed', {
@@ -1365,13 +1607,15 @@ class PropertyRepository {
     });
 
     final landlordId = await _getLandlordId(propertyId);
-    await _createNotification(
-      userId: landlordId,
-      title: 'Payment Disputed',
-      body: 'Tenant has objected to a charge. Reason: $reason',
-      type: 'rent',
-      relatedId: propertyId,
-    );
+    if (landlordId != null && landlordId.isNotEmpty) {
+      await _createNotification(
+        userId: landlordId,
+        title: 'Payment Disputed',
+        body: 'Tenant has objected to a charge. Reason: $reason',
+        type: 'rent',
+        relatedId: propertyId,
+      );
+    }
   }
 
   Future<void> setPaymentInvoice(String paymentId, String propertyId, String monthName, DateTime dueDate, double amount, String? invoiceUrl, {String currency = 'RSD', String? ownerNote}) async {
@@ -1381,9 +1625,7 @@ class PropertyRepository {
       'currency': currency,
       'invoice_url': invoiceUrl,
       'status': isZero ? 'paid' : 'pending',
-      'paid_at': isZero ? DateTime.now().toIso8601String() : null,
       'dispute_reason': null,
-      'disputed_at': null,
       'owner_note': ownerNote,
     }).eq('id', paymentId);
 
@@ -1548,14 +1790,22 @@ class PropertyRepository {
     });
   }
 
-  Future<String> _getLandlordId(String propertyId) async {
-    final data = await _client.from('properties').select('landlord_id').eq('id', propertyId).single();
-    return data['landlord_id'] as String;
+  Future<String?> _getLandlordId(String propertyId) async {
+    try {
+      final data = await _client.from('properties').select('landlord_id').eq('id', propertyId).maybeSingle();
+      return data?['landlord_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> _getTenantId(String propertyId) async {
-    final data = await _client.from('properties').select('tenant_id').eq('id', propertyId).single();
-    return data['tenant_id'] as String?;
+    try {
+      final data = await _client.from('properties').select('tenant_id').eq('id', propertyId).maybeSingle();
+      return data?['tenant_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> _getCounterpartyId(Map<String, dynamic> contractData) async {

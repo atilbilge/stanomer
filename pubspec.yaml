@@ -62,6 +62,7 @@ dependencies:
   qr_flutter: ^4.1.0
   share_plus: ^10.1.4
   open_filex: ^4.7.0
+  mobile_scanner: 5.2.3
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: ^6.11.2
   flutter_launcher_icons: ^0.13.1
+  flutter_flavorizr: ^2.2.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -134,3 +136,29 @@ flutter_launcher_icons:
   adaptive_icon_round: "assets/images/android_launcher.png"
   min_sdk_android: 21
   remove_alpha_ios: true
+
+flavorizr:
+  app:
+    android:
+      flavorDimensions: "flavor-type"
+    ios:
+      bundleId: "com.aboptima.stanomer"
+
+  flavors:
+    dev:
+      app:
+        name: "Stanomer Dev"
+      android:
+        applicationId: "com.aboptima.stanomer.dev"
+      ios:
+        bundleId: "com.aboptima.stanomer.dev"
+      icon: "assets/icons/icon_dev.png"
+    prod:
+      app:
+        name: "Stanomer"
+      android:
+        applicationId: "com.aboptima.stanomer"
+      ios:
+        bundleId: "com.aboptima.stanomer"
+      icon: "assets/icons/icon_prod.png"
+

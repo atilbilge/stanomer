@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/auth/data/auth_providers.dart';
 
 /// Provider for the [DocumentStorageService] instance.
 final documentStorageServiceProvider = Provider<DocumentStorageService>((ref) {
@@ -13,19 +14,23 @@ final documentStorageServiceProvider = Provider<DocumentStorageService>((ref) {
 /// Riverpod provider for managing the cloud upload permission state.
 final cloudUploadAllowedProvider = StateNotifierProvider<CloudUploadAllowedNotifier, bool>((ref) {
   final service = ref.watch(documentStorageServiceProvider);
-  return CloudUploadAllowedNotifier(service);
+  final role = ref.watch(userRoleProvider);
+  return CloudUploadAllowedNotifier(service, role: role);
 });
 
 /// StateNotifier to handle loading and toggling of the cloud upload allowed preference.
 class CloudUploadAllowedNotifier extends StateNotifier<bool> {
   final DocumentStorageService _service;
+  final String? _role;
 
-  CloudUploadAllowedNotifier(this._service) : super(kIsWeb) {
+  CloudUploadAllowedNotifier(this._service, {String? role})
+      : _role = role,
+        super(kIsWeb || role == 'agency') {
     _loadPreference();
   }
 
   Future<void> _loadPreference() async {
-    if (kIsWeb) {
+    if (kIsWeb || _role == 'agency') {
       state = true;
       return;
     }
@@ -33,7 +38,10 @@ class CloudUploadAllowedNotifier extends StateNotifier<bool> {
   }
 
   Future<void> toggle(bool allowed) async {
-    if (kIsWeb) return;
+    if (kIsWeb || _role == 'agency') {
+      state = true;
+      return;
+    }
     await _service.setCloudUploadAllowed(allowed);
     state = allowed;
   }

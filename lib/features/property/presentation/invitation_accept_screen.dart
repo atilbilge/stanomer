@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../agency/presentation/agency_dashboard_screen.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
@@ -71,16 +72,19 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
 
   Future<void> _accept() async {
     final loc = AppLocalizations.of(context)!;
-    if (!_termsAccepted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.acceptTermsWarning)),
-        );
+    if (_inviteType != 'landlord_ownership' && !_termsAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.acceptTermsWarning)),
+      );
       return;
     }
 
     setState(() => _isProcessing = true);
     try {
-      if (_inviteType == 'contract') {
+      if (_inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_')) {
+        final success = await ref.read(propertyRepositoryProvider).claimLandlordOwnership(token: widget.token);
+        if (!success) throw Exception('Ev sahipliği devri başarısız oldu veya davet süresi dolmuş.');
+      } else if (_inviteType == 'contract') {
         await ref.read(propertyRepositoryProvider).acceptContract(widget.token);
       } else {
         await ref.read(propertyRepositoryProvider).acceptInvite(widget.token);
@@ -88,9 +92,14 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.invitationAcceptedSuccess), backgroundColor: StanomerColors.successPrimary),
+          const SnackBar(
+            content: Text('Tebrikler! Daveti başarıyla kabul ettiniz.'),
+            backgroundColor: StanomerColors.successPrimary,
+          ),
         );
         ref.invalidate(propertiesStreamProvider);
+        ref.invalidate(propertiesFutureProvider);
+        ref.invalidate(agencyPropertiesProvider);
         ref.invalidate(pendingInvitesForUserProvider);
         context.go('/dashboard');
       }
@@ -119,31 +128,37 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
             const SizedBox(height: 16),
             TextField(
               controller: feedbackController,
-              maxLines: 4,
               decoration: InputDecoration(
                 hintText: loc.enterNotesHint,
+                border: const OutlineInputBorder(),
               ),
+              maxLines: 3,
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(loc.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(loc.cancel),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, feedbackController.text),
-            child: Text(loc.submit),
+            child: Text(loc.send),
           ),
         ],
       ),
     );
 
-    if (result != null && result.trim().isNotEmpty && mounted) {
+    if (result != null && result.isNotEmpty && mounted) {
       setState(() => _isProcessing = true);
       try {
-        await ref.read(propertyRepositoryProvider).proposeRevision(widget.token, result.trim());
+        await ref.read(propertyRepositoryProvider).proposeRevision(
+          widget.token,
+          result.trim(),
+        );
         if (mounted) {
-          // Optimistically update local state so the feedback shows immediately
           setState(() {
-            _contract = _contract?.copyWith(
+            _contract = _contract!.copyWith(
               status: ContractStatus.negotiating,
               tenantFeedback: result.trim(),
             );
@@ -151,7 +166,6 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(loc.revisionSent)),
           );
-          // Also refresh from server in background
           await _fetchInvite();
         }
       } catch (e) {
@@ -213,6 +227,73 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
 
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_inviteType == 'landlord_ownership') {
+      final propName = _property?.name ?? 'Mülk';
+      final propAddress = _property?.address ?? '';
+
+      return Scaffold(
+        appBar: AppBar(title: const Text('Ev Sahibi Sahiplik Daveti')),
+        body: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.keyRound, size: 48, color: StanomerColors.brandPrimary),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                '$propName Mülkünün Ev Sahibi Olun',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                propAddress,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: StanomerColors.textTertiary),
+              ),
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: StanomerColors.borderDefault),
+                ),
+                child: const Text(
+                  'Acente tarafından yönetilen bu mülkün ev sahibi olarak atanmak ve yönetmek için daveti onaylayın.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: StanomerColors.textPrimary),
+                ),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _isProcessing ? null : _accept,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StanomerColors.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: _isProcessing
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Ev Sahibi Olarak Kabul Et', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     if (_error != null || _contract == null) {

@@ -22,6 +22,7 @@ import '../domain/property.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import '../data/property_repository.dart';
 import '../../../core/utils/expense_utils.dart';
+import '../../../core/utils/rbac_utils.dart';
 import '../../maintenance/domain/maintenance_request.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 import '../domain/rent_payment.dart';
@@ -31,12 +32,19 @@ import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'widgets/contract_file_picker.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
+import '../../../core/providers/agency_branding_provider.dart';
 
 class PropertyDetailScreen extends ConsumerStatefulWidget {
   final Property property;
   final int initialTabIndex;
+  final String? initialExpandedPaymentId;
 
-  const PropertyDetailScreen({super.key, required this.property, this.initialTabIndex = 0});
+  const PropertyDetailScreen({
+    super.key,
+    required this.property,
+    this.initialTabIndex = 0,
+    this.initialExpandedPaymentId,
+  });
 
   @override
   ConsumerState<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
@@ -91,7 +99,10 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
         controller: _tabController,
         children: [
           _OverviewTab(property: property),
-          _FinancialsTab(property: property),
+          _FinancialsTab(
+            property: property,
+            initialExpandedPaymentId: widget.initialExpandedPaymentId,
+          ),
           _ActivityTab(property: property),
         ],
       ),
@@ -329,10 +340,11 @@ class _OverviewTab extends ConsumerWidget {
         final user = ref.watch(currentUserProvider);
         final role = user?.userMetadata?['role'] as String?;
         final roleColor = StanomerColors.getRoleColor(role);
-        final isLandlord = user?.id == liveProperty.landlordId;
-        final isTenant = !isLandlord && user != null;
+        final isAgencyManager = user?.id == liveProperty.agencyId || role == 'agency';
+        final isLandlord = user?.id == liveProperty.landlordId || isAgencyManager;
+        final isTenant = user != null && user.id == liveProperty.tenantId && !isAgencyManager;
 
-        final landlordProfileAsync = ref.watch(profileProvider(liveProperty.landlordId));
+        final landlordProfileAsync = liveProperty.landlordId != null ? ref.watch(profileProvider(liveProperty.landlordId!)) : const AsyncValue<Map<String, dynamic>?>.data(null);
         final tenantProfileAsync = liveProperty.tenantId != null ? ref.watch(profileProvider(liveProperty.tenantId!)) : const AsyncValue.data(null);
 
         return activeContractAsync.when(
@@ -625,7 +637,7 @@ class _OverviewTab extends ConsumerWidget {
                         subtitle: isTenant ? loc.reportIssue : '${loc.maintenance} & ${loc.issues}',
                         iconColor: roleColor,
                         onTap: () async {
-                          if (isTenant) {
+                          if (isTenant || isAgencyManager) {
                             try {
                               // Check if there are any existing requests
                               final requests = await ref.read(maintenanceRequestsProvider(property.id).future);
@@ -1582,7 +1594,8 @@ class _ContractTile extends ConsumerWidget {
 
 class _FinancialsTab extends ConsumerStatefulWidget {
   final Property property;
-  const _FinancialsTab({required this.property});
+  final String? initialExpandedPaymentId;
+  const _FinancialsTab({required this.property, this.initialExpandedPaymentId});
 
   @override
   ConsumerState<_FinancialsTab> createState() => _FinancialsTabState();
@@ -1592,6 +1605,14 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   bool _isPickingFile = false;
   String? _uploadingPaymentId;
   final Set<String> _expandedPaymentIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialExpandedPaymentId != null) {
+      _expandedPaymentIds.add(widget.initialExpandedPaymentId!);
+    }
+  }
 
   Future<bool> _showConfirmDialog({
     required String title,
@@ -1738,6 +1759,68 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         );
       }
     }
+  }
+
+  void _showTenantActionSheet(
+    BuildContext context,
+    RentPayment payment,
+    String monthName,
+    Color roleColor,
+    AppLocalizations loc,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(loc.takeAction, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                ),
+                ListTile(
+                  leading: Icon(LucideIcons.fileText, color: roleColor),
+                  title: Text(loc.uploadReceipt),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    setState(() => _isPickingFile = true);
+                    try {
+                      final result = await _pickReceiptFile();
+                      if (!mounted) return;
+                      if (result != null) await _handlePaymentDeclaration(payment, monthName, result);
+                    } finally {
+                      if (mounted) setState(() => _isPickingFile = false);
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: Icon(LucideIcons.hand, color: roleColor),
+                  title: Text(loc.paidInCash),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await _handlePaymentDeclaration(payment, monthName, null, isCash: true);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(LucideIcons.alertCircle, color: StanomerColors.alertPrimary),
+                  title: Text(loc.dispute),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleDispute(payment, monthName);
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<FilePickerResult?> _pickReceiptFile() async {
@@ -2603,138 +2686,15 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     required Property property,
     required RentPayment payment,
     required AppLocalizations loc,
+    String? agencyName,
   }) {
-    final isLandlordActor = log.userId == property.landlordId;
-    final isTenantActor = log.userId == property.tenantId;
-    
-    final landlordName = property.landlordName ?? (loc.localeName == 'tr' ? 'Ev Sahibi' : 'Landlord');
-    final tenantName = property.tenantName ?? (loc.localeName == 'tr' ? 'Kiracı' : 'Tenant');
-    final actorName = isLandlordActor ? landlordName : (isTenantActor ? tenantName : (loc.localeName == 'tr' ? 'Sistem' : 'System'));
-
-    final isTr = loc.localeName == 'tr';
-    final isRu = loc.localeName == 'ru';
-    final isSr = loc.localeName.startsWith('sr');
-
-    switch (log.type) {
-      case 'payment_created':
-        final isRent = payment.title == 'Kira';
-        if (isTr) {
-          return isRent 
-              ? 'Sistem borç kaydını otomatik oluşturdu'
-              : 'Sistem masraf kaydını otomatik oluşturdu';
-        } else if (isRu) {
-          return isRent
-              ? 'Система автоматически создала запись о начислении'
-              : 'Система автоматически создала запись о расходах';
-        } else if (isSr) {
-          return isRent
-              ? 'Sistem je automatski kreirao zaduženje'
-              : 'Sistem je automatski kreirao stavku troška';
-        } else {
-          return isRent
-              ? 'System automatically created the due record'
-              : 'System automatically created the expense record';
-        }
-      case 'rent_declared':
-        final isCash = log.metadata['is_cash'] == true;
-        if (isTr) {
-          return isCash 
-              ? '$actorName ödemeyi bildirdi (Nakit)'
-              : '$actorName makbuz yükleyerek ödemeyi bildirdi';
-        } else if (isRu) {
-          return isCash
-              ? '$actorName сообщил об оплате (Наличные)'
-              : '$actorName сообщил об оплате, загрузив квитанцию';
-        } else if (isSr) {
-          return isCash
-              ? '$actorName je prijavio uplatu (Gotovina)'
-              : '$actorName je učitao uplatnicu i prijavio uplatu';
-        } else {
-          return isCash
-              ? '$actorName declared payment (Cash)'
-              : '$actorName declared payment by uploading a receipt';
-        }
-      case 'rent_approved':
-        if (isTr) {
-          return '$actorName ödemeyi onayladı';
-        } else if (isRu) {
-          return '$actorName одобрил платеж';
-        } else if (isSr) {
-          return '$actorName je odobrio plaćanje';
-        } else {
-          return '$actorName approved payment';
-        }
-      case 'rent_rejected':
-        if (isTr) {
-          return '$actorName ödemeyi reddetti';
-        } else if (isRu) {
-          return '$actorName отклонил платеж';
-        } else if (isSr) {
-          return '$actorName je odbio plaćanje';
-        } else {
-          return '$actorName rejected payment';
-        }
-      case 'rent_disputed':
-        final reason = log.metadata['reason'] ?? '';
-        if (isTr) {
-          return '$actorName ödemeye itiraz etti${reason.isNotEmpty ? ': $reason' : ''}';
-        } else if (isRu) {
-          return '$actorName оспорил платеж${reason.isNotEmpty ? ': $reason' : ''}';
-        } else if (isSr) {
-          return '$actorName je osporio plaćanje${reason.isNotEmpty ? ': $reason' : ''}';
-        } else {
-          return '$actorName objected to the payment${reason.isNotEmpty ? ': $reason' : ''}';
-        }
-      case 'invoice_uploaded':
-        final amount = log.metadata['amount'] ?? 0.0;
-        final currency = log.metadata['currency'] ?? 'RSD';
-        final formattedAmount = CurrencyUtils.formatAmount(amount is num ? amount.toDouble() : 0.0, currency.toString());
-        if (isTr) {
-          return '$actorName fatura yükledi ($formattedAmount)';
-        } else if (isRu) {
-          return '$actorName загрузил счет ($formattedAmount)';
-        } else if (isSr) {
-          return '$actorName je učitao račun ($formattedAmount)';
-        } else {
-          return '$actorName uploaded a bill ($formattedAmount)';
-        }
-      case 'invoice_entered':
-        final amount = log.metadata['amount'] ?? 0.0;
-        final currency = log.metadata['currency'] ?? 'RSD';
-        final formattedAmount = CurrencyUtils.formatAmount(amount is num ? amount.toDouble() : 0.0, currency.toString());
-        if (isTr) {
-          return '$actorName masraf detayı girdi ($formattedAmount)';
-        } else if (isRu) {
-          return '$actorName ввел данные расхода ($formattedAmount)';
-        } else if (isSr) {
-          return '$actorName je uneo detalje troška ($formattedAmount)';
-        } else {
-          return '$actorName entered bill details ($formattedAmount)';
-        }
-      case 'payment_toggle':
-        final paid = log.metadata['paid'] == true;
-        if (isTr) {
-          return '$actorName ödemeyi ${paid ? 'Ödendi' : 'Bekliyor'} olarak işaretledi';
-        } else if (isRu) {
-          return '$actorName отметил платеж как ${paid ? 'Оплачен' : 'В ожидании'}';
-        } else if (isSr) {
-          return '$actorName je označio plaćanje kao ${paid ? 'Plaćeno' : 'Na čekanju'}';
-        } else {
-          return '$actorName marked payment as ${paid ? 'Paid' : 'Pending'}';
-        }
-      case 'rent_auto_approved':
-        if (isTr) {
-          return 'Ödeme sistem tarafından otomatik olarak onaylandı';
-        } else if (isRu) {
-          return 'Платеж был автоматически одобрен системой';
-        } else if (isSr) {
-          return 'Plaćanje je automatski odobreno od strane sistema';
-        } else {
-          return 'Payment was automatically approved by the system';
-        }
-      default:
-        return log.type;
-    }
+    return formatActivityLogDescription(
+      log: log,
+      property: property,
+      payment: payment,
+      loc: loc,
+      agencyName: agencyName,
+    );
   }
 
 
@@ -2744,6 +2704,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     required Property property,
     required bool isLandlord,
     required bool isTenant,
+    required bool isAgencyManager,
     required Color roleColor,
 
     required AppLocalizations loc,
@@ -2763,6 +2724,11 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final monthName = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
     final catColor = colorForTitle(payment.title);
     final catIcon  = iconForTitle(payment.title);
+    // RBAC: Tenants under agency-managed properties are read-only for payments
+    final canTenantDeclare = RbacUtils.canTenantDeclarePayment(
+      activeRole: isTenant ? 'tenant' : (isLandlord ? 'landlord' : null),
+      property: property,
+    );
 
     Color borderColor = StanomerColors.borderDefault;
     Color bgColor = Theme.of(context).cardColor;
@@ -2905,7 +2871,17 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       else
                         ...paymentLogs.map((log) {
                           final dateStr = DateFormat('dd.MM.yyyy, HH:mm').format(log.createdAt.toLocal());
-                          final desc = _formatPaymentLogDescription(log: log, property: property, payment: payment, loc: loc);
+                          final brandingState = ref.read(agencyBrandingProvider);
+                          final agencyName = brandingState.appTitle.isNotEmpty && brandingState.appTitle != 'Stanomer'
+                              ? brandingState.appTitle
+                              : null;
+                          final desc = _formatPaymentLogDescription(
+                            log: log,
+                            property: property,
+                            payment: payment,
+                            loc: loc,
+                            agencyName: agencyName,
+                          );
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Row(
@@ -3087,7 +3063,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             ],
             
             // Actions Section
-            if (isLandlord || (isTenant && isPending && !isAwaitingInvoice && !isDisputed)) ...[
+            if (isLandlord || (isTenant && canTenantDeclare && isPending && !isAwaitingInvoice && !isDisputed)) ...[
               const SizedBox(height: 16),
               if (isLandlord) ...[
                 if (isDeclared)
@@ -3141,130 +3117,118 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     ],
                   )
                 else if ((isOwnerExpense || (payment.title == 'Kira' && isDisputed)) && (isPending || isDisputed))
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _handleInvoiceUpload(payment, monthName),
-                      icon: Icon(isDisputed ? LucideIcons.edit3 : LucideIcons.filePlus, size: 16),
-                      label: Text(isDisputed ? loc.updateLabel : (isAwaitingInvoice ? loc.enterBill : loc.updateLabel)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: isDisputed ? StanomerColors.alertPrimary : StanomerColors.brandPrimary,
-                        side: BorderSide(color: isDisputed ? StanomerColors.alertPrimary : StanomerColors.brandPrimary),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _handleInvoiceUpload(payment, monthName),
+                          icon: Icon(isDisputed ? LucideIcons.edit3 : LucideIcons.filePlus, size: 16),
+                          label: Text(isDisputed ? loc.updateLabel : (isAwaitingInvoice ? loc.enterBill : loc.updateLabel)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: isDisputed ? StanomerColors.alertPrimary : StanomerColors.brandPrimary,
+                            side: BorderSide(color: isDisputed ? StanomerColors.alertPrimary : StanomerColors.brandPrimary),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (isAgencyManager) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
+                            icon: const Icon(LucideIcons.upload, size: 16),
+                            label: Text(
+                              loc.localeName == 'tr' ? 'Dekont Yükle' : 'Upload Receipt',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF1A5FA8),
+                              side: const BorderSide(color: Color(0xFF1A5FA8)),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   )
                 else if (!isOwnerExpense && !isDeclared && isPending)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final titleStr = loc.localeName == 'tr' 
-                            ? 'Ödendi Olarak İşaretle' 
-                            : (loc.localeName == 'ru'
-                                ? 'Отметить как оплачено'
-                                : (loc.localeName.startsWith('sr')
-                                    ? 'Označi kao plaćeno'
-                                    : 'Mark as Paid'));
-                        
-                        final messageStr = loc.localeName == 'tr'
-                            ? 'Kira ödemesini doğrudan almış olarak ödendi olarak işaretlemek istiyor musunuz?'
-                            : (loc.localeName == 'ru'
-                                ? 'Вы хотите отметить этот платеж за аренду как оплаченный?'
-                                : (loc.localeName.startsWith('sr')
-                                    ? 'Da li želite da označite ovo plaćanje zakupnine kao plaćeno?'
-                                    : 'Do you want to mark this rent payment as paid?'));
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final titleStr = loc.localeName == 'tr' 
+                                ? 'Ödendi Olarak İşaretle' 
+                                : (loc.localeName == 'ru'
+                                    ? 'Отметить как оплачено'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Označi kao plaćeno'
+                                        : 'Mark as Paid'));
+                            
+                            final messageStr = loc.localeName == 'tr'
+                                ? 'Kira ödemesini doğrudan almış olarak ödendi olarak işaretlemek istiyor musunuz?'
+                                : (loc.localeName == 'ru'
+                                    ? 'Вы хотите отметить этот платеж за аренду как оплаченный?'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Da li želite da označite ovo plaćanje zakupnine kao plaćeno?'
+                                        : 'Do you want to mark this rent payment as paid?'));
 
-                        final confirmed = await _showConfirmDialog(
-                          title: titleStr,
-                          message: messageStr,
-                        );
-                        if (confirmed) {
-                          await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
-                          ref.invalidate(rentPaymentsProvider(property.id));
-                        }
-                      },
-                      icon: const Icon(LucideIcons.checkCircle, size: 16),
-                      label: Text(
-                        loc.localeName == 'tr' 
-                            ? 'Ödendi Olarak İşaretle' 
-                            : (loc.localeName == 'ru'
-                                ? 'Отметить как оплачено'
-                                : (loc.localeName.startsWith('sr')
-                                    ? 'Označi kao plaćeno'
-                                    : 'Mark as Paid')),
+                            final confirmed = await _showConfirmDialog(
+                              title: titleStr,
+                              message: messageStr,
+                            );
+                            if (confirmed) {
+                              await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
+                              ref.invalidate(rentPaymentsProvider(property.id));
+                            }
+                          },
+                          icon: const Icon(LucideIcons.checkCircle, size: 16),
+                          label: Text(
+                            loc.localeName == 'tr' 
+                                ? 'Ödendi Olarak İşaretle' 
+                                : (loc.localeName == 'ru'
+                                    ? 'Отметить как оплачено'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Označi kao plaćeno'
+                                        : 'Mark as Paid')),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                      if (isAgencyManager) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
+                            icon: const Icon(LucideIcons.upload, size: 16),
+                            label: Text(
+                              loc.localeName == 'tr' ? 'Dekont Yükle' : 'Upload Receipt',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF1A5FA8),
+                              side: const BorderSide(color: Color(0xFF1A5FA8)),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-              ] else if (isTenant && isPending && !isAwaitingInvoice && !isDisputed) ...[
+              ] else if (isTenant && canTenantDeclare && isPending && !isAwaitingInvoice && !isDisputed) ...[
                 if (_uploadingPaymentId == payment.id)
                   const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)))
                 else
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _isPickingFile ? null : () {
-                        showModalBottomSheet(
-                          context: context,
-                          isDismissible: false,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          builder: (ctx) => ResilientBottomSheetWrapper(
-                            child: SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 20),
-                                      child: Text(loc.takeAction, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                    ),
-                                    ListTile(
-                                      leading: Icon(LucideIcons.fileText, color: roleColor),
-                                      title: Text(loc.uploadReceipt),
-                                      onTap: () async {
-                                        Navigator.pop(ctx);
-                                        setState(() => _isPickingFile = true);
-                                        try {
-                                          final result = await _pickReceiptFile();
-                                          if (!mounted) return;
-                                          if (result != null) await _handlePaymentDeclaration(payment, monthName, result);
-                                        } finally {
-                                          if (mounted) setState(() => _isPickingFile = false);
-                                        }
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: Icon(LucideIcons.hand, color: roleColor),
-                                      title: Text(loc.paidInCash),
-                                      onTap: () async {
-                                        Navigator.pop(ctx);
-                                        await _handlePaymentDeclaration(payment, monthName, null, isCash: true);
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(LucideIcons.alertCircle, color: StanomerColors.alertPrimary),
-                                      title: Text(loc.dispute),
-                                      onTap: () {
-                                        Navigator.pop(ctx);
-                                        _handleDispute(payment, monthName);
-                                      },
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
                       icon: const Icon(LucideIcons.arrowRightCircle, size: 16),
                       label: Text(loc.takeAction),
                       style: ElevatedButton.styleFrom(
@@ -3286,9 +3250,11 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final isLandlord = user?.id == widget.property.landlordId;
-    final isTenant = user?.id == widget.property.tenantId;
-    final roleColor = StanomerColors.getRoleColor(isLandlord ? 'landlord' : (isTenant ? 'tenant' : null));
+    final role = ref.watch(userRoleProvider);
+    final isAgencyManager = user?.id == widget.property.agencyId || role == 'agency';
+    final isLandlord = user?.id == widget.property.landlordId || isAgencyManager;
+    final isTenant = user?.id == widget.property.tenantId && !isAgencyManager;
+    final roleColor = StanomerColors.getRoleColor(isAgencyManager ? 'agency' : (isLandlord ? 'landlord' : (isTenant ? 'tenant' : null)));
 
     final property = widget.property;
     final loc = AppLocalizations.of(context)!;
@@ -3496,6 +3462,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   property: property,
                                   isLandlord: isLandlord,
                                   isTenant: isTenant,
+                                  isAgencyManager: isAgencyManager,
                                   roleColor: roleColor,
                                   loc: loc,
                                   iconForTitle: _iconForTitle,
@@ -3982,56 +3949,61 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
         Text(loc.expensesHeader,
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary, letterSpacing: 1.1)),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(color: StanomerColors.bgCard, borderRadius: BorderRadius.circular(16), border: Border.all(color: StanomerColors.borderDefault)),
-          child: Column(
-            children: _contractExpenses.asMap().entries.map((entry) {
-              final index = entry.key;
-              final expense = entry.value;
-              final isIncluded = expense.receiver == PaymentReceiver.included;
-              return Column(
-                children: [
-                  ListTile(
-                    dense: true,
-                    title: Text(expense.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: isIncluded 
-                      ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
-                      : null,
-                    trailing: Switch.adaptive(
-                      value: isIncluded,
-                      activeColor: StanomerColors.brandPrimary,
-                      onChanged: ((val) => setState(() {
-                        _contractExpenses[index] = expense.copyWith(receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected);
-                      })),
-                    ),
-                  ),
-                  if (!isIncluded)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.tenantPaysTo,
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
-                          ),
-                          const SizedBox(height: 6),
-                          PaymentResponsibilitySelector(
-                            value: expense.receiver,
-                            onChanged: (PaymentReceiver newReceiver) {
-                              setState(() {
-                                _contractExpenses[index] = expense.copyWith(receiver: newReceiver);
-                              });
-                            },
-                          ),
-                        ],
+        Material(
+          color: StanomerColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: StanomerColors.borderDefault)),
+            child: Column(
+              children: _contractExpenses.asMap().entries.map((entry) {
+                final index = entry.key;
+                final expense = entry.value;
+                final isIncluded = expense.receiver == PaymentReceiver.included;
+                return Column(
+                  children: [
+                    ListTile(
+                      dense: true,
+                      title: Text(expense.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: isIncluded 
+                        ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
+                        : null,
+                      trailing: Switch.adaptive(
+                        value: isIncluded,
+                        activeColor: StanomerColors.brandPrimary,
+                        onChanged: ((val) => setState(() {
+                          _contractExpenses[index] = expense.copyWith(receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected);
+                        })),
                       ),
                     ),
-                  if (index < _contractExpenses.length - 1)
-                    Divider(height: 1, color: StanomerColors.borderDefault.withValues(alpha: 0.5)),
-                ],
-              );
-            }).toList(),
+                    if (!isIncluded)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.tenantPaysTo,
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
+                            ),
+                            const SizedBox(height: 6),
+                            PaymentResponsibilitySelector(
+                              value: expense.receiver,
+                              onChanged: (PaymentReceiver newReceiver) {
+                                setState(() {
+                                  _contractExpenses[index] = expense.copyWith(receiver: newReceiver);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (index < _contractExpenses.length - 1)
+                      Divider(height: 1, color: StanomerColors.borderDefault.withValues(alpha: 0.5)),
+                  ],
+                );
+              }).toList(),
+            ),
           ),
         ),
       ],
@@ -4187,74 +4159,78 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: StanomerColors.bgCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: StanomerColors.borderDefault),
-          ),
-          child: Column(
-            children: _expenses.map((expense) {
-              final index = _expenses.indexOf(expense);
-              final isIncluded = expense.receiver == PaymentReceiver.included;
-              
-              return Column(
-                children: [
-                  ListTile(
-                    dense: true,
-                    title: Row(
-                      children: [
-                        Text(expense.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                        const SizedBox(width: 8),
-                        Tooltip(
-                          message: getTooltip(expense.name),
-                          triggerMode: TooltipTriggerMode.tap,
-                          child: const Icon(LucideIcons.info, size: 14, color: StanomerColors.textTertiary),
-                        ),
-                      ],
-                    ),
-                    subtitle: isIncluded 
-                      ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
-                      : null,
-                    trailing: Switch.adaptive(
-                      value: isIncluded,
-                      activeColor: StanomerColors.brandPrimary,
-                      onChanged: (val) {
-                        setState(() {
-                          _expenses[index] = expense.copyWith(
-                            receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
-                          );
-                        });
-                      },
-                    ),
-                  ),
-                  if (!isIncluded)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        Material(
+          color: StanomerColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: StanomerColors.borderDefault),
+            ),
+            child: Column(
+              children: _expenses.map((expense) {
+                final index = _expenses.indexOf(expense);
+                final isIncluded = expense.receiver == PaymentReceiver.included;
+                
+                return Column(
+                  children: [
+                    ListTile(
+                      dense: true,
+                      title: Row(
                         children: [
+                          Text(expense.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: getTooltip(expense.name),
+                            triggerMode: TooltipTriggerMode.tap,
+                            child: const Icon(LucideIcons.info, size: 14, color: StanomerColors.textTertiary),
+                          ),
+                        ],
+                      ),
+                      subtitle: isIncluded 
+                        ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
+                        : null,
+                      trailing: Switch.adaptive(
+                        value: isIncluded,
+                        activeColor: StanomerColors.brandPrimary,
+                        onChanged: (val) {
+                          setState(() {
+                            _expenses[index] = expense.copyWith(
+                              receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                    if (!isIncluded)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
                               loc.tenantPaysTo,
                               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
                             ),
-                          const SizedBox(height: 6),
-                          PaymentResponsibilitySelector(
-                            value: expense.receiver,
-                            onChanged: (PaymentReceiver newReceiver) {
-                              setState(() {
-                                _expenses[index] = expense.copyWith(receiver: newReceiver);
-                              });
-                            },
-                          ),
-                    ],
-                  ),
-                ),
-                  if (index < _expenses.length - 1)
-                    Divider(height: 1, color: StanomerColors.borderDefault.withValues(alpha: 0.5)),
-                ],
-              );
-            }).toList().cast<Widget>(),
+                            const SizedBox(height: 6),
+                            PaymentResponsibilitySelector(
+                              value: expense.receiver,
+                              onChanged: (PaymentReceiver newReceiver) {
+                                setState(() {
+                                  _expenses[index] = expense.copyWith(receiver: newReceiver);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (index < _expenses.length - 1)
+                      Divider(height: 1, color: StanomerColors.borderDefault.withValues(alpha: 0.5)),
+                  ],
+                );
+              }).toList().cast<Widget>(),
+            ),
           ),
         ),
       ],
@@ -4599,6 +4575,10 @@ class _ActivityTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final activitiesAsync = ref.watch(activityLogsProvider(property.id));
+    final brandingState = ref.watch(agencyBrandingProvider);
+    final agencyName = brandingState.appTitle.isNotEmpty && brandingState.appTitle != 'Stanomer'
+        ? brandingState.appTitle
+        : null;
 
     return activitiesAsync.when(
       data: (activities) {
@@ -4618,14 +4598,24 @@ class _ActivityTab extends ConsumerWidget {
           );
         }
 
+        // Sort reverse chronological: newest first
+        final sortedActivities = List<ActivityLog>.from(activities)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
         return ListView.separated(
           padding: const EdgeInsets.all(24),
-          itemCount: activities.length,
+          itemCount: sortedActivities.length,
           separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
-            final log = activities[index];
-            final date = DateFormat('dd MMM, HH:mm', loc.localeName).format(log.createdAt);
-            
+            final log = sortedActivities[index];
+            final date = DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(log.createdAt.toLocal());
+            final desc = formatActivityLogDescription(
+              log: log,
+              property: property,
+              loc: loc,
+              agencyName: agencyName,
+            );
+
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -4635,11 +4625,11 @@ class _ActivityTab extends ConsumerWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: StanomerColors.brandPrimary.withValues(alpha: 0.5),
+                        color: StanomerColors.brandPrimary.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                       ),
                     ),
-                    if (index != activities.length - 1)
+                    if (index != sortedActivities.length - 1)
                       Container(
                         width: 2,
                         height: 40,
@@ -4653,15 +4643,15 @@ class _ActivityTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getLogDescription(log, context, loc.localeName),
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        desc,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: StanomerColors.textPrimary),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         date,
-                        style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                        style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -4674,79 +4664,197 @@ class _ActivityTab extends ConsumerWidget {
       error: (e, st) => Center(child: Text('Error: $e')),
     );
   }
+}
 
-  String _getLogDescription(ActivityLog log, BuildContext context, String locale) {
-    final loc = AppLocalizations.of(context)!;
-    
-    // Attempt to format date from metadata, fallback to 'month' string
-    String month;
-    if (log.metadata['due_date'] != null) {
-      try {
-        final date = DateTime.parse(log.metadata['due_date']);
-        month = DateFormat('MMMM yyyy', locale).format(date);
-      } catch (_) {
-        month = log.metadata['month'] ?? '';
-      }
-    } else {
-      month = log.metadata['month'] ?? '';
+String formatActivityLogDescription({
+  required ActivityLog log,
+  required Property property,
+  RentPayment? payment,
+  required AppLocalizations loc,
+  String? agencyName,
+}) {
+  final isLandlordActor = log.userId == property.landlordId;
+  final isTenantActor = log.userId == property.tenantId;
+  final isAgencyActor = (property.agencyId != null && log.userId == property.agencyId) ||
+      (!isLandlordActor && !isTenantActor && log.userId != null);
+
+  final landlordName = property.landlordName ?? (loc.localeName == 'tr' ? 'Ev Sahibi' : 'Landlord');
+  final tenantName = property.tenantName ?? (loc.localeName == 'tr' ? 'Kiracı' : 'Tenant');
+  final resolvedAgencyName = agencyName ?? (loc.localeName == 'tr' ? 'Acente' : 'Agency');
+  final actorName = isAgencyActor
+      ? resolvedAgencyName
+      : isLandlordActor
+          ? landlordName
+          : isTenantActor
+              ? tenantName
+              : (loc.localeName == 'tr' ? 'Sistem' : 'System');
+
+  final isTr = loc.localeName == 'tr';
+  final isRu = loc.localeName == 'ru';
+  final isSr = loc.localeName.startsWith('sr');
+
+  String monthStr = '';
+  if (log.metadata['due_date'] != null) {
+    try {
+      final date = DateTime.parse(log.metadata['due_date'].toString());
+      monthStr = DateFormat('MMMM yyyy', loc.localeName).format(date);
+    } catch (_) {
+      monthStr = log.metadata['month']?.toString() ?? '';
     }
-    
-    switch (log.type) {
-      case 'rent_disputed':
-        final reason = log.metadata['reason'] ?? '';
-        return loc.logRentDisputed(month, reason);
-      case 'invoice_uploaded':
-        final amount = log.metadata['amount'] ?? 0;
-        final currency = log.metadata['currency'] ?? 'RSD';
-        return locale == 'tr' 
-          ? '$month için fatura yüklendi: $amount $currency' 
-          : 'Invoice uploaded for $month: $amount $currency';
-      case 'invoice_entered':
-        final amount = log.metadata['amount'] ?? 0;
-        final currency = log.metadata['currency'] ?? 'RSD';
-        return locale == 'tr' 
-          ? '$month için masraf detayı girildi: $amount $currency' 
-          : 'Expense details entered for $month: $amount $currency';
-      case 'rent_declared':
-        return loc.logRentDeclared(month);
-      case 'rent_approved':
-        return loc.logRentApproved(month);
-      case 'rent_rejected':
-        return loc.logRentRejected(month);
-      case 'payment_toggle':
-        final paid = log.metadata['paid'] == true;
-        if (paid) {
-          return loc.logMarkedAsPaid(month);
-        } else {
-          return loc.logMarkedAsPending(month);
-        }
-      case 'rent_auto_approved':
-        return loc.logAutoApproved(month);
-      case 'maintenance_created':
-        return loc.logMaintenanceCreated(log.metadata['title'] ?? '');
-      case 'maintenance_status_updated':
-        final status = log.metadata['new_status'] ?? '';
-        return loc.logMaintenanceStatusUpdated(_getMaintenanceStatusLabel(status, loc));
-      case 'maintenance_message_added':
-        return loc.logMaintenanceMessageAdded;
-      case 'maintenance_reopened':
-        return loc.logMaintenanceReopened;
-      default:
-        return log.type;
-    }
+  } else {
+    monthStr = log.metadata['month']?.toString() ?? '';
   }
 
-  String _getMaintenanceStatusLabel(String status, AppLocalizations loc) {
-    switch (status) {
-      case 'open':
-        return loc.statusActive;
-      case 'investigating':
-        return loc.statusInvestigating;
-      case 'resolved':
-        return loc.statusResolved;
-      default:
-        return status;
-    }
+  switch (log.type) {
+    case 'payment_created':
+      final isRent = (payment?.title ?? log.metadata['title']) == 'Kira';
+      if (isTr) {
+        return isRent 
+            ? 'Sistem borç kaydını otomatik oluşturdu'
+            : 'Sistem masraf kaydını otomatik oluşturdu';
+      } else if (isRu) {
+        return isRent
+            ? 'Система автоматически создала запись о начислении'
+            : 'Система автоматически создала запись о расходах';
+      } else if (isSr) {
+        return isRent
+            ? 'Sistem je automatski kreirao zaduženje'
+            : 'Sistem je automatski kreirao stavku troška';
+      } else {
+        return isRent
+            ? 'System automatically created the due record'
+            : 'System automatically created the expense record';
+      }
+    case 'rent_declared':
+      final isCash = log.metadata['is_cash'] == true;
+      final monthSuffix = monthStr.isNotEmpty ? ' ($monthStr)' : '';
+      if (isTr) {
+        return isCash 
+            ? '$actorName ödemeyi bildirdi (Nakit)$monthSuffix'
+            : '$actorName makbuz yükleyerek ödemeyi bildirdi$monthSuffix';
+      } else if (isRu) {
+        return isCash
+            ? '$actorName сообщил об оплате (Наличные)$monthSuffix'
+            : '$actorName сообщил об оплате, загрузив квитанцию$monthSuffix';
+      } else if (isSr) {
+        return isCash
+            ? '$actorName je prijavio uplatu (Gotovina)$monthSuffix'
+            : '$actorName je učitao uplatnicu i prijavio uplatu$monthSuffix';
+      } else {
+        return isCash
+            ? '$actorName declared payment (Cash)$monthSuffix'
+            : '$actorName declared payment by uploading a receipt$monthSuffix';
+      }
+    case 'rent_approved':
+      final monthSuffix = monthStr.isNotEmpty ? ' ($monthStr)' : '';
+      if (isTr) {
+        return '$actorName ödemeyi onayladı$monthSuffix';
+      } else if (isRu) {
+        return '$actorName одобрил платеж$monthSuffix';
+      } else if (isSr) {
+        return '$actorName je odobrio plaćanje$monthSuffix';
+      } else {
+        return '$actorName approved payment$monthSuffix';
+      }
+    case 'rent_rejected':
+      final monthSuffix = monthStr.isNotEmpty ? ' ($monthStr)' : '';
+      if (isTr) {
+        return '$actorName ödemeyi reddetti$monthSuffix';
+      } else if (isRu) {
+        return '$actorName отклонил платеж$monthSuffix';
+      } else if (isSr) {
+        return '$actorName je odbio plaćanje$monthSuffix';
+      } else {
+        return '$actorName rejected payment$monthSuffix';
+      }
+    case 'rent_disputed':
+      final reason = log.metadata['reason'] ?? '';
+      if (isTr) {
+        return '$actorName ödemeye itiraz etti${reason.isNotEmpty ? ': $reason' : ''}';
+      } else if (isRu) {
+        return '$actorName оспорил платеж${reason.isNotEmpty ? ': $reason' : ''}';
+      } else if (isSr) {
+        return '$actorName je osporio plaćanje${reason.isNotEmpty ? ': $reason' : ''}';
+      } else {
+        return '$actorName objected to the payment${reason.isNotEmpty ? ': $reason' : ''}';
+      }
+    case 'invoice_uploaded':
+      final amount = log.metadata['amount'] ?? 0.0;
+      final currency = log.metadata['currency'] ?? 'EUR';
+      final formattedAmount = CurrencyUtils.formatAmount(amount is num ? amount.toDouble() : 0.0, currency.toString());
+      final monthPrefix = monthStr.isNotEmpty ? '$monthStr: ' : '';
+      if (isTr) {
+        return '$actorName ${monthPrefix}fatura yükledi ($formattedAmount)';
+      } else if (isRu) {
+        return '$actorName ${monthPrefix}загрузил счет ($formattedAmount)';
+      } else if (isSr) {
+        return '$actorName ${monthPrefix}je učitao račun ($formattedAmount)';
+      } else {
+        return '$actorName ${monthPrefix}uploaded a bill ($formattedAmount)';
+      }
+    case 'invoice_entered':
+      final amount = log.metadata['amount'] ?? 0.0;
+      final currency = log.metadata['currency'] ?? 'RSD';
+      final formattedAmount = CurrencyUtils.formatAmount(amount is num ? amount.toDouble() : 0.0, currency.toString());
+      final monthPrefix = monthStr.isNotEmpty ? '$monthStr: ' : '';
+      if (isTr) {
+        return '$actorName ${monthPrefix}masraf detayı girdi ($formattedAmount)';
+      } else if (isRu) {
+        return '$actorName ${monthPrefix}ввел данные расхода ($formattedAmount)';
+      } else if (isSr) {
+        return '$actorName ${monthPrefix}je uneo detalje troška ($formattedAmount)';
+      } else {
+        return '$actorName ${monthPrefix}entered bill details ($formattedAmount)';
+      }
+    case 'payment_toggle':
+      final paid = log.metadata['paid'] == true;
+      if (isTr) {
+        return '$actorName ödemeyi ${paid ? 'Ödendi' : 'Bekliyor'} olarak işaretledi';
+      } else if (isRu) {
+        return '$actorName отметил платеж как ${paid ? 'Оплачен' : 'В ожидании'}';
+      } else if (isSr) {
+        return '$actorName je označio plaćanje kao ${paid ? 'Plaćeno' : 'Na čekanju'}';
+      } else {
+        return '$actorName marked payment as ${paid ? 'Paid' : 'Pending'}';
+      }
+    case 'rent_auto_approved':
+      if (isTr) {
+        return 'Ödeme sistem tarafından otomatik olarak onaylandı';
+      } else if (isRu) {
+        return 'Платеж был автоматически одобрен системой';
+      } else if (isSr) {
+        return 'Plaćanje je automatski odobreno od strane sistema';
+      } else {
+        return 'Payment was automatically approved by the system';
+      }
+    case 'maintenance_created':
+      final title = log.metadata['title'] ?? '';
+      if (isTr) {
+        return '$actorName arıza/bakım talebi oluşturdu${title.isNotEmpty ? ': $title' : ''}';
+      } else {
+        return '$actorName created a maintenance request${title.isNotEmpty ? ': $title' : ''}';
+      }
+    case 'maintenance_status_updated':
+      final status = log.metadata['new_status'] ?? '';
+      if (isTr) {
+        return '$actorName arıza talebi durumunu güncelledi ($status)';
+      } else {
+        return '$actorName updated maintenance status ($status)';
+      }
+    case 'maintenance_message_added':
+      if (isTr) {
+        return '$actorName arıza talebine mesaj ekledi';
+      } else {
+        return '$actorName added a message to maintenance request';
+      }
+    case 'maintenance_reopened':
+      if (isTr) {
+        return '$actorName arıza talebini tekrar açtı';
+      } else {
+        return '$actorName reopened maintenance request';
+      }
+    default:
+      return log.type;
   }
 }
 

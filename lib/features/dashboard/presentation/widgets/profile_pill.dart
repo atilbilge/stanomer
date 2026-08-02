@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/providers/agency_branding_provider.dart';
+import '../../../agency/domain/agency_color_scheme.dart';
 
-class ProfilePill extends StatelessWidget {
+class ProfilePill extends ConsumerWidget {
   final String? role;
   final String? email;
   final VoidCallback onTap;
@@ -16,9 +19,11 @@ class ProfilePill extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final accentColor = StanomerColors.getRoleColor(role);
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final brandingState = ref.watch(agencyBrandingProvider);
+    final accentColor = brandingState.hasAgencyBranding ? agencyColors.primary : StanomerColors.getRoleColor(role);
     final roleName = role == 'landlord' ? loc.landlord : (role == 'tenant' ? loc.tenant : '');
 
     return GestureDetector(

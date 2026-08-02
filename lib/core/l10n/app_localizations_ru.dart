@@ -270,6 +270,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get viewInvite => 'Посмотреть';
 
   @override
+  String get myProperty => 'Мой объект';
+
+  @override
   String get myProperties => 'Моя недвижимость';
 
   @override
@@ -619,7 +622,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get declare => 'Сообщить';
 
   @override
-  String get viewReceipt => 'Посмотреть чек';
+  String get viewReceipt => 'Посмотреть квитанцию';
 
   @override
   String proposesChanges(String name) {
@@ -1468,4 +1471,353 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cannotOpenDocument => 'Не удалось открыть документ';
+
+  @override
+  String get agencyAccount => 'Аккаунт агентства';
+
+  @override
+  String get managedProperties => 'Управляемая недвижимость';
+
+  @override
+  String get paymentApprovalQueue => 'Очередь подтверждения платежей';
+
+  @override
+  String get noPendingPaymentApprovals =>
+      'Нет платежей, ожидающих подтверждения';
+
+  @override
+  String get noManagedPropertiesYet => 'Пока нет управляемых объектов';
+
+  @override
+  String get occupied => 'Занято';
+
+  @override
+  String dueDateShort(String date) {
+    return 'Срок: $date';
+  }
+
+  @override
+  String get payment => 'Платеж';
+
+  @override
+  String get insightPendingApprovalsTitle => 'Ожидающие подтверждения';
+
+  @override
+  String get insightPendingApprovalsDesc =>
+      'У вас есть объекты, где арендодатель или арендаторы еще не приняли приглашение.';
+
+  @override
+  String get insightPendingApprovalsAction => 'Показать объекты';
+
+  @override
+  String get insightWithoutContractsTitle => 'Объекты без контрактов';
+
+  @override
+  String get insightWithoutContractsDesc =>
+      'У вас есть зарегистрированные в системе объекты, к которым еще не привязан контракт.';
+
+  @override
+  String get insightWithoutContractsAction => 'Показать объекты';
+
+  @override
+  String get insightExpiredContractsTitle => 'Истекшие контракты';
+
+  @override
+  String get insightExpiredContractsDesc =>
+      'У вас есть объекты с истекшими и не продленными контрактами. Пожалуйста, примите меры.';
+
+  @override
+  String get insightExpiredContractsAction => 'Показать объекты';
+
+  @override
+  String get insightExpiringContractsTitle => 'Истекающие контракты';
+
+  @override
+  String get insightExpiringContractsDesc =>
+      'У вас есть объекты, до окончания текущего контракта которых осталось менее одного месяца.';
+
+  @override
+  String get insightExpiringContractsAction => 'Показать объекты';
+
+  @override
+  String get tabHome => 'Главная';
+
+  @override
+  String get tabFinance => 'Финансы';
+
+  @override
+  String get tabRequests => 'Заявки';
+
+  @override
+  String get tabPortfolio => 'Портфель';
+
+  @override
+  String get agencyAddProperty => 'Добавить объект';
+
+  @override
+  String get searchAndFilterPanel => 'ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ';
+
+  @override
+  String get searchPlaceholder =>
+      'Поиск по владельцу, арендатору, городу или объекту...';
+
+  @override
+  String filterAppliedLabel(String title) {
+    return 'Применен фильтр: $title';
+  }
+
+  @override
+  String get noPropertiesMatchingFilter =>
+      'Нет объектов, соответствующих фильтру';
+
+  @override
+  String get groupNone => 'Без группировки';
+
+  @override
+  String get groupByLandlord => 'Группировка: Владелец';
+
+  @override
+  String get groupByCity => 'Группировка: Город';
+
+  @override
+  String get groupByStatus => 'Группировка: Статус';
+
+  @override
+  String get groupByDebtConsent => 'Группировка: Долг / Согласие';
+
+  @override
+  String get sortByNewest => 'Сортировка: Сначала новые';
+
+  @override
+  String get sortByNameAsc => 'Сортировка: Название А-Я';
+
+  @override
+  String get sortByCityAsc => 'Сортировка: Город А-Я';
+
+  @override
+  String get sortByLandlordAsc => 'Сортировка: Владелец А-Я';
+
+  @override
+  String get allPropertiesGroup => 'Все объекты';
+
+  @override
+  String get groupLandlordPendingInvite => 'Владельцы, ожидающие приглашения';
+
+  @override
+  String get groupUnspecifiedCity => 'Город не указан';
+
+  @override
+  String get groupStatusOccupied => 'Сданные объекты';
+
+  @override
+  String get groupStatusVacant => 'Свободные объекты';
+
+  @override
+  String get groupStatusLandlordPending => 'Ожидает владельца';
+
+  @override
+  String get groupDebtPending => 'Объекты с задолженностью';
+
+  @override
+  String get groupConsentPending => 'Ожидают согласия / подтверждения';
+
+  @override
+  String get groupActiveClean => 'Объекты без задолженностей';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Все ($count)';
+  }
+
+  @override
+  String filterHasDebtCount(int count) {
+    return '⚠️ С долгом ($count)';
+  }
+
+  @override
+  String filterOccupiedCount(int count) {
+    return '🟢 Занято ($count)';
+  }
+
+  @override
+  String filterVacantCount(int count) {
+    return '🟡 Свободно ($count)';
+  }
+
+  @override
+  String get filterActiveLabel => 'Фильтр активен ✓';
+
+  @override
+  String get financeAndPaymentsHeader => 'ФИНАНСЫ И ПЛАТЕЖИ';
+
+  @override
+  String get financialSummaryTitle => 'Финансовая сводка';
+
+  @override
+  String pendingPaymentsSummary(int count) {
+    return 'Ожидает подтверждения платежей: $count';
+  }
+
+  @override
+  String get financePlaceholderDesc =>
+      'Финансовые графики, учет аренды и история платежей будут отображаться здесь.';
+
+  @override
+  String get maintenanceRequestsHeader => 'ЗАЯВКИ НА РЕМОНТ И ОБСЛУЖИВАНИЕ';
+
+  @override
+  String get requestManagementTitle => 'Управление заявками';
+
+  @override
+  String get requestsPlaceholderDesc =>
+      'Заявки на ремонт и обслуживание от арендаторов и владельцев будут управляться в этой вкладке.';
+
+  @override
+  String get noOpenRequestsYet => 'Открытых заявок пока нет';
+
+  @override
+  String get actionableInsightsHeader => 'УВЕДОМЛЕНИЯ К ДЕЙСТВИЮ';
+
+  @override
+  String get inviteTenantOrAddContract =>
+      'Пригласить арендатора / Добавить договор';
+
+  @override
+  String get ownershipQrOrLink => 'QR / Ссылка на владение';
+
+  @override
+  String get changeLandlord => 'Сменить владельца';
+
+  @override
+  String get pendingDebtWarning =>
+      'Задолженность ожидает подтверждения агентства или оплаты арендатором';
+
+  @override
+  String get landlordLabel => 'Владелец: ';
+
+  @override
+  String get invitePending => 'Ожидает приглашения';
+
+  @override
+  String get tenantLabel => 'Арендатор: ';
+
+  @override
+  String get vacantLabel => 'Свободно';
+
+  @override
+  String get latestContractNone => 'Последний договор: Отсутствует';
+
+  @override
+  String get unlimited => 'Бессрочно';
+
+  @override
+  String contractDateRange(String dates) {
+    return 'Договор: $dates';
+  }
+
+  @override
+  String get cashPayment => 'Оплата наличными';
+
+  @override
+  String get changeLandlordDialogTitle =>
+      'Сменить владельца / Отправить приглашение';
+
+  @override
+  String get changeLandlordDialogDesc =>
+      'Введите контактные данные нового владельца. Текущие права будут сброшены и создан новый QR/ссылка.';
+
+  @override
+  String get phone => 'Номер телефона';
+
+  @override
+  String get error => 'Ошибка';
+
+  @override
+  String get changeAndGenerateQr => 'Сменить и создать QR';
+
+  @override
+  String get financePendingApprovals => 'Ожидают подтверждения';
+
+  @override
+  String get financeOverduePayments => 'Просроченные долги';
+
+  @override
+  String get financePaidThisMonth => 'Оплачено в этом месяце';
+
+  @override
+  String get financeUpcoming7Days => 'Предстоящие (7 дней)';
+
+  @override
+  String get tabPendingQueue => 'Очередь подтверждений';
+
+  @override
+  String get tabOverdueList => 'Должники';
+
+  @override
+  String get tabAllHistory => 'История платежей';
+
+  @override
+  String get approvePayment => 'Подтвердить';
+
+  @override
+  String get rejectPayment => 'Отклонить';
+
+  @override
+  String get markAsCashPaid => 'Отметить оплаченным наличными';
+
+  @override
+  String get sendReminder => 'Отправить напоминание';
+
+  @override
+  String daysOverdue(int count) {
+    return 'Просрочено на $count дн.';
+  }
+
+  @override
+  String get noFinanceRecords => 'В этой категории нет записей';
+
+  @override
+  String get reminderMessageCopied => 'Сообщение-напоминание скопировано';
+
+  @override
+  String get tenantNoPropertyTitle => 'Вы ещё не прикреплены к объекту.';
+
+  @override
+  String get tenantNoPropertyTooltip => 'Вы ещё не прикреплены к объекту.';
+
+  @override
+  String get tenantNoPropertyMaintenanceTooltip =>
+      'Вы ещё не прикреплены к объекту.\nЧтобы создать заявку на техобслуживание, сначала присоединитесь к объекту.';
+
+  @override
+  String get joinWithQrCode => 'Присоединиться по КР-коду / коду приглашения';
+
+  @override
+  String get agencyPropertyTakeoverQr => 'Принять объект агентства по QR-коду';
+
+  @override
+  String welcomeUser(String userName) {
+    return 'Добро пожаловать, $userName 👋';
+  }
+
+  @override
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  ) {
+    return 'Уважаемый(ая) $tenantName, ваш платеж в размере $amount $currency за объект $propertyName просрочен. Пожалуйста, произведите оплату и загрузите квитанцию.';
+  }
+
+  @override
+  String get heroHeadline =>
+      'Управляйте арендной недвижимостью из одной панели';
+
+  @override
+  String get heroSubtitle =>
+      'Отслеживание жильцов, учет платежей и детали объектов — всё в одном месте.';
+
+  @override
+  String get forgotPassword => 'Забыли пароль?';
 }

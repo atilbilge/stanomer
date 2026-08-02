@@ -98,6 +98,7 @@
   "yourNameHint": "Введите ваши имя и фамилию",
   "viewInvite": "Посмотреть",
   "myProperties": "Моя недвижимость",
+  "myProperty": "Мой объект",
   "tenantEmptyStateTitle": "Нет добавленного жилья",
   "tenantEmptyStateMessage": "Когда собственник отправит вам приглашение, оно появится здесь.",
   "refresh": "Обновить",
@@ -652,5 +653,195 @@
   "invoiceUploadLimitDesc": "JPEG, PNG или PDF · макс. 10 МБ",
   "billMissingLocalDesc": "Файл сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.",
   "documentMissingLocalDesc": "Документ сохранен локально на другом устройстве. Включите облачное копирование, чтобы открыть его здесь.",
-  "cannotOpenDocument": "Не удалось открыть документ"
+  "cannotOpenDocument": "Не удалось открыть документ",
+  "agencyAccount": "Аккаунт агентства",
+  "managedProperties": "Управляемая недвижимость",
+  "paymentApprovalQueue": "Очередь подтверждения платежей",
+  "noPendingPaymentApprovals": "Нет платежей, ожидающих подтверждения",
+  "noManagedPropertiesYet": "Пока нет управляемых объектов",
+  "vacant": "Свободно",
+  "occupied": "Занято",
+  "dueDateShort": "Срок: {date}",
+  "@dueDateShort": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "payment": "Платеж",
+  "insightPendingApprovalsTitle": "Ожидающие подтверждения",
+  "insightPendingApprovalsDesc": "У вас есть объекты, где арендодатель или арендаторы еще не приняли приглашение.",
+  "insightPendingApprovalsAction": "Показать объекты",
+  "insightWithoutContractsTitle": "Объекты без контрактов",
+  "insightWithoutContractsDesc": "У вас есть зарегистрированные в системе объекты, к которым еще не привязан контракт.",
+  "insightWithoutContractsAction": "Показать объекты",
+  "insightExpiredContractsTitle": "Истекшие контракты",
+  "insightExpiredContractsDesc": "У вас есть объекты с истекшими и не продленными контрактами. Пожалуйста, примите меры.",
+  "insightExpiredContractsAction": "Показать объекты",
+  "insightExpiringContractsTitle": "Истекающие контракты",
+  "insightExpiringContractsDesc": "У вас есть объекты, до окончания текущего контракта которых осталось менее одного месяца.",
+  "insightExpiringContractsAction": "Показать объекты",
+  "tabHome": "Главная",
+  "tabFinance": "Финансы",
+  "tabRequests": "Заявки",
+  "tabPortfolio": "Портфель",
+  "agencyAddProperty": "Добавить объект",
+  "searchAndFilterPanel": "ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ",
+  "searchPlaceholder": "Поиск по владельцу, арендатору, городу или объекту...",
+  "filterAppliedLabel": "Применен фильтр: {title}",
+  "@filterAppliedLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noPropertiesMatchingFilter": "Нет объектов, соответствующих фильтру",
+  "groupNone": "Без группировки",
+  "groupByLandlord": "Группировка: Владелец",
+  "groupByCity": "Группировка: Город",
+  "groupByStatus": "Группировка: Статус",
+  "groupByDebtConsent": "Группировка: Долг / Согласие",
+  "sortByNewest": "Сортировка: Сначала новые",
+  "sortByNameAsc": "Сортировка: Название А-Я",
+  "sortByCityAsc": "Сортировка: Город А-Я",
+  "sortByLandlordAsc": "Сортировка: Владелец А-Я",
+  "allPropertiesGroup": "Все объекты",
+  "groupLandlordPendingInvite": "Владельцы, ожидающие приглашения",
+  "groupUnspecifiedCity": "Город не указан",
+  "groupStatusOccupied": "Сданные объекты",
+  "groupStatusVacant": "Свободные объекты",
+  "groupStatusLandlordPending": "Ожидает владельца",
+  "groupDebtPending": "Объекты с задолженностью",
+  "groupConsentPending": "Ожидают согласия / подтверждения",
+  "groupActiveClean": "Объекты без задолженностей",
+  "filterAllCount": "Все ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterHasDebtCount": "⚠️ С долгом ({count})",
+  "@filterHasDebtCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOccupiedCount": "🟢 Занято ({count})",
+  "@filterOccupiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterVacantCount": "🟡 Свободно ({count})",
+  "@filterVacantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterActiveLabel": "Фильтр активен ✓",
+  "financeAndPaymentsHeader": "ФИНАНСЫ И ПЛАТЕЖИ",
+  "financialSummaryTitle": "Финансовая сводка",
+  "pendingPaymentsSummary": "Ожидает подтверждения платежей: {count}",
+  "@pendingPaymentsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "financePlaceholderDesc": "Финансовые графики, учет аренды и история платежей будут отображаться здесь.",
+  "maintenanceRequestsHeader": "ЗАЯВКИ НА РЕМОНТ И ОБСЛУЖИВАНИЕ",
+  "requestManagementTitle": "Управление заявками",
+  "requestsPlaceholderDesc": "Заявки на ремонт и обслуживание от арендаторов и владельцев будут управляться в этой вкладке.",
+  "noOpenRequestsYet": "Открытых заявок пока нет",
+  "actionableInsightsHeader": "УВЕДОМЛЕНИЯ К ДЕЙСТВИЮ",
+  "inviteTenantOrAddContract": "Пригласить арендатора / Добавить договор",
+  "ownershipQrOrLink": "QR / Ссылка на владение",
+  "changeLandlord": "Сменить владельца",
+  "pendingDebtWarning": "Задолженность ожидает подтверждения агентства или оплаты арендатором",
+  "landlordLabel": "Владелец: ",
+  "invitePending": "Ожидает приглашения",
+  "tenantLabel": "Арендатор: ",
+  "vacantLabel": "Свободно",
+  "latestContractNone": "Последний договор: Отсутствует",
+  "unlimited": "Бессрочно",
+  "contractDateRange": "Договор: {dates}",
+  "@contractDateRange": {
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "cashPayment": "Оплата наличными",
+  "changeLandlordDialogTitle": "Сменить владельца / Отправить приглашение",
+  "changeLandlordDialogDesc": "Введите контактные данные нового владельца. Текущие права будут сброшены и создан новый QR/ссылка.",
+  "phone": "Номер телефона",
+  "error": "Ошибка",
+  "changeAndGenerateQr": "Сменить и создать QR",
+  "financePendingApprovals": "Ожидают подтверждения",
+  "financeOverduePayments": "Просроченные долги",
+  "financePaidThisMonth": "Оплачено в этом месяце",
+  "financeUpcoming7Days": "Предстоящие (7 дней)",
+  "tabPendingQueue": "Очередь подтверждений",
+  "tabOverdueList": "Должники",
+  "tabAllHistory": "История платежей",
+  "approvePayment": "Подтвердить",
+  "rejectPayment": "Отклонить",
+  "markAsCashPaid": "Отметить оплаченным наличными",
+  "sendReminder": "Отправить напоминание",
+  "daysOverdue": "Просрочено на {count} дн.",
+  "@daysOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewReceipt": "Посмотреть квитанцию",
+  "noFinanceRecords": "В этой категории нет записей",
+  "reminderMessageCopied": "Сообщение-напоминание скопировано",
+  "tenantNoPropertyTitle": "Вы ещё не прикреплены к объекту.",
+  "tenantNoPropertyTooltip": "Вы ещё не прикреплены к объекту.",
+  "tenantNoPropertyMaintenanceTooltip": "Вы ещё не прикреплены к объекту.\nЧтобы создать заявку на техобслуживание, сначала присоединитесь к объекту.",
+  "joinWithQrCode": "Присоединиться по КР-коду / коду приглашения",
+  "agencyPropertyTakeoverQr": "Принять объект агентства по QR-коду",
+  "welcomeUser": "Добро пожаловать, {userName} 👋",
+  "@welcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "overduePaymentReminderMessage": "Уважаемый(ая) {tenantName}, ваш платеж в размере {amount} {currency} за объект {propertyName} просрочен. Пожалуйста, произведите оплату и загрузите квитанцию.",
+  "@overduePaymentReminderMessage": {
+    "placeholders": {
+      "tenantName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "heroHeadline": "Управляйте арендной недвижимостью из одной панели",
+  "heroSubtitle": "Отслеживание жильцов, учет платежей и детали объектов — всё в одном месте.",
+  "forgotPassword": "Забыли пароль?"
 }

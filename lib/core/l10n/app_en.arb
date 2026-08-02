@@ -86,6 +86,7 @@
   "yourNameHint": "Enter your full name",
   "viewInvite": "View Invite",
   "myProperties": "My Properties",
+  "myProperty": "My Property",
   "tenantEmptyStateTitle": "No property assigned yet",
   "tenantEmptyStateMessage": "If your landlord has sent you an invitation, it will appear here. Tap the button below to check for new invites.",
   "refresh": "Refresh",
@@ -557,5 +558,189 @@
   "invoiceUploadLimitDesc": "JPEG, PNG or PDF · max 10 MB",
   "billMissingLocalDesc": "This bill was saved locally on another device. You cannot view it here since cloud upload is disabled.",
   "documentMissingLocalDesc": "This document was saved locally on another device. You cannot view it here since cloud upload is disabled.",
-  "cannotOpenDocument": "Cannot Open Document"
+  "cannotOpenDocument": "Cannot Open Document",
+  "agencyAccount": "Agency Account",
+  "managedProperties": "Managed Properties",
+  "paymentApprovalQueue": "Payment Approval Queue",
+  "noPendingPaymentApprovals": "No pending payment approvals",
+  "noManagedPropertiesYet": "No managed properties yet",
+  "vacant": "Vacant",
+  "occupied": "Occupied",
+  "dueDateShort": "Due: {date}",
+  "@dueDateShort": {"placeholders": {"date": {"type": "String"}}},
+  "payment": "Payment",
+  "insightPendingApprovalsTitle": "Pending Approvals",
+  "insightPendingApprovalsDesc": "You have properties where the landlord or tenants have not yet approved the invitation.",
+  "insightPendingApprovalsAction": "View Related Properties",
+  "insightWithoutContractsTitle": "Properties Without Contracts",
+  "insightWithoutContractsDesc": "You have properties registered in the system but no contracts have been attached yet.",
+  "insightWithoutContractsAction": "View Related Properties",
+  "insightExpiredContractsTitle": "Expired Contracts",
+  "insightExpiredContractsDesc": "You have properties with expired and unrenewed contracts. Please take action.",
+  "insightExpiredContractsAction": "View Related Properties",
+  "insightExpiringContractsTitle": "Expiring Contracts",
+  "insightExpiringContractsDesc": "You have properties with less than one month remaining on their latest active contract.",
+  "insightExpiringContractsAction": "View Related Properties",
+  "tabHome": "Home",
+  "tabFinance": "Finance",
+  "tabRequests": "Requests",
+  "tabPortfolio": "Portfolio",
+  "agencyAddProperty": "Add Property",
+  "searchAndFilterPanel": "SEARCH AND FILTER PANEL",
+  "searchPlaceholder": "Search landlord, tenant, city or property...",
+  "filterAppliedLabel": "Filter Applied: {title}",
+  "@filterAppliedLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noPropertiesMatchingFilter": "No properties match the selected filter",
+  "groupNone": "No Grouping",
+  "groupByLandlord": "Group: Landlord",
+  "groupByCity": "Group: City",
+  "groupByStatus": "Group: Status",
+  "groupByDebtConsent": "Group: Debt / Approval",
+  "sortByNewest": "Sort: Newest",
+  "sortByNameAsc": "Sort: Property A-Z",
+  "sortByCityAsc": "Sort: City A-Z",
+  "sortByLandlordAsc": "Sort: Landlord A-Z",
+  "allPropertiesGroup": "All Properties",
+  "groupLandlordPendingInvite": "Landlords Pending Invite",
+  "groupUnspecifiedCity": "Unspecified City",
+  "groupStatusOccupied": "Occupied Properties",
+  "groupStatusVacant": "Vacant Properties",
+  "groupStatusLandlordPending": "Landlord Invite Pending",
+  "groupDebtPending": "Properties with Outstanding Debt",
+  "groupConsentPending": "Consent / Approval Pending",
+  "groupActiveClean": "Clean / Debt-Free Properties",
+  "filterAllCount": "All ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterHasDebtCount": "⚠️ Has Debt ({count})",
+  "@filterHasDebtCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOccupiedCount": "🟢 Occupied ({count})",
+  "@filterOccupiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterVacantCount": "🟡 Vacant ({count})",
+  "@filterVacantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterActiveLabel": "Filter Active ✓",
+  "financeAndPaymentsHeader": "FINANCE AND PAYMENTS",
+  "financialSummaryTitle": "Financial Summary",
+  "pendingPaymentsSummary": "{count} pending payment approvals",
+  "@pendingPaymentsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "financePlaceholderDesc": "Financial charts, rent tracking and payment history will be listed here soon.",
+  "maintenanceRequestsHeader": "MAINTENANCE AND REPAIR REQUESTS",
+  "requestManagementTitle": "Request Management",
+  "requestsPlaceholderDesc": "Maintenance and support requests from tenants and landlords will soon be managed from this tab.",
+  "noOpenRequestsYet": "No open requests yet",
+  "actionableInsightsHeader": "ACTIONABLE INSIGHTS",
+  "inviteTenantOrAddContract": "Invite Tenant / Add Contract",
+  "ownershipQrOrLink": "Ownership QR / Link",
+  "changeLandlord": "Change Landlord",
+  "pendingDebtWarning": "Pending Debt Awaiting Agency Approval or Tenant Payment",
+  "landlordLabel": "Landlord: ",
+  "invitePending": "Invite Pending",
+  "tenantLabel": "Tenant: ",
+  "vacantLabel": "Vacant",
+  "latestContractNone": "Latest Contract: None",
+  "unlimited": "Unlimited",
+  "contractDateRange": "Contract: {dates}",
+  "@contractDateRange": {
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "cashPayment": "Cash Payment",
+  "changeLandlordDialogTitle": "Change Landlord / Send Invite",
+  "changeLandlordDialogDesc": "Enter the new landlord contact info. Existing ownership will be reset and a new QR/Link generated.",
+  "phone": "Phone Number",
+  "error": "Error",
+  "changeAndGenerateQr": "Change & Generate QR",
+  "financePendingApprovals": "Pending Approvals",
+  "financeOverduePayments": "Overdue Payments",
+  "financePaidThisMonth": "Paid This Month",
+  "financeUpcoming7Days": "Upcoming (7 Days)",
+  "tabPendingQueue": "Approval Queue",
+  "tabOverdueList": "Overdue Debtors",
+  "tabAllHistory": "Payment History",
+  "approvePayment": "Approve",
+  "rejectPayment": "Reject",
+  "markAsCashPaid": "Mark as Cash Paid",
+  "sendReminder": "Send Reminder",
+  "daysOverdue": "{count} days overdue",
+  "@daysOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewReceipt": "View Receipt",
+  "noFinanceRecords": "No records found in this category",
+  "reminderMessageCopied": "Reminder message copied",
+  "tenantNoPropertyTitle": "You are not yet connected to a property.",
+  "tenantNoPropertyTooltip": "You are not yet connected to a property.",
+  "tenantNoPropertyMaintenanceTooltip": "You are not yet connected to a property.\nYou need to join a property first to create a maintenance request.",
+  "joinWithQrCode": "Join Home with QR / Invite Code",
+  "agencyPropertyTakeoverQr": "Take Over Agency's Property via QR",
+  "welcomeUser": "Welcome, {userName} 👋",
+  "@welcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "overduePaymentReminderMessage": "Dear {tenantName}, your payment of {amount} {currency} for {propertyName} property is overdue. Please make the payment and upload your receipt.",
+  "@overduePaymentReminderMessage": {
+    "placeholders": {
+      "tenantName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "heroHeadline": "Manage your rental properties from a single panel",
+  "heroSubtitle": "Tenant tracking, payment records, and property details — all in one place.",
+  "forgotPassword": "Forgot your password?"
 }

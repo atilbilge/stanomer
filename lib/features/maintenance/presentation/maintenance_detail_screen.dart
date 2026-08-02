@@ -14,6 +14,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../property/domain/property.dart';
 import '../../auth/data/auth_providers.dart';
+import '../../property/data/property_repository.dart';
 import '../domain/maintenance_request.dart';
 import '../data/maintenance_repository.dart';
 
@@ -136,16 +137,22 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
-    final isLandlord = widget.property.landlordId == user?.id;
-    final isTenant = widget.property.tenantId == user?.id;
-    
+    final userProfileAsync = user?.id != null ? ref.watch(profileProvider(user!.id)) : const AsyncValue<Map<String, dynamic>?>.data(null);
+    final profileRole = userProfileAsync.value?['role'] as String? ?? user?.userMetadata?['role'] as String?;
+
+    final isLandlord = widget.property.landlordId == user?.id || profileRole == 'landlord';
+    final isAgency = widget.property.agencyId == user?.id || profileRole == 'agency';
+    final isTenant = widget.property.tenantId == user?.id || profileRole == 'tenant' || (!isLandlord && !isAgency);
+
     final requestsAsync = ref.watch(maintenanceRequestsProvider(widget.property.id));
     final liveRequest = requestsAsync.maybeWhen(
       data: (list) => list.firstWhere((r) => r.id == widget.request.id, orElse: () => widget.request),
       orElse: () => widget.request,
     );
 
-    final roleColor = StanomerColors.getRoleColor(isLandlord ? 'landlord' : (isTenant ? 'tenant' : null));
+    final roleColor = isAgency
+        ? const Color(0xFF8B5CF6)
+        : (isLandlord ? StanomerColors.landlord : StanomerColors.tenant);
     final messagesAsync = ref.watch(maintenanceMessagesProvider(liveRequest.id));
 
     return Scaffold(
@@ -175,21 +182,26 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                 final allItems = [
                   if (liveRequest.description != null && liveRequest.description!.isNotEmpty || liveRequest.photosUrls.isNotEmpty)
                     _MessageBubble(
+                      userId: liveRequest.reporterId,
                       message: liveRequest.description ?? '',
                       isMe: liveRequest.reporterId == user?.id,
                       createdAt: liveRequest.createdAt ?? DateTime.now(),
                       isDescription: true,
                       initialPhotos: liveRequest.photosUrls,
-                      roleColor: liveRequest.reporterId == widget.property.landlordId ? StanomerColors.landlord : StanomerColors.tenant,
+                      landlordId: widget.property.landlordId,
+                      tenantId: widget.property.tenantId,
+                      agencyId: widget.property.agencyId,
                     ),
                   ...messages.map((m) {
-                    final isSenderLandlord = m.userId == widget.property.landlordId;
                     return _MessageBubble(
+                      userId: m.userId,
                       message: m.message,
                       photoUrl: m.photoUrl,
                       isMe: m.userId == user?.id,
                       createdAt: m.createdAt,
-                      roleColor: isSenderLandlord ? StanomerColors.landlord : StanomerColors.tenant,
+                      landlordId: widget.property.landlordId,
+                      tenantId: widget.property.tenantId,
+                      agencyId: widget.property.agencyId,
                     );
                   }),
                 ];
@@ -207,17 +219,18 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
             ),
           ),
           if (liveRequest.status == MaintenanceStatus.resolved)
-            _buildResolvedFooter(liveRequest, isTenant, loc, roleColor)
+            _buildResolvedFooter(liveRequest, isTenant || isLandlord || isAgency, loc, roleColor)
           else
             _buildMessageInput(loc, roleColor),
-          if (isLandlord && liveRequest.status != MaintenanceStatus.resolved)
-            _buildLandlordActions(liveRequest, loc, roleColor),
+          if ((isLandlord || isAgency) && liveRequest.status != MaintenanceStatus.resolved)
+            _buildManagementActions(liveRequest, loc, roleColor),
         ],
       ),
     );
   }
 
   Widget _buildHeader(MaintenanceRequest request, AppLocalizations loc) {
+    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
     Color statusColor = Colors.grey;
     String statusLabel = 'Unknown';
     switch (request.status) {
@@ -229,9 +242,30 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         statusColor = Colors.blue;
         statusLabel = loc.statusInvestigating;
         break;
+      case MaintenanceStatus.inProgress:
+        statusColor = const Color(0xFFD97706);
+        switch (languageCode) {
+          case 'tr': statusLabel = 'Usta Gönderildi'; break;
+          case 'sr': statusLabel = 'Poslat majstor'; break;
+          case 'ru': statusLabel = 'Мастер отправлен'; break;
+          default: statusLabel = 'Technician Sent'; break;
+        }
+        break;
       case MaintenanceStatus.resolved:
         statusColor = StanomerColors.successPrimary;
         statusLabel = loc.statusResolved;
+        break;
+      case MaintenanceStatus.closed:
+        statusColor = Colors.grey;
+        statusLabel = languageCode == 'tr' ? 'Kapatıldı' : (languageCode == 'sr' ? 'Zatvoreno' : (languageCode == 'ru' ? 'Закрыто' : 'Closed'));
+        break;
+      case MaintenanceStatus.pending:
+        statusColor = Colors.amber;
+        statusLabel = languageCode == 'tr' ? 'Beklemede' : (languageCode == 'sr' ? 'Na čekanju' : (languageCode == 'ru' ? 'В ожидании' : 'Pending'));
+        break;
+      case MaintenanceStatus.cancelled:
+        statusColor = Colors.red;
+        statusLabel = languageCode == 'tr' ? 'İptal Edildi' : (languageCode == 'sr' ? 'Otkazano' : (languageCode == 'ru' ? 'Отменено' : 'Cancelled'));
         break;
     }
 
@@ -348,34 +382,92 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     );
   }
 
-  Widget _buildLandlordActions(MaintenanceRequest request, AppLocalizations loc, Color roleColor) {
+  Widget _buildManagementActions(MaintenanceRequest request, AppLocalizations loc, Color roleColor) {
+    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
+    
+    String technicianSentLabel;
+    switch (languageCode) {
+      case 'tr':
+        technicianSentLabel = 'Usta Gönderildi';
+        break;
+      case 'sr':
+        technicianSentLabel = 'Poslat majstor';
+        break;
+      case 'ru':
+        technicianSentLabel = 'Мастер отправлен';
+        break;
+      default:
+        technicianSentLabel = 'Technician Sent';
+        break;
+    }
+
+    final isInvestigating = request.status == MaintenanceStatus.investigating;
+    final isInProgress = request.status == MaintenanceStatus.inProgress;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      color: Theme.of(context).cardColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (request.status == MaintenanceStatus.open) ...[
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _updateStatus(ref, MaintenanceStatus.investigating),
-                icon: const Icon(LucideIcons.search, size: 18),
-                label: Text(loc.statusInvestigating),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: roleColor,
-                  side: BorderSide(color: roleColor),
-                ),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              languageCode == 'tr' ? 'DURUMU GÜNCELLE' : (languageCode == 'sr' ? 'AŽURIRAJ STATUS' : 'UPDATE STATUS'),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary, letterSpacing: 0.5),
             ),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => _updateStatus(ref, MaintenanceStatus.resolved),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: roleColor,
-                foregroundColor: Colors.white,
-              ),
-              icon: const Icon(LucideIcons.check, size: 18),
-              label: Text(loc.statusResolved),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 1. Araştırılıyor / İnceleniyor
+                OutlinedButton.icon(
+                  onPressed: isInvestigating ? null : () => _updateStatus(ref, MaintenanceStatus.investigating),
+                  icon: Icon(
+                    LucideIcons.search,
+                    size: 16,
+                    color: isInvestigating ? Colors.grey : roleColor,
+                  ),
+                  label: Text(loc.statusInvestigating),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isInvestigating ? Colors.grey : roleColor,
+                    side: BorderSide(color: isInvestigating ? Colors.grey.shade300 : roleColor),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 2. Usta Gönderildi / İşlemde
+                OutlinedButton.icon(
+                  onPressed: isInProgress ? null : () => _updateStatus(ref, MaintenanceStatus.inProgress),
+                  icon: Icon(
+                    LucideIcons.wrench,
+                    size: 16,
+                    color: isInProgress ? Colors.grey : const Color(0xFFD97706),
+                  ),
+                  label: Text(technicianSentLabel),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isInProgress ? Colors.grey : const Color(0xFFD97706),
+                    side: BorderSide(color: isInProgress ? Colors.grey.shade300 : const Color(0xFFF59E0B)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 3. Çözüldü
+                ElevatedButton.icon(
+                  onPressed: () => _updateStatus(ref, MaintenanceStatus.resolved),
+                  icon: const Icon(LucideIcons.checkCheck, size: 16),
+                  label: Text(loc.statusResolved),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.successPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -389,7 +481,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       case MaintenanceCategory.electrical: return loc.categoryElectrical;
       case MaintenanceCategory.heating: return loc.categoryHeating;
       case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.other: return loc.categoryOther;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+      default:
+        return loc.categoryOther;
     }
   }
 
@@ -445,42 +541,185 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
   }
 }
 
-class _MessageBubble extends StatelessWidget {
+class _MessageBubble extends ConsumerWidget {
+  final String userId;
   final String message;
   final String? photoUrl;
   final bool isMe;
   final DateTime createdAt;
   final bool isDescription;
   final List<String> initialPhotos;
-  final Color roleColor;
+  final String? landlordId;
+  final String? tenantId;
+  final String? agencyId;
 
   const _MessageBubble({
+    required this.userId,
     required this.message,
     this.photoUrl,
     required this.isMe,
     required this.createdAt,
     this.isDescription = false,
     this.initialPhotos = const [],
-    this.roleColor = StanomerColors.brandPrimary,
+    this.landlordId,
+    this.tenantId,
+    this.agencyId,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final loc = AppLocalizations.of(context)!;
+    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
+
+    final profileAsync = userId.isNotEmpty ? ref.watch(profileProvider(userId)) : const AsyncValue<Map<String, dynamic>?>.data(null);
+
+    String defaultUserText;
+    switch (languageCode) {
+      case 'tr': defaultUserText = 'Kullanıcı'; break;
+      case 'sr': defaultUserText = 'Korisnik'; break;
+      case 'ru': defaultUserText = 'Пользователь'; break;
+      default: defaultUserText = 'User'; break;
+    }
+
+    String youText;
+    switch (languageCode) {
+      case 'tr': youText = 'Siz'; break;
+      case 'sr': youText = 'Vi'; break;
+      case 'ru': youText = 'Вы'; break;
+      default: youText = 'You'; break;
+    }
+
+    final landlordRoleText = loc.roleLandlord;
+    final tenantRoleText = loc.roleTenant;
+    String agencyRoleText;
+    switch (languageCode) {
+      case 'tr': agencyRoleText = 'Acente'; break;
+      case 'sr': agencyRoleText = 'Agencija'; break;
+      case 'ru': agencyRoleText = 'Агентство'; break;
+      default: agencyRoleText = 'Agency'; break;
+    }
+
+    String senderName = isMe ? youText : defaultUserText;
+    String roleLabel = defaultUserText;
+    Color roleBadgeColor = StanomerColors.brandPrimary;
+    IconData roleIcon = LucideIcons.user;
+
+    // Determine role based on property IDs or profile role
+    if (userId.isNotEmpty && userId == landlordId) {
+      roleLabel = landlordRoleText;
+      roleBadgeColor = const Color(0xFF10B981); // Emerald Green
+      roleIcon = LucideIcons.home;
+    } else if (userId.isNotEmpty && userId == tenantId) {
+      roleLabel = tenantRoleText;
+      roleBadgeColor = const Color(0xFF3B82F6); // Blue
+      roleIcon = LucideIcons.user;
+    } else if (userId.isNotEmpty && userId == agencyId) {
+      roleLabel = agencyRoleText;
+      roleBadgeColor = const Color(0xFF8B5CF6); // Purple
+      roleIcon = LucideIcons.building;
+    }
+
+    profileAsync.whenData((profile) {
+      if (profile != null) {
+        final fn = (profile['full_name'] as String?)?.trim();
+        final em = (profile['email'] as String?)?.trim();
+        if (fn != null && fn.isNotEmpty) {
+          senderName = fn;
+        } else if (em != null && em.isNotEmpty) {
+          senderName = em;
+        }
+
+        final userRole = (profile['role'] as String?)?.toLowerCase();
+        if ((roleLabel == defaultUserText || roleLabel == 'Kullanıcı' || roleLabel == 'User') && userRole != null) {
+          if (userRole == 'landlord') {
+            roleLabel = landlordRoleText;
+            roleBadgeColor = const Color(0xFF10B981);
+            roleIcon = LucideIcons.home;
+          } else if (userRole == 'tenant') {
+            roleLabel = tenantRoleText;
+            roleBadgeColor = const Color(0xFF3B82F6);
+            roleIcon = LucideIcons.user;
+          } else if (userRole == 'agency') {
+            roleLabel = agencyRoleText;
+            roleBadgeColor = const Color(0xFF8B5CF6);
+            roleIcon = LucideIcons.building;
+          }
+        }
+      }
+    });
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          // Sender Header (Name & Role Badge)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4, left: 4, right: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isMe) ...[
+                  Text(
+                    senderName,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: roleBadgeColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: roleBadgeColor.withValues(alpha: 0.3), width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(roleIcon, size: 10, color: roleBadgeColor),
+                      const SizedBox(width: 3),
+                      Text(
+                        roleLabel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: roleBadgeColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    senderName,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Message Bubble Container
           Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isDescription 
                 ? (isDark ? Colors.grey.shade800 : Colors.grey.shade100)
-                : roleColor,
+                : (isMe 
+                    ? roleBadgeColor 
+                    : (isDark ? const Color(0xFF1E293B) : Colors.grey.shade100)),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
                 topRight: const Radius.circular(16),
@@ -536,7 +775,9 @@ class _MessageBubble extends StatelessWidget {
                   Text(
                     message,
                     style: TextStyle(
-                      color: (isDescription && !isDark) ? StanomerColors.textPrimary : Colors.white,
+                      color: isDescription 
+                        ? (isDark ? Colors.white : StanomerColors.textPrimary)
+                        : (isMe ? Colors.white : (isDark ? Colors.white : StanomerColors.textPrimary)),
                       fontSize: 15,
                     ),
                   ),

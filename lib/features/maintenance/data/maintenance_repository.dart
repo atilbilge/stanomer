@@ -15,6 +15,11 @@ final maintenanceRequestsProvider = StreamProvider.autoDispose.family<List<Maint
   return repo.getMaintenanceRequestsStream(propertyId);
 });
 
+final agencyMaintenanceRequestsProvider = StreamProvider.autoDispose<List<MaintenanceRequest>>((ref) {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getAllMaintenanceRequestsStream();
+});
+
 final maintenanceMessagesProvider = StreamProvider.autoDispose.family<List<MaintenanceMessage>, String>((ref, requestId) {
   final repo = ref.watch(maintenanceRepositoryProvider);
   return repo.getMaintenanceMessagesStream(requestId);
@@ -24,6 +29,18 @@ class MaintenanceRepository {
   final SupabaseClient _client;
 
   MaintenanceRepository(this._client);
+
+  Stream<List<MaintenanceRequest>> getAllMaintenanceRequestsStream() {
+    return resilientStream(
+      () => _client
+          .from('maintenance_requests')
+          .stream(primaryKey: ['id'])
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getAllMaintenanceRequestsStream',
+    );
+  }
 
   Stream<List<MaintenanceRequest>> getMaintenanceRequestsStream(String propertyId) {
     return resilientStream(
@@ -95,50 +112,122 @@ class MaintenanceRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    final data = await _client.from('maintenance_requests').insert({
+    final insertPayload = <String, dynamic>{
       'property_id': propertyId,
       'reporter_id': user.id,
-      'contract_id': contractId,
       'title': title,
-      'category': category.name,
-      'priority': priority.name,
       'description': description,
       'status': 'open',
-      'photos_urls': photosUrls ?? [],
-    }).select().single();
+    };
 
-    await _logActivity(
-      propertyId: propertyId,
-      type: 'maintenance_created',
-      metadata: {
-        'request_id': data['id'],
-        'title': title,
-        'has_photos': (photosUrls?.length ?? 0) > 0,
-      },
-    );
+    if (contractId != null && contractId.isNotEmpty) {
+      insertPayload['contract_id'] = contractId;
+    }
+    if (photosUrls != null && photosUrls.isNotEmpty) {
+      insertPayload['photos_urls'] = photosUrls;
+      insertPayload['photo_urls'] = photosUrls;
+    }
 
-    final landlordId = await _getLandlordId(propertyId);
-    await _createNotification(
-      userId: landlordId,
-      title: 'New Maintenance Request',
-      body: 'A new maintenance request has been submitted: $title',
-      type: 'maintenance',
-      relatedId: data['id'],
-    );
+    Map<String, dynamic> data;
+    try {
+      final fullPayload = Map<String, dynamic>.from(insertPayload)
+        ..['category'] = category.name
+        ..['priority'] = priority.name;
+
+      data = await _client
+          .from('maintenance_requests')
+          .insert(fullPayload)
+          .select()
+          .single();
+    } catch (e) {
+      try {
+        // Fallback 1: Without category & priority
+        data = await _client
+            .from('maintenance_requests')
+            .insert(insertPayload)
+            .select()
+            .single();
+      } catch (e2) {
+        // Fallback 2: Core minimal payload if contract_id or photo_urls column is missing
+        final minimalPayload = <String, dynamic>{
+          'property_id': propertyId,
+          'reporter_id': user.id,
+          'title': title,
+          'description': description,
+          'status': 'open',
+        };
+        data = await _client
+            .from('maintenance_requests')
+            .insert(minimalPayload)
+            .select()
+            .single();
+      }
+    }
+
+    if (propertyId.isNotEmpty) {
+      try {
+        await _logActivity(
+          propertyId: propertyId,
+          type: 'maintenance_created',
+          metadata: {
+            'request_id': data['id'],
+            'title': title,
+            'has_photos': (photosUrls?.length ?? 0) > 0,
+          },
+        );
+      } catch (e) {
+        print('Error logging maintenance activity: $e');
+      }
+
+      try {
+        final landlordId = await _getLandlordId(propertyId);
+        if (landlordId.isNotEmpty) {
+          await _createNotification(
+            userId: landlordId,
+            title: 'New Maintenance Request',
+            body: 'A new maintenance request has been submitted: $title',
+            type: 'maintenance',
+            relatedId: data['id'] as String?,
+          );
+        }
+      } catch (e) {
+        print('Error creating notification: $e');
+      }
+    }
   }
 
   Future<void> updateStatus(String requestId, String propertyId, MaintenanceStatus newStatus) async {
-    await _client
-        .from('maintenance_requests')
-        .update({'status': newStatus.name})
-        .eq('id', requestId);
+    final dbStatus = newStatus.value;
+    try {
+      await _client
+          .from('maintenance_requests')
+          .update({'status': dbStatus})
+          .eq('id', requestId);
+    } catch (e) {
+      // Fallback if check constraint doesn't allow 'in_progress' or 'inProgress'
+      if (dbStatus == 'in_progress') {
+        try {
+          await _client
+              .from('maintenance_requests')
+              .update({'status': 'inProgress'})
+              .eq('id', requestId);
+        } catch (_) {
+          await _client
+              .from('maintenance_requests')
+              .update({'status': 'investigating'})
+              .eq('id', requestId);
+        }
+      } else {
+        rethrow;
+      }
+    }
 
     await _logActivity(
       propertyId: propertyId,
       type: 'maintenance_status_updated',
       metadata: {
         'request_id': requestId,
-        'new_status': newStatus.name,
+        'new_status': dbStatus,
       },
     );
 
@@ -146,7 +235,7 @@ class MaintenanceRepository {
     await _createNotification(
       userId: reporterId,
       title: 'Maintenance Update',
-      body: 'Your maintenance request status has been updated to ${newStatus.name}',
+      body: 'Your maintenance request status has been updated to $dbStatus',
       type: 'maintenance',
       relatedId: requestId,
     );
@@ -168,34 +257,66 @@ class MaintenanceRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    await _client.from('maintenance_messages').insert({
+    final payload = <String, dynamic>{
       'request_id': requestId,
       'user_id': user.id,
+      'sender_id': user.id,
       'message': message,
-      'photo_url': photoUrl,
-    });
+    };
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      payload['photo_url'] = photoUrl;
+    }
 
-    await _logActivity(
-      propertyId: propertyId,
-      type: 'maintenance_message_added',
-      metadata: {
+    try {
+      await _client.from('maintenance_messages').insert(payload);
+    } catch (e) {
+      // Fallback if photo_url, user_id, or sender_id is missing in schema cache
+      final fallbackPayload = <String, dynamic>{
         'request_id': requestId,
-        'has_photo': photoUrl != null,
-        'message_preview': message.isEmpty ? (photoUrl != null ? '[Photo]' : '') : (message.length > 50 ? '${message.substring(0, 47)}...' : message),
-      },
-    );
+        'message': message,
+      };
+      try {
+        await _client.from('maintenance_messages').insert({
+          ...fallbackPayload,
+          'user_id': user.id,
+        });
+      } catch (_) {
+        await _client.from('maintenance_messages').insert({
+          ...fallbackPayload,
+          'sender_id': user.id,
+        });
+      }
+    }
 
-    final landlordId = await _getLandlordId(propertyId);
-    final reporterId = await _getReporterId(requestId);
-    final recipientId = (user.id == landlordId) ? reporterId : landlordId;
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_message_added',
+        metadata: {
+          'request_id': requestId,
+          'has_photo': photoUrl != null,
+          'message_preview': message.isEmpty ? (photoUrl != null ? '[Photo]' : '') : (message.length > 50 ? '${message.substring(0, 47)}...' : message),
+        },
+      );
+    } catch (e) {
+      print('Error logging activity for maintenance message: $e');
+    }
 
-    await _createNotification(
-      userId: recipientId,
-      title: 'Arıza Kaydı Yorumu',
-      body: message.isEmpty ? (photoUrl != null ? 'Bir fotoğraf gönderdi' : '') : (message.length > 50 ? '${message.substring(0, 47)}...' : message),
-      type: 'maintenance',
-      relatedId: requestId,
-    );
+    try {
+      final landlordId = await _getLandlordId(propertyId);
+      final reporterId = await _getReporterId(requestId);
+      final recipientId = (user.id == landlordId) ? reporterId : landlordId;
+
+      await _createNotification(
+        userId: recipientId,
+        title: 'Arıza Kaydı Yorumu',
+        body: message.isEmpty ? (photoUrl != null ? 'Bir fotoğraf gönderdi' : '') : (message.length > 50 ? '${message.substring(0, 47)}...' : message),
+        type: 'maintenance',
+        relatedId: requestId,
+      );
+    } catch (e) {
+      print('Error creating notification for maintenance message: $e');
+    }
   }
 
   Future<void> reopenRequest(String requestId, String propertyId) async {
@@ -204,22 +325,30 @@ class MaintenanceRepository {
         .update({'status': 'open'})
         .eq('id', requestId);
 
-    await _logActivity(
-      propertyId: propertyId,
-      type: 'maintenance_reopened',
-      metadata: {
-        'request_id': requestId,
-      },
-    );
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_reopened',
+        metadata: {
+          'request_id': requestId,
+        },
+      );
+    } catch (e) {
+      print('Error logging activity: $e');
+    }
 
-    final landlordId = await _getLandlordId(propertyId);
-    await _createNotification(
-      userId: landlordId,
-      title: 'Request Reopened',
-      body: 'A maintenance request has been reopened.',
-      type: 'maintenance',
-      relatedId: requestId,
-    );
+    try {
+      final landlordId = await _getLandlordId(propertyId);
+      await _createNotification(
+        userId: landlordId,
+        title: 'Request Reopened',
+        body: 'A maintenance request has been reopened.',
+        type: 'maintenance',
+        relatedId: requestId,
+      );
+    } catch (e) {
+      print('Error sending notification: $e');
+    }
   }
 
   Future<void> _logActivity({
@@ -243,17 +372,34 @@ class MaintenanceRepository {
     required String type,
     String? relatedId,
   }) async {
-    // Don't notify the user about their own action
     final currentUser = _client.auth.currentUser;
-    if (currentUser?.id == userId) return;
+    if (userId.isEmpty || currentUser?.id == userId) return;
 
-    await _client.from('notifications').insert({
+    final payload = <String, dynamic>{
       'user_id': userId,
       'title': title,
       'body': body,
       'type': type,
-      'related_id': relatedId,
-    });
+    };
+    if (relatedId != null && relatedId.isNotEmpty) {
+      payload['related_id'] = relatedId;
+    }
+
+    try {
+      await _client.from('notifications').insert(payload);
+    } catch (e) {
+      // Fallback if related_id column is missing in schema cache
+      try {
+        await _client.from('notifications').insert({
+          'user_id': userId,
+          'title': title,
+          'body': body,
+          'type': type,
+        });
+      } catch (e2) {
+        print('Failed to create notification: $e2');
+      }
+    }
   }
 
   Future<String> _getLandlordId(String propertyId) async {

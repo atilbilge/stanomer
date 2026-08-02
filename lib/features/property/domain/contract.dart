@@ -127,6 +127,8 @@ class Contract {
   final String landlordId;
   final String? inviterName;
   final String? tenantId;
+  /// Agency managing this contract (B2B2C: agency_id in profiles)
+  final String? agencyId;
   final String inviteeEmail;
   final double monthlyRent;
   final double? depositAmount;
@@ -154,6 +156,7 @@ class Contract {
     required this.landlordId,
     this.inviterName,
     this.tenantId,
+    this.agencyId,
     required this.inviteeEmail,
     required this.monthlyRent,
     this.depositAmount,
@@ -178,13 +181,14 @@ class Contract {
 
   factory Contract.fromJson(Map<String, dynamic> json) {
     return Contract(
-      id: json['id'] as String,
-      propertyId: json['property_id'] as String,
-      landlordId: json['landlord_id'] as String,
+      id: json['id'] as String? ?? '',
+      propertyId: (json['property_id'] ?? json['propertyId']) as String? ?? '',
+      landlordId: (json['landlord_id'] ?? json['landlordId']) as String? ?? '',
       inviterName: json['inviter_name'] as String?,
       tenantId: json['tenant_id'] as String?,
-      inviteeEmail: json['invitee_email'] as String,
-      monthlyRent: (json['monthly_rent'] as num).toDouble(),
+      agencyId: json['agency_id'] as String?,
+      inviteeEmail: json['invitee_email'] as String? ?? '',
+      monthlyRent: (json['monthly_rent'] as num?)?.toDouble() ?? 0.0,
       depositAmount: (json['deposit_amount'] as num?)?.toDouble(),
       currency: json['currency'] as String? ?? 'EUR',
       depositCurrency: json['deposit_currency'] as String? ?? json['currency'] as String? ?? 'EUR',
@@ -202,7 +206,7 @@ class Contract {
           [],
       status: _parseStatus(json['status'] as String?, json['end_date'] != null ? DateTime.parse(json['end_date'] as String) : null),
       tenantFeedback: json['tenant_feedback'] as String?,
-      token: json['token'] as String,
+      token: json['token'] as String? ?? '',
       contractUrl: json['contract_url'] as String?,
       proposedChanges: json['proposed_changes'] as Map<String, dynamic>?,
       proposedBy: json['proposed_by'] as String?,
@@ -247,6 +251,7 @@ class Contract {
       'landlord_id': landlordId,
       'inviter_name': inviterName,
       'tenant_id': tenantId,
+      'agency_id': agencyId,
       'invitee_email': inviteeEmail,
       'monthly_rent': monthlyRent,
       'deposit_amount': depositAmount,
@@ -276,6 +281,7 @@ class Contract {
     String? landlordId,
     String? inviterName,
     String? tenantId,
+    String? agencyId,
     String? inviteeEmail,
     double? monthlyRent,
     double? depositAmount,
@@ -303,6 +309,7 @@ class Contract {
       landlordId: landlordId ?? this.landlordId,
       inviterName: inviterName ?? this.inviterName,
       tenantId: tenantId ?? this.tenantId,
+      agencyId: agencyId ?? this.agencyId,
       inviteeEmail: inviteeEmail ?? this.inviteeEmail,
       monthlyRent: monthlyRent ?? this.monthlyRent,
       depositAmount: depositAmount ?? this.depositAmount,

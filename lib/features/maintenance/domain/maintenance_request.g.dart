@@ -14,14 +14,26 @@ _MaintenanceRequest _$MaintenanceRequestFromJson(Map<String, dynamic> json) =>
       reporterId: json['reporter_id'] as String,
       title: json['title'] as String,
       category:
-          $enumDecodeNullable(_$MaintenanceCategoryEnumMap, json['category']) ??
+          $enumDecodeNullable(
+            _$MaintenanceCategoryEnumMap,
+            json['category'],
+            unknownValue: MaintenanceCategory.other,
+          ) ??
           MaintenanceCategory.other,
       description: json['description'] as String?,
       status:
-          $enumDecodeNullable(_$MaintenanceStatusEnumMap, json['status']) ??
+          $enumDecodeNullable(
+            _$MaintenanceStatusEnumMap,
+            json['status'],
+            unknownValue: MaintenanceStatus.open,
+          ) ??
           MaintenanceStatus.open,
       priority:
-          $enumDecodeNullable(_$MaintenancePriorityEnumMap, json['priority']) ??
+          $enumDecodeNullable(
+            _$MaintenancePriorityEnumMap,
+            json['priority'],
+            unknownValue: MaintenancePriority.normal,
+          ) ??
           MaintenancePriority.normal,
       photosUrls:
           (json['photos_urls'] as List<dynamic>?)
@@ -57,16 +69,25 @@ const _$MaintenanceCategoryEnumMap = {
   MaintenanceCategory.electrical: 'electrical',
   MaintenanceCategory.heating: 'heating',
   MaintenanceCategory.internet: 'internet',
+  MaintenanceCategory.appliance: 'appliance',
+  MaintenanceCategory.structural: 'structural',
   MaintenanceCategory.other: 'other',
 };
 
 const _$MaintenanceStatusEnumMap = {
   MaintenanceStatus.open: 'open',
   MaintenanceStatus.investigating: 'investigating',
+  MaintenanceStatus.inProgress: 'in_progress',
   MaintenanceStatus.resolved: 'resolved',
+  MaintenanceStatus.closed: 'closed',
+  MaintenanceStatus.pending: 'pending',
+  MaintenanceStatus.cancelled: 'cancelled',
 };
 
 const _$MaintenancePriorityEnumMap = {
   MaintenancePriority.normal: 'normal',
+  MaintenancePriority.medium: 'medium',
+  MaintenancePriority.low: 'low',
   MaintenancePriority.urgent: 'urgent',
+  MaintenancePriority.high: 'high',
 };

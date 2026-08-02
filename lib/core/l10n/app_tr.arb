@@ -98,6 +98,7 @@
   "yourNameHint": "Adınız Soyadınız",
   "viewInvite": "Daveti Gör",
   "myProperties": "Mülklerim",
+  "myProperty": "Mülküm",
   "tenantEmptyStateTitle": "Henüz atanmış bir mülkünüz yok",
   "tenantEmptyStateMessage": "Ev sahibiniz size bir davet gönderdiğinde burada görünecektir. Yeni davetleri kontrol etmek için aşağıdaki düğmeye dokunabilirsiniz.",
   "refresh": "Yenile",
@@ -650,5 +651,195 @@
   "invoiceUploadLimitDesc": "JPEG, PNG veya PDF · maks. 10 MB",
   "billMissingLocalDesc": "Bu fatura başka bir cihazda yerel kaydedilmiş. Bulut yedeklemesi kapalı olduğu için bu cihazdan görüntülenemez.",
   "documentMissingLocalDesc": "Bu belge başka bir cihazda yerel kaydedilmiş. Bulut yedeklemesi kapalı olduğu için bu cihazdan görüntülenemez.",
-  "cannotOpenDocument": "Belge açılamadı."
+  "cannotOpenDocument": "Belge açılamadı.",
+  "agencyAccount": "Acente Hesabı",
+  "managedProperties": "Yönetilen Mülkler",
+  "paymentApprovalQueue": "Ödeme Onay Kuyruğu",
+  "noPendingPaymentApprovals": "Bekleyen ödeme onayı yok",
+  "noManagedPropertiesYet": "Henüz yönetilen mülk yok",
+  "vacant": "Boş",
+  "occupied": "Kiracılı",
+  "dueDateShort": "Vade: {date}",
+  "@dueDateShort": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "payment": "Ödeme",
+  "insightPendingApprovalsTitle": "Bekleyen Onaylar Mevcut",
+  "insightPendingApprovalsDesc": "Ev sahibi veya kiracıların henüz daveti onaylamadığı mülkleriniz bulunuyor.",
+  "insightPendingApprovalsAction": "İlgili Mülkleri Listele",
+  "insightWithoutContractsTitle": "Kontrat Eklenmemiş Mülkler",
+  "insightWithoutContractsDesc": "Sisteme kaydettiğiniz ancak henüz herhangi bir kontrat bağlanmamış mülkleriniz mevcut.",
+  "insightWithoutContractsAction": "İlgili Mülkleri Listele",
+  "insightExpiredContractsTitle": "Süresi Dolan Kontratlar",
+  "insightExpiredContractsDesc": "Kontrat bitiş tarihi geçmiş ve henüz yenilenmemiş mülkleriniz bulunuyor. Lütfen aksiyon alınız.",
+  "insightExpiredContractsAction": "İlgili Mülkleri Listele",
+  "insightExpiringContractsTitle": "Süresi Yaklaşan Kontratlar",
+  "insightExpiringContractsDesc": "Son aktif kontratının bitiş tarihine 1 aydan az bir süre kalmış mülkleriniz mevcut.",
+  "insightExpiringContractsAction": "İlgili Mülkleri Listele",
+  "tabHome": "Ana Sayfa",
+  "tabFinance": "Finans",
+  "tabRequests": "Talepler",
+  "tabPortfolio": "Portföy",
+  "agencyAddProperty": "Mülk Ekle",
+  "searchAndFilterPanel": "ARAMA VE FİLTRE PANELİ",
+  "searchPlaceholder": "Ev sahibi, kiracı, şehir veya mülk ara...",
+  "filterAppliedLabel": "Filtre Uygulandı: {title}",
+  "@filterAppliedLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noPropertiesMatchingFilter": "Filtreye uygun mülk bulunamadı",
+  "groupNone": "Gruplama Yok",
+  "groupByLandlord": "Grupla: Ev Sahibi",
+  "groupByCity": "Grupla: Şehir",
+  "groupByStatus": "Grupla: Statü",
+  "groupByDebtConsent": "Grupla: Borç / Onay",
+  "sortByNewest": "Sırala: En Yeni",
+  "sortByNameAsc": "Sırala: Mülk A-Z",
+  "sortByCityAsc": "Sırala: Şehir A-Z",
+  "sortByLandlordAsc": "Sırala: Ev Sahibi A-Z",
+  "allPropertiesGroup": "Tüm Mülkler",
+  "groupLandlordPendingInvite": "Davet Bekleyen Ev Sahipleri",
+  "groupUnspecifiedCity": "Şehir Belirtilmemiş",
+  "groupStatusOccupied": "Kiracılı Mülkler",
+  "groupStatusVacant": "Boş Mülkler",
+  "groupStatusLandlordPending": "Ev Sahibi Davet Bekliyor",
+  "groupDebtPending": "Borcu Olan Mülkler",
+  "groupConsentPending": "Rıza / Onay Bekleyenler",
+  "groupActiveClean": "Temiz / Borçsuz Mülkler",
+  "filterAllCount": "Tümü ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterHasDebtCount": "⚠️ Borcu Olanlar ({count})",
+  "@filterHasDebtCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOccupiedCount": "🟢 Dolu ({count})",
+  "@filterOccupiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterVacantCount": "🟡 Boş ({count})",
+  "@filterVacantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterActiveLabel": "Filtre Aktif ✓",
+  "financeAndPaymentsHeader": "FİNANS VE ÖDEMELER",
+  "financialSummaryTitle": "Finansal Özet",
+  "pendingPaymentsSummary": "{count} bekleyen ödeme onayı",
+  "@pendingPaymentsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "financePlaceholderDesc": "Finansal grafikler, kira takibi ve ödeme geçmişi yakında burada listelenecektir.",
+  "maintenanceRequestsHeader": "BAKIM VE ARIZA TALEPLERİ",
+  "requestManagementTitle": "Talep Yönetimi",
+  "requestsPlaceholderDesc": "Kiracı ve ev sahiplerinden gelen arıza, tadilat ve destek talepleri yakında bu sekmeden yönetilebilecektir.",
+  "noOpenRequestsYet": "Henüz açık talep bulunmuyor",
+  "actionableInsightsHeader": "HAREKETE GEÇİRİLEBİLİR MESAJLAR",
+  "inviteTenantOrAddContract": "Kiracı Davet Et / Sözleşme Ekle",
+  "ownershipQrOrLink": "Sahiplik QR / Linki",
+  "changeLandlord": "Ev Sahibini Değiştir",
+  "pendingDebtWarning": "Acente Onayı / Kiracı Ödemesi Bekleyen Borç Kalemi Var",
+  "landlordLabel": "Ev Sahibi: ",
+  "invitePending": "Davet Bekliyor",
+  "tenantLabel": "Kiracı: ",
+  "vacantLabel": "Boş",
+  "latestContractNone": "Son Kontrat: Bulunmuyor",
+  "unlimited": "Süresiz",
+  "contractDateRange": "Kontrat: {dates}",
+  "@contractDateRange": {
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "cashPayment": "Nakit Ödeme",
+  "changeLandlordDialogTitle": "Ev Sahibini Değiştir / Davet Et",
+  "changeLandlordDialogDesc": "Yeni ev sahibinin iletişim bilgilerini girin. Mevcut sahiplik sıfırlanıp yeni ev sahibine sahiplik QR/Linki üretilecektir.",
+  "phone": "Telefon Numarası",
+  "error": "Hata",
+  "changeAndGenerateQr": "Değiştir ve QR Üret",
+  "financePendingApprovals": "Onay Bekleyenler",
+  "financeOverduePayments": "Geciken Borçlar",
+  "financePaidThisMonth": "Bu Ay Onaylanan",
+  "financeUpcoming7Days": "Yaklaşan (7 Gün)",
+  "tabPendingQueue": "Onay Kuyruğu",
+  "tabOverdueList": "Borçlular",
+  "tabAllHistory": "Ödeme Geçmişi",
+  "approvePayment": "Onayla",
+  "rejectPayment": "Reddet",
+  "markAsCashPaid": "Nakit Ödendi İşaretle",
+  "sendReminder": "Hatırlatma Gönder",
+  "daysOverdue": "{count} gün gecikti",
+  "@daysOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewReceipt": "Dekontu Gör",
+  "noFinanceRecords": "Bu kategoride kayıt bulunmuyor",
+  "reminderMessageCopied": "Hatırlatma mesajı kopyalandı",
+  "tenantNoPropertyTitle": "Henüz bir mülke bağlı değilsiniz.",
+  "tenantNoPropertyTooltip": "Henüz bir mülke bağlı değilsiniz.",
+  "tenantNoPropertyMaintenanceTooltip": "Henüz bir mülke bağlı değilsiniz.\nBakım talebi oluşturmak için önce bir mülke katılmanız gerekiyor.",
+  "joinWithQrCode": "QR / Davet Kodu ile Eve Katıl",
+  "agencyPropertyTakeoverQr": "Acentenin Eklediği Mülkü QR ile Devral",
+  "welcomeUser": "Hoş geldin, {userName} 👋",
+  "@welcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "overduePaymentReminderMessage": "Sayın {tenantName}, {propertyName} mülkü için {amount} {currency} tutarındaki ödemenizin vadesi geçmiştir. Lütfen ödemeyi gerçekleştirip dekontunuzu yükleyiniz.",
+  "@overduePaymentReminderMessage": {
+    "placeholders": {
+      "tenantName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "heroHeadline": "Kiralık mülklerinizi tek panelden yönetin",
+  "heroSubtitle": "Kiracı takibi, ödeme kayıtları ve mülk detayları — hepsi tek yerde.",
+  "forgotPassword": "Şifrenizi mi unuttunuz?"
 }

@@ -16,9 +16,21 @@ if [ -z "$SUPABASE_URL" ]; then
   exit 1
 fi
 
-# Create .env from Vercel climate variables (Critical for bundling)
-echo "SUPABASE_URL=$SUPABASE_URL" > .env
-echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+echo "Target Branch: $VERCEL_GIT_COMMIT_REF | Vercel Env: $VERCEL_ENV"
+
+if [ "$VERCEL_GIT_COMMIT_REF" = "dev" ] || [ "$VERCEL_ENV" = "preview" ]; then
+  echo ">>> Preparing DEV environment variables... <<<"
+  echo "SUPABASE_URL=$SUPABASE_URL" > .env.dev
+  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.dev
+  echo "SUPABASE_URL=$SUPABASE_URL" > .env
+  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+else
+  echo ">>> Preparing PRODUCTION environment variables... <<<"
+  echo "SUPABASE_URL=$SUPABASE_URL" > .env.prod
+  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.prod
+  echo "SUPABASE_URL=$SUPABASE_URL" > .env
+  echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+fi
 
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
@@ -46,13 +58,14 @@ echo "Step 4: Configuring Web & Resolving Dependencies..."
 flutter config --enable-web
 flutter pub get
 
-# 5. Build Flutter Web (DIAGNOSTIC MODE)
-echo "Step 5: Inspecting Build Options..."
-flutter build web -h
-
-echo "Step 6: Building Flutter Web (Basic Release mode)..."
-# Temporarily removing --web-renderer to check for baseline success
-flutter build web --release --base-href /app/
+# 5. Build Flutter Web
+if [ "$VERCEL_GIT_COMMIT_REF" = "dev" ] || [ "$VERCEL_ENV" = "preview" ]; then
+  echo "Step 5: Building Flutter Web for DEV (lib/main_dev.dart)..."
+  flutter build web --release -t lib/main_dev.dart --base-href /app/ --dart-define-from-file=.env.dev
+else
+  echo "Step 5: Building Flutter Web for PRODUCTION (lib/main.dart)..."
+  flutter build web --release -t lib/main.dart --base-href /app/ --dart-define-from-file=.env.prod
+fi
 
 # 6. Build Next.js Website (Legal Pages)
 echo "Step 6: Building Next.js Website..."

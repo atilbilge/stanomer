@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'flavors.dart';
+import 'core/config/env_config.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/routing/app_router.dart';
 import 'core/providers/locale_provider.dart';
@@ -28,11 +31,17 @@ Future<void> main() async {
     debugPrint('CATCHED ERROR: ${details.exception}\n${details.stack}');
   };
 
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('[main] .env file not found or failed to load: $e');
+  }
+
+  EnvConfig.validate();
 
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: EnvConfig.supabaseUrl,
+    anonKey: EnvConfig.supabaseAnonKey,
   );
 
   final prefs = await SharedPreferences.getInstance();
@@ -136,7 +145,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: 'Stanomer',
+      title: F.title,
       debugShowCheckedModeBanner: false,
       theme: StanomerTheme.lightTheme,
       routerConfig: router,

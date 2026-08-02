@@ -311,14 +311,24 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       case MaintenanceCategory.electrical: return loc.categoryElectrical;
       case MaintenanceCategory.heating: return loc.categoryHeating;
       case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.other: return loc.categoryOther;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+      default:
+        return loc.categoryOther;
     }
   }
 
   String _getPriorityLabel(MaintenancePriority p, AppLocalizations loc) {
     switch (p) {
-      case MaintenancePriority.normal: return loc.priorityNormal;
-      case MaintenancePriority.urgent: return loc.priorityUrgent;
+      case MaintenancePriority.urgent:
+      case MaintenancePriority.high:
+        return loc.priorityUrgent;
+      case MaintenancePriority.normal:
+      case MaintenancePriority.medium:
+      case MaintenancePriority.low:
+      default:
+        return loc.priorityNormal;
     }
   }
 }

@@ -271,6 +271,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: StanomerColors.bgCard,
         elevation: 0,
         foregroundColor: StanomerColors.textPrimary,
+        leading: Navigator.canPop(context)
+            ? BackButton(onPressed: () => Navigator.maybePop(context))
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.go('/dashboard'),
+              ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -679,6 +685,9 @@ class _SettingsGroup extends ConsumerWidget {
       return '🇷🇸';
     }
 
+    final role = ref.watch(userRoleProvider);
+    final isAgency = role == 'agency';
+
     return Container(
       decoration: BoxDecoration(
         color: StanomerColors.bgCard,
@@ -694,16 +703,18 @@ class _SettingsGroup extends ConsumerWidget {
             onTap: onLanguageTap,
             showChevron: true,
           ),
-          const Divider(height: 1, indent: 56),
-          _SwitchListTile(
-            icon: isCloudAllowed ? LucideIcons.cloudUpload : LucideIcons.shieldAlert,
-            title: _getCloudTitle(context),
-            subtitle: _getCloudSubtitle(context, isCloudAllowed),
-            value: isCloudAllowed,
-            onChanged: kIsWeb ? null : (val) {
-              ref.read(cloudUploadAllowedProvider.notifier).toggle(val);
-            },
-          ),
+          if (!isAgency) ...[
+            const Divider(height: 1, indent: 56),
+            _SwitchListTile(
+              icon: isCloudAllowed ? LucideIcons.cloudUpload : LucideIcons.shieldAlert,
+              title: _getCloudTitle(context),
+              subtitle: _getCloudSubtitle(context, isCloudAllowed),
+              value: isCloudAllowed,
+              onChanged: kIsWeb ? null : (val) {
+                ref.read(cloudUploadAllowedProvider.notifier).toggle(val);
+              },
+            ),
+          ],
           const Divider(height: 1, indent: 56),
           _ListTile(
             icon: LucideIcons.helpCircle,

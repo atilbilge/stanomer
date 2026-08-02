@@ -270,6 +270,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get viewInvite => 'Daveti Gör';
 
   @override
+  String get myProperty => 'Mülküm';
+
+  @override
   String get myProperties => 'Mülklerim';
 
   @override
@@ -1457,4 +1460,348 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cannotOpenDocument => 'Belge açılamadı.';
+
+  @override
+  String get agencyAccount => 'Acente Hesabı';
+
+  @override
+  String get managedProperties => 'Yönetilen Mülkler';
+
+  @override
+  String get paymentApprovalQueue => 'Ödeme Onay Kuyruğu';
+
+  @override
+  String get noPendingPaymentApprovals => 'Bekleyen ödeme onayı yok';
+
+  @override
+  String get noManagedPropertiesYet => 'Henüz yönetilen mülk yok';
+
+  @override
+  String get occupied => 'Kiracılı';
+
+  @override
+  String dueDateShort(String date) {
+    return 'Vade: $date';
+  }
+
+  @override
+  String get payment => 'Ödeme';
+
+  @override
+  String get insightPendingApprovalsTitle => 'Bekleyen Onaylar Mevcut';
+
+  @override
+  String get insightPendingApprovalsDesc =>
+      'Ev sahibi veya kiracıların henüz daveti onaylamadığı mülkleriniz bulunuyor.';
+
+  @override
+  String get insightPendingApprovalsAction => 'İlgili Mülkleri Listele';
+
+  @override
+  String get insightWithoutContractsTitle => 'Kontrat Eklenmemiş Mülkler';
+
+  @override
+  String get insightWithoutContractsDesc =>
+      'Sisteme kaydettiğiniz ancak henüz herhangi bir kontrat bağlanmamış mülkleriniz mevcut.';
+
+  @override
+  String get insightWithoutContractsAction => 'İlgili Mülkleri Listele';
+
+  @override
+  String get insightExpiredContractsTitle => 'Süresi Dolan Kontratlar';
+
+  @override
+  String get insightExpiredContractsDesc =>
+      'Kontrat bitiş tarihi geçmiş ve henüz yenilenmemiş mülkleriniz bulunuyor. Lütfen aksiyon alınız.';
+
+  @override
+  String get insightExpiredContractsAction => 'İlgili Mülkleri Listele';
+
+  @override
+  String get insightExpiringContractsTitle => 'Süresi Yaklaşan Kontratlar';
+
+  @override
+  String get insightExpiringContractsDesc =>
+      'Son aktif kontratının bitiş tarihine 1 aydan az bir süre kalmış mülkleriniz mevcut.';
+
+  @override
+  String get insightExpiringContractsAction => 'İlgili Mülkleri Listele';
+
+  @override
+  String get tabHome => 'Ana Sayfa';
+
+  @override
+  String get tabFinance => 'Finans';
+
+  @override
+  String get tabRequests => 'Talepler';
+
+  @override
+  String get tabPortfolio => 'Portföy';
+
+  @override
+  String get agencyAddProperty => 'Mülk Ekle';
+
+  @override
+  String get searchAndFilterPanel => 'ARAMA VE FİLTRE PANELİ';
+
+  @override
+  String get searchPlaceholder => 'Ev sahibi, kiracı, şehir veya mülk ara...';
+
+  @override
+  String filterAppliedLabel(String title) {
+    return 'Filtre Uygulandı: $title';
+  }
+
+  @override
+  String get noPropertiesMatchingFilter => 'Filtreye uygun mülk bulunamadı';
+
+  @override
+  String get groupNone => 'Gruplama Yok';
+
+  @override
+  String get groupByLandlord => 'Grupla: Ev Sahibi';
+
+  @override
+  String get groupByCity => 'Grupla: Şehir';
+
+  @override
+  String get groupByStatus => 'Grupla: Statü';
+
+  @override
+  String get groupByDebtConsent => 'Grupla: Borç / Onay';
+
+  @override
+  String get sortByNewest => 'Sırala: En Yeni';
+
+  @override
+  String get sortByNameAsc => 'Sırala: Mülk A-Z';
+
+  @override
+  String get sortByCityAsc => 'Sırala: Şehir A-Z';
+
+  @override
+  String get sortByLandlordAsc => 'Sırala: Ev Sahibi A-Z';
+
+  @override
+  String get allPropertiesGroup => 'Tüm Mülkler';
+
+  @override
+  String get groupLandlordPendingInvite => 'Davet Bekleyen Ev Sahipleri';
+
+  @override
+  String get groupUnspecifiedCity => 'Şehir Belirtilmemiş';
+
+  @override
+  String get groupStatusOccupied => 'Kiracılı Mülkler';
+
+  @override
+  String get groupStatusVacant => 'Boş Mülkler';
+
+  @override
+  String get groupStatusLandlordPending => 'Ev Sahibi Davet Bekliyor';
+
+  @override
+  String get groupDebtPending => 'Borcu Olan Mülkler';
+
+  @override
+  String get groupConsentPending => 'Rıza / Onay Bekleyenler';
+
+  @override
+  String get groupActiveClean => 'Temiz / Borçsuz Mülkler';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Tümü ($count)';
+  }
+
+  @override
+  String filterHasDebtCount(int count) {
+    return '⚠️ Borcu Olanlar ($count)';
+  }
+
+  @override
+  String filterOccupiedCount(int count) {
+    return '🟢 Dolu ($count)';
+  }
+
+  @override
+  String filterVacantCount(int count) {
+    return '🟡 Boş ($count)';
+  }
+
+  @override
+  String get filterActiveLabel => 'Filtre Aktif ✓';
+
+  @override
+  String get financeAndPaymentsHeader => 'FİNANS VE ÖDEMELER';
+
+  @override
+  String get financialSummaryTitle => 'Finansal Özet';
+
+  @override
+  String pendingPaymentsSummary(int count) {
+    return '$count bekleyen ödeme onayı';
+  }
+
+  @override
+  String get financePlaceholderDesc =>
+      'Finansal grafikler, kira takibi ve ödeme geçmişi yakında burada listelenecektir.';
+
+  @override
+  String get maintenanceRequestsHeader => 'BAKIM VE ARIZA TALEPLERİ';
+
+  @override
+  String get requestManagementTitle => 'Talep Yönetimi';
+
+  @override
+  String get requestsPlaceholderDesc =>
+      'Kiracı ve ev sahiplerinden gelen arıza, tadilat ve destek talepleri yakında bu sekmeden yönetilebilecektir.';
+
+  @override
+  String get noOpenRequestsYet => 'Henüz açık talep bulunmuyor';
+
+  @override
+  String get actionableInsightsHeader => 'HAREKETE GEÇİRİLEBİLİR MESAJLAR';
+
+  @override
+  String get inviteTenantOrAddContract => 'Kiracı Davet Et / Sözleşme Ekle';
+
+  @override
+  String get ownershipQrOrLink => 'Sahiplik QR / Linki';
+
+  @override
+  String get changeLandlord => 'Ev Sahibini Değiştir';
+
+  @override
+  String get pendingDebtWarning =>
+      'Acente Onayı / Kiracı Ödemesi Bekleyen Borç Kalemi Var';
+
+  @override
+  String get landlordLabel => 'Ev Sahibi: ';
+
+  @override
+  String get invitePending => 'Davet Bekliyor';
+
+  @override
+  String get tenantLabel => 'Kiracı: ';
+
+  @override
+  String get vacantLabel => 'Boş';
+
+  @override
+  String get latestContractNone => 'Son Kontrat: Bulunmuyor';
+
+  @override
+  String get unlimited => 'Süresiz';
+
+  @override
+  String contractDateRange(String dates) {
+    return 'Kontrat: $dates';
+  }
+
+  @override
+  String get cashPayment => 'Nakit Ödeme';
+
+  @override
+  String get changeLandlordDialogTitle => 'Ev Sahibini Değiştir / Davet Et';
+
+  @override
+  String get changeLandlordDialogDesc =>
+      'Yeni ev sahibinin iletişim bilgilerini girin. Mevcut sahiplik sıfırlanıp yeni ev sahibine sahiplik QR/Linki üretilecektir.';
+
+  @override
+  String get phone => 'Telefon Numarası';
+
+  @override
+  String get error => 'Hata';
+
+  @override
+  String get changeAndGenerateQr => 'Değiştir ve QR Üret';
+
+  @override
+  String get financePendingApprovals => 'Onay Bekleyenler';
+
+  @override
+  String get financeOverduePayments => 'Geciken Borçlar';
+
+  @override
+  String get financePaidThisMonth => 'Bu Ay Onaylanan';
+
+  @override
+  String get financeUpcoming7Days => 'Yaklaşan (7 Gün)';
+
+  @override
+  String get tabPendingQueue => 'Onay Kuyruğu';
+
+  @override
+  String get tabOverdueList => 'Borçlular';
+
+  @override
+  String get tabAllHistory => 'Ödeme Geçmişi';
+
+  @override
+  String get approvePayment => 'Onayla';
+
+  @override
+  String get rejectPayment => 'Reddet';
+
+  @override
+  String get markAsCashPaid => 'Nakit Ödendi İşaretle';
+
+  @override
+  String get sendReminder => 'Hatırlatma Gönder';
+
+  @override
+  String daysOverdue(int count) {
+    return '$count gün gecikti';
+  }
+
+  @override
+  String get noFinanceRecords => 'Bu kategoride kayıt bulunmuyor';
+
+  @override
+  String get reminderMessageCopied => 'Hatırlatma mesajı kopyalandı';
+
+  @override
+  String get tenantNoPropertyTitle => 'Henüz bir mülke bağlı değilsiniz.';
+
+  @override
+  String get tenantNoPropertyTooltip => 'Henüz bir mülke bağlı değilsiniz.';
+
+  @override
+  String get tenantNoPropertyMaintenanceTooltip =>
+      'Henüz bir mülke bağlı değilsiniz.\nBakım talebi oluşturmak için önce bir mülke katılmanız gerekiyor.';
+
+  @override
+  String get joinWithQrCode => 'QR / Davet Kodu ile Eve Katıl';
+
+  @override
+  String get agencyPropertyTakeoverQr =>
+      'Acentenin Eklediği Mülkü QR ile Devral';
+
+  @override
+  String welcomeUser(String userName) {
+    return 'Hoş geldin, $userName 👋';
+  }
+
+  @override
+  String overduePaymentReminderMessage(
+    String tenantName,
+    String propertyName,
+    String amount,
+    String currency,
+  ) {
+    return 'Sayın $tenantName, $propertyName mülkü için $amount $currency tutarındaki ödemenizin vadesi geçmiştir. Lütfen ödemeyi gerçekleştirip dekontunuzu yükleyiniz.';
+  }
+
+  @override
+  String get heroHeadline => 'Kiralık mülklerinizi tek panelden yönetin';
+
+  @override
+  String get heroSubtitle =>
+      'Kiracı takibi, ödeme kayıtları ve mülk detayları — hepsi tek yerde.';
+
+  @override
+  String get forgotPassword => 'Şifrenizi mi unuttunuz?';
 }

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MaintenanceRequest {
 
- String get id;@JsonKey(name: 'property_id') String get propertyId;@JsonKey(name: 'contract_id') String? get contractId;@JsonKey(name: 'reporter_id') String get reporterId; String get title; MaintenanceCategory get category; String? get description; MaintenanceStatus get status; MaintenancePriority get priority;@JsonKey(name: 'photos_urls') List<String> get photosUrls;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ String get id;@JsonKey(name: 'property_id') String get propertyId;@JsonKey(name: 'contract_id') String? get contractId;@JsonKey(name: 'reporter_id') String get reporterId; String get title;@JsonKey(unknownEnumValue: MaintenanceCategory.other) MaintenanceCategory get category; String? get description;@JsonKey(unknownEnumValue: MaintenanceStatus.open) MaintenanceStatus get status;@JsonKey(unknownEnumValue: MaintenancePriority.normal) MaintenancePriority get priority;@JsonKey(name: 'photos_urls') List<String> get photosUrls;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of MaintenanceRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $MaintenanceRequestCopyWith<$Res>  {
   factory $MaintenanceRequestCopyWith(MaintenanceRequest value, $Res Function(MaintenanceRequest) _then) = _$MaintenanceRequestCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'property_id') String propertyId,@JsonKey(name: 'contract_id') String? contractId,@JsonKey(name: 'reporter_id') String reporterId, String title, MaintenanceCategory category, String? description, MaintenanceStatus status, MaintenancePriority priority,@JsonKey(name: 'photos_urls') List<String> photosUrls,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'property_id') String propertyId,@JsonKey(name: 'contract_id') String? contractId,@JsonKey(name: 'reporter_id') String reporterId, String title,@JsonKey(unknownEnumValue: MaintenanceCategory.other) MaintenanceCategory category, String? description,@JsonKey(unknownEnumValue: MaintenanceStatus.open) MaintenanceStatus status,@JsonKey(unknownEnumValue: MaintenancePriority.normal) MaintenancePriority priority,@JsonKey(name: 'photos_urls') List<String> photosUrls,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -164,7 +164,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title,  MaintenanceCategory category,  String? description,  MaintenanceStatus status,  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title, @JsonKey(unknownEnumValue: MaintenanceCategory.other)  MaintenanceCategory category,  String? description, @JsonKey(unknownEnumValue: MaintenanceStatus.open)  MaintenanceStatus status, @JsonKey(unknownEnumValue: MaintenancePriority.normal)  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MaintenanceRequest() when $default != null:
 return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_that.title,_that.category,_that.description,_that.status,_that.priority,_that.photosUrls,_that.createdAt,_that.updatedAt);case _:
@@ -185,7 +185,7 @@ return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title,  MaintenanceCategory category,  String? description,  MaintenanceStatus status,  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title, @JsonKey(unknownEnumValue: MaintenanceCategory.other)  MaintenanceCategory category,  String? description, @JsonKey(unknownEnumValue: MaintenanceStatus.open)  MaintenanceStatus status, @JsonKey(unknownEnumValue: MaintenancePriority.normal)  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MaintenanceRequest():
 return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_that.title,_that.category,_that.description,_that.status,_that.priority,_that.photosUrls,_that.createdAt,_that.updatedAt);case _:
@@ -205,7 +205,7 @@ return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title,  MaintenanceCategory category,  String? description,  MaintenanceStatus status,  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'property_id')  String propertyId, @JsonKey(name: 'contract_id')  String? contractId, @JsonKey(name: 'reporter_id')  String reporterId,  String title, @JsonKey(unknownEnumValue: MaintenanceCategory.other)  MaintenanceCategory category,  String? description, @JsonKey(unknownEnumValue: MaintenanceStatus.open)  MaintenanceStatus status, @JsonKey(unknownEnumValue: MaintenancePriority.normal)  MaintenancePriority priority, @JsonKey(name: 'photos_urls')  List<String> photosUrls, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MaintenanceRequest() when $default != null:
 return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_that.title,_that.category,_that.description,_that.status,_that.priority,_that.photosUrls,_that.createdAt,_that.updatedAt);case _:
@@ -220,7 +220,7 @@ return $default(_that.id,_that.propertyId,_that.contractId,_that.reporterId,_tha
 @JsonSerializable()
 
 class _MaintenanceRequest implements MaintenanceRequest {
-  const _MaintenanceRequest({required this.id, @JsonKey(name: 'property_id') required this.propertyId, @JsonKey(name: 'contract_id') this.contractId, @JsonKey(name: 'reporter_id') required this.reporterId, required this.title, this.category = MaintenanceCategory.other, this.description, this.status = MaintenanceStatus.open, this.priority = MaintenancePriority.normal, @JsonKey(name: 'photos_urls') final  List<String> photosUrls = const [], @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _photosUrls = photosUrls;
+  const _MaintenanceRequest({required this.id, @JsonKey(name: 'property_id') required this.propertyId, @JsonKey(name: 'contract_id') this.contractId, @JsonKey(name: 'reporter_id') required this.reporterId, required this.title, @JsonKey(unknownEnumValue: MaintenanceCategory.other) this.category = MaintenanceCategory.other, this.description, @JsonKey(unknownEnumValue: MaintenanceStatus.open) this.status = MaintenanceStatus.open, @JsonKey(unknownEnumValue: MaintenancePriority.normal) this.priority = MaintenancePriority.normal, @JsonKey(name: 'photos_urls') final  List<String> photosUrls = const [], @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _photosUrls = photosUrls;
   factory _MaintenanceRequest.fromJson(Map<String, dynamic> json) => _$MaintenanceRequestFromJson(json);
 
 @override final  String id;
@@ -228,10 +228,10 @@ class _MaintenanceRequest implements MaintenanceRequest {
 @override@JsonKey(name: 'contract_id') final  String? contractId;
 @override@JsonKey(name: 'reporter_id') final  String reporterId;
 @override final  String title;
-@override@JsonKey() final  MaintenanceCategory category;
+@override@JsonKey(unknownEnumValue: MaintenanceCategory.other) final  MaintenanceCategory category;
 @override final  String? description;
-@override@JsonKey() final  MaintenanceStatus status;
-@override@JsonKey() final  MaintenancePriority priority;
+@override@JsonKey(unknownEnumValue: MaintenanceStatus.open) final  MaintenanceStatus status;
+@override@JsonKey(unknownEnumValue: MaintenancePriority.normal) final  MaintenancePriority priority;
  final  List<String> _photosUrls;
 @override@JsonKey(name: 'photos_urls') List<String> get photosUrls {
   if (_photosUrls is EqualUnmodifiableListView) return _photosUrls;
@@ -275,7 +275,7 @@ abstract mixin class _$MaintenanceRequestCopyWith<$Res> implements $MaintenanceR
   factory _$MaintenanceRequestCopyWith(_MaintenanceRequest value, $Res Function(_MaintenanceRequest) _then) = __$MaintenanceRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'property_id') String propertyId,@JsonKey(name: 'contract_id') String? contractId,@JsonKey(name: 'reporter_id') String reporterId, String title, MaintenanceCategory category, String? description, MaintenanceStatus status, MaintenancePriority priority,@JsonKey(name: 'photos_urls') List<String> photosUrls,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'property_id') String propertyId,@JsonKey(name: 'contract_id') String? contractId,@JsonKey(name: 'reporter_id') String reporterId, String title,@JsonKey(unknownEnumValue: MaintenanceCategory.other) MaintenanceCategory category, String? description,@JsonKey(unknownEnumValue: MaintenanceStatus.open) MaintenanceStatus status,@JsonKey(unknownEnumValue: MaintenancePriority.normal) MaintenancePriority priority,@JsonKey(name: 'photos_urls') List<String> photosUrls,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 

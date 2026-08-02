@@ -1109,9 +1109,13 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
         Text(loc.expensesHeader,
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary, letterSpacing: 1.1)),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(color: StanomerColors.bgCard, borderRadius: BorderRadius.circular(16), border: Border.all(color: StanomerColors.borderDefault)),
-          child: Column(
+        Material(
+          color: StanomerColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: StanomerColors.borderDefault)),
+            child: Column(
             children: _contractExpenses.asMap().entries.map((entry) {
               final index = entry.key;
               final expense = entry.value;
@@ -1160,6 +1164,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               );
             }).toList(),
           ),
+        ),
         ),
       ],
     );
@@ -1307,12 +1312,15 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: StanomerColors.bgCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: StanomerColors.borderDefault),
-          ),
+        Material(
+          color: StanomerColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: StanomerColors.borderDefault),
+            ),
           child: Column(
             children: _expenses.map((expense) {
               final index = _expenses.indexOf(expense);
@@ -1384,6 +1392,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               );
             }).toList().cast<Widget>(),
           ),
+        ),
         ),
       ],
     );

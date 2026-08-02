@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../property/domain/property.dart';
+import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../data/maintenance_repository.dart';
@@ -22,13 +23,23 @@ class MaintenanceScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
-    final isLandlord = property.landlordId == user?.id;
-    final isTenant = property.tenantId == user?.id;
+    final userProfileAsync = user?.id != null ? ref.watch(profileProvider(user!.id)) : const AsyncValue<Map<String, dynamic>?>.data(null);
+    final profileRole = userProfileAsync.value?['role'] as String? ?? user?.userMetadata?['role'] as String?;
+
+    final isLandlord = property.landlordId == user?.id || profileRole == 'landlord';
+    final isAgency = property.agencyId == user?.id || profileRole == 'agency';
+    final isTenant = property.tenantId == user?.id || profileRole == 'tenant' || (!isLandlord && !isAgency);
     final requestsAsync = ref.watch(maintenanceRequestsProvider(property.id));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.maintenance),
+        leading: Navigator.canPop(context)
+            ? BackButton(onPressed: () => Navigator.maybePop(context))
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.go('/dashboard'),
+              ),
       ),
       body: Column(
         children: [
@@ -36,7 +47,7 @@ class MaintenanceScreen extends ConsumerWidget {
             hasError: requestsAsync.hasError,
             onRetry: () => ref.invalidate(maintenanceRequestsProvider(property.id)),
           ),
-          if (isTenant)
+          if (isTenant || isAgency)
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: SizedBox(
@@ -46,7 +57,7 @@ class MaintenanceScreen extends ConsumerWidget {
                   icon: const Icon(LucideIcons.plus, size: 20),
                   label: Text(loc.reportIssue),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: StanomerColors.tenant,
+                    backgroundColor: isAgency ? StanomerColors.brandPrimary : StanomerColors.tenant,
                   ),
                 ),
               ),
@@ -109,6 +120,8 @@ class _MaintenanceCard extends ConsumerWidget {
     final loc = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
+
     Color statusColor = Colors.grey;
     String statusLabel = 'Unknown';
     switch (request.status) {
@@ -120,9 +133,30 @@ class _MaintenanceCard extends ConsumerWidget {
         statusColor = Colors.blue;
         statusLabel = loc.statusInvestigating;
         break;
+      case MaintenanceStatus.inProgress:
+        statusColor = const Color(0xFFD97706);
+        switch (languageCode) {
+          case 'tr': statusLabel = 'Usta Gönderildi'; break;
+          case 'sr': statusLabel = 'Poslat majstor'; break;
+          case 'ru': statusLabel = 'Мастер отправлен'; break;
+          default: statusLabel = 'Technician Sent'; break;
+        }
+        break;
       case MaintenanceStatus.resolved:
         statusColor = StanomerColors.successPrimary;
         statusLabel = loc.statusResolved;
+        break;
+      case MaintenanceStatus.closed:
+        statusColor = Colors.grey;
+        statusLabel = languageCode == 'tr' ? 'Kapatıldı' : (languageCode == 'sr' ? 'Zatvoreno' : (languageCode == 'ru' ? 'Закрыто' : 'Closed'));
+        break;
+      case MaintenanceStatus.pending:
+        statusColor = Colors.amber;
+        statusLabel = languageCode == 'tr' ? 'Beklemede' : (languageCode == 'sr' ? 'Na čekanju' : (languageCode == 'ru' ? 'В ожидании' : 'Pending'));
+        break;
+      case MaintenanceStatus.cancelled:
+        statusColor = Colors.red;
+        statusLabel = languageCode == 'tr' ? 'İptal Edildi' : (languageCode == 'sr' ? 'Otkazano' : (languageCode == 'ru' ? 'Отменено' : 'Cancelled'));
         break;
     }
 
@@ -233,7 +267,11 @@ class _MaintenanceCard extends ConsumerWidget {
       case MaintenanceCategory.electrical: return loc.categoryElectrical;
       case MaintenanceCategory.heating: return loc.categoryHeating;
       case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.other: return loc.categoryOther;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+      default:
+        return loc.categoryOther;
     }
   }
 

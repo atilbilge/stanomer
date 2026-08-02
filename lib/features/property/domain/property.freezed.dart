@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Property {
 
- String get id; String get address; String get name;@JsonKey(name: 'default_monthly_rent') double get defaultMonthlyRent;@JsonKey(name: 'default_deposit_amount') double? get defaultDepositAmount; String get currency;@JsonKey(name: 'default_deposit_currency') String get defaultDepositCurrency;@JsonKey(name: 'landlord_id') String get landlordId;@JsonKey(name: 'tenant_id') String? get tenantId;@JsonKey(name: 'landlord_name') String? get landlordName;@JsonKey(name: 'tenant_name') String? get tenantName;@JsonKey(name: 'default_due_day') int get defaultDueDay;@JsonKey(name: 'tax_type') TaxType get taxType;@JsonKey(name: 'expenses_template') List<ExpenseItem> get expensesTemplate;@JsonKey(name: 'created_at') DateTime? get createdAt;
+ String get id; String get address; String get name;@JsonKey(name: 'city') String? get city;@JsonKey(name: 'default_monthly_rent') double get defaultMonthlyRent;@JsonKey(name: 'default_deposit_amount') double? get defaultDepositAmount; String get currency;@JsonKey(name: 'default_deposit_currency') String get defaultDepositCurrency;@JsonKey(name: 'landlord_id') String? get landlordId;@JsonKey(name: 'tenant_id') String? get tenantId;/// Agency managing this property (B2B2C: agency_id in profiles)
+@JsonKey(name: 'agency_id') String? get agencyId;@JsonKey(name: 'landlord_name') String? get landlordName;@JsonKey(name: 'landlord_phone') String? get landlordPhone;@JsonKey(name: 'landlord_email') String? get landlordEmail;@JsonKey(name: 'tenant_name') String? get tenantName;@JsonKey(name: 'default_due_day') int get defaultDueDay;@JsonKey(name: 'tax_type') TaxType get taxType;@JsonKey(name: 'expenses_template') List<ExpenseItem> get expensesTemplate;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of Property
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $PropertyCopyWith<Property> get copyWith => _$PropertyCopyWithImpl<Property>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Property&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.name, name) || other.name == name)&&(identical(other.defaultMonthlyRent, defaultMonthlyRent) || other.defaultMonthlyRent == defaultMonthlyRent)&&(identical(other.defaultDepositAmount, defaultDepositAmount) || other.defaultDepositAmount == defaultDepositAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.defaultDepositCurrency, defaultDepositCurrency) || other.defaultDepositCurrency == defaultDepositCurrency)&&(identical(other.landlordId, landlordId) || other.landlordId == landlordId)&&(identical(other.tenantId, tenantId) || other.tenantId == tenantId)&&(identical(other.landlordName, landlordName) || other.landlordName == landlordName)&&(identical(other.tenantName, tenantName) || other.tenantName == tenantName)&&(identical(other.defaultDueDay, defaultDueDay) || other.defaultDueDay == defaultDueDay)&&(identical(other.taxType, taxType) || other.taxType == taxType)&&const DeepCollectionEquality().equals(other.expensesTemplate, expensesTemplate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Property&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.name, name) || other.name == name)&&(identical(other.city, city) || other.city == city)&&(identical(other.defaultMonthlyRent, defaultMonthlyRent) || other.defaultMonthlyRent == defaultMonthlyRent)&&(identical(other.defaultDepositAmount, defaultDepositAmount) || other.defaultDepositAmount == defaultDepositAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.defaultDepositCurrency, defaultDepositCurrency) || other.defaultDepositCurrency == defaultDepositCurrency)&&(identical(other.landlordId, landlordId) || other.landlordId == landlordId)&&(identical(other.tenantId, tenantId) || other.tenantId == tenantId)&&(identical(other.agencyId, agencyId) || other.agencyId == agencyId)&&(identical(other.landlordName, landlordName) || other.landlordName == landlordName)&&(identical(other.landlordPhone, landlordPhone) || other.landlordPhone == landlordPhone)&&(identical(other.landlordEmail, landlordEmail) || other.landlordEmail == landlordEmail)&&(identical(other.tenantName, tenantName) || other.tenantName == tenantName)&&(identical(other.defaultDueDay, defaultDueDay) || other.defaultDueDay == defaultDueDay)&&(identical(other.taxType, taxType) || other.taxType == taxType)&&const DeepCollectionEquality().equals(other.expensesTemplate, expensesTemplate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,address,name,defaultMonthlyRent,defaultDepositAmount,currency,defaultDepositCurrency,landlordId,tenantId,landlordName,tenantName,defaultDueDay,taxType,const DeepCollectionEquality().hash(expensesTemplate),createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,address,name,city,defaultMonthlyRent,defaultDepositAmount,currency,defaultDepositCurrency,landlordId,tenantId,agencyId,landlordName,landlordPhone,landlordEmail,tenantName,defaultDueDay,taxType,const DeepCollectionEquality().hash(expensesTemplate),createdAt]);
 
 @override
 String toString() {
-  return 'Property(id: $id, address: $address, name: $name, defaultMonthlyRent: $defaultMonthlyRent, defaultDepositAmount: $defaultDepositAmount, currency: $currency, defaultDepositCurrency: $defaultDepositCurrency, landlordId: $landlordId, tenantId: $tenantId, landlordName: $landlordName, tenantName: $tenantName, defaultDueDay: $defaultDueDay, taxType: $taxType, expensesTemplate: $expensesTemplate, createdAt: $createdAt)';
+  return 'Property(id: $id, address: $address, name: $name, city: $city, defaultMonthlyRent: $defaultMonthlyRent, defaultDepositAmount: $defaultDepositAmount, currency: $currency, defaultDepositCurrency: $defaultDepositCurrency, landlordId: $landlordId, tenantId: $tenantId, agencyId: $agencyId, landlordName: $landlordName, landlordPhone: $landlordPhone, landlordEmail: $landlordEmail, tenantName: $tenantName, defaultDueDay: $defaultDueDay, taxType: $taxType, expensesTemplate: $expensesTemplate, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $PropertyCopyWith<$Res>  {
   factory $PropertyCopyWith(Property value, $Res Function(Property) _then) = _$PropertyCopyWithImpl;
 @useResult
 $Res call({
- String id, String address, String name,@JsonKey(name: 'default_monthly_rent') double defaultMonthlyRent,@JsonKey(name: 'default_deposit_amount') double? defaultDepositAmount, String currency,@JsonKey(name: 'default_deposit_currency') String defaultDepositCurrency,@JsonKey(name: 'landlord_id') String landlordId,@JsonKey(name: 'tenant_id') String? tenantId,@JsonKey(name: 'landlord_name') String? landlordName,@JsonKey(name: 'tenant_name') String? tenantName,@JsonKey(name: 'default_due_day') int defaultDueDay,@JsonKey(name: 'tax_type') TaxType taxType,@JsonKey(name: 'expenses_template') List<ExpenseItem> expensesTemplate,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String address, String name,@JsonKey(name: 'city') String? city,@JsonKey(name: 'default_monthly_rent') double defaultMonthlyRent,@JsonKey(name: 'default_deposit_amount') double? defaultDepositAmount, String currency,@JsonKey(name: 'default_deposit_currency') String defaultDepositCurrency,@JsonKey(name: 'landlord_id') String? landlordId,@JsonKey(name: 'tenant_id') String? tenantId,@JsonKey(name: 'agency_id') String? agencyId,@JsonKey(name: 'landlord_name') String? landlordName,@JsonKey(name: 'landlord_phone') String? landlordPhone,@JsonKey(name: 'landlord_email') String? landlordEmail,@JsonKey(name: 'tenant_name') String? tenantName,@JsonKey(name: 'default_due_day') int defaultDueDay,@JsonKey(name: 'tax_type') TaxType taxType,@JsonKey(name: 'expenses_template') List<ExpenseItem> expensesTemplate,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -65,18 +66,22 @@ class _$PropertyCopyWithImpl<$Res>
 
 /// Create a copy of Property
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? address = null,Object? name = null,Object? defaultMonthlyRent = null,Object? defaultDepositAmount = freezed,Object? currency = null,Object? defaultDepositCurrency = null,Object? landlordId = null,Object? tenantId = freezed,Object? landlordName = freezed,Object? tenantName = freezed,Object? defaultDueDay = null,Object? taxType = null,Object? expensesTemplate = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? address = null,Object? name = null,Object? city = freezed,Object? defaultMonthlyRent = null,Object? defaultDepositAmount = freezed,Object? currency = null,Object? defaultDepositCurrency = null,Object? landlordId = freezed,Object? tenantId = freezed,Object? agencyId = freezed,Object? landlordName = freezed,Object? landlordPhone = freezed,Object? landlordEmail = freezed,Object? tenantName = freezed,Object? defaultDueDay = null,Object? taxType = null,Object? expensesTemplate = null,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,defaultMonthlyRent: null == defaultMonthlyRent ? _self.defaultMonthlyRent : defaultMonthlyRent // ignore: cast_nullable_to_non_nullable
+as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,defaultMonthlyRent: null == defaultMonthlyRent ? _self.defaultMonthlyRent : defaultMonthlyRent // ignore: cast_nullable_to_non_nullable
 as double,defaultDepositAmount: freezed == defaultDepositAmount ? _self.defaultDepositAmount : defaultDepositAmount // ignore: cast_nullable_to_non_nullable
 as double?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,defaultDepositCurrency: null == defaultDepositCurrency ? _self.defaultDepositCurrency : defaultDepositCurrency // ignore: cast_nullable_to_non_nullable
-as String,landlordId: null == landlordId ? _self.landlordId : landlordId // ignore: cast_nullable_to_non_nullable
-as String,tenantId: freezed == tenantId ? _self.tenantId : tenantId // ignore: cast_nullable_to_non_nullable
+as String,landlordId: freezed == landlordId ? _self.landlordId : landlordId // ignore: cast_nullable_to_non_nullable
+as String?,tenantId: freezed == tenantId ? _self.tenantId : tenantId // ignore: cast_nullable_to_non_nullable
+as String?,agencyId: freezed == agencyId ? _self.agencyId : agencyId // ignore: cast_nullable_to_non_nullable
 as String?,landlordName: freezed == landlordName ? _self.landlordName : landlordName // ignore: cast_nullable_to_non_nullable
+as String?,landlordPhone: freezed == landlordPhone ? _self.landlordPhone : landlordPhone // ignore: cast_nullable_to_non_nullable
+as String?,landlordEmail: freezed == landlordEmail ? _self.landlordEmail : landlordEmail // ignore: cast_nullable_to_non_nullable
 as String?,tenantName: freezed == tenantName ? _self.tenantName : tenantName // ignore: cast_nullable_to_non_nullable
 as String?,defaultDueDay: null == defaultDueDay ? _self.defaultDueDay : defaultDueDay // ignore: cast_nullable_to_non_nullable
 as int,taxType: null == taxType ? _self.taxType : taxType // ignore: cast_nullable_to_non_nullable
@@ -167,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String address,  String name, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String address,  String name, @JsonKey(name: 'city')  String? city, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String? landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'agency_id')  String? agencyId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'landlord_phone')  String? landlordPhone, @JsonKey(name: 'landlord_email')  String? landlordEmail, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Property() when $default != null:
-return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.landlordName,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
+return $default(_that.id,_that.address,_that.name,_that.city,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.agencyId,_that.landlordName,_that.landlordPhone,_that.landlordEmail,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
   return orElse();
 
 }
@@ -188,10 +193,10 @@ return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String address,  String name, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String address,  String name, @JsonKey(name: 'city')  String? city, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String? landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'agency_id')  String? agencyId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'landlord_phone')  String? landlordPhone, @JsonKey(name: 'landlord_email')  String? landlordEmail, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _Property():
-return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.landlordName,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
+return $default(_that.id,_that.address,_that.name,_that.city,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.agencyId,_that.landlordName,_that.landlordPhone,_that.landlordEmail,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +213,10 @@ return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String address,  String name, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String address,  String name, @JsonKey(name: 'city')  String? city, @JsonKey(name: 'default_monthly_rent')  double defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount')  double? defaultDepositAmount,  String currency, @JsonKey(name: 'default_deposit_currency')  String defaultDepositCurrency, @JsonKey(name: 'landlord_id')  String? landlordId, @JsonKey(name: 'tenant_id')  String? tenantId, @JsonKey(name: 'agency_id')  String? agencyId, @JsonKey(name: 'landlord_name')  String? landlordName, @JsonKey(name: 'landlord_phone')  String? landlordPhone, @JsonKey(name: 'landlord_email')  String? landlordEmail, @JsonKey(name: 'tenant_name')  String? tenantName, @JsonKey(name: 'default_due_day')  int defaultDueDay, @JsonKey(name: 'tax_type')  TaxType taxType, @JsonKey(name: 'expenses_template')  List<ExpenseItem> expensesTemplate, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Property() when $default != null:
-return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.landlordName,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
+return $default(_that.id,_that.address,_that.name,_that.city,_that.defaultMonthlyRent,_that.defaultDepositAmount,_that.currency,_that.defaultDepositCurrency,_that.landlordId,_that.tenantId,_that.agencyId,_that.landlordName,_that.landlordPhone,_that.landlordEmail,_that.tenantName,_that.defaultDueDay,_that.taxType,_that.expensesTemplate,_that.createdAt);case _:
   return null;
 
 }
@@ -223,19 +228,24 @@ return $default(_that.id,_that.address,_that.name,_that.defaultMonthlyRent,_that
 @JsonSerializable()
 
 class _Property implements Property {
-  const _Property({required this.id, required this.address, required this.name, @JsonKey(name: 'default_monthly_rent') required this.defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount') this.defaultDepositAmount, this.currency = 'EUR', @JsonKey(name: 'default_deposit_currency') this.defaultDepositCurrency = 'EUR', @JsonKey(name: 'landlord_id') required this.landlordId, @JsonKey(name: 'tenant_id') this.tenantId, @JsonKey(name: 'landlord_name') this.landlordName, @JsonKey(name: 'tenant_name') this.tenantName, @JsonKey(name: 'default_due_day') this.defaultDueDay = 1, @JsonKey(name: 'tax_type') this.taxType = TaxType.included, @JsonKey(name: 'expenses_template') final  List<ExpenseItem> expensesTemplate = const [], @JsonKey(name: 'created_at') this.createdAt}): _expensesTemplate = expensesTemplate;
+  const _Property({required this.id, required this.address, required this.name, @JsonKey(name: 'city') this.city, @JsonKey(name: 'default_monthly_rent') required this.defaultMonthlyRent, @JsonKey(name: 'default_deposit_amount') this.defaultDepositAmount, this.currency = 'EUR', @JsonKey(name: 'default_deposit_currency') this.defaultDepositCurrency = 'EUR', @JsonKey(name: 'landlord_id') this.landlordId, @JsonKey(name: 'tenant_id') this.tenantId, @JsonKey(name: 'agency_id') this.agencyId, @JsonKey(name: 'landlord_name') this.landlordName, @JsonKey(name: 'landlord_phone') this.landlordPhone, @JsonKey(name: 'landlord_email') this.landlordEmail, @JsonKey(name: 'tenant_name') this.tenantName, @JsonKey(name: 'default_due_day') this.defaultDueDay = 1, @JsonKey(name: 'tax_type') this.taxType = TaxType.included, @JsonKey(name: 'expenses_template') final  List<ExpenseItem> expensesTemplate = const [], @JsonKey(name: 'created_at') this.createdAt}): _expensesTemplate = expensesTemplate;
   factory _Property.fromJson(Map<String, dynamic> json) => _$PropertyFromJson(json);
 
 @override final  String id;
 @override final  String address;
 @override final  String name;
+@override@JsonKey(name: 'city') final  String? city;
 @override@JsonKey(name: 'default_monthly_rent') final  double defaultMonthlyRent;
 @override@JsonKey(name: 'default_deposit_amount') final  double? defaultDepositAmount;
 @override@JsonKey() final  String currency;
 @override@JsonKey(name: 'default_deposit_currency') final  String defaultDepositCurrency;
-@override@JsonKey(name: 'landlord_id') final  String landlordId;
+@override@JsonKey(name: 'landlord_id') final  String? landlordId;
 @override@JsonKey(name: 'tenant_id') final  String? tenantId;
+/// Agency managing this property (B2B2C: agency_id in profiles)
+@override@JsonKey(name: 'agency_id') final  String? agencyId;
 @override@JsonKey(name: 'landlord_name') final  String? landlordName;
+@override@JsonKey(name: 'landlord_phone') final  String? landlordPhone;
+@override@JsonKey(name: 'landlord_email') final  String? landlordEmail;
 @override@JsonKey(name: 'tenant_name') final  String? tenantName;
 @override@JsonKey(name: 'default_due_day') final  int defaultDueDay;
 @override@JsonKey(name: 'tax_type') final  TaxType taxType;
@@ -261,16 +271,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Property&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.name, name) || other.name == name)&&(identical(other.defaultMonthlyRent, defaultMonthlyRent) || other.defaultMonthlyRent == defaultMonthlyRent)&&(identical(other.defaultDepositAmount, defaultDepositAmount) || other.defaultDepositAmount == defaultDepositAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.defaultDepositCurrency, defaultDepositCurrency) || other.defaultDepositCurrency == defaultDepositCurrency)&&(identical(other.landlordId, landlordId) || other.landlordId == landlordId)&&(identical(other.tenantId, tenantId) || other.tenantId == tenantId)&&(identical(other.landlordName, landlordName) || other.landlordName == landlordName)&&(identical(other.tenantName, tenantName) || other.tenantName == tenantName)&&(identical(other.defaultDueDay, defaultDueDay) || other.defaultDueDay == defaultDueDay)&&(identical(other.taxType, taxType) || other.taxType == taxType)&&const DeepCollectionEquality().equals(other._expensesTemplate, _expensesTemplate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Property&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.name, name) || other.name == name)&&(identical(other.city, city) || other.city == city)&&(identical(other.defaultMonthlyRent, defaultMonthlyRent) || other.defaultMonthlyRent == defaultMonthlyRent)&&(identical(other.defaultDepositAmount, defaultDepositAmount) || other.defaultDepositAmount == defaultDepositAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.defaultDepositCurrency, defaultDepositCurrency) || other.defaultDepositCurrency == defaultDepositCurrency)&&(identical(other.landlordId, landlordId) || other.landlordId == landlordId)&&(identical(other.tenantId, tenantId) || other.tenantId == tenantId)&&(identical(other.agencyId, agencyId) || other.agencyId == agencyId)&&(identical(other.landlordName, landlordName) || other.landlordName == landlordName)&&(identical(other.landlordPhone, landlordPhone) || other.landlordPhone == landlordPhone)&&(identical(other.landlordEmail, landlordEmail) || other.landlordEmail == landlordEmail)&&(identical(other.tenantName, tenantName) || other.tenantName == tenantName)&&(identical(other.defaultDueDay, defaultDueDay) || other.defaultDueDay == defaultDueDay)&&(identical(other.taxType, taxType) || other.taxType == taxType)&&const DeepCollectionEquality().equals(other._expensesTemplate, _expensesTemplate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,address,name,defaultMonthlyRent,defaultDepositAmount,currency,defaultDepositCurrency,landlordId,tenantId,landlordName,tenantName,defaultDueDay,taxType,const DeepCollectionEquality().hash(_expensesTemplate),createdAt);
+int get hashCode => Object.hashAll([runtimeType,id,address,name,city,defaultMonthlyRent,defaultDepositAmount,currency,defaultDepositCurrency,landlordId,tenantId,agencyId,landlordName,landlordPhone,landlordEmail,tenantName,defaultDueDay,taxType,const DeepCollectionEquality().hash(_expensesTemplate),createdAt]);
 
 @override
 String toString() {
-  return 'Property(id: $id, address: $address, name: $name, defaultMonthlyRent: $defaultMonthlyRent, defaultDepositAmount: $defaultDepositAmount, currency: $currency, defaultDepositCurrency: $defaultDepositCurrency, landlordId: $landlordId, tenantId: $tenantId, landlordName: $landlordName, tenantName: $tenantName, defaultDueDay: $defaultDueDay, taxType: $taxType, expensesTemplate: $expensesTemplate, createdAt: $createdAt)';
+  return 'Property(id: $id, address: $address, name: $name, city: $city, defaultMonthlyRent: $defaultMonthlyRent, defaultDepositAmount: $defaultDepositAmount, currency: $currency, defaultDepositCurrency: $defaultDepositCurrency, landlordId: $landlordId, tenantId: $tenantId, agencyId: $agencyId, landlordName: $landlordName, landlordPhone: $landlordPhone, landlordEmail: $landlordEmail, tenantName: $tenantName, defaultDueDay: $defaultDueDay, taxType: $taxType, expensesTemplate: $expensesTemplate, createdAt: $createdAt)';
 }
 
 
@@ -281,7 +291,7 @@ abstract mixin class _$PropertyCopyWith<$Res> implements $PropertyCopyWith<$Res>
   factory _$PropertyCopyWith(_Property value, $Res Function(_Property) _then) = __$PropertyCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String address, String name,@JsonKey(name: 'default_monthly_rent') double defaultMonthlyRent,@JsonKey(name: 'default_deposit_amount') double? defaultDepositAmount, String currency,@JsonKey(name: 'default_deposit_currency') String defaultDepositCurrency,@JsonKey(name: 'landlord_id') String landlordId,@JsonKey(name: 'tenant_id') String? tenantId,@JsonKey(name: 'landlord_name') String? landlordName,@JsonKey(name: 'tenant_name') String? tenantName,@JsonKey(name: 'default_due_day') int defaultDueDay,@JsonKey(name: 'tax_type') TaxType taxType,@JsonKey(name: 'expenses_template') List<ExpenseItem> expensesTemplate,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String address, String name,@JsonKey(name: 'city') String? city,@JsonKey(name: 'default_monthly_rent') double defaultMonthlyRent,@JsonKey(name: 'default_deposit_amount') double? defaultDepositAmount, String currency,@JsonKey(name: 'default_deposit_currency') String defaultDepositCurrency,@JsonKey(name: 'landlord_id') String? landlordId,@JsonKey(name: 'tenant_id') String? tenantId,@JsonKey(name: 'agency_id') String? agencyId,@JsonKey(name: 'landlord_name') String? landlordName,@JsonKey(name: 'landlord_phone') String? landlordPhone,@JsonKey(name: 'landlord_email') String? landlordEmail,@JsonKey(name: 'tenant_name') String? tenantName,@JsonKey(name: 'default_due_day') int defaultDueDay,@JsonKey(name: 'tax_type') TaxType taxType,@JsonKey(name: 'expenses_template') List<ExpenseItem> expensesTemplate,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -298,18 +308,22 @@ class __$PropertyCopyWithImpl<$Res>
 
 /// Create a copy of Property
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? address = null,Object? name = null,Object? defaultMonthlyRent = null,Object? defaultDepositAmount = freezed,Object? currency = null,Object? defaultDepositCurrency = null,Object? landlordId = null,Object? tenantId = freezed,Object? landlordName = freezed,Object? tenantName = freezed,Object? defaultDueDay = null,Object? taxType = null,Object? expensesTemplate = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? address = null,Object? name = null,Object? city = freezed,Object? defaultMonthlyRent = null,Object? defaultDepositAmount = freezed,Object? currency = null,Object? defaultDepositCurrency = null,Object? landlordId = freezed,Object? tenantId = freezed,Object? agencyId = freezed,Object? landlordName = freezed,Object? landlordPhone = freezed,Object? landlordEmail = freezed,Object? tenantName = freezed,Object? defaultDueDay = null,Object? taxType = null,Object? expensesTemplate = null,Object? createdAt = freezed,}) {
   return _then(_Property(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,defaultMonthlyRent: null == defaultMonthlyRent ? _self.defaultMonthlyRent : defaultMonthlyRent // ignore: cast_nullable_to_non_nullable
+as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,defaultMonthlyRent: null == defaultMonthlyRent ? _self.defaultMonthlyRent : defaultMonthlyRent // ignore: cast_nullable_to_non_nullable
 as double,defaultDepositAmount: freezed == defaultDepositAmount ? _self.defaultDepositAmount : defaultDepositAmount // ignore: cast_nullable_to_non_nullable
 as double?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,defaultDepositCurrency: null == defaultDepositCurrency ? _self.defaultDepositCurrency : defaultDepositCurrency // ignore: cast_nullable_to_non_nullable
-as String,landlordId: null == landlordId ? _self.landlordId : landlordId // ignore: cast_nullable_to_non_nullable
-as String,tenantId: freezed == tenantId ? _self.tenantId : tenantId // ignore: cast_nullable_to_non_nullable
+as String,landlordId: freezed == landlordId ? _self.landlordId : landlordId // ignore: cast_nullable_to_non_nullable
+as String?,tenantId: freezed == tenantId ? _self.tenantId : tenantId // ignore: cast_nullable_to_non_nullable
+as String?,agencyId: freezed == agencyId ? _self.agencyId : agencyId // ignore: cast_nullable_to_non_nullable
 as String?,landlordName: freezed == landlordName ? _self.landlordName : landlordName // ignore: cast_nullable_to_non_nullable
+as String?,landlordPhone: freezed == landlordPhone ? _self.landlordPhone : landlordPhone // ignore: cast_nullable_to_non_nullable
+as String?,landlordEmail: freezed == landlordEmail ? _self.landlordEmail : landlordEmail // ignore: cast_nullable_to_non_nullable
 as String?,tenantName: freezed == tenantName ? _self.tenantName : tenantName // ignore: cast_nullable_to_non_nullable
 as String?,defaultDueDay: null == defaultDueDay ? _self.defaultDueDay : defaultDueDay // ignore: cast_nullable_to_non_nullable
 as int,taxType: null == taxType ? _self.taxType : taxType // ignore: cast_nullable_to_non_nullable

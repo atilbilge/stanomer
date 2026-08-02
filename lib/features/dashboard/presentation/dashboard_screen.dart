@@ -17,9 +17,16 @@ import '../../../core/theme/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/widgets/expandable_agency_logo.dart';
+import '../../../core/widgets/app_logo.dart';
+import '../../../core/widgets/desktop_navigation_shell.dart';
 import '../../../core/utils/expense_utils.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
+import '../../../core/providers/agency_branding_provider.dart';
+import '../../agency/domain/agency_color_scheme.dart';
 
+import '../../agency/presentation/agency_dashboard_screen.dart';
+import '../../property/presentation/join_property_sheet.dart';
 import '../../notifications/presentation/widgets/notification_badge.dart';
 import 'widgets/profile_pill.dart';
 import 'widgets/role_switcher_sheet.dart';
@@ -36,31 +43,43 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool _roleSelectionLoading = false;
   int _selectedTenantPropertyIndex = 0;
+  int _landlordCurrentTab = 0; // 0: Ana Panel, 1: Mülklerim, 2: Finans, 3: Bakım
 
   @override
   void initState() {
     super.initState();
     // Ensure database profile exists if role is already in metadata
     // This fixes users who might be in a "half-created" state due to missing RLS earlier.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final loc = AppLocalizations.of(context)!;
       final user = ref.read(currentUserProvider);
-      final role = user?.userMetadata?['role'] as String?;
-      final fullName = user?.userMetadata?['full_name'] as String?;
-      
-      if (role != null) {
-        // Update to ensure DB row exists and is consistent
-        ref.read(authRepositoryProvider)
-          .updateProfile(role: role, fullName: fullName)
-          .catchError((e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(loc.syncError(e.toString())),
-                backgroundColor: StanomerColors.alertPrimary,
-              ));
-            }
-          });
-      }
+      if (user == null) return;
+
+      try {
+        final profile = await ref.read(profileFutureProvider.future);
+        final dbRole = profile?['role'] as String?;
+        final metaRole = user.userMetadata?['role'] as String?;
+        final fullName = profile?['full_name'] ?? user.userMetadata?['full_name'] as String?;
+
+        if (dbRole == 'agency' || metaRole == 'agency') {
+          if (mounted) context.go('/agency-dashboard');
+          return;
+        }
+
+        final effectiveRole = dbRole ?? metaRole;
+        if (effectiveRole != null) {
+          ref.read(authRepositoryProvider)
+            .updateProfile(role: effectiveRole, fullName: fullName)
+            .catchError((e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(loc.syncError(e.toString())),
+                  backgroundColor: StanomerColors.alertPrimary,
+                ));
+              }
+            });
+        }
+      } catch (_) {}
     });
   }
 
@@ -75,17 +94,70 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final propertiesAsync = ref.watch(propertiesStreamProvider);
     final pendingInvitesAsync = ref.watch(pendingInvitesForUserProvider);
 
-    return Scaffold(
-      appBar: AppBar(
+    final isTenant = role == 'tenant';
+
+    // --- Agency White-Label Branding ---
+    // - Tenant: branded if active selected property (or active contract) has agency_id
+    // - Landlord: branded if ALL properties are managed by an agency
+    if (propertiesAsync.hasValue) {
+      final properties = propertiesAsync.value!;
+      Contract? activeTenantContract;
+      if (isTenant && properties.isNotEmpty) {
+        final tenantProperties = properties.where((p) => p.tenantId != null).toList();
+        if (tenantProperties.isNotEmpty) {
+          final activeProp = tenantProperties[_selectedTenantPropertyIndex.clamp(0, tenantProperties.length - 1)];
+          activeTenantContract = ref.watch(activeContractProvider(activeProp.id)).value;
+        }
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(agencyBrandingProvider.notifier).updateBrandingForSession(
+              role: role ?? '',
+              properties: properties,
+              selectedIndex: _selectedTenantPropertyIndex,
+              contractAgencyId: activeTenantContract?.agencyId,
+            );
+      });
+    }
+    final brandingState = ref.watch(agencyBrandingProvider);
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final appBarTitle = brandingState.appTitle;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 900;
+
+    return DesktopNavigationShell(
+      currentTabIndex: isLandlord ? _landlordCurrentTab : 0,
+      onTabChanged: isLandlord
+          ? (index) => setState(() => _landlordCurrentTab = index)
+          : null,
+      onRoleSwitcherTap: () => _showRoleSwitcher(context, role),
+      child: Scaffold(
+      appBar: isDesktop
+          ? null
+          : AppBar(
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/logo_no_bg.png',
-              height: 28,
-            ),
+            // Show agency logo if available, else default Stanomer logo
+            if (brandingState.logoUrl != null && brandingState.logoUrl!.trim().isNotEmpty)
+              ExpandableAgencyLogo(
+                logoUrl: brandingState.logoUrl,
+                title: appBarTitle,
+                height: 28,
+                fallbackWidget: _buildAgencyLogoBadge(brandingState, agencyColors),
+              )
+            else if (brandingState.hasAgencyBranding)
+              ExpandableAgencyLogo(
+                logoUrl: null,
+                title: appBarTitle,
+                height: 28,
+                fallbackWidget: _buildAgencyLogoBadge(brandingState, agencyColors),
+              )
+            else
+              const AppLogo(height: 28),
             const SizedBox(width: 10),
             Text(
-              loc.appTitle,
+              appBarTitle,
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
           ],
@@ -101,6 +173,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
           const SizedBox(width: 16),
         ],
+        bottom: screenWidth >= 850
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: _buildDesktopHeaderNav(context, loc, role ?? 'tenant'),
+              )
+            : null,
       ),
       floatingActionButton: () {
         if (zzplDocumentVersion == null) return null;
@@ -110,21 +188,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           if (isLandlord) {
             return FloatingActionButton.extended(
               onPressed: () => context.push('/add-property'),
-              backgroundColor: StanomerColors.getRoleColor(role),
+              backgroundColor: brandingState.hasAgencyBranding ? agencyColors.primary : StanomerColors.getRoleColor(role),
               elevation: 4,
               icon: const Icon(LucideIcons.plus, color: Colors.white, size: 20),
               label: Text(
-                loc.addProperty.split(' ')[0],
+                loc.addProperty,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
                 ),
               ),
             );
-          } else if (role == 'tenant') {
-            final tenantProperties = properties.where((p) => p.tenantId == user?.id).toList();
-            if (tenantProperties.length != 1) return null;
+          } else if (isTenant) {
+            final tenantProperties = properties.where((p) => p.tenantId != null).toList();
+            if (tenantProperties.isEmpty) return null;
             
             final property = tenantProperties.first;
             final requestsAsync = ref.watch(maintenanceRequestsProvider(property.id));
@@ -138,7 +215,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   context.push('/maintenance/new', extra: property);
                 }
               },
-              backgroundColor: StanomerColors.tenant,
+              backgroundColor: brandingState.hasAgencyBranding ? agencyColors.primary : StanomerColors.tenant,
               elevation: 8,
               highlightElevation: 12,
               shape: RoundedRectangleBorder(
@@ -159,6 +236,36 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         }
         return null;
       }(),
+      bottomNavigationBar: (isDesktop || !isLandlord)
+          ? null
+          : BottomNavigationBar(
+              currentIndex: _landlordCurrentTab.clamp(0, 3),
+              onTap: (index) => setState(() => _landlordCurrentTab = index),
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.white,
+              selectedItemColor: StanomerColors.landlord,
+              unselectedItemColor: StanomerColors.textTertiary,
+              selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(LucideIcons.home),
+                  label: loc.tabHome,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(LucideIcons.building2),
+                  label: loc.myProperties,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(LucideIcons.wallet),
+                  label: loc.tabFinance,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(LucideIcons.wrench),
+                  label: loc.tabRequests,
+                ),
+              ],
+            ),
       body: Column(
         children: [
           ConnectionStatusIndicator(
@@ -181,12 +288,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (zzplDocumentVersion == null) ...[
-                _ZzplConsentCard(
-                  onConsent: () async {
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1360),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (zzplDocumentVersion == null) ...[
+                    _ZzplConsentCard(
+                      onConsent: () async {
                     setState(() => _roleSelectionLoading = true);
                     try {
                       final client = Supabase.instance.client;
@@ -215,7 +325,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     final totalUnits = properties.length;
                     final totalTenants = properties.where((p) => p.tenantId != null).length;
                     final statsAsync = ref.watch(landlordSummaryProvider);
-                    
+
+                    // Tab 1: Portföy (AgencyPortfolioTab ile birebir aynı)
+                    if (_landlordCurrentTab == 1) {
+                      return AgencyPortfolioTab(colors: agencyColors);
+                    }
+
+                    // Tab 2: Finans (AgencyFinanceTab ile birebir aynı)
+                    if (_landlordCurrentTab == 2) {
+                      return AgencyFinanceTab(colors: agencyColors);
+                    }
+
+                    // Tab 3: Bakım & Onarım — navigate to maintenance screen
+                    if (_landlordCurrentTab == 3) {
+                      if (properties.isEmpty) {
+                        return _LandlordEmptyState(
+                          onAction: () => context.push('/add-property'),
+                        );
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _SectionHeader(
+                            title: loc.localeName == 'tr' ? 'Bakım & Onarım' : 'Maintenance',
+                            count: properties.length,
+                          ),
+                          const SizedBox(height: 12),
+                          ...properties.map((p) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _LandlordMaintenanceEntryCard(property: p),
+                          )),
+                        ],
+                      );
+                    }
+
+                    // Tab 0 (default): Ana Panel
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -240,27 +384,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                         ),
+                        const SizedBox(height: 24),
+                        _SectionHeader(
+                          title: loc.myProperties,
+                          count: properties.length,
+                        ),
+                        const SizedBox(height: 12),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            if (properties.isEmpty) {
+                              return _LandlordEmptyState(
+                                onAction: () => context.push('/add-property'),
+                              );
+                            }
+                            final isDesktop = constraints.maxWidth >= 850;
+                            if (isDesktop && properties.length > 1) {
+                              return GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  mainAxisExtent: 220,
+                                ),
+                                itemCount: properties.length,
+                                itemBuilder: (context, index) => _LandlordPropertyCard(property: properties[index]),
+                              );
+                            }
+                            return Column(
+                              children: properties.map((p) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _LandlordPropertyCard(property: p),
+                              )).toList(),
+                            );
+                          },
+                        ),
                       ],
-                    );
-                  }(),
-                  const SizedBox(height: 24),
-                  _SectionHeader(
-                    title: loc.myProperties,
-                    count: propertiesAsync.value!.length,
-                  ),
-                  const SizedBox(height: 12),
-                  () {
-                    final properties = propertiesAsync.value!;
-                    if (properties.isEmpty) {
-                      return _LandlordEmptyState(
-                        onAction: () => context.push('/add-property'),
-                      );
-                    }
-                    return Column(
-                      children: properties.map((p) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _LandlordPropertyCard(property: p),
-                      )).toList(),
                     );
                   }(),
                 ] 
@@ -331,6 +491,16 @@ else if (propertiesAsync.hasError) ...[
                               }
 
                               final contract = contractAsync.value;
+                              if (contract != null && contract.agencyId != null && contract.agencyId!.trim().isNotEmpty) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  ref.read(agencyBrandingProvider.notifier).updateBrandingForSession(
+                                        role: 'tenant',
+                                        properties: tenantProperties,
+                                        selectedIndex: _selectedTenantPropertyIndex,
+                                        contractAgencyId: contract.agencyId,
+                                      );
+                                });
+                              }
 
                               if (contract == null) {
                                 // Has property but no active contract yet
@@ -511,8 +681,115 @@ else if (propertiesAsync.hasError) ...[
         ),
       ),
     ),
-  ],
+  ),
 ),
+],
+),
+),
+);
+}
+
+  Widget _buildDesktopHeaderNav(BuildContext context, AppLocalizations loc, String role) {
+    final isLandlord = role == 'landlord';
+    final primaryColor = StanomerColors.getRoleColor(role);
+
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.black.withValues(alpha: 0.08),
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1360),
+          child: Row(
+            children: [
+              _buildDesktopHeaderTabItem(
+                icon: LucideIcons.layoutDashboard,
+                label: loc.localeName == 'tr' ? 'Ana Panel' : 'Dashboard',
+                isSelected: true,
+                primaryColor: primaryColor,
+                onTap: () {},
+              ),
+              const SizedBox(width: 12),
+              if (isLandlord) ...[
+                _buildDesktopHeaderTabItem(
+                  icon: LucideIcons.plusCircle,
+                  label: loc.addProperty,
+                  isSelected: false,
+                  primaryColor: primaryColor,
+                  onTap: () => context.push('/add-property'),
+                ),
+                const SizedBox(width: 12),
+              ],
+              _buildDesktopHeaderTabItem(
+                icon: LucideIcons.wrench,
+                label: loc.localeName == 'tr' ? 'Bakım ve Onarım' : 'Maintenance',
+                isSelected: false,
+                primaryColor: primaryColor,
+                onTap: () => context.push('/maintenance'),
+              ),
+              const SizedBox(width: 12),
+              _buildDesktopHeaderTabItem(
+                icon: LucideIcons.settings,
+                label: loc.settingsHeader,
+                isSelected: false,
+                primaryColor: primaryColor,
+                onTap: () => context.push('/profile'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopHeaderTabItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required Color primaryColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? primaryColor.withValues(alpha: 0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: isSelected
+                ? Border.all(color: primaryColor.withValues(alpha: 0.3), width: 1)
+                : null,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? primaryColor : Colors.black54,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? primaryColor : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -571,6 +848,28 @@ else if (propertiesAsync.hasError) ...[
     );
   }
 
+  Widget _buildAgencyLogoBadge(AgencyBrandingState brandingState, AgencyColorScheme colors) {
+    final title = brandingState.appTitle;
+    final initial = title.isNotEmpty ? title[0].toUpperCase() : 'A';
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: colors.primary,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 15,
+        ),
+      ),
+    );
+  }
+
   Future<void> _updateRole(String role) async {
     setState(() => _roleSelectionLoading = true);
     try {
@@ -589,6 +888,9 @@ else if (propertiesAsync.hasError) ...[
   }
 
   Widget _buildPropertyTabs(List<Property> properties) {
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final activeColor = agencyColors.primary;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
@@ -605,15 +907,15 @@ else if (propertiesAsync.hasError) ...[
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? StanomerColors.tenant : StanomerColors.bgCard,
+                  color: isSelected ? activeColor : StanomerColors.bgCard,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? StanomerColors.tenant : StanomerColors.borderDefault,
+                    color: isSelected ? activeColor : StanomerColors.borderDefault,
                     width: isSelected ? 1.5 : 1,
                   ),
                   boxShadow: isSelected ? [
                     BoxShadow(
-                      color: StanomerColors.tenant.withValues(alpha: 0.2),
+                      color: activeColor.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     )
@@ -636,7 +938,7 @@ else if (propertiesAsync.hasError) ...[
   }
 }
 
-class _LandlordHero extends StatelessWidget {
+class _LandlordHero extends ConsumerWidget {
   final AsyncValue<LandlordDashboardStats> statsAsync;
   final int totalUnits;
   final int totalTenants;
@@ -648,8 +950,12 @@ class _LandlordHero extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final user = ref.watch(currentUserProvider);
+    final userName = user?.userMetadata?['full_name'] as String?
+        ?? user?.userMetadata?['name'] as String?
+        ?? (user?.email != null ? user!.email!.split('@').first : '');
     final now = DateTime.now();
     final monthName = DateFormat('MMMM yyyy', loc.localeName).format(now);
     
@@ -684,10 +990,21 @@ class _LandlordHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (userName.isNotEmpty) ...[
+                  Text(
+                    loc.welcomeUser(userName),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Text(
                   '${loc.monthlyCollected} ($monthName)'.toUpperCase(),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withOpacity(0.75),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.8,
@@ -793,11 +1110,67 @@ class _KpiGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isDesktop = MediaQuery.of(context).size.width >= 850;
 
     return statsAsync.when(
       data: (stats) {
         final hasDelays = stats.delaysCount > 0;
         final hasAwaiting = stats.awaitingApprovalCount > 0;
+
+        if (isDesktop) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _KpiCard(
+                    icon: LucideIcons.wallet,
+                    value: CurrencyUtils.formatCurrencyMap(
+                        stats.collectedByType['Kira'] ?? {}, useSymbols: true),
+                    label: loc.rent,
+                    valueColor: const Color(0xFF0F6E56),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _KpiCard(
+                    icon: LucideIcons.alertTriangle,
+                    value: stats.delaysCount.toString(),
+                    label: loc.delays,
+                    valueColor: hasDelays ? const Color(0xFFA32D2D) : null,
+                    iconColor: hasDelays ? const Color(0xFFE24B4A) : null,
+                    isAlert: hasDelays,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _KpiCard(
+                    icon: LucideIcons.doorOpen,
+                    value: stats.vacantCount.toString(),
+                    label: loc.vacant,
+                    valueColor: stats.vacantCount > 0 ? const Color(0xFF7C4B00) : null,
+                    iconColor: stats.vacantCount > 0 ? Colors.orange : null,
+                  ),
+                ),
+                if (hasAwaiting) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _KpiCard(
+                      icon: LucideIcons.clock,
+                      value: '${stats.awaitingApprovalCount}',
+                      label: loc.awaitingApproval,
+                      isAlert: false,
+                      subtitle: stats.latestAwaitingTitle,
+                      valueColor: const Color(0xFF854F0B),
+                      iconColor: Colors.orange,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }
+
         return Column(
           children: [
             // Top row: 3 KPI boxes
@@ -1641,32 +2014,115 @@ class _PropertyHistoryList extends ConsumerWidget {
           );
         }
 
-        return Container(
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5)),
-          child: Column(
-            children: List.generate(displayPayments.length, (index) {
-              final payment = displayPayments[index];
-              return Column(
-                children: [
-                   ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: const Color(0xFF2DB87A).withOpacity(0.1), shape: BoxShape.circle),
-                      child: const Icon(LucideIcons.check, size: 16, color: Color(0xFF2DB87A)),
+        return Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5)),
+            child: Column(
+              children: List.generate(displayPayments.length, (index) {
+                final payment = displayPayments[index];
+                return Column(
+                  children: [
+                     ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: const Color(0xFF2DB87A).withOpacity(0.1), shape: BoxShape.circle),
+                        child: const Icon(LucideIcons.check, size: 16, color: Color(0xFF2DB87A)),
+                      ),
+                      title: Text(ExpenseUtils.getLocalizedExpenseName(payment.title, loc), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      subtitle: Text(DateFormat('MMM dd, yyyy', loc.localeName).format(payment.paidAt ?? payment.dueDate), style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                      trailing: Text(CurrencyUtils.formatAmount(payment.amount, payment.currency, useSymbol: true), style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2DB87A))),
                     ),
-                    title: Text(ExpenseUtils.getLocalizedExpenseName(payment.title, loc), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                    subtitle: Text(DateFormat('MMM dd, yyyy', loc.localeName).format(payment.paidAt ?? payment.dueDate), style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
-                    trailing: Text(CurrencyUtils.formatAmount(payment.amount, payment.currency, useSymbol: true), style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2DB87A))),
-                  ),
-                  if (index < displayPayments.length - 1) const Divider(height: 1, indent: 64, color: Color(0xFFEEEEEE)),
-                ],
-              );
-            }),
+                    if (index < displayPayments.length - 1) const Divider(height: 1, indent: 64, color: Color(0xFFEEEEEE)),
+                  ],
+                );
+              }),
+            ),
           ),
         );
       },
       loading: () => const Center(child: Padding(padding: EdgeInsets.all(24.0), child: CircularProgressIndicator())),
       error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Card shown in landlord Maintenance tab for each property — tapping navigates to MaintenanceScreen.
+class _LandlordMaintenanceEntryCard extends ConsumerWidget {
+  final Property property;
+  const _LandlordMaintenanceEntryCard({required this.property});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final maintenanceAsync = ref.watch(maintenanceRequestsProvider(property.id));
+    final openCount = maintenanceAsync.valueOrNull
+            ?.where((r) => r.status != 'completed' && r.status != 'rejected')
+            .length ??
+        0;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => context.push('/maintenance', extra: property),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: StanomerColors.landlord.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(LucideIcons.wrench, size: 22, color: StanomerColors.landlord),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      property.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF1E293B)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      property.address,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (openCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3CD),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$openCount açık',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF856404)),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              const Icon(LucideIcons.chevronRight, size: 18, color: Color(0xFF94A3B8)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1679,17 +2135,45 @@ class _LandlordEmptyState extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
       child: Column(
         children: [
           const Icon(LucideIcons.home, size: 48, color: Color(0xFF1A5FA8)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Text(loc.noProperties, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(loc.addYourFirstProperty, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF999999))),
-          const SizedBox(height: 32),
-          ElevatedButton(onPressed: onAction, child: Text(loc.addProperty)),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onAction,
+              icon: const Icon(LucideIcons.plus, size: 18),
+              label: Text(loc.addProperty, style: const TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A5FA8),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => JoinPropertySheet.show(context),
+              icon: const Icon(LucideIcons.qrCode, size: 18),
+              label: Text(loc.agencyPropertyTakeoverQr, style: const TextStyle(fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1A5FA8),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: const BorderSide(color: Color(0xFF1A5FA8)),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1778,14 +2262,16 @@ class _InvitationCard extends StatelessWidget {
   }
 }
 
-class _TenantEmptyState extends StatelessWidget {
+class _TenantEmptyState extends ConsumerWidget {
   final VoidCallback onRefresh;
 
   const _TenantEmptyState({required this.onRefresh});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -1794,7 +2280,7 @@ class _TenantEmptyState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(LucideIcons.mail, size: 48, color: StanomerColors.textTertiary),
+          Icon(LucideIcons.home, size: 48, color: agencyColors.primary),
           const SizedBox(height: 16),
           Text(
             loc.tenantEmptyStateTitle,
@@ -1810,8 +2296,28 @@ class _TenantEmptyState extends StatelessWidget {
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: onRefresh,
-            icon: const Icon(LucideIcons.refreshCw, size: 18),
+            icon: const Icon(LucideIcons.refreshCw, size: 16),
             label: Text(loc.refresh),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () => JoinPropertySheet.show(context),
+              icon: const Icon(LucideIcons.qrCode, size: 20),
+              label: Text(
+                loc.joinWithQrCode,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: agencyColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -1819,7 +2325,7 @@ class _TenantEmptyState extends StatelessWidget {
   }
 }
 
-class _TenantHero extends StatelessWidget {
+class _TenantHero extends ConsumerWidget {
   final Property property;
   final Contract contract;
   final PropertyFinancialState? financialStatus;
@@ -1831,7 +2337,7 @@ class _TenantHero extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final nextDue = DateTime(now.year, now.month, contract.dueDay);
@@ -1851,6 +2357,8 @@ class _TenantHero extends StatelessWidget {
     final isOverdue = rentStatus == RentStatus.debt ||
         financialStatus?.billStatus == BillStatus.debt;
 
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+
     // Hero rengi
     final Color heroColor;
     if (isOverdue || hasDebt) {
@@ -1858,7 +2366,7 @@ class _TenantHero extends StatelessWidget {
     } else if (isAllPaid) {
       heroColor = const Color(0xFF0F6E56);
     } else {
-      heroColor = StanomerColors.tenant;
+      heroColor = agencyColors.primary;
     }
 
     // Hangi tutarları göster?
@@ -1910,6 +2418,11 @@ class _TenantHero extends StatelessWidget {
       );
     }
 
+    final user = ref.watch(currentUserProvider);
+    final userName = user?.userMetadata?['full_name'] as String?
+        ?? user?.userMetadata?['name'] as String?
+        ?? (user?.email != null ? user!.email!.split('@').first : '');
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -1939,6 +2452,17 @@ class _TenantHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (userName.isNotEmpty) ...[
+                  Text(
+                    loc.welcomeUser(userName),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -2064,7 +2588,7 @@ class _HeroStatusBadge extends StatelessWidget {
   }
 }
 
-class _TenantPaymentCard extends StatelessWidget {
+class _TenantPaymentCard extends ConsumerWidget {
   final Property property;
   final Contract contract;
   final PropertyFinancialState financialStatus;
@@ -2076,18 +2600,20 @@ class _TenantPaymentCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final accentColor = agencyColors.primary;
     
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: StanomerColors.tenant.withValues(alpha: 0.2), width: 1.5),
+        border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: StanomerColors.tenant.withValues(alpha: 0.05),
+            color: accentColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -2106,12 +2632,12 @@ class _TenantPaymentCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: StanomerColors.tenant.withValues(alpha: 0.1),
+                  color: accentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   loc.upcomingLabel,
-                  style: const TextStyle(color: StanomerColors.tenant, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -2153,7 +2679,7 @@ class _TenantPaymentCard extends StatelessWidget {
                 label: loc.paidHeader,
                 value: CurrencyUtils.formatCurrencyMap(financialStatus.paidTotals, useSymbols: true),
                 count: financialStatus.paidCount,
-                color: StanomerColors.tenant,
+                color: accentColor,
                 loc: loc,
               ),
             ],
@@ -2167,7 +2693,7 @@ class _TenantPaymentCard extends StatelessWidget {
                 'initialTabIndex': 1,
               }),
               style: ElevatedButton.styleFrom(
-                backgroundColor: StanomerColors.tenant,
+                backgroundColor: accentColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 elevation: 0,
@@ -2399,7 +2925,11 @@ class _PropertyCard extends ConsumerWidget {
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final financialStatusAsync = ref.watch(propertyFinancialStatusProvider(property.id));
 
-    final accentColor = isLandlord ? StanomerColors.landlord : StanomerColors.tenant;
+    final brandingState = ref.watch(agencyBrandingProvider);
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final accentColor = brandingState.hasAgencyBranding
+        ? agencyColors.primary
+        : (isLandlord ? StanomerColors.landlord : StanomerColors.tenant);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,17 +32,53 @@ final profileFutureProvider = FutureProvider<Map<String, dynamic>?>((ref) async 
   return data;
 });
 
+final userRoleProvider = Provider<String?>((ref) {
+  final user = ref.watch(currentUserProvider);
+  final profileAsync = ref.watch(profileFutureProvider);
+
+  final dbRole = profileAsync.value?['role'] as String?;
+  if (dbRole != null && dbRole.isNotEmpty) {
+    return dbRole;
+  }
+  return user?.userMetadata?['role'] as String?;
+});
+
 final routerListenableProvider = Provider<Listenable>((ref) {
   final listenable = _RouterListenable();
   
-  // Listen to auth state changes and notify the router
+  // Listen to auth state, profile and role changes to update routing dynamically
   ref.listen(authStateProvider, (_, __) {
     listenable.notify();
+  });
+  ref.listen(profileFutureProvider, (_, __) {
+    listenable.notify();
+  });
+  ref.listen(userRoleProvider, (_, __) {
+    listenable.notify();
+  });
+
+  ref.onDispose(() {
+    listenable.dispose();
   });
   
   return listenable;
 });
 
 class _RouterListenable extends ChangeNotifier {
-  void notify() => notifyListeners();
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  void notify() {
+    scheduleMicrotask(() {
+      if (!_isDisposed) {
+        notifyListeners();
+      }
+    });
+  }
 }
+
