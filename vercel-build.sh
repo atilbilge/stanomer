@@ -9,28 +9,24 @@ echo "--- VERCEL DUAL BUILD START (/app & /dev-app) ---"
 export BOT=true
 export FLUTTER_ROOT_CHECK=false
 
-# 1. Environment Check
-echo "Step 1: Checking Environment Variables..."
-if [ -z "$SUPABASE_URL" ]; then
-  echo "Error: SUPABASE_URL is not set!"
-  exit 1
+# 1. Environment Check & Setup
+echo "Step 1: Checking Environment Configuration Files..."
+
+# Only overwrite .env.prod if VERCEL_PROD_SUPABASE_URL is specifically provided
+if [ -n "$VERCEL_PROD_SUPABASE_URL" ]; then
+  echo "Overwriting .env.prod with Vercel Production Environment Variables..."
+  echo "ENVIRONMENT=prod" > .env.prod
+  echo "SUPABASE_URL=$VERCEL_PROD_SUPABASE_URL" >> .env.prod
+  echo "SUPABASE_ANON_KEY=$VERCEL_PROD_SUPABASE_ANON_KEY" >> .env.prod
 fi
 
-# Use DEV specific Supabase credentials if set, otherwise fallback to main
-SUPABASE_DEV_URL="${SUPABASE_DEV_URL:-$SUPABASE_URL}"
-SUPABASE_DEV_ANON_KEY="${SUPABASE_DEV_ANON_KEY:-$SUPABASE_ANON_KEY}"
-
-echo "Preparing .env.prod..."
-echo "SUPABASE_URL=$SUPABASE_URL" > .env.prod
-echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env.prod
-
-echo "Preparing .env.dev..."
-echo "SUPABASE_URL=$SUPABASE_DEV_URL" > .env.dev
-echo "SUPABASE_ANON_KEY=$SUPABASE_DEV_ANON_KEY" >> .env.dev
-
-# Default .env
-echo "SUPABASE_URL=$SUPABASE_URL" > .env
-echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+# Only overwrite .env.dev if VERCEL_DEV_SUPABASE_URL is specifically provided
+if [ -n "$VERCEL_DEV_SUPABASE_URL" ]; then
+  echo "Overwriting .env.dev with Vercel Dev Environment Variables..."
+  echo "ENVIRONMENT=dev" > .env.dev
+  echo "SUPABASE_URL=$VERCEL_DEV_SUPABASE_URL" >> .env.dev
+  echo "SUPABASE_ANON_KEY=$VERCEL_DEV_SUPABASE_ANON_KEY" >> .env.dev
+fi
 
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
@@ -57,6 +53,7 @@ flutter pub get
 echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
 flutter clean
 rm -rf build/
+cp .env.prod .env
 flutter build web --release -t lib/main.dart --base-href /app/ --dart-define-from-file=.env.prod
 mkdir -p build/web_prod
 cp -r build/web/* build/web_prod/
@@ -64,6 +61,7 @@ cp -r build/web/* build/web_prod/
 # 5. Build Dev Flutter Web (/dev-app/)
 echo "Step 5: Building DEV Flutter Web (--base-href /dev-app/)..."
 rm -rf build/web
+cp .env.dev .env
 flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define-from-file=.env.dev
 mkdir -p build/web_dev
 cp -r build/web/* build/web_dev/
@@ -113,4 +111,4 @@ else
   exit 1
 fi
 
-echo "--- VERCEL DUAL BUILD COMPLETE! (/app & /dev-app are ready) ---"
+echo "--- VERCEL DUAL BUILD COMPLETE! (/app = PROD | /dev-app = DEV) ---"
