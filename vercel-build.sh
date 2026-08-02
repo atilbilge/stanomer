@@ -9,24 +9,22 @@ echo "--- VERCEL DUAL BUILD START (/app & /dev-app) ---"
 export BOT=true
 export FLUTTER_ROOT_CHECK=false
 
-# 1. Environment Check & Setup
-echo "Step 1: Checking Environment Configuration Files..."
+# 1. Environment Setup
+echo "Step 1: Creating Environment Configuration Files..."
 
-# Only overwrite .env.prod if VERCEL_PROD_SUPABASE_URL is specifically provided
-if [ -n "$VERCEL_PROD_SUPABASE_URL" ]; then
-  echo "Overwriting .env.prod with Vercel Production Environment Variables..."
-  echo "ENVIRONMENT=prod" > .env.prod
-  echo "SUPABASE_URL=$VERCEL_PROD_SUPABASE_URL" >> .env.prod
-  echo "SUPABASE_ANON_KEY=$VERCEL_PROD_SUPABASE_ANON_KEY" >> .env.prod
-fi
+PROD_URL="${VERCEL_PROD_SUPABASE_URL:-https://ustcsvvkzsmsgzbptvpm.supabase.co}"
+PROD_KEY="${VERCEL_PROD_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g}"
 
-# Only overwrite .env.dev if VERCEL_DEV_SUPABASE_URL is specifically provided
-if [ -n "$VERCEL_DEV_SUPABASE_URL" ]; then
-  echo "Overwriting .env.dev with Vercel Dev Environment Variables..."
-  echo "ENVIRONMENT=dev" > .env.dev
-  echo "SUPABASE_URL=$VERCEL_DEV_SUPABASE_URL" >> .env.dev
-  echo "SUPABASE_ANON_KEY=$VERCEL_DEV_SUPABASE_ANON_KEY" >> .env.dev
-fi
+DEV_URL="${VERCEL_DEV_SUPABASE_URL:-https://thvbpifahvasyzmngpzp.supabase.co}"
+DEV_KEY="${VERCEL_DEV_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU}"
+
+echo "ENVIRONMENT=prod" > .env.prod
+echo "SUPABASE_URL=$PROD_URL" >> .env.prod
+echo "SUPABASE_ANON_KEY=$PROD_KEY" >> .env.prod
+
+echo "ENVIRONMENT=dev" > .env.dev
+echo "SUPABASE_URL=$DEV_URL" >> .env.dev
+echo "SUPABASE_ANON_KEY=$DEV_KEY" >> .env.dev
 
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
@@ -54,7 +52,7 @@ echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
 flutter clean
 rm -rf build/
 cp .env.prod .env
-flutter build web --release -t lib/main.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=https://ustcsvvkzsmsgzbptvpm.supabase.co --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g --dart-define-from-file=.env.prod
+flutter build web --release -t lib/main.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=$PROD_URL --dart-define=SUPABASE_ANON_KEY=$PROD_KEY --dart-define-from-file=.env.prod
 mkdir -p build/web_prod
 cp -r build/web/* build/web_prod/
 
@@ -62,7 +60,7 @@ cp -r build/web/* build/web_prod/
 echo "Step 5: Building DEV Flutter Web (--base-href /dev-app/)..."
 rm -rf build/web
 cp .env.dev .env
-flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define=ENVIRONMENT=dev --dart-define=SUPABASE_URL=https://thvbpifahvasyzmngpzp.supabase.co --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU --dart-define-from-file=.env.dev
+flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define=ENVIRONMENT=dev --dart-define=SUPABASE_URL=$DEV_URL --dart-define=SUPABASE_ANON_KEY=$DEV_KEY --dart-define-from-file=.env.dev
 mkdir -p build/web_dev
 cp -r build/web/* build/web_dev/
 
