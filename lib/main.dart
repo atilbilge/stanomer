@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,7 +75,7 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  final _appLinks = AppLinks();
+  final _appLinks = kIsWeb ? null : AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
   String? _lastHandledToken; // çift tetiklenmeyi önler
 
@@ -83,14 +84,15 @@ class _MyAppState extends ConsumerState<MyApp> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(appLifecycleProvider).init();
-      _initDeepLinks();
+      if (!kIsWeb) _initDeepLinks();
     });
   }
 
   Future<void> _initDeepLinks() async {
+    if (kIsWeb || _appLinks == null) return;
     try {
       // Warm start: uygulama arka plandayken/açıkken gelen linkler
-      _linkSubscription = _appLinks.uriLinkStream.listen(
+      _linkSubscription = _appLinks!.uriLinkStream.listen(
         (uri) {
           debugPrint('Deep link (warm): $uri');
           _scheduleDeepLink(uri);
@@ -99,7 +101,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       );
 
       // Cold start: uygulama kapalıyken link ile açılma
-      final initialUri = await _appLinks.getInitialLink();
+      final initialUri = await _appLinks!.getInitialLink();
       debugPrint('Deep link (cold): $initialUri');
       if (initialUri != null) {
         _scheduleDeepLink(initialUri);
