@@ -20,51 +20,60 @@ import 'core/providers/lifecycle_provider.dart';
 import 'core/widgets/web_responsive_wrapper.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Enable path URL strategy (removes # from URLs)
-  // This is vital for Supabase Auth redirect and GoRouter stability on web
-  usePathUrlStrategy();
-  
-  // Log Flutter errors to console
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    debugPrint('CATCHED ERROR: ${details.exception}\n${details.stack}');
-  };
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // Enable path URL strategy (removes # from URLs)
+    // This is vital for Supabase Auth redirect and GoRouter stability on web
+    usePathUrlStrategy();
+    
+    // Log Flutter errors to console
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      debugPrint('CATCHED ERROR: ${details.exception}\n${details.stack}');
+    };
 
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint('[main] .env file not found or failed to load: $e');
-  }
+    if (!kIsWeb) {
+      try {
+        await dotenv.load(fileName: ".env");
+      } catch (e) {
+        debugPrint('[main] .env file not found or failed to load: $e');
+      }
+    }
 
-  EnvConfig.validate();
+    EnvConfig.validate();
 
-  await Supabase.initialize(
-    url: EnvConfig.supabaseUrl,
-    anonKey: EnvConfig.supabaseAnonKey,
-  );
+    await Supabase.initialize(
+      url: EnvConfig.supabaseUrl,
+      anonKey: EnvConfig.supabaseAnonKey,
+    );
 
-  final prefs = await SharedPreferences.getInstance();
-  
-  // Initialize RevenueCat
-  final container = ProviderContainer(
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(prefs),
-    ],
-  );
-  // Initialize RevenueCat with the current app locale
-  final locale = container.read(localeProvider);
-  await container.read(subscriptionServiceProvider).init(locale: locale);
+    final prefs = await SharedPreferences.getInstance();
+    
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+    );
 
-  // No need to call syncLocale separately — init already handles it
+    if (!kIsWeb) {
+      try {
+        final locale = container.read(localeProvider);
+        await container.read(subscriptionServiceProvider).init(locale: locale);
+      } catch (e) {
+        debugPrint('[main] RevenueCat init skipped on web: $e');
+      }
+    }
 
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const MyApp(),
-    ),
-  );
+    runApp(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MyApp(),
+      ),
+    );
+  }, (error, stack) {
+    debugPrint('UNHANDLED ERROR in main zone: $error\n$stack');
+  });
 }
 
 class MyApp extends ConsumerStatefulWidget {

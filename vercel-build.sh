@@ -52,7 +52,7 @@ echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
 flutter clean
 rm -rf build/
 cp .env.prod .env
-flutter build web --release -t lib/main.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=$PROD_URL --dart-define=SUPABASE_ANON_KEY=$PROD_KEY --dart-define-from-file=.env.prod
+flutter build web --release -t lib/main_prod.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=$PROD_URL --dart-define=SUPABASE_ANON_KEY=$PROD_KEY --dart-define-from-file=.env.prod
 mkdir -p build/web_prod
 cp -r build/web/* build/web_prod/
 
