@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/colors.dart';
@@ -12,7 +13,7 @@ final agencyColorSchemeProvider = Provider<AgencyColorScheme>((ref) {
   if (userRole == 'agency') {
     final profileAsync = ref.watch(profileFutureProvider);
     final profileData = profileAsync.value;
-    final rawColorScheme = profileData?['color_scheme'] as Map<String, dynamic>?;
+    final rawColorScheme = profileData?['color_scheme'];
     return AgencyColorScheme.fromJson(rawColorScheme);
   }
 
@@ -54,7 +55,21 @@ class AgencyColorScheme {
 
   /// Factory constructor to parse JSON data from `profiles.color_scheme`.
   /// Supports `primary`, `color-primary`, `--color-primary`, etc.
-  factory AgencyColorScheme.fromJson(Map<String, dynamic>? json) {
+  factory AgencyColorScheme.fromJson(dynamic rawJson) {
+    Map<String, dynamic>? json;
+    if (rawJson is Map<String, dynamic>) {
+      json = rawJson;
+    } else if (rawJson is Map) {
+      json = Map<String, dynamic>.from(rawJson);
+    } else if (rawJson is String && rawJson.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawJson);
+        if (decoded is Map) {
+          json = Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {}
+    }
+
     if (json == null || json.isEmpty) {
       return const AgencyColorScheme(
         primary: StanomerColors.brandPrimary,

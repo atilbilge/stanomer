@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'agency_color_scheme.dart';
 
 class AgencyProfile {
@@ -18,11 +19,23 @@ class AgencyProfile {
   });
 
   factory AgencyProfile.fromJson(Map<String, dynamic> json) {
-    final rawScheme = json['color_scheme'] as Map<String, dynamic>?;
-    final primaryFromProfile = json['primary_color'] as String? ?? rawScheme?['primary'] as String?;
+    final rawScheme = json['color_scheme'];
+    Map<String, dynamic>? rawSchemeMap;
+    if (rawScheme is Map<String, dynamic>) {
+      rawSchemeMap = rawScheme;
+    } else if (rawScheme is Map) {
+      rawSchemeMap = Map<String, dynamic>.from(rawScheme);
+    } else if (rawScheme is String && rawScheme.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawScheme);
+        if (decoded is Map) rawSchemeMap = Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+
+    final primaryFromProfile = json['primary_color'] as String? ?? rawSchemeMap?['primary'] as String?;
     final mergedSchemeMap = {
       if (primaryFromProfile != null) 'primary': primaryFromProfile,
-      ...?rawScheme,
+      ...?rawSchemeMap,
     };
 
     return AgencyProfile(
