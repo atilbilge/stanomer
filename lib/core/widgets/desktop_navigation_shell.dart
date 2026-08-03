@@ -74,7 +74,7 @@ class DesktopNavigationShell extends ConsumerWidget {
     final brandingState = ref.watch(agencyBrandingProvider);
     final agencyColors = ref.watch(agencyColorSchemeProvider);
     final user = ref.watch(currentUserProvider);
-    final role = user?.userMetadata?['role'] as String? ?? 'landlord';
+    final role = ref.watch(userRoleProvider) ?? 'landlord';
     final isAgency = role == 'agency';
 
     // Theme color resolution
