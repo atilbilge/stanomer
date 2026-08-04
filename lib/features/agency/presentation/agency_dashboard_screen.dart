@@ -643,16 +643,13 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
   List<Property> _filterAndSortProperties(
     List<Property> props,
     Map<String, Contract?> contractsMap,
-    List<Map<String, dynamic>> pendingPayments,
+    Set<String> debtPropertyIds,
   ) {
-    final pendingPropertyIds =
-        pendingPayments.map((p) => p['property_id'] as String?).whereType<String>().toSet();
-
     var filtered = props.where((p) {
       if (_selectedInsight != null) {
         if (!_matchesInsight(p, contractsMap[p.id], _selectedInsight!)) return false;
       }
-      if (_filterBy == 'has_debt' && !pendingPropertyIds.contains(p.id)) return false;
+      if (_filterBy == 'has_debt' && !debtPropertyIds.contains(p.id)) return false;
       if (_filterBy == 'occupied' && p.tenantId == null) return false;
       if (_filterBy == 'vacant' && (p.tenantId != null || p.landlordId == null)) return false;
 
@@ -687,7 +684,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
 
   Map<String, List<Property>> _groupProperties(
     List<Property> props,
-    Set<String> pendingPropertyIds,
+    Set<String> debtPropertyIds,
     AppLocalizations loc,
   ) {
     final Map<String, List<Property>> grouped = {};
@@ -721,7 +718,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
     } else if (_groupBy == 'debt_consent') {
       for (final p in props) {
         final String key;
-        final hasDebt = pendingPropertyIds.contains(p.id);
+        final hasDebt = debtPropertyIds.contains(p.id);
         final consentPending = p.landlordId == null || p.tenantId == null;
 
         if (hasDebt) {
@@ -742,14 +739,11 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
 
   Widget _buildFilterChips(
     AgencyColorScheme colors,
-    List<Map<String, dynamic>> pendingPayments,
+    Set<String> debtPropertyIds,
     List<Property> allProps,
     AppLocalizations loc,
   ) {
-    final pendingPropertyIds =
-        pendingPayments.map((p) => p['property_id'] as String?).whereType<String>().toSet();
-
-    final debtCount = allProps.where((p) => pendingPropertyIds.contains(p.id)).length;
+    final debtCount = allProps.where((p) => debtPropertyIds.contains(p.id)).length;
     final occupiedCount = allProps.where((p) => p.tenantId != null).length;
     final vacantCount = allProps.where((p) => p.tenantId == null && p.landlordId != null).length;
 
@@ -800,14 +794,33 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final propertiesAsync = ref.watch(agencyPropertiesProvider);
-    final pendingPaymentsAsync = ref.watch(agencyPendingPaymentsProvider);
+    final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
     final contractsMapAsync = ref.watch(agencyContractsMapProvider);
     final userRole = ref.watch(userRoleProvider);
     final isLandlord = userRole == 'landlord';
 
-    final pendingPayments = pendingPaymentsAsync.value ?? [];
-    final pendingPropertyIds =
-        pendingPayments.map((p) => p['property_id'] as String?).whereType<String>().toSet();
+    final allPayments = allPaymentsAsync.value ?? [];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final debtPropertyIds = allPayments.where((item) {
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'paid') return false;
+      final amt = (item['amount'] as num?)?.toDouble() ??
+          (item['total_amount'] as num?)?.toDouble() ??
+          (item['rent_amount'] as num?)?.toDouble() ??
+          0.0;
+      if (amt <= 0) return false;
+
+      if (status == 'declared' || status == 'overdue') return true;
+      final dueDateStr = item['due_date'] as String?;
+      final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+      if (status == 'pending' && (dueDate == null || dueDate.isBefore(today))) {
+        return true;
+      }
+      return false;
+    }).map((item) => item['property_id'] as String?).whereType<String>().toSet();
+
     final contractsMap = contractsMapAsync.value ?? {};
     final rawPropertiesList = propertiesAsync.value ?? [];
     final showSearchPanel = !isLandlord || rawPropertiesList.length > 1;
@@ -908,7 +921,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
 
                 // Quick Filter Chips Bar
                 propertiesAsync.maybeWhen(
-                  data: (allProps) => _buildFilterChips(widget.colors, pendingPayments, allProps, loc),
+                  data: (allProps) => _buildFilterChips(widget.colors, debtPropertyIds, allProps, loc),
                   orElse: () => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 10),
@@ -1022,7 +1035,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
               final filtered = _filterAndSortProperties(
                 rawProperties,
                 contractsMap,
-                pendingPayments,
+                debtPropertyIds,
               );
 
               if (filtered.isEmpty) {
@@ -1033,7 +1046,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                 );
               }
 
-              final groupedMap = _groupProperties(filtered, pendingPropertyIds, loc);
+              final groupedMap = _groupProperties(filtered, debtPropertyIds, loc);
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1083,7 +1096,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                             padding: const EdgeInsets.only(bottom: 12),
                             child: _PropertyCard(
                               property: property,
-                              hasPendingDebt: pendingPropertyIds.contains(property.id),
+                              hasPendingDebt: debtPropertyIds.contains(property.id),
                               colors: widget.colors,
                               onTap: () => context.push(
                                 '/property-detail',
@@ -1163,6 +1176,12 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final overdueList = allPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
       if (status == 'declared' || status == 'paid') return false;
+      final amt = (item['amount'] as num?)?.toDouble() ??
+          (item['total_amount'] as num?)?.toDouble() ??
+          (item['rent_amount'] as num?)?.toDouble() ??
+          0.0;
+      if (amt <= 0) return false;
+
       final dueDateStr = item['due_date'] as String?;
       final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
       if (status == 'overdue') return true;
