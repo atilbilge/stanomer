@@ -3471,6 +3471,72 @@ abstract class AppLocalizations {
     String propertyName,
     String inviteUrl,
   );
+
+  /// No description provided for @joinHomeTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pridruži se domu'**
+  String get joinHomeTitle;
+
+  /// No description provided for @joinHomeSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Skenirajte QR kod ili unesite vezu/kod pozivnice.'**
+  String get joinHomeSubtitle;
+
+  /// No description provided for @closeCamera.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zatvori kameru'**
+  String get closeCamera;
+
+  /// No description provided for @scanQrCodeBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Skeniraj QR kod'**
+  String get scanQrCodeBtn;
+
+  /// No description provided for @inviteLinkOrTokenLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Veza pozivnice ili token kod'**
+  String get inviteLinkOrTokenLabel;
+
+  /// No description provided for @inviteLinkOrTokenHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'https://.../invite?token=... ili kod'**
+  String get inviteLinkOrTokenHint;
+
+  /// No description provided for @paste.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zalepi'**
+  String get paste;
+
+  /// No description provided for @joinAndReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pridruži se i pregledaj'**
+  String get joinAndReview;
+
+  /// No description provided for @invalidInviteCodeOrLink.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo unesite važeću vezu ili kod pozivnice.'**
+  String get invalidInviteCodeOrLink;
+
+  /// No description provided for @landlordOwnershipTransferredSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.'**
+  String get landlordOwnershipTransferredSuccess;
+
+  /// No description provided for @landlordOwnershipInviteInvalid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.'**
+  String get landlordOwnershipInviteInvalid;
 }
 
 class _AppLocalizationsDelegate

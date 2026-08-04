@@ -880,5 +880,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "joinHomeTitle": "Pridruži se domu",
+  "joinHomeSubtitle": "Skenirajte QR kod ili unesite vezu/kod pozivnice.",
+  "closeCamera": "Zatvori kameru",
+  "scanQrCodeBtn": "Skeniraj QR kod",
+  "orLabel": "ILI",
+  "inviteLinkOrTokenLabel": "Veza pozivnice ili token kod",
+  "inviteLinkOrTokenHint": "https://.../invite?token=... ili kod",
+  "paste": "Zalepi",
+  "joinAndReview": "Pridruži se i pregledaj",
+  "invalidInviteCodeOrLink": "Molimo unesite važeću vezu ili kod pozivnice.",
+  "landlordOwnershipTransferredSuccess": "Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.",
+  "landlordOwnershipInviteInvalid": "Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena."
 }

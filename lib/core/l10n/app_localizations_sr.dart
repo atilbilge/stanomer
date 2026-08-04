@@ -1854,6 +1854,43 @@ class AppLocalizationsSr extends AppLocalizations {
   ) {
     return 'Zdravo $landlordName, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"$propertyName\" na Stanomeru:\n$inviteUrl';
   }
+
+  @override
+  String get joinHomeTitle => 'Pridruži se domu';
+
+  @override
+  String get joinHomeSubtitle =>
+      'Skenirajte QR kod ili unesite vezu/kod pozivnice.';
+
+  @override
+  String get closeCamera => 'Zatvori kameru';
+
+  @override
+  String get scanQrCodeBtn => 'Skeniraj QR kod';
+
+  @override
+  String get inviteLinkOrTokenLabel => 'Veza pozivnice ili token kod';
+
+  @override
+  String get inviteLinkOrTokenHint => 'https://.../invite?token=... ili kod';
+
+  @override
+  String get paste => 'Zalepi';
+
+  @override
+  String get joinAndReview => 'Pridruži se i pregledaj';
+
+  @override
+  String get invalidInviteCodeOrLink =>
+      'Molimo unesite važeću vezu ili kod pozivnice.';
+
+  @override
+  String get landlordOwnershipTransferredSuccess =>
+      'Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.';
+
+  @override
+  String get landlordOwnershipInviteInvalid =>
+      'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/utils/invite_utils.dart';
 import '../data/property_repository.dart';
@@ -40,12 +41,13 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
   }
 
   Future<void> _submitToken([String? rawValue]) async {
+    final loc = AppLocalizations.of(context)!;
     final raw = rawValue ?? _tokenController.text;
     final token = extractToken(raw);
 
     if (token.isEmpty) {
       setState(() {
-        _errorMessage = 'Lütfen geçerli bir davet bağlantısı veya davet kodu girin.';
+        _errorMessage = loc.invalidInviteCodeOrLink;
       });
       return;
     }
@@ -63,12 +65,12 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
         if (success) {
           ref.invalidate(propertiesFutureProvider);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tebrikler! Mülk ev sahibi sahipliği başarıyla hesabınıza devredildi.')),
+            SnackBar(content: Text(loc.landlordOwnershipTransferredSuccess)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş.'),
+            SnackBar(
+              content: Text(loc.landlordOwnershipInviteInvalid),
               backgroundColor: StanomerColors.alertPrimary,
             ),
           );
@@ -104,6 +106,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.of(context).size.height * 0.88;
 
@@ -160,9 +163,9 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Eve Dahil Ol',
-                          style: TextStyle(
+                        Text(
+                          loc.joinHomeTitle,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: StanomerColors.textPrimary,
@@ -170,7 +173,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'QR kodu taratın veya davet bağlantısını/kodunu girin.',
+                          loc.joinHomeSubtitle,
                           style: TextStyle(
                             fontSize: 12,
                             color: StanomerColors.textSecondary,
@@ -208,7 +211,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                 OutlinedButton.icon(
                   onPressed: _toggleScanner,
                   icon: const Icon(LucideIcons.x, size: 18),
-                  label: const Text('Kamerayı Kapat'),
+                  label: Text(loc.closeCamera),
                 ),
               ] else ...[
                 // QR Scan Button
@@ -224,18 +227,18 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                         color: StanomerColors.brandPrimary.withValues(alpha: 0.2),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           LucideIcons.camera,
                           color: StanomerColors.brandPrimary,
                           size: 20,
                         ),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Text(
-                          'QR Kod Tara',
-                          style: TextStyle(
+                          loc.scanQrCodeBtn,
+                          style: const TextStyle(
                             color: StanomerColors.brandPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -253,7 +256,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'VEYA',
+                        loc.orLabel,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -270,12 +273,12 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                 TextField(
                   controller: _tokenController,
                   decoration: InputDecoration(
-                    labelText: 'Davet Bağlantısı veya Token Kodu',
-                    hintText: 'https://.../invite?token=... veya kod',
+                    labelText: loc.inviteLinkOrTokenLabel,
+                    hintText: loc.inviteLinkOrTokenHint,
                     prefixIcon: const Icon(LucideIcons.link, size: 18),
                     suffixIcon: IconButton(
                       icon: const Icon(LucideIcons.clipboard, size: 18),
-                      tooltip: 'Yapıştır',
+                      tooltip: loc.paste,
                       onPressed: _pasteFromClipboard,
                     ),
                     border: OutlineInputBorder(
@@ -319,9 +322,9 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Katıl ve İncele',
-                          style: TextStyle(
+                      : Text(
+                          loc.joinAndReview,
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),

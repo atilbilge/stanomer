@@ -1854,4 +1854,41 @@ class AppLocalizationsTr extends AppLocalizations {
   ) {
     return 'Merhaba $landlordName, \"$propertyName\" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n$inviteUrl';
   }
+
+  @override
+  String get joinHomeTitle => 'Eve Dahil Ol';
+
+  @override
+  String get joinHomeSubtitle =>
+      'QR kodu taratın veya davet bağlantısını/kodunu girin.';
+
+  @override
+  String get closeCamera => 'Kamerayı Kapat';
+
+  @override
+  String get scanQrCodeBtn => 'QR Kod Tara';
+
+  @override
+  String get inviteLinkOrTokenLabel => 'Davet Bağlantısı veya Token Kodu';
+
+  @override
+  String get inviteLinkOrTokenHint => 'https://.../invite?token=... veya kod';
+
+  @override
+  String get paste => 'Yapıştır';
+
+  @override
+  String get joinAndReview => 'Katıl ve İncele';
+
+  @override
+  String get invalidInviteCodeOrLink =>
+      'Lütfen geçerli bir davet bağlantısı veya davet kodu girin.';
+
+  @override
+  String get landlordOwnershipTransferredSuccess =>
+      'Tebrikler! Mülk ev sahibi sahipliği başarıyla hesabınıza devredildi.';
+
+  @override
+  String get landlordOwnershipInviteInvalid =>
+      'Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş.';
 }

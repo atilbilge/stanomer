@@ -781,5 +781,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "joinHomeTitle": "Join Home",
+  "joinHomeSubtitle": "Scan the QR code or enter the invite link/code.",
+  "closeCamera": "Close Camera",
+  "scanQrCodeBtn": "Scan QR Code",
+  "orLabel": "OR",
+  "inviteLinkOrTokenLabel": "Invite Link or Token Code",
+  "inviteLinkOrTokenHint": "https://.../invite?token=... or code",
+  "paste": "Paste",
+  "joinAndReview": "Join and Review",
+  "invalidInviteCodeOrLink": "Please enter a valid invite link or invite code.",
+  "landlordOwnershipTransferredSuccess": "Congratulations! Property ownership successfully transferred to your account.",
+  "landlordOwnershipInviteInvalid": "Ownership invite is invalid, expired or already accepted."
 }

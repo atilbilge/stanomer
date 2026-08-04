@@ -1858,4 +1858,41 @@ class AppLocalizationsEn extends AppLocalizations {
   ) {
     return 'Hello $landlordName, click this link to take over ownership of \"$propertyName\" on Stanomer:\n$inviteUrl';
   }
+
+  @override
+  String get joinHomeTitle => 'Join Home';
+
+  @override
+  String get joinHomeSubtitle =>
+      'Scan the QR code or enter the invite link/code.';
+
+  @override
+  String get closeCamera => 'Close Camera';
+
+  @override
+  String get scanQrCodeBtn => 'Scan QR Code';
+
+  @override
+  String get inviteLinkOrTokenLabel => 'Invite Link or Token Code';
+
+  @override
+  String get inviteLinkOrTokenHint => 'https://.../invite?token=... or code';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get joinAndReview => 'Join and Review';
+
+  @override
+  String get invalidInviteCodeOrLink =>
+      'Please enter a valid invite link or invite code.';
+
+  @override
+  String get landlordOwnershipTransferredSuccess =>
+      'Congratulations! Property ownership successfully transferred to your account.';
+
+  @override
+  String get landlordOwnershipInviteInvalid =>
+      'Ownership invite is invalid, expired or already accepted.';
 }

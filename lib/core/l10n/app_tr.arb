@@ -880,5 +880,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "joinHomeTitle": "Eve Dahil Ol",
+  "joinHomeSubtitle": "QR kodu taratın veya davet bağlantısını/kodunu girin.",
+  "closeCamera": "Kamerayı Kapat",
+  "scanQrCodeBtn": "QR Kod Tara",
+  "orLabel": "VEYA",
+  "inviteLinkOrTokenLabel": "Davet Bağlantısı veya Token Kodu",
+  "inviteLinkOrTokenHint": "https://.../invite?token=... veya kod",
+  "paste": "Yapıştır",
+  "joinAndReview": "Katıl ve İncele",
+  "invalidInviteCodeOrLink": "Lütfen geçerli bir davet bağlantısı veya davet kodu girin.",
+  "landlordOwnershipTransferredSuccess": "Tebrikler! Mülk ev sahibi sahipliği başarıyla hesabınıza devredildi.",
+  "landlordOwnershipInviteInvalid": "Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş."
 }
