@@ -1669,6 +1669,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   Future<void> _handlePaymentDeclaration(RentPayment payment, String monthName, FilePickerResult? result, {bool isCash = false}) async {
     final messenger = ScaffoldMessenger.of(context);
     final loc = AppLocalizations.of(context)!;
+    final user = ref.read(currentUserProvider);
+    final role = user?.userMetadata?['role'] as String?;
+    final isAgencyManager = user?.id == widget.property.agencyId || role == 'agency';
 
     try {
       if (isCash) {
@@ -1717,9 +1720,24 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           note: noteController.text.trim().isEmpty ? null : noteController.text.trim(),
         );
 
+        if (isAgencyManager) {
+          await ref.read(propertyRepositoryProvider).approveRentPayment(
+            payment.id,
+            widget.property.id,
+            monthName,
+            payment.dueDate,
+          );
+        }
+
         if (!mounted) return;
         messenger.showSnackBar(
-          SnackBar(content: Text(loc.paymentDeclaredHand)),
+          SnackBar(
+            content: Text(
+              isAgencyManager
+                  ? (loc.localeName == 'tr' ? 'Ödeme başarıyla kaydedildi ve borç kapatıldı.' : 'Payment successfully recorded and debt closed.')
+                  : loc.paymentDeclaredHand
+            ),
+          ),
         );
       } else if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
@@ -1770,9 +1788,24 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           receiptUrl: receiptUrl,
         );
 
+        if (isAgencyManager) {
+          await ref.read(propertyRepositoryProvider).approveRentPayment(
+            payment.id,
+            widget.property.id,
+            monthName,
+            payment.dueDate,
+          );
+        }
+
         if (!mounted) return;
         messenger.showSnackBar(
-          SnackBar(content: Text(loc.paymentDeclaredSuccess(ExpenseUtils.getLocalizedExpenseName(payment.title, loc)))),
+          SnackBar(
+            content: Text(
+              isAgencyManager
+                  ? (loc.localeName == 'tr' ? 'Dekont yüklendi ve borç kapatıldı.' : 'Receipt uploaded and debt closed.')
+                  : loc.paymentDeclaredSuccess(ExpenseUtils.getLocalizedExpenseName(payment.title, loc))
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -1780,6 +1813,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         messenger.showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingPaymentId = null);
+        ref.invalidate(rentPaymentsProvider(widget.property.id));
+        ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       }
     }
   }
@@ -3162,7 +3201,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
                             icon: const Icon(LucideIcons.upload, size: 16),
                             label: Text(
-                              loc.localeName == 'tr' ? 'Dekont Yükle' : 'Upload Receipt',
+                              loc.takeAction,
                               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -3231,7 +3270,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
                             icon: const Icon(LucideIcons.upload, size: 16),
                             label: Text(
-                              loc.localeName == 'tr' ? 'Dekont Yükle' : 'Upload Receipt',
+                              loc.takeAction,
                               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -3253,15 +3292,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     child: ElevatedButton.icon(
                       onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
                       icon: const Icon(LucideIcons.upload, size: 16),
-                      label: Text(
-                        loc.localeName == 'tr' 
-                            ? 'Dekont Yükle / Ödeme Bildir' 
-                            : (loc.localeName == 'ru'
-                                ? 'Загрузить квитанцию / Сообщить об оплате'
-                                : (loc.localeName.startsWith('sr')
-                                    ? 'Otpremi uplatnicu / Prijavi uplatu'
-                                    : 'Upload Receipt / Declare Payment')),
-                      ),
+                      label: Text(loc.takeAction),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: roleColor,
                         foregroundColor: Colors.white,
