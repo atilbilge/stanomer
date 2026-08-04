@@ -575,7 +575,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get declarePayment => 'Prijavi uplatu';
 
   @override
-  String get uploadReceipt => 'Učitaj uplatnicu';
+  String get uploadReceipt => 'Otpremi uplatnicu o plaćanju';
 
   @override
   String get paidInCash => 'Plaćeno gotovinom';

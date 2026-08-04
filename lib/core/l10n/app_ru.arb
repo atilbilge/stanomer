@@ -246,7 +246,7 @@
   },
   "proposeChanges": "Предложить изменения",
   "declarePayment": "Сообщить об оплате",
-  "uploadReceipt": "Загрузить чек",
+  "uploadReceipt": "Загрузить квитанцию об оплате",
   "paidInCash": "Оплачено наличными",
   "noFinancialRecords": "Нет истории платежей",
   "noActiveContract": "Нет загруженного договора",

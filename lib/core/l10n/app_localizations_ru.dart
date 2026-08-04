@@ -583,7 +583,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get declarePayment => 'Сообщить об оплате';
 
   @override
-  String get uploadReceipt => 'Загрузить чек';
+  String get uploadReceipt => 'Загрузить квитанцию об оплате';
 
   @override
   String get paidInCash => 'Оплачено наличными';

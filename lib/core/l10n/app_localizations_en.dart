@@ -574,7 +574,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get declarePayment => 'Declare Payment';
 
   @override
-  String get uploadReceipt => 'Upload Receipt';
+  String get uploadReceipt => 'Upload Payment Receipt';
 
   @override
   String get paidInCash => 'Paid in Cash';

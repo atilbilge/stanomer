@@ -246,7 +246,7 @@
   },
   "proposeChanges": "Değişiklik Öner",
   "declarePayment": "Ödeme Bildir",
-  "uploadReceipt": "Dekont Yükle",
+  "uploadReceipt": "Ödeme Dekontu Yükle",
   "paidInCash": "Nakit Ödendi",
   "noFinancialRecords": "Henüz bir ödeme kaydı yok.",
   "noActiveContract": "Aktif kontrat bulunamadı.",

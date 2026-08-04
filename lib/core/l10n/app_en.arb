@@ -192,7 +192,7 @@
   },
   "proposeChanges": "Propose Changes",
   "declarePayment": "Declare Payment",
-  "uploadReceipt": "Upload Receipt",
+  "uploadReceipt": "Upload Payment Receipt",
   "paidInCash": "Paid in Cash",
   "noFinancialRecords": "No financial records found yet",
   "noActiveContract": "No uploaded contract found",

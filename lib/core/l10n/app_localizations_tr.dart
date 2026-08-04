@@ -576,7 +576,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get declarePayment => 'Ödeme Bildir';
 
   @override
-  String get uploadReceipt => 'Dekont Yükle';
+  String get uploadReceipt => 'Ödeme Dekontu Yükle';
 
   @override
   String get paidInCash => 'Nakit Ödendi';

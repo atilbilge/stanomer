@@ -1162,7 +1162,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadReceipt.
   ///
   /// In sr, this message translates to:
-  /// **'Učitaj uplatnicu'**
+  /// **'Otpremi uplatnicu o plaćanju'**
   String get uploadReceipt;
 
   /// No description provided for @paidInCash.

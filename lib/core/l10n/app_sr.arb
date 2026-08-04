@@ -246,7 +246,7 @@
   },
   "proposeChanges": "Predloži izmene",
   "declarePayment": "Prijavi uplatu",
-  "uploadReceipt": "Učitaj uplatnicu",
+  "uploadReceipt": "Otpremi uplatnicu o plaćanju",
   "paidInCash": "Plaćeno gotovinom",
   "noFinancialRecords": "Nema zabeleženih plaćanja",
   "noActiveContract": "Nema aktivnih ugovora",
