@@ -1484,7 +1484,25 @@ class _ContractTile extends ConsumerWidget {
                     context.push(
                       '/invite-tenant',
                       extra: {
-                        'property': ref.read(propertiesStreamProvider).value!.firstWhere((p) => p.id == propertyId), 
+                        'property': ref.read(propertiesStreamProvider).value?.firstWhere(
+                              (p) => p.id == propertyId,
+                              orElse: () => Property(
+                                id: propertyId,
+                                address: contract.inviteeEmail,
+                                name: contract.inviterName ?? 'Property',
+                                currency: contract.currency,
+                                defaultMonthlyRent: contract.monthlyRent,
+                                defaultDepositAmount: contract.depositAmount,
+                              ),
+                            ) ??
+                            Property(
+                              id: propertyId,
+                              address: contract.inviteeEmail,
+                              name: contract.inviterName ?? 'Property',
+                              currency: contract.currency,
+                              defaultMonthlyRent: contract.monthlyRent,
+                              defaultDepositAmount: contract.depositAmount,
+                            ),
                         'contract': contract,
                       },
                     );
