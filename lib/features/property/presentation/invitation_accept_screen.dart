@@ -234,7 +234,7 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
       final propAddress = _property?.address ?? '';
 
       return Scaffold(
-        appBar: AppBar(title: const Text('Ev Sahibi Sahiplik Daveti')),
+        appBar: AppBar(title: Text(loc.landlordOwnershipInviteTitle)),
         body: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -253,7 +253,7 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                '$propName Mülkünün Ev Sahibi Olun',
+                loc.becomeLandlordTitle(propName),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -271,10 +271,10 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: StanomerColors.borderDefault),
                 ),
-                child: const Text(
-                  'Acente tarafından yönetilen bu mülkün ev sahibi olarak atanmak ve yönetmek için daveti onaylayın.',
+                child: Text(
+                  loc.landlordInviteAcceptDesc,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: StanomerColors.textPrimary),
+                  style: const TextStyle(fontSize: 13, color: StanomerColors.textPrimary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -288,7 +288,7 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
                 ),
                 child: _isProcessing
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Ev Sahibi Olarak Kabul Et', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : Text(loc.acceptAsLandlord, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

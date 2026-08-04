@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../agency/presentation/agency_dashboard_screen.dart';
 import '../../data/property_repository.dart';
@@ -94,6 +95,8 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     if (_isAccepted) {
       return Container(
         decoration: const BoxDecoration(
@@ -117,14 +120,14 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Ev Sahibi Daveti Kabul Etti!',
+            Text(
+              loc.landlordAcceptedInviteTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
-              '${widget.propertyName} mülkünün ev sahipliği başarıyla devredildi.',
+              loc.landlordOwnershipTransferredDesc(widget.propertyName),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 14, color: StanomerColors.textTertiary),
             ),
@@ -137,7 +140,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 minimumSize: const Size.fromHeight(48),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              child: const Text('Tamam', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(loc.ok, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ],
         ),
@@ -177,9 +180,9 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ev Sahibi Sahiplik Daveti',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      loc.landlordOwnershipInviteTitle,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       widget.propertyName,
@@ -207,7 +210,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.landlordName.isNotEmpty ? widget.landlordName : 'Ev Sahibi Daveti',
+                        widget.landlordName.isNotEmpty ? widget.landlordName : loc.landlordOwnershipInviteTitle,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       if (widget.landlordEmail.isNotEmpty)
@@ -224,9 +227,9 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'Davet Bekliyor',
-                    style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+                  child: Text(
+                    loc.invitePending,
+                    style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -263,10 +266,10 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Ev sahibine bu QR kodu taratın veya bağlantıyı gönderin.',
+                Text(
+                  loc.landlordShareQrInstruction,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                  style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                 ),
               ],
             ),
@@ -279,11 +282,11 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: inviteUrl));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Sahiplik bağlantısı kopyalandı!')),
+                      SnackBar(content: Text(loc.ownershipLinkCopied)),
                     );
                   },
                   icon: const Icon(LucideIcons.copy, size: 18),
-                  label: const Text('Kopyala'),
+                  label: Text(loc.copy),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -295,11 +298,15 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Share.share(
-                      'Merhaba ${widget.landlordName}, "${widget.propertyName}" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n$inviteUrl',
+                      loc.landlordShareMessage(
+                        widget.landlordName.isNotEmpty ? widget.landlordName : loc.roleLandlord,
+                        widget.propertyName,
+                        inviteUrl,
+                      ),
                     );
                   },
                   icon: const Icon(LucideIcons.share2, size: 18),
-                  label: const Text('Paylaş'),
+                  label: Text(loc.share),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: StanomerColors.brandPrimary,
                     foregroundColor: Colors.white,

@@ -1808,4 +1808,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPassword => 'Forgot your password?';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get showLandlordInviteQrOrLink => 'Show Ownership QR Code / Invitation Link';
+
+  @override
+  String get showLandlordInviteQrOrLinkClaimed => 'Ownership QR Code / Invitation Link';
+
+  @override
+  String get landlordOwnershipInviteTitle => 'Landlord Ownership Invitation';
+
+  @override
+  String becomeLandlordTitle(String propertyName) => 'Become the Landlord of $propertyName';
+
+  @override
+  String get landlordInviteAcceptDesc => 'Approve the invitation to be assigned as and manage the landlord of this property managed by the agency.';
+
+  @override
+  String get acceptAsLandlord => 'Accept as Landlord';
+
+  @override
+  String get landlordAcceptedInviteTitle => 'Landlord Accepted the Invitation!';
+
+  @override
+  String landlordOwnershipTransferredDesc(String propertyName) => 'Ownership of $propertyName has been successfully transferred.';
+
+  @override
+  String get landlordShareQrInstruction => 'Have the landlord scan this QR code or send them the link.';
+
+  @override
+  String get ownershipLinkCopied => 'Ownership link copied!';
+
+  @override
+  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Hello $landlordName, click this link to take over ownership of "$propertyName" on Stanomer:\n$inviteUrl';
 }

@@ -1820,4 +1820,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get forgotPassword => 'Забыли пароль?';
+
+  @override
+  String get copy => 'Копировать';
+
+  @override
+  String get showLandlordInviteQrOrLink => 'Показать QR-код / ссылку права собственности';
+
+  @override
+  String get showLandlordInviteQrOrLinkClaimed => 'QR-код / ссылка права собственности';
+
+  @override
+  String get landlordOwnershipInviteTitle => 'Приглашение собственника';
+
+  @override
+  String becomeLandlordTitle(String propertyName) => 'Станьте владельцем $propertyName';
+
+  @override
+  String get landlordInviteAcceptDesc => 'Подтвердите приглашение, чтобы стать зарегистрированным владельцем этого объекта под управлением агентства.';
+
+  @override
+  String get acceptAsLandlord => 'Принять как владелец';
+
+  @override
+  String get landlordAcceptedInviteTitle => 'Владелец принял приглашение!';
+
+  @override
+  String landlordOwnershipTransferredDesc(String propertyName) => 'Права собственности на $propertyName успешно переданы.';
+
+  @override
+  String get landlordShareQrInstruction => 'Попросите владельца отсканировать этот QR-код или отправьте ему ссылку.';
+
+  @override
+  String get ownershipLinkCopied => 'Ссылка для собственника скопирована!';
+
+  @override
+  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Здравствуйте, $landlordName! Перейдите по ссылке, чтобы принять права собственности на "$propertyName" в Stanomer:\n$inviteUrl';
 }

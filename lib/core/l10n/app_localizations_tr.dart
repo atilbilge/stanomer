@@ -1804,4 +1804,40 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get forgotPassword => 'Şifrenizi mi unuttunuz?';
+
+  @override
+  String get copy => 'Kopyala';
+
+  @override
+  String get showLandlordInviteQrOrLink => 'Sahiplik QR Kodu / Davet Bağlantısını Göster';
+
+  @override
+  String get showLandlordInviteQrOrLinkClaimed => 'Sahiplik QR Kodu / Davet Bağlantısı';
+
+  @override
+  String get landlordOwnershipInviteTitle => 'Ev Sahibi Sahiplik Daveti';
+
+  @override
+  String becomeLandlordTitle(String propertyName) => '$propertyName Mülkünün Ev Sahibi Olun';
+
+  @override
+  String get landlordInviteAcceptDesc => 'Acente tarafından yönetilen bu mülkün ev sahibi olarak atanmak ve yönetmek için daveti onaylayın.';
+
+  @override
+  String get acceptAsLandlord => 'Ev Sahibi Olarak Kabul Et';
+
+  @override
+  String get landlordAcceptedInviteTitle => 'Ev Sahibi Daveti Kabul Etti!';
+
+  @override
+  String landlordOwnershipTransferredDesc(String propertyName) => '$propertyName mülkünün ev sahipliği başarıyla devredildi.';
+
+  @override
+  String get landlordShareQrInstruction => 'Ev sahibine bu QR kodu taratın veya bağlantıyı gönderin.';
+
+  @override
+  String get ownershipLinkCopied => 'Sahiplik bağlantısı kopyalandı!';
+
+  @override
+  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Merhaba $landlordName, "$propertyName" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n$inviteUrl';
 }

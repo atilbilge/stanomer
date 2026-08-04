@@ -5536,7 +5536,7 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                   }
                 },
                 icon: const Icon(LucideIcons.qrCode, size: 16),
-                label: Text(isClaimed ? 'Sahiplik QR Kodu / Davet Bağlantısı' : 'Davet QR Kodu / Bağlantısını Göster'),
+                label: Text(isClaimed ? loc.showLandlordInviteQrOrLinkClaimed : loc.showLandlordInviteQrOrLink),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: StanomerColors.brandPrimary,
                   foregroundColor: Colors.white,

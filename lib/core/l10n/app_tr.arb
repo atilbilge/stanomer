@@ -841,5 +841,17 @@
   },
   "heroHeadline": "Kiralık mülklerinizi tek panelden yönetin",
   "heroSubtitle": "Kiracı takibi, ödeme kayıtları ve mülk detayları — hepsi tek yerde.",
-  "forgotPassword": "Şifrenizi mi unuttunuz?"
+  "forgotPassword": "Şifrenizi mi unuttunuz?",
+  "copy": "Kopyala",
+  "showLandlordInviteQrOrLink": "Sahiplik QR Kodu / Davet Bağlantısını Göster",
+  "showLandlordInviteQrOrLinkClaimed": "Sahiplik QR Kodu / Davet Bağlantısı",
+  "landlordOwnershipInviteTitle": "Ev Sahibi Sahiplik Daveti",
+  "becomeLandlordTitle": "{propertyName} Mülkünün Ev Sahibi Olun",
+  "landlordInviteAcceptDesc": "Acente tarafından yönetilen bu mülkün ev sahibi olarak atanmak ve yönetmek için daveti onaylayın.",
+  "acceptAsLandlord": "Ev Sahibi Olarak Kabul Et",
+  "landlordAcceptedInviteTitle": "Ev Sahibi Daveti Kabul Etti!",
+  "landlordOwnershipTransferredDesc": "{propertyName} mülkünün ev sahipliği başarıyla devredildi.",
+  "landlordShareQrInstruction": "Ev sahibine bu QR kodu taratın veya bağlantıyı gönderin.",
+  "ownershipLinkCopied": "Sahiplik bağlantısı kopyalandı!",
+  "landlordShareMessage": "Merhaba {landlordName}, \"{propertyName}\" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n{inviteUrl}"
 }

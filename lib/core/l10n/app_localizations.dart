@@ -3395,6 +3395,19 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Zaboravili ste lozinku?'**
   String get forgotPassword;
+
+  String get copy;
+  String get showLandlordInviteQrOrLink;
+  String get showLandlordInviteQrOrLinkClaimed;
+  String get landlordOwnershipInviteTitle;
+  String becomeLandlordTitle(String propertyName);
+  String get landlordInviteAcceptDesc;
+  String get acceptAsLandlord;
+  String get landlordAcceptedInviteTitle;
+  String landlordOwnershipTransferredDesc(String propertyName);
+  String get landlordShareQrInstruction;
+  String get ownershipLinkCopied;
+  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl);
 }
 
 class _AppLocalizationsDelegate
