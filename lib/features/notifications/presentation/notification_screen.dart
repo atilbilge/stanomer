@@ -160,7 +160,14 @@ class _NotificationTileState extends ConsumerState<_NotificationTile> {
         try {
           final inviteData = await ref.read(propertyRepositoryProvider).getInviteByToken(relatedId);
           if (mounted) {
-            await _ensureCorrectRole(null, forceRole: 'tenant');
+            final isLandlordInvite = relatedId.startsWith('landlord_') ||
+                inviteData['target_role'] == 'landlord' ||
+                inviteData['type'] == 'landlord_ownership';
+            if (!isLandlordInvite) {
+              await _ensureCorrectRole(null, forceRole: 'tenant');
+            } else {
+              await _ensureCorrectRole(null, forceRole: 'landlord');
+            }
             if (mounted) {
               context.push('/invite?token=$relatedId');
             }

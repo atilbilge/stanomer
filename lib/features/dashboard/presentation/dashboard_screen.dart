@@ -370,6 +370,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // ── Pending invitations (if any) ──────────────────────
+                        if (pendingInvitesAsync.hasValue && pendingInvitesAsync.value!.isNotEmpty) ...[
+                          ...pendingInvitesAsync.value!.map((invite) {
+                            final p = invite['properties'] as Map<String, dynamic>?;
+                            if (p == null) return const SizedBox.shrink();
+                            return _InvitationCard(invite: invite, propertyData: p);
+                          }),
+                        ],
                         _LandlordHero(
                           statsAsync: statsAsync,
                           totalUnits: totalUnits,

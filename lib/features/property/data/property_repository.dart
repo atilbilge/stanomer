@@ -589,17 +589,49 @@ class PropertyRepository {
 
     final token = 'landlord_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(99999)}';
 
+    final emailToUse = (landlordEmail != null && landlordEmail.trim().isNotEmpty) ? landlordEmail.trim().toLowerCase() : null;
+
     await _client.from('invitations').insert({
       'property_id': propertyId,
       'inviter_id': user.id,
       'agency_id': user.id,
       'inviter_name': user.userMetadata?['full_name'] ?? 'Agency',
-      'invitee_email': (landlordEmail != null && landlordEmail.trim().isNotEmpty) ? landlordEmail.trim() : null,
+      'invitee_email': emailToUse,
       'token': token,
       'target_role': 'landlord',
       'status': 'pending',
       'expires_at': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
     });
+
+    if (emailToUse != null) {
+      try {
+        final landlordProfile = await _client
+            .from('profiles')
+            .select('id')
+            .eq('email', emailToUse)
+            .maybeSingle();
+
+        if (landlordProfile != null) {
+          final property = await _client
+              .from('properties')
+              .select('name, address, title')
+              .eq('id', propertyId)
+              .maybeSingle();
+
+          final propName = property?['name'] ?? property?['title'] ?? property?['address'] ?? 'bir mülk';
+
+          await _createNotification(
+            userId: landlordProfile['id'] as String,
+            title: 'Ev Sahibi Yönetim Daveti',
+            body: '$propName mülkünün yönetimi için bir acente daveti aldınız.',
+            type: 'contract',
+            relatedId: token,
+          );
+        }
+      } catch (e) {
+        debugPrint('Silent notification creation error for landlord invite: $e');
+      }
+    }
 
     return token;
   }
