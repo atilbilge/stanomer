@@ -654,6 +654,20 @@ class PropertyRepository {
     }
   }
 
+  /// Fetches or creates a landlord ownership invitation token for an agency-managed property
+  Future<String> getOrCreateLandlordOwnershipInviteToken(Property property) async {
+    final existingToken = await getLandlordOwnershipInviteToken(property.id);
+    if (existingToken != null && existingToken.isNotEmpty) {
+      return existingToken;
+    }
+    return await createLandlordOwnershipInvite(
+      propertyId: property.id,
+      landlordEmail: property.landlordEmail,
+      landlordName: property.landlordName,
+      landlordPhone: property.landlordPhone,
+    );
+  }
+
   /// Claims landlord ownership for a property using invitation token
   Future<bool> claimLandlordOwnership({required String token}) async {
     try {

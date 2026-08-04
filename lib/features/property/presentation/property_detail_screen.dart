@@ -31,6 +31,7 @@ import '../../auth/data/auth_providers.dart';
 import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'widgets/contract_file_picker.dart';
+import 'widgets/ownership_share_sheet.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
 import '../../../core/providers/agency_branding_provider.dart';
 
@@ -615,6 +616,10 @@ class _OverviewTab extends ConsumerWidget {
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Text('Error: $e'),
                   ),
+                ],
+
+                if (isAgencyManager) ...[
+                  _LandlordOwnershipInviteCard(property: liveProperty),
                 ],
 
                 // ── Mülk İşlemleri (Property Actions) ──────────────────
@@ -5418,6 +5423,134 @@ Future<void> _openFileOrUrl(BuildContext context, String pathOrUrl, {required bo
         ),
       );
     }
+  }
+}
+
+class _LandlordOwnershipInviteCard extends ConsumerWidget {
+  final Property property;
+
+  const _LandlordOwnershipInviteCard({required this.property});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
+    final isClaimed = property.landlordId != null;
+    final landlordName = property.landlordName ?? property.landlordEmail ?? 'Ev Sahibi';
+    final landlordEmail = property.landlordEmail ?? '';
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(top: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isClaimed ? LucideIcons.userCheck : LucideIcons.userPlus,
+                  size: 20,
+                  color: isClaimed ? StanomerColors.brandPrimary : Colors.orange.shade800,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    loc.landlord,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: StanomerColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isClaimed ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isClaimed ? Colors.green.withValues(alpha: 0.3) : Colors.orange.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    isClaimed ? 'Onaylandı' : loc.invitePending,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isClaimed ? Colors.green.shade800 : Colors.orange.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(LucideIcons.user, size: 16, color: StanomerColors.textSecondary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        landlordName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: StanomerColors.textPrimary,
+                        ),
+                      ),
+                      if (landlordEmail.isNotEmpty && landlordEmail != landlordName) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          landlordEmail,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: StanomerColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final repo = ref.read(propertyRepositoryProvider);
+                  final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
+                  if (context.mounted) {
+                    OwnershipShareSheet.show(
+                      context,
+                      propertyName: property.name,
+                      landlordName: property.landlordName ?? '',
+                      landlordEmail: property.landlordEmail ?? '',
+                      token: token,
+                    );
+                  }
+                },
+                icon: const Icon(LucideIcons.qrCode, size: 16),
+                label: Text(isClaimed ? 'Sahiplik QR Kodu / Davet Bağlantısı' : 'Davet QR Kodu / Bağlantısını Göster'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StanomerColors.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

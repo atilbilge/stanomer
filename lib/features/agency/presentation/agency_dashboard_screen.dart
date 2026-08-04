@@ -4050,21 +4050,15 @@ class _PropertyCard extends ConsumerWidget {
                       context.push('/invite-tenant', extra: property);
                     } else if (value == 'share_qr') {
                       final repo = ref.read(propertyRepositoryProvider);
-                      final token = await repo.getLandlordOwnershipInviteToken(property.id);
+                      final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
                       if (context.mounted) {
-                        if (token != null && token.isNotEmpty) {
-                          OwnershipShareSheet.show(
-                            context,
-                            propertyName: property.name,
-                            landlordName: property.landlordName ?? '',
-                            landlordEmail: property.landlordEmail ?? '',
-                            token: token,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Bu mülk için aktif sahiplik daveti bulunamadı.')),
-                          );
-                        }
+                        OwnershipShareSheet.show(
+                          context,
+                          propertyName: property.name,
+                          landlordName: property.landlordName ?? '',
+                          landlordEmail: property.landlordEmail ?? '',
+                          token: token,
+                        );
                       }
                     } else if (value == 'change_landlord') {
                       _ChangeLandlordDialog.show(context, property);
@@ -4169,7 +4163,9 @@ class _PropertyCard extends ConsumerWidget {
                                 ),
                               ),
                               TextSpan(
-                                text: isClaimed ? landlordName : loc.invitePending,
+                                text: isClaimed
+                                    ? landlordName
+                                    : '$landlordName (${loc.invitePending})',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: isClaimed ? colors.textPrimary : Colors.orange.shade900,
