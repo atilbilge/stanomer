@@ -3081,7 +3081,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             ],
             
             // Actions Section
-            if (isLandlord || (isTenant && canTenantDeclare && isPending && !isAwaitingInvoice && !isDisputed)) ...[
+            if (isLandlord || (isTenant && isPending && !isAwaitingInvoice && !isDisputed)) ...[
               const SizedBox(height: 16),
               if (isLandlord) ...[
                 if (isDeclared)
@@ -3239,7 +3239,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       ],
                     ],
                   ),
-              ] else if (isTenant && canTenantDeclare && isPending && !isAwaitingInvoice && !isDisputed) ...[
+              ] else if (isTenant && isPending && !isAwaitingInvoice && !isDisputed) ...[
                 if (_uploadingPaymentId == payment.id)
                   const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)))
                 else
@@ -3247,8 +3247,16 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
-                      icon: const Icon(LucideIcons.arrowRightCircle, size: 16),
-                      label: Text(loc.takeAction),
+                      icon: const Icon(LucideIcons.upload, size: 16),
+                      label: Text(
+                        loc.localeName == 'tr' 
+                            ? 'Dekont Yükle / Ödeme Bildir' 
+                            : (loc.localeName == 'ru'
+                                ? 'Загрузить квитанцию / Сообщить об оплате'
+                                : (loc.localeName.startsWith('sr')
+                                    ? 'Otpremi uplatnicu / Prijavi uplatu'
+                                    : 'Upload Receipt / Declare Payment')),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: roleColor,
                         foregroundColor: Colors.white,

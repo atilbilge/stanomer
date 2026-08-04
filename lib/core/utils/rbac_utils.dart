@@ -22,9 +22,7 @@ class RbacUtils {
     required String? activeRole,
     required Property property,
   }) {
-    if (activeRole != 'tenant') return true; // Non-tenant users unaffected
-    // Tenant under agency-managed property → read-only
-    if (property.agencyId != null) return false;
+    // Tenants can declare payments and upload receipts for all properties.
     return true;
   }
 
