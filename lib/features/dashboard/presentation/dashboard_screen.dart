@@ -1100,18 +1100,25 @@ class _HeroMetaItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: Colors.white.withOpacity(0.7)),
+        Icon(icon, size: 13, color: Colors.white.withValues(alpha: 0.7)),
         const SizedBox(width: 5),
-        Text(
-          value,
-          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-        const SizedBox(width: 3),
-        Text(
-          label.toLowerCase(),
-          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
-        ),
+        if (label.isNotEmpty) ...[
+          const SizedBox(width: 3),
+          Text(
+            label.toLowerCase(),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
+          ),
+        ],
       ],
     );
   }
@@ -2538,14 +2545,15 @@ class _TenantHero extends ConsumerWidget {
                   }).toList();
                 }(),
                 const SizedBox(height: 14),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _HeroMetaItem(
                       icon: LucideIcons.home,
                       value: property.name,
                       label: '',
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(height: 6),
                     _HeroMetaItem(
                       icon: LucideIcons.calendar,
                       value: DateFormat('dd MMM', loc.localeName).format(dueDate),
