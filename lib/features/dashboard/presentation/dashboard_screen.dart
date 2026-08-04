@@ -155,10 +155,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               )
             else
               const AppLogo(height: 28),
-            const SizedBox(width: 10),
-            Text(
-              appBarTitle,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  appBarTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  maxLines: 1,
+                ),
+              ),
             ),
           ],
         ),

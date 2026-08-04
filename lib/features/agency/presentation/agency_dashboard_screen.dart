@@ -334,19 +334,22 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                   ExpandableAgencyLogo(
                     logoUrl: logoUrl,
                     title: companyName,
-                    height: 32,
+                    height: 28,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      companyName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                        color: colors.textPrimary,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        companyName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          color: colors.textPrimary,
+                        ),
+                        maxLines: 1,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -359,16 +362,8 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                   tooltip: loc.settingsHeader,
                   onPressed: () => context.push('/profile'),
                 ),
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: Icon(LucideIcons.logOut, size: 20, color: colors.textPrimary.withValues(alpha: 0.6)),
-                  onPressed: () async {
-                    await ref.read(authRepositoryProvider).signOut();
-                    if (context.mounted) context.go('/login');
-                  },
-                ),
                 const SizedBox(width: 8),
-                ],
+              ],
             ),
 
       // ── Floating Action Button (Global Mülk Ekle +) ────────────────────
