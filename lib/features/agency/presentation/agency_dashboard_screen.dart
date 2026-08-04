@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../core/utils/expense_utils.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/expandable_agency_logo.dart';
@@ -1160,17 +1161,25 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
+    Map<String, double> calcTotals(List<Map<String, dynamic>> items) {
+      final Map<String, double> totals = {};
+      for (final item in items) {
+        final amt = (item['amount'] as num?)?.toDouble() ??
+            (item['total_amount'] as num?)?.toDouble() ??
+            (item['rent_amount'] as num?)?.toDouble() ??
+            0.0;
+        if (amt <= 0) continue;
+        final curr = (item['currency'] as String?) ??
+            (item['deposit_currency'] as String?) ??
+            'EUR';
+        totals[curr] = (totals[curr] ?? 0) + amt;
+      }
+      return totals;
+    }
+
     // 1. Onay Bekleyenler (Pending Approvals / declared)
     final pendingCount = pendingPayments.length;
-    final pendingTotal = pendingPayments.fold<double>(
-      0.0,
-      (sum, item) =>
-          sum +
-          ((item['amount'] as num?)?.toDouble() ??
-              (item['total_amount'] as num?)?.toDouble() ??
-              (item['rent_amount'] as num?)?.toDouble() ??
-              0.0),
-    );
+    final pendingTotals = calcTotals(pendingPayments);
 
     // 2. Gecikmedeki Borçlar (Overdue / pending with due_date < today)
     final overdueList = allPayments.where((item) {
@@ -1191,15 +1200,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       return false;
     }).toList();
     final overdueCount = overdueList.length;
-    final overdueTotal = overdueList.fold<double>(
-      0.0,
-      (sum, item) =>
-          sum +
-          ((item['amount'] as num?)?.toDouble() ??
-              (item['total_amount'] as num?)?.toDouble() ??
-              (item['rent_amount'] as num?)?.toDouble() ??
-              0.0),
-    );
+    final overdueTotals = calcTotals(overdueList);
 
     // 3. Bu Ay Onaylanan (Paid this month)
     final paidThisMonthList = allPayments.where((item) {
@@ -1213,15 +1214,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       return dt != null && dt.month == now.month && dt.year == now.year;
     }).toList();
     final paidCount = paidThisMonthList.length;
-    final paidTotal = paidThisMonthList.fold<double>(
-      0.0,
-      (sum, item) =>
-          sum +
-          ((item['amount'] as num?)?.toDouble() ??
-              (item['total_amount'] as num?)?.toDouble() ??
-              (item['rent_amount'] as num?)?.toDouble() ??
-              0.0),
-    );
+    final paidTotals = calcTotals(paidThisMonthList);
 
     // 4. Yaklaşan 7 Gün (Upcoming in 7 days)
     final upcomingList = allPayments.where((item) {
@@ -1235,15 +1228,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       return diff >= 0 && diff <= 7;
     }).toList();
     final upcomingCount = upcomingList.length;
-    final upcomingTotal = upcomingList.fold<double>(
-      0.0,
-      (sum, item) =>
-          sum +
-          ((item['amount'] as num?)?.toDouble() ??
-              (item['total_amount'] as num?)?.toDouble() ??
-              (item['rent_amount'] as num?)?.toDouble() ??
-              0.0),
-    );
+    final upcomingTotals = calcTotals(upcomingList);
 
     // Active Segment Raw List
     List<Map<String, dynamic>> rawList;
@@ -1375,7 +1360,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     width: cardWidth,
                     title: loc.financePendingApprovals,
                     count: pendingCount,
-                    totalAmount: pendingTotal,
+                    totals: pendingTotals,
                     color: widget.colors.brandGold,
                     icon: LucideIcons.clock,
                     isSelected: _selectedSegment == 0,
@@ -1386,7 +1371,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     width: cardWidth,
                     title: loc.financeOverduePayments,
                     count: overdueCount,
-                    totalAmount: overdueTotal,
+                    totals: overdueTotals,
                     color: Colors.red.shade600,
                     icon: LucideIcons.alertTriangle,
                     isSelected: _selectedSegment == 1,
@@ -1397,7 +1382,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     width: cardWidth,
                     title: loc.financePaidThisMonth,
                     count: paidCount,
-                    totalAmount: paidTotal,
+                    totals: paidTotals,
                     color: Colors.green.shade600,
                     icon: LucideIcons.checkCircle2,
                     isSelected: false,
@@ -1408,7 +1393,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     width: cardWidth,
                     title: loc.financeUpcoming7Days,
                     count: upcomingCount,
-                    totalAmount: upcomingTotal,
+                    totals: upcomingTotals,
                     color: Colors.blue.shade600,
                     icon: LucideIcons.calendar,
                     isSelected: false,
@@ -1684,7 +1669,7 @@ class _FinanceKpiCard extends StatelessWidget {
   final double width;
   final String title;
   final int count;
-  final double totalAmount;
+  final Map<String, double> totals;
   final Color color;
   final IconData icon;
   final bool isSelected;
@@ -1695,7 +1680,7 @@ class _FinanceKpiCard extends StatelessWidget {
     required this.width,
     required this.title,
     required this.count,
-    required this.totalAmount,
+    required this.totals,
     required this.color,
     required this.icon,
     required this.isSelected,
@@ -1705,7 +1690,11 @@ class _FinanceKpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(symbol: '€', decimalDigits: 0);
+    final formattedTotal = CurrencyUtils.formatCurrencyMap(
+      totals,
+      useSymbols: true,
+      separator: ' + ',
+    );
 
     return InkWell(
       onTap: onTap,
@@ -1773,9 +1762,11 @@ class _FinanceKpiCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              currencyFormat.format(totalAmount),
+              formattedTotal,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: totals.length > 1 ? 12 : 15,
                 fontWeight: FontWeight.w900,
                 color: colors.textPrimary,
               ),
