@@ -1816,13 +1816,17 @@ class AppLocalizationsSr extends AppLocalizations {
   String get showLandlordInviteQrOrLinkClaimed => 'QR kod / veza vlasništva';
 
   @override
-  String get landlordOwnershipInviteTitle => 'Pozivnica za vlasništvo nad nekretninom';
+  String get landlordOwnershipInviteTitle =>
+      'Pozivnica za vlasništvo nad nekretninom';
 
   @override
-  String becomeLandlordTitle(String propertyName) => 'Postanite vlasnik nekretnine $propertyName';
+  String becomeLandlordTitle(String propertyName) {
+    return 'Postanite vlasnik nekretnine $propertyName';
+  }
 
   @override
-  String get landlordInviteAcceptDesc => 'Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.';
+  String get landlordInviteAcceptDesc =>
+      'Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.';
 
   @override
   String get acceptAsLandlord => 'Prihvati kao vlasnik';
@@ -1831,16 +1835,25 @@ class AppLocalizationsSr extends AppLocalizations {
   String get landlordAcceptedInviteTitle => 'Vlasnik je prihvatio pozivnicu!';
 
   @override
-  String landlordOwnershipTransferredDesc(String propertyName) => 'Vlasništvo nad nekretninom $propertyName je uspešno preneto.';
+  String landlordOwnershipTransferredDesc(String propertyName) {
+    return 'Vlasništvo nad nekretninom $propertyName je uspešno preneto.';
+  }
 
   @override
-  String get landlordShareQrInstruction => 'Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.';
+  String get landlordShareQrInstruction =>
+      'Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.';
 
   @override
   String get ownershipLinkCopied => 'Vlasnička veza je kopirana!';
 
   @override
-  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Zdravo $landlordName, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom "$propertyName" na Stanomeru:\n$inviteUrl';
+  String landlordShareMessage(
+    String landlordName,
+    String propertyName,
+    String inviteUrl,
+  ) {
+    return 'Zdravo $landlordName, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"$propertyName\" na Stanomeru:\n$inviteUrl';
+  }
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).

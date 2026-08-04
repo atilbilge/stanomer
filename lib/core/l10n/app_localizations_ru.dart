@@ -1822,38 +1822,51 @@ class AppLocalizationsRu extends AppLocalizations {
   String get forgotPassword => 'Забыли пароль?';
 
   @override
-  String get copy => 'Копировать';
+  String get copy => 'Kopiraj';
 
   @override
-  String get showLandlordInviteQrOrLink => 'Показать QR-код / ссылку права собственности';
+  String get showLandlordInviteQrOrLink => 'Prikaži QR kod / vezu vlasništva';
 
   @override
-  String get showLandlordInviteQrOrLinkClaimed => 'QR-код / ссылка права собственности';
+  String get showLandlordInviteQrOrLinkClaimed => 'QR kod / veza vlasništva';
 
   @override
-  String get landlordOwnershipInviteTitle => 'Приглашение собственника';
+  String get landlordOwnershipInviteTitle =>
+      'Pozivnica za vlasništvo nad nekretninom';
 
   @override
-  String becomeLandlordTitle(String propertyName) => 'Станьте владельцем $propertyName';
+  String becomeLandlordTitle(String propertyName) {
+    return 'Postanite vlasnik nekretnine $propertyName';
+  }
 
   @override
-  String get landlordInviteAcceptDesc => 'Подтвердите приглашение, чтобы стать зарегистрированным владельцем этого объекта под управлением агентства.';
+  String get landlordInviteAcceptDesc =>
+      'Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.';
 
   @override
-  String get acceptAsLandlord => 'Принять как владелец';
+  String get acceptAsLandlord => 'Prihvati kao vlasnik';
 
   @override
-  String get landlordAcceptedInviteTitle => 'Владелец принял приглашение!';
+  String get landlordAcceptedInviteTitle => 'Vlasnik je prihvatio pozivnicu!';
 
   @override
-  String landlordOwnershipTransferredDesc(String propertyName) => 'Права собственности на $propertyName успешно переданы.';
+  String landlordOwnershipTransferredDesc(String propertyName) {
+    return 'Vlasništvo nad nekretninom $propertyName je uspešno preneto.';
+  }
 
   @override
-  String get landlordShareQrInstruction => 'Попросите владельца отсканировать этот QR-код или отправьте ему ссылку.';
+  String get landlordShareQrInstruction =>
+      'Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.';
 
   @override
-  String get ownershipLinkCopied => 'Ссылка для собственника скопирована!';
+  String get ownershipLinkCopied => 'Vlasnička veza je kopirana!';
 
   @override
-  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Здравствуйте, $landlordName! Перейдите по ссылке, чтобы принять права собственности на "$propertyName" в Stanomer:\n$inviteUrl';
+  String landlordShareMessage(
+    String landlordName,
+    String propertyName,
+    String inviteUrl,
+  ) {
+    return 'Zdravo $landlordName, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"$propertyName\" na Stanomeru:\n$inviteUrl';
+  }
 }

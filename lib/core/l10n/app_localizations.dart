@@ -3396,18 +3396,81 @@ abstract class AppLocalizations {
   /// **'Zaboravili ste lozinku?'**
   String get forgotPassword;
 
+  /// No description provided for @copy.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kopiraj'**
   String get copy;
+
+  /// No description provided for @showLandlordInviteQrOrLink.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prikaži QR kod / vezu vlasništva'**
   String get showLandlordInviteQrOrLink;
+
+  /// No description provided for @showLandlordInviteQrOrLinkClaimed.
+  ///
+  /// In sr, this message translates to:
+  /// **'QR kod / veza vlasništva'**
   String get showLandlordInviteQrOrLinkClaimed;
+
+  /// No description provided for @landlordOwnershipInviteTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pozivnica za vlasništvo nad nekretninom'**
   String get landlordOwnershipInviteTitle;
+
+  /// No description provided for @becomeLandlordTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Postanite vlasnik nekretnine {propertyName}'**
   String becomeLandlordTitle(String propertyName);
+
+  /// No description provided for @landlordInviteAcceptDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.'**
   String get landlordInviteAcceptDesc;
+
+  /// No description provided for @acceptAsLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prihvati kao vlasnik'**
   String get acceptAsLandlord;
+
+  /// No description provided for @landlordAcceptedInviteTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik je prihvatio pozivnicu!'**
   String get landlordAcceptedInviteTitle;
+
+  /// No description provided for @landlordOwnershipTransferredDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasništvo nad nekretninom {propertyName} je uspešno preneto.'**
   String landlordOwnershipTransferredDesc(String propertyName);
+
+  /// No description provided for @landlordShareQrInstruction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.'**
   String get landlordShareQrInstruction;
+
+  /// No description provided for @ownershipLinkCopied.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnička veza je kopirana!'**
   String get ownershipLinkCopied;
-  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl);
+
+  /// No description provided for @landlordShareMessage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zdravo {landlordName}, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"{propertyName}\" na Stanomeru:\n{inviteUrl}'**
+  String landlordShareMessage(
+    String landlordName,
+    String propertyName,
+    String inviteUrl,
+  );
 }
 
 class _AppLocalizationsDelegate

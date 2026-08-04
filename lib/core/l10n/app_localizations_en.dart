@@ -1813,19 +1813,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copy => 'Copy';
 
   @override
-  String get showLandlordInviteQrOrLink => 'Show Ownership QR Code / Invitation Link';
+  String get showLandlordInviteQrOrLink =>
+      'Show Ownership QR Code / Invitation Link';
 
   @override
-  String get showLandlordInviteQrOrLinkClaimed => 'Ownership QR Code / Invitation Link';
+  String get showLandlordInviteQrOrLinkClaimed =>
+      'Ownership QR Code / Invitation Link';
 
   @override
   String get landlordOwnershipInviteTitle => 'Landlord Ownership Invitation';
 
   @override
-  String becomeLandlordTitle(String propertyName) => 'Become the Landlord of $propertyName';
+  String becomeLandlordTitle(String propertyName) {
+    return 'Become the Landlord of $propertyName';
+  }
 
   @override
-  String get landlordInviteAcceptDesc => 'Approve the invitation to be assigned as and manage the landlord of this property managed by the agency.';
+  String get landlordInviteAcceptDesc =>
+      'Approve the invitation to be assigned as and manage the landlord of this property managed by the agency.';
 
   @override
   String get acceptAsLandlord => 'Accept as Landlord';
@@ -1834,14 +1839,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get landlordAcceptedInviteTitle => 'Landlord Accepted the Invitation!';
 
   @override
-  String landlordOwnershipTransferredDesc(String propertyName) => 'Ownership of $propertyName has been successfully transferred.';
+  String landlordOwnershipTransferredDesc(String propertyName) {
+    return 'Ownership of $propertyName has been successfully transferred.';
+  }
 
   @override
-  String get landlordShareQrInstruction => 'Have the landlord scan this QR code or send them the link.';
+  String get landlordShareQrInstruction =>
+      'Have the landlord scan this QR code or send them the link.';
 
   @override
   String get ownershipLinkCopied => 'Ownership link copied!';
 
   @override
-  String landlordShareMessage(String landlordName, String propertyName, String inviteUrl) => 'Hello $landlordName, click this link to take over ownership of "$propertyName" on Stanomer:\n$inviteUrl';
+  String landlordShareMessage(
+    String landlordName,
+    String propertyName,
+    String inviteUrl,
+  ) {
+    return 'Hello $landlordName, click this link to take over ownership of \"$propertyName\" on Stanomer:\n$inviteUrl';
+  }
 }

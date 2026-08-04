@@ -847,11 +847,38 @@
   "showLandlordInviteQrOrLinkClaimed": "Sahiplik QR Kodu / Davet Bağlantısı",
   "landlordOwnershipInviteTitle": "Ev Sahibi Sahiplik Daveti",
   "becomeLandlordTitle": "{propertyName} Mülkünün Ev Sahibi Olun",
+  "@becomeLandlordTitle": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
   "landlordInviteAcceptDesc": "Acente tarafından yönetilen bu mülkün ev sahibi olarak atanmak ve yönetmek için daveti onaylayın.",
   "acceptAsLandlord": "Ev Sahibi Olarak Kabul Et",
   "landlordAcceptedInviteTitle": "Ev Sahibi Daveti Kabul Etti!",
   "landlordOwnershipTransferredDesc": "{propertyName} mülkünün ev sahipliği başarıyla devredildi.",
+  "@landlordOwnershipTransferredDesc": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
   "landlordShareQrInstruction": "Ev sahibine bu QR kodu taratın veya bağlantıyı gönderin.",
   "ownershipLinkCopied": "Sahiplik bağlantısı kopyalandı!",
-  "landlordShareMessage": "Merhaba {landlordName}, \"{propertyName}\" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n{inviteUrl}"
+  "landlordShareMessage": "Merhaba {landlordName}, \"{propertyName}\" mülkünün ev sahibi sahipliğini Stanomer üzerinde devralmak için şu bağlantıya tıklayın:\n{inviteUrl}",
+  "@landlordShareMessage": {
+    "placeholders": {
+      "landlordName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "inviteUrl": {
+        "type": "String"
+      }
+    }
+  }
 }

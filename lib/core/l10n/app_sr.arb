@@ -841,5 +841,44 @@
   },
   "heroHeadline": "Upravljajte vašim nekretninama iz jednog panela",
   "heroSubtitle": "Praćenje stanara, evidencija uplata i detalji o nekretninama — sve na jednom mestu.",
-  "forgotPassword": "Zaboravili ste lozinku?"
+  "forgotPassword": "Zaboravili ste lozinku?",
+  "copy": "Kopiraj",
+  "showLandlordInviteQrOrLink": "Prikaži QR kod / vezu vlasništva",
+  "showLandlordInviteQrOrLinkClaimed": "QR kod / veza vlasništva",
+  "landlordOwnershipInviteTitle": "Pozivnica za vlasništvo nad nekretninom",
+  "becomeLandlordTitle": "Postanite vlasnik nekretnine {propertyName}",
+  "@becomeLandlordTitle": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
+  "landlordInviteAcceptDesc": "Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.",
+  "acceptAsLandlord": "Prihvati kao vlasnik",
+  "landlordAcceptedInviteTitle": "Vlasnik je prihvatio pozivnicu!",
+  "landlordOwnershipTransferredDesc": "Vlasništvo nad nekretninom {propertyName} je uspešno preneto.",
+  "@landlordOwnershipTransferredDesc": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
+  "landlordShareQrInstruction": "Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.",
+  "ownershipLinkCopied": "Vlasnička veza je kopirana!",
+  "landlordShareMessage": "Zdravo {landlordName}, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"{propertyName}\" na Stanomeru:\n{inviteUrl}",
+  "@landlordShareMessage": {
+    "placeholders": {
+      "landlordName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "inviteUrl": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -748,11 +748,38 @@
   "showLandlordInviteQrOrLinkClaimed": "Ownership QR Code / Invitation Link",
   "landlordOwnershipInviteTitle": "Landlord Ownership Invitation",
   "becomeLandlordTitle": "Become the Landlord of {propertyName}",
+  "@becomeLandlordTitle": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
   "landlordInviteAcceptDesc": "Approve the invitation to be assigned as and manage the landlord of this property managed by the agency.",
   "acceptAsLandlord": "Accept as Landlord",
   "landlordAcceptedInviteTitle": "Landlord Accepted the Invitation!",
   "landlordOwnershipTransferredDesc": "Ownership of {propertyName} has been successfully transferred.",
+  "@landlordOwnershipTransferredDesc": {
+    "placeholders": {
+      "propertyName": {
+        "type": "String"
+      }
+    }
+  },
   "landlordShareQrInstruction": "Have the landlord scan this QR code or send them the link.",
   "ownershipLinkCopied": "Ownership link copied!",
-  "landlordShareMessage": "Hello {landlordName}, click this link to take over ownership of \"{propertyName}\" on Stanomer:\n{inviteUrl}"
+  "landlordShareMessage": "Hello {landlordName}, click this link to take over ownership of \"{propertyName}\" on Stanomer:\n{inviteUrl}",
+  "@landlordShareMessage": {
+    "placeholders": {
+      "landlordName": {
+        "type": "String"
+      },
+      "propertyName": {
+        "type": "String"
+      },
+      "inviteUrl": {
+        "type": "String"
+      }
+    }
+  }
 }
