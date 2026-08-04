@@ -609,15 +609,15 @@ class _MessageBubble extends ConsumerWidget {
     // Determine role based on property IDs or profile role
     if (userId.isNotEmpty && userId == landlordId) {
       roleLabel = landlordRoleText;
-      roleBadgeColor = const Color(0xFF10B981); // Emerald Green
+      roleBadgeColor = const Color(0xFF1A5EB8); // Landlord Primary Blue
       roleIcon = LucideIcons.home;
     } else if (userId.isNotEmpty && userId == tenantId) {
       roleLabel = tenantRoleText;
-      roleBadgeColor = const Color(0xFF3B82F6); // Blue
+      roleBadgeColor = const Color(0xFF2DB87A); // Tenant Primary Green
       roleIcon = LucideIcons.user;
     } else if (userId.isNotEmpty && userId == agencyId) {
       roleLabel = agencyRoleText;
-      roleBadgeColor = const Color(0xFF8B5CF6); // Purple
+      roleBadgeColor = const Color(0xFF4A3AFF); // Agency Primary Purple
       roleIcon = LucideIcons.building;
     }
 
@@ -635,15 +635,15 @@ class _MessageBubble extends ConsumerWidget {
         if ((roleLabel == defaultUserText || roleLabel == 'Kullanıcı' || roleLabel == 'User') && userRole != null) {
           if (userRole == 'landlord') {
             roleLabel = landlordRoleText;
-            roleBadgeColor = const Color(0xFF10B981);
+            roleBadgeColor = const Color(0xFF1A5EB8);
             roleIcon = LucideIcons.home;
           } else if (userRole == 'tenant') {
             roleLabel = tenantRoleText;
-            roleBadgeColor = const Color(0xFF3B82F6);
+            roleBadgeColor = const Color(0xFF2DB87A);
             roleIcon = LucideIcons.user;
           } else if (userRole == 'agency') {
             roleLabel = agencyRoleText;
-            roleBadgeColor = const Color(0xFF8B5CF6);
+            roleBadgeColor = const Color(0xFF4A3AFF);
             roleIcon = LucideIcons.building;
           }
         }

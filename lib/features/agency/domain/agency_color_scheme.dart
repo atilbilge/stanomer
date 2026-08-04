@@ -14,7 +14,11 @@ final agencyColorSchemeProvider = Provider<AgencyColorScheme>((ref) {
     final profileAsync = ref.watch(profileFutureProvider);
     final profileData = profileAsync.value;
     final rawColorScheme = profileData?['color_scheme'];
-    return AgencyColorScheme.fromJson(rawColorScheme);
+    final scheme = AgencyColorScheme.fromJson(rawColorScheme);
+    if (scheme.primary == StanomerColors.brandPrimary) {
+      return const AgencyColorScheme.agencyScheme();
+    }
+    return scheme;
   }
 
   // Tenant or Landlord session: check agency branding provider
@@ -23,11 +27,17 @@ final agencyColorSchemeProvider = Provider<AgencyColorScheme>((ref) {
     return brandingState.profile!.colorScheme;
   }
 
+  // agencyBrandingProvider == false (or no agency branding)
+  if (userRole == 'landlord') {
+    return const AgencyColorScheme.landlordScheme();
+  } else if (userRole == 'tenant') {
+    return const AgencyColorScheme.tenantScheme();
+  }
+
   return const AgencyColorScheme.defaultScheme();
 });
 
-/// Custom theme colors for agency white-labeling.
-/// If any color is null or empty, Stanomer default theme colors are used.
+/// Custom theme colors for agency white-labeling and role-based themes.
 class AgencyColorScheme {
   final Color primary;
   final Color accent;
@@ -45,13 +55,37 @@ class AgencyColorScheme {
     required this.border,
   });
 
+  const AgencyColorScheme.landlordScheme()
+      : primary = const Color(0xFF1A5EB8),
+        accent = const Color(0xFFE6EEF9),
+        brandGold = const Color(0xFFD4AF37),
+        bgWhite = const Color(0xFFFFFFFF),
+        textPrimary = const Color(0xFF1A1A1A),
+        border = const Color(0xFFD9E4F5);
+
+  const AgencyColorScheme.tenantScheme()
+      : primary = const Color(0xFF2DB87A),
+        accent = const Color(0xFFE6F7F0),
+        brandGold = const Color(0xFFD4AF37),
+        bgWhite = const Color(0xFFFFFFFF),
+        textPrimary = const Color(0xFF1A1A1A),
+        border = const Color(0xFFD0F0E3);
+
+  const AgencyColorScheme.agencyScheme()
+      : primary = const Color(0xFF4A3AFF),
+        accent = const Color(0xFFF0EEFF),
+        brandGold = const Color(0xFFE5C158),
+        bgWhite = const Color(0xFFFFFFFF),
+        textPrimary = const Color(0xFF1A1A1A),
+        border = const Color(0xFFE0DAFF);
+
   const AgencyColorScheme.defaultScheme()
-      : primary = StanomerColors.brandPrimary,
-        accent = const Color(0xFFDC7A3B),
-        brandGold = const Color(0xFFC6A665),
-        bgWhite = StanomerColors.bgCard,
-        textPrimary = StanomerColors.textPrimary,
-        border = StanomerColors.borderDefault;
+      : primary = const Color(0xFF1A5EB8),
+        accent = const Color(0xFFE6EEF9),
+        brandGold = const Color(0xFFD4AF37),
+        bgWhite = const Color(0xFFFFFFFF),
+        textPrimary = const Color(0xFF1A1A1A),
+        border = const Color(0xFFD9E4F5);
 
   /// Factory constructor to parse JSON data from `profiles.color_scheme`.
   /// Supports `primary`, `color-primary`, `--color-primary`, etc.
