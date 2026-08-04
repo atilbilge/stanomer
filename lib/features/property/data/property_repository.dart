@@ -1,6 +1,7 @@
 import 'package:universal_io/io.dart' as io;
 import 'dart:typed_data';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/data/auth_providers.dart';
@@ -1028,20 +1029,22 @@ class PropertyRepository {
       if (inviteeProfile != null) {
         final property = await _client
             .from('properties')
-            .select('name')
+            .select('name, address, title')
             .eq('id', propertyId)
-            .single();
+            .maybeSingle();
             
+        final propName = property?['name'] ?? property?['title'] ?? property?['address'] ?? 'bir mülk';
+
         await _createNotification(
           userId: inviteeProfile['id'] as String,
-          title: 'New Contract Invitation',
-          body: 'You have received a new contract invitation for ${property['name']}.',
+          title: 'Yeni Kira Sözleşmesi Daveti',
+          body: '$propName için yeni bir kira sözleşmesi daveti aldınız.',
           type: 'contract',
-          relatedId: propertyId,
+          relatedId: token,
         );
       }
     } catch (e) {
-      print('DEBUG: Silent notification failure: $e');
+      debugPrint('Silent notification failure: $e');
     }
 
     return contract;
@@ -1075,6 +1078,35 @@ class PropertyRepository {
     }
 
     await _client.from('invitations').insert(insertPayload);
+
+    // Notify tenant if registered user exists
+    try {
+      final inviteeProfile = await _client
+          .from('profiles')
+          .select('id')
+          .eq('email', inviteeEmail.trim().toLowerCase())
+          .maybeSingle();
+
+      if (inviteeProfile != null) {
+        final property = await _client
+            .from('properties')
+            .select('name, address, title')
+            .eq('id', propertyId)
+            .maybeSingle();
+
+        final propName = property?['name'] ?? property?['title'] ?? property?['address'] ?? 'bir mülk';
+
+        await _createNotification(
+          userId: inviteeProfile['id'] as String,
+          title: 'Yeni Davet',
+          body: '$propName için yeni bir davet aldınız.',
+          type: 'contract',
+          relatedId: token,
+        );
+      }
+    } catch (e) {
+      debugPrint('Silent notification creation error: $e');
+    }
 
     return token;
   }
