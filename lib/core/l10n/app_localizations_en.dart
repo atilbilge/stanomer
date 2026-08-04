@@ -1895,4 +1895,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get landlordOwnershipInviteInvalid =>
       'Ownership invite is invalid, expired or already accepted.';
+
+  @override
+  String get statusApproved => 'Confirmed';
 }

@@ -892,5 +892,6 @@
   "joinAndReview": "Pridruži se i pregledaj",
   "invalidInviteCodeOrLink": "Molimo unesite važeću vezu ili kod pozivnice.",
   "landlordOwnershipTransferredSuccess": "Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.",
-  "landlordOwnershipInviteInvalid": "Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena."
+  "landlordOwnershipInviteInvalid": "Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.",
+  "statusApproved": "Potvrđeno"
 }

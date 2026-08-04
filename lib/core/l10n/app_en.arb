@@ -793,5 +793,6 @@
   "joinAndReview": "Join and Review",
   "invalidInviteCodeOrLink": "Please enter a valid invite link or invite code.",
   "landlordOwnershipTransferredSuccess": "Congratulations! Property ownership successfully transferred to your account.",
-  "landlordOwnershipInviteInvalid": "Ownership invite is invalid, expired or already accepted."
+  "landlordOwnershipInviteInvalid": "Ownership invite is invalid, expired or already accepted.",
+  "statusApproved": "Confirmed"
 }

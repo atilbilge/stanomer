@@ -5474,7 +5474,7 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                     ),
                   ),
                   child: Text(
-                    isClaimed ? 'Onaylandı' : loc.invitePending,
+                    isClaimed ? loc.statusApproved : loc.invitePending,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,

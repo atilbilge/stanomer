@@ -3537,6 +3537,12 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.'**
   String get landlordOwnershipInviteInvalid;
+
+  /// No description provided for @statusApproved.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrđeno'**
+  String get statusApproved;
 }
 
 class _AppLocalizationsDelegate

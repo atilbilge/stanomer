@@ -892,5 +892,6 @@
   "joinAndReview": "Katıl ve İncele",
   "invalidInviteCodeOrLink": "Lütfen geçerli bir davet bağlantısı veya davet kodu girin.",
   "landlordOwnershipTransferredSuccess": "Tebrikler! Mülk ev sahibi sahipliği başarıyla hesabınıza devredildi.",
-  "landlordOwnershipInviteInvalid": "Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş."
+  "landlordOwnershipInviteInvalid": "Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş.",
+  "statusApproved": "Onaylandı"
 }

@@ -1906,4 +1906,7 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get landlordOwnershipInviteInvalid =>
       'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.';
+
+  @override
+  String get statusApproved => 'Potvrđeno';
 }

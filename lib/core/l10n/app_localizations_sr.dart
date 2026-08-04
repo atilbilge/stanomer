@@ -1891,6 +1891,9 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get landlordOwnershipInviteInvalid =>
       'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.';
+
+  @override
+  String get statusApproved => 'Potvrđeno';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).

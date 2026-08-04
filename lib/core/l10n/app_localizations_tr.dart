@@ -1891,4 +1891,7 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get landlordOwnershipInviteInvalid =>
       'Sahiplik daveti geçersiz, süresi dolmuş veya zaten kabul edilmiş.';
+
+  @override
+  String get statusApproved => 'Onaylandı';
 }
