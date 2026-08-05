@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../agency/domain/agency_color_scheme.dart';
 import '../../../agency/presentation/agency_dashboard_screen.dart';
 import '../../data/property_repository.dart';
 
@@ -155,6 +156,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
       );
     }
 
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: const BoxDecoration(
@@ -187,10 +189,10 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(LucideIcons.keyRound, color: StanomerColors.brandPrimary, size: 24),
+                    child: Icon(LucideIcons.keyRound, color: primaryColor, size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -198,12 +200,12 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          loc.landlordOwnershipInviteTitle,
+                          loc.becomeLandlordTitle(widget.propertyName),
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           widget.propertyName,
-                          style: const TextStyle(fontSize: 13, color: StanomerColors.textTertiary),
+                          style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                         ),
                       ],
                     ),
@@ -220,7 +222,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(LucideIcons.userCheck, color: StanomerColors.brandPrimary, size: 20),
+                    Icon(LucideIcons.userCheck, color: primaryColor, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -273,9 +275,9 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                       data: inviteUrl,
                       version: QrVersions.auto,
                       size: 180,
-                      eyeStyle: const QrEyeStyle(
+                      eyeStyle: QrEyeStyle(
                         eyeShape: QrEyeShape.square,
-                        color: StanomerColors.brandPrimary,
+                        color: primaryColor,
                       ),
                       dataModuleStyle: const QrDataModuleStyle(
                         dataModuleShape: QrDataModuleShape.square,
@@ -325,7 +327,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                       icon: const Icon(LucideIcons.share2, size: 18),
                       label: Text(loc.share),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: StanomerColors.brandPrimary,
+                        backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 0,

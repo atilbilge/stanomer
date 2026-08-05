@@ -13,6 +13,7 @@ import 'widgets/contract_file_picker.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../agency/domain/agency_color_scheme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/expense_utils.dart';
 import '../domain/property.dart';
@@ -160,8 +161,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     final loc = AppLocalizations.of(context)!;
 
     final user = ref.watch(currentUserProvider);
-    final role = user?.userMetadata?['role'] as String?;
-    final roleColor = StanomerColors.getRoleColor(role);
+    final roleColor = ref.watch(agencyColorSchemeProvider).primary;
     final isLandlord = widget.property.landlordId == user?.id;
 
     return Scaffold(

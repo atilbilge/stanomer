@@ -7,6 +7,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../agency/domain/agency_color_scheme.dart';
 import '../../../core/utils/invite_utils.dart';
 import '../data/property_repository.dart';
 
@@ -107,6 +108,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.of(context).size.height * 0.88;
 
@@ -149,12 +151,12 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       LucideIcons.qrCode,
-                      color: StanomerColors.brandPrimary,
+                      color: primaryColor,
                       size: 22,
                     ),
                   ),
@@ -221,25 +223,25 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: StanomerColors.brandPrimary.withValues(alpha: 0.06),
+                      color: primaryColor.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: StanomerColors.brandPrimary.withValues(alpha: 0.2),
+                        color: primaryColor.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           LucideIcons.camera,
-                          color: StanomerColors.brandPrimary,
+                          color: primaryColor,
                           size: 20,
                         ),
                         const SizedBox(width: 10),
                         Text(
                           loc.scanQrCodeBtn,
-                          style: const TextStyle(
-                            color: StanomerColors.brandPrimary,
+                          style: TextStyle(
+                            color: primaryColor,
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                           ),
@@ -307,7 +309,7 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
                 child: ElevatedButton(
                   onPressed: _isProcessing ? null : () => _submitToken(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: StanomerColors.brandPrimary,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

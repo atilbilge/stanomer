@@ -1914,7 +1914,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: StanomerColors.brandPrimary,
+                    backgroundColor: ref.watch(agencyColorSchemeProvider).primary,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

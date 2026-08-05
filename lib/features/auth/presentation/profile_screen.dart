@@ -9,6 +9,7 @@ import '../data/auth_repository.dart';
 import '../data/auth_providers.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../agency/domain/agency_color_scheme.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../subscriptions/data/subscription_service.dart';
 import '../../subscriptions/presentation/premium_mobile_only_sheet.dart';
@@ -476,7 +477,7 @@ class _UserInfoCard extends StatelessWidget {
   }
 }
 
-class _PremiumBanner extends StatelessWidget {
+class _PremiumBanner extends ConsumerWidget {
   final bool isPremium;
   final VoidCallback onTap;
   final AppLocalizations loc;
@@ -484,19 +485,20 @@ class _PremiumBanner extends StatelessWidget {
   const _PremiumBanner({required this.isPremium, required this.onTap, required this.loc});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (isPremium) return const SizedBox.shrink();
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: StanomerColors.brandPrimary,
+          color: primaryColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: StanomerColors.brandPrimary.withValues(alpha: 0.3),
+              color: primaryColor.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -551,7 +553,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _NameUpdateCard extends StatelessWidget {
+class _NameUpdateCard extends ConsumerWidget {
   final TextEditingController controller;
   final bool isLoading;
   final VoidCallback onSave;
@@ -565,7 +567,8 @@ class _NameUpdateCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     return Container(
       decoration: BoxDecoration(
         color: StanomerColors.bgCard,
@@ -576,16 +579,35 @@ class _NameUpdateCard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(20.0),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                labelText: loc.fullName.toUpperCase(),
-                labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
-                prefixIcon: const Icon(LucideIcons.user, size: 20),
-                border: InputBorder.none,
-                filled: false,
-              ),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(LucideIcons.userCheck, color: primaryColor, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      loc.fullName,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: loc.fullName,
+                    prefixIcon: const Icon(LucideIcons.user),
+                  ),
+                ),
+              ],
             ),
           ),
           const Divider(height: 1),
@@ -597,7 +619,7 @@ class _NameUpdateCard extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: isLoading ? null : onSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StanomerColors.brandPrimary,
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -834,7 +856,7 @@ class _ListTile extends StatelessWidget {
   }
 }
 
-class _SwitchListTile extends StatelessWidget {
+class _SwitchListTile extends ConsumerWidget {
   final IconData icon;
   final String title;
   final String subtitle;
@@ -850,7 +872,8 @@ class _SwitchListTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
@@ -884,7 +907,7 @@ class _SwitchListTile extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: StanomerColors.brandPrimary,
+            activeColor: primaryColor,
           ),
         ],
       ),
