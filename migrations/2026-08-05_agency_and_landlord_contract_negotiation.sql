@@ -1,6 +1,9 @@
 -- 2026-08-05: Update contract proposal functions (propose_contract_changes, accept_proposed_changes, decline_proposed_changes)
 -- Allow Landlords, Tenants AND Agency Managers to propose and manage contract changes with 2-party mutual approval.
 
+ALTER TYPE public.contract_status ADD VALUE IF NOT EXISTS 'revision_requested';
+ALTER TYPE public.contract_status ADD VALUE IF NOT EXISTS 'termination_requested';
+
 CREATE OR REPLACE FUNCTION public.propose_contract_changes(
   p_contract_id UUID,
   p_changes JSONB

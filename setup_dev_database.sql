@@ -674,6 +674,9 @@ LEFT JOIN public.profiles a ON p.agency_id = a.id;
 ALTER VIEW public.properties_with_names SET (security_invoker = on);
 
 -- 9. CONTRACT NEGOTIATION FUNCTIONS
+ALTER TYPE public.contract_status ADD VALUE IF NOT EXISTS 'revision_requested';
+ALTER TYPE public.contract_status ADD VALUE IF NOT EXISTS 'termination_requested';
+
 CREATE OR REPLACE FUNCTION public.propose_contract_changes(
   p_contract_id UUID,
   p_changes JSONB
