@@ -28,6 +28,7 @@ import '../../auth/data/auth_providers.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../property/domain/property.dart';
 import '../../property/domain/contract.dart';
+import '../../property/domain/rent_payment.dart';
 import '../../property/data/property_repository.dart';
 import '../../property/presentation/widgets/ownership_share_sheet.dart';
 import '../../notifications/presentation/widgets/notification_badge.dart';
@@ -164,32 +165,44 @@ final agencyPropertiesProvider = StreamProvider<List<Property>>((ref) {
   return repo.getPropertiesStream(userId: user.id, role: role == 'landlord' ? 'landlord' : 'agency');
 });
 
-final agencyPendingPaymentsProvider =
-    FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return [];
-  final repo = AgencyRepository(
-    ref.watch(propertyRepositoryProvider).client,
+final agencyAllPaymentsProvider =
+    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  final propertiesAsync = ref.watch(agencyPropertiesProvider);
+  final properties = propertiesAsync.value ?? [];
+  if (properties.isEmpty) return Stream.value([]);
+
+  final repo = ref.watch(propertyRepositoryProvider);
+  return Rx.combineLatest<List<RentPayment>, List<Map<String, dynamic>>>(
+    properties.map((p) => repo.getRentPaymentsStream(p.id)),
+    (List<List<RentPayment>> allPaymentsList) {
+      final List<Map<String, dynamic>> result = [];
+      for (int i = 0; i < properties.length; i++) {
+        final propMap = properties[i].toJson();
+        for (final payment in allPaymentsList[i]) {
+          final json = payment.toJson();
+          json['property'] = propMap;
+          json['property_id'] = properties[i].id;
+          result.add(json);
+        }
+      }
+      result.sort((a, b) {
+        final dueAStr = a['due_date'] as String?;
+        final dueBStr = b['due_date'] as String?;
+        if (dueAStr == null || dueBStr == null) return 0;
+        final dueA = DateTime.tryParse(dueAStr) ?? DateTime(1970);
+        final dueB = DateTime.tryParse(dueBStr) ?? DateTime(1970);
+        return dueB.compareTo(dueA);
+      });
+      return result;
+    },
   );
-  final role = ref.watch(userRoleProvider);
-  if (role == 'landlord') {
-    return repo.getLandlordPendingPayments(user.id);
-  }
-  return repo.getAgencyPendingPayments(user.id);
 });
 
-final agencyAllPaymentsProvider =
-    FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return [];
-  final repo = AgencyRepository(
-    ref.watch(propertyRepositoryProvider).client,
-  );
-  final role = ref.watch(userRoleProvider);
-  if (role == 'landlord') {
-    return repo.getLandlordAllPayments(user.id);
-  }
-  return repo.getAgencyAllPayments(user.id);
+final agencyPendingPaymentsProvider =
+    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
+  final payments = allPaymentsAsync.value ?? [];
+  return Stream.value(payments.where((item) => item['status'] == 'declared').toList());
 });
 
 final agencyContractsMapProvider = StreamProvider.autoDispose<Map<String, Contract?>>((ref) {

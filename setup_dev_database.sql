@@ -349,7 +349,15 @@ CREATE POLICY "activity_logs_select_policy" ON public.activity_logs FOR SELECT T
 DROP POLICY IF EXISTS "activity_logs_insert_policy" ON public.activity_logs;
 CREATE POLICY "activity_logs_insert_policy" ON public.activity_logs FOR INSERT TO authenticated WITH CHECK (true);
 
--- 5. REALTIME PUBLICATION FOR PUBLIC TABLES
+-- 5. REALTIME PUBLICATION & REPLICA IDENTITY FOR PUBLIC TABLES
+ALTER TABLE public.properties REPLICA IDENTITY FULL;
+ALTER TABLE public.contracts REPLICA IDENTITY FULL;
+ALTER TABLE public.rent_payments REPLICA IDENTITY FULL;
+ALTER TABLE public.maintenance_requests REPLICA IDENTITY FULL;
+ALTER TABLE public.maintenance_messages REPLICA IDENTITY FULL;
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
+ALTER TABLE public.activity_logs REPLICA IDENTITY FULL;
+
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'properties') THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.properties;
@@ -371,6 +379,9 @@ DO $$ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'maintenance_messages') THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.maintenance_messages;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'notifications') THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
     END IF;
 END $$;
 
