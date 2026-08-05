@@ -243,7 +243,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
 
       // Determine Bill Status
       BillStatus billS;
-      if (billPayments.any((p) => p.status == 'pending' && !p.dueDate.isAfter(now))) {
+      if (billPayments.any((p) => p.status == 'pending' && p.amount > 0 && !p.dueDate.isAfter(now))) {
         billS = BillStatus.debt;
       } else if (billPayments.any((p) => p.status == 'declared')) {
         billS = BillStatus.awaitingApproval;

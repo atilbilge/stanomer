@@ -3945,12 +3945,21 @@ class _PropertyCard extends ConsumerWidget {
     final loc = AppLocalizations.of(context)!;
     final hasActiveTenant = property.tenantId != null;
     final isClaimed = property.landlordId != null;
-    final landlordName = property.landlordName ?? property.landlordEmail ?? 'Ev Sahibi';
-    final tenantName = property.tenantName ?? (hasActiveTenant ? 'Aktif Kiracı' : 'Boş');
-    final cityName = property.city?.trim() ?? '';
+    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
 
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final contract = activeContractAsync.value;
+    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
+    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
+
+    final tenantName = (property.tenantName != null && property.tenantName!.trim().isNotEmpty)
+        ? property.tenantName
+        : (tenantProfileName != null && tenantProfileName.trim().isNotEmpty)
+            ? tenantProfileName
+            : (contract?.inviteeEmail != null && contract!.inviteeEmail.trim().isNotEmpty)
+                ? contract.inviteeEmail
+                : (hasActiveTenant ? loc.roleTenant : loc.vacant);
+    final cityName = property.city?.trim() ?? '';
 
     return GestureDetector(
       onTap: onTap,

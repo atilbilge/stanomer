@@ -2376,7 +2376,8 @@ class _TenantHero extends ConsumerWidget {
 
     final hasDebt = pendingTotals.values.any((v) => v > 0);
     final hasAwaiting = awaitingTotals.values.any((v) => v > 0);
-    final isAllPaid = !hasDebt && !hasAwaiting &&
+    final hasPendingBills = financialStatus?.billStatus == BillStatus.waitingForLandlord;
+    final isAllPaid = !hasDebt && !hasAwaiting && !hasPendingBills &&
         (financialStatus?.paidCount ?? 0) > 0;
     final isOverdue = rentStatus == RentStatus.debt ||
         financialStatus?.billStatus == BillStatus.debt;
@@ -2386,9 +2387,11 @@ class _TenantHero extends ConsumerWidget {
     // Hero rengi
     final Color heroColor;
     if (isOverdue || hasDebt) {
-      heroColor = const Color(0xFFC0392B);
+      heroColor = const Color(0xFFC0392B); // Kırmızı (Borçlu)
+    } else if (hasPendingBills) {
+      heroColor = const Color(0xFFD97706); // Nötr Amber / Turuncu (Tutar Bekleniyor)
     } else if (isAllPaid) {
-      heroColor = const Color(0xFF0F6E56);
+      heroColor = const Color(0xFF0F6E56); // Yeşil (Tamamı Ödendi)
     } else {
       heroColor = agencyColors.primary;
     }
@@ -2416,6 +2419,13 @@ class _TenantHero extends ConsumerWidget {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.alertTriangle,
         label: loc.debtLabel,
+        bgColor: Colors.white.withValues(alpha: 0.2),
+        textColor: Colors.white,
+      );
+    } else if (hasPendingBills && !hasDebt) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.clock,
+        label: loc.waitingForLandlord,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );

@@ -5466,6 +5466,7 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     final isClaimed = property.landlordId != null;
     final landlordName = property.landlordName ?? property.landlordEmail ?? 'Ev Sahibi';
     final landlordEmail = property.landlordEmail ?? '';
@@ -5483,7 +5484,7 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                 Icon(
                   isClaimed ? LucideIcons.userCheck : LucideIcons.userPlus,
                   size: 20,
-                  color: isClaimed ? StanomerColors.brandPrimary : Colors.orange.shade800,
+                  color: isClaimed ? primaryColor : Colors.orange.shade800,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -5521,8 +5522,20 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(LucideIcons.user, size: 16, color: StanomerColors.textSecondary),
-                const SizedBox(width: 8),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    LucideIcons.user,
+                    color: primaryColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -5570,7 +5583,7 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                 icon: const Icon(LucideIcons.qrCode, size: 16),
                 label: Text(isClaimed ? loc.showLandlordInviteQrOrLinkClaimed : loc.showLandlordInviteQrOrLink),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StanomerColors.brandPrimary,
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
