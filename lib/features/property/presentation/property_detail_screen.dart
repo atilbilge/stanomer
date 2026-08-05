@@ -3365,33 +3365,56 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             final Map<String, List<RentPayment>> grouped = {};
             final List<RentPayment> allDeduplicatedPayments = [];
 
+            // Helper to get priority score for a payment item (higher is better)
+            int _getPaymentPriority(RentPayment p) {
+              if (p.status == 'paid') {
+                return p.amount > 0 ? 100 : 90;
+              }
+              if (p.status == 'declared') {
+                return p.amount > 0 ? 80 : 70;
+              }
+              if (p.status == 'pending') {
+                return p.amount > 0 ? 60 : 10;
+              }
+              return 0;
+            }
+
             for (final monthKey in rawGrouped.keys) {
               final rawList = rawGrouped[monthKey]!;
-              final Set<String> paidTitles = {};
-              final Set<String> declaredTitles = {};
+              final Map<String, RentPayment> bestItemByTitle = {};
 
               for (final p in rawList) {
                 final titleLower = p.title.trim().toLowerCase();
-                if (p.status == 'paid') paidTitles.add(titleLower);
-                if (p.status == 'declared') declaredTitles.add(titleLower);
+                final existing = bestItemByTitle[titleLower];
+
+                if (existing == null) {
+                  bestItemByTitle[titleLower] = p;
+                } else {
+                  final existingPriority = _getPaymentPriority(existing);
+                  final currentPriority = _getPaymentPriority(p);
+
+                  if (currentPriority > existingPriority) {
+                    bestItemByTitle[titleLower] = p;
+                  } else if (currentPriority == existingPriority) {
+                    if (p.receiptUrl != null && existing.receiptUrl == null) {
+                      bestItemByTitle[titleLower] = p;
+                    }
+                  }
+                }
               }
 
+              // Preserve relative order and ensure exactly ONE row per title
               final List<RentPayment> monthList = [];
+              final Set<String> addedTitles = {};
+
               for (final p in rawList) {
                 final titleLower = p.title.trim().toLowerCase();
-
-                // If paid exists for this title in this month, skip any redundant pending or declared row
-                if ((p.status == 'pending' || p.status == 'declared') && paidTitles.contains(titleLower)) {
-                  continue;
+                if (!addedTitles.contains(titleLower) && bestItemByTitle[titleLower] != null) {
+                  final bestItem = bestItemByTitle[titleLower]!;
+                  monthList.add(bestItem);
+                  allDeduplicatedPayments.add(bestItem);
+                  addedTitles.add(titleLower);
                 }
-
-                // If declared or paid exists for this title, skip dummy pending placeholder (amount <= 0)
-                if (p.status == 'pending' && p.amount <= 0 && (declaredTitles.contains(titleLower) || paidTitles.contains(titleLower))) {
-                  continue;
-                }
-
-                monthList.add(p);
-                allDeduplicatedPayments.add(p);
               }
 
               if (monthList.isNotEmpty) {
