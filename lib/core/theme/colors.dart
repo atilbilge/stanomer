@@ -51,6 +51,7 @@ abstract class StanomerColors {
   static Color getRoleColor(String? role) {
     if (role == 'landlord') return landlord;
     if (role == 'tenant') return tenant;
+    if (role == 'agency') return const Color(0xFF4A3AFF);
     return brandPrimary;
   }
 

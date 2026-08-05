@@ -889,7 +889,9 @@ else if (propertiesAsync.hasError) ...[
     setState(() => _roleSelectionLoading = true);
     try {
       await ref.read(authRepositoryProvider).updateProfile(role: role);
-      // Success snackbar is not strictly needed as UI will update via currentUserProvider
+      ref.invalidate(profileFutureProvider);
+      ref.invalidate(userRoleProvider);
+      ref.read(agencyBrandingProvider.notifier).clear();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

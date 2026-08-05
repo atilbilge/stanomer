@@ -14,6 +14,7 @@ import 'core/l10n/app_localizations.dart';
 import 'core/routing/app_router.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'features/agency/domain/agency_color_scheme.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/subscriptions/data/subscription_service.dart';
 import 'core/providers/lifecycle_provider.dart';
@@ -154,11 +155,13 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final locale = ref.watch(localeProvider);
+    final agencyColors = ref.watch(agencyColorSchemeProvider);
+    final dynamicTheme = StanomerTheme.getThemeForScheme(agencyColors);
 
     return MaterialApp.router(
       title: F.title,
       debugShowCheckedModeBanner: false,
-      theme: StanomerTheme.lightTheme,
+      theme: dynamicTheme,
       routerConfig: router,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

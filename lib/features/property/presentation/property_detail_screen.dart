@@ -16,6 +16,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../agency/domain/agency_color_scheme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import '../domain/contract.dart';
 import '../domain/property.dart';
@@ -70,7 +71,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
-    final roleColor = StanomerColors.getRoleColor(role);
+    final roleColor = ref.watch(agencyColorSchemeProvider).primary;
     final currentIsLandlord = widget.property.landlordId == user?.id;
     final propertiesAsync = ref.watch(propertiesStreamProvider);
     
@@ -132,9 +133,9 @@ class _OverviewTab extends ConsumerWidget {
     );
   }
 
-  void _showContractDetailsSheet(BuildContext context, Contract contract, String resolvedLandlordName, String resolvedTenantName, bool isTenant, bool isLandlord) {
+  void _showContractDetailsSheet(BuildContext context, WidgetRef ref, Contract contract, String resolvedLandlordName, String resolvedTenantName, bool isTenant, bool isLandlord) {
     final loc = AppLocalizations.of(context)!;
-    final roleColor = isTenant ? StanomerColors.successPrimary : StanomerColors.brandPrimary;
+    final roleColor = ref.read(agencyColorSchemeProvider).primary;
 
     showModalBottomSheet(
       context: context,
@@ -204,9 +205,9 @@ class _OverviewTab extends ConsumerWidget {
     );
   }
 
-  void _showPropertySettingsSheet(BuildContext context, bool isLandlord) {
+  void _showPropertySettingsSheet(BuildContext context, WidgetRef ref, bool isLandlord) {
     final loc = AppLocalizations.of(context)!;
-    final roleColor = isLandlord ? StanomerColors.brandPrimary : StanomerColors.successPrimary;
+    final roleColor = ref.read(agencyColorSchemeProvider).primary;
 
     showModalBottomSheet(
       context: context,
@@ -340,7 +341,7 @@ class _OverviewTab extends ConsumerWidget {
         if (liveProperty == null) return const Center(child: Text('Property not found'));
         final user = ref.watch(currentUserProvider);
         final role = user?.userMetadata?['role'] as String?;
-        final roleColor = StanomerColors.getRoleColor(role);
+        final roleColor = ref.watch(agencyColorSchemeProvider).primary;
         final isAgencyManager = user?.id == liveProperty.agencyId || role == 'agency';
         final isLandlord = user?.id == liveProperty.landlordId || isAgencyManager;
         final isTenant = user != null && user.id == liveProperty.tenantId && !isAgencyManager;
@@ -478,7 +479,7 @@ class _OverviewTab extends ConsumerWidget {
                         
                         const Divider(height: 1),
                         InkWell(
-                          onTap: () => _showContractDetailsSheet(context, activeContract, resolvedLandlordName, resolvedTenantName, effectiveIsTenant, effectiveIsLandlord),
+                          onTap: () => _showContractDetailsSheet(context, ref, activeContract, resolvedLandlordName, resolvedTenantName, effectiveIsTenant, effectiveIsLandlord),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                             child: Row(
@@ -977,7 +978,7 @@ class _DocumentsSheetContentState extends ConsumerState<_DocumentsSheetContent> 
     final contractAsync = ref.watch(activeContractProvider(widget.propertyId));
     final user = ref.read(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
-    final roleColor = StanomerColors.getRoleColor(role);
+    final roleColor = ref.watch(agencyColorSchemeProvider).primary;
 
     return contractAsync.when(
       data: (contract) {
@@ -3316,7 +3317,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isAgencyManager = user?.id == widget.property.agencyId || role == 'agency';
     final isLandlord = user?.id == widget.property.landlordId || isAgencyManager;
     final isTenant = user?.id == widget.property.tenantId && !isAgencyManager;
-    final roleColor = StanomerColors.getRoleColor(isAgencyManager ? 'agency' : (isLandlord ? 'landlord' : (isTenant ? 'tenant' : null)));
+    final roleColor = ref.watch(agencyColorSchemeProvider).primary;
 
     final property = widget.property;
     final loc = AppLocalizations.of(context)!;
