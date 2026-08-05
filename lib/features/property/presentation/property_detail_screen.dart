@@ -4508,6 +4508,11 @@ class _ProposalReviewCardState extends ConsumerState<_ProposalReviewCard> {
                     } else if (proposedBy == widget.contract.tenantId) {
                       proposerName = widget.tenantName;
                       proposerEmail = widget.tenantEmail;
+                    } else if (proposedBy == widget.contract.agencyId) {
+                      proposerName = loc.agencyAccount;
+                      proposerEmail = '';
+                    } else {
+                      proposerName = loc.roleLandlord;
                     }
                     
                     final emailText = proposerEmail.isNotEmpty ? ' ($proposerEmail)' : '';
