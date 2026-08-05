@@ -3355,17 +3355,54 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               );
             }
 
-            // ── Summary counters ──────────────────────────────────────
-            final pendingCount  = payments.where((p) => p.status == 'pending' && p.amount > 0).length;
-            final awaitingCount = payments.where((p) => p.status == 'declared').length;
-            final paidCount     = payments.where((p) => p.status == 'paid').length;
-
-            // ── Group payments by month ───────────────────────────────
-            final Map<String, List<RentPayment>> grouped = {};
+            // ── Group and deduplicate payments by month ────────────────
+            final Map<String, List<RentPayment>> rawGrouped = {};
             for (final p in payments) {
               final key = DateFormat('MMMM yyyy', loc.localeName).format(p.dueDate).toUpperCase();
-              grouped.putIfAbsent(key, () => []).add(p);
+              rawGrouped.putIfAbsent(key, () => []).add(p);
             }
+
+            final Map<String, List<RentPayment>> grouped = {};
+            final List<RentPayment> allDeduplicatedPayments = [];
+
+            for (final monthKey in rawGrouped.keys) {
+              final rawList = rawGrouped[monthKey]!;
+              final Set<String> paidTitles = {};
+              final Set<String> declaredTitles = {};
+
+              for (final p in rawList) {
+                final titleLower = p.title.trim().toLowerCase();
+                if (p.status == 'paid') paidTitles.add(titleLower);
+                if (p.status == 'declared') declaredTitles.add(titleLower);
+              }
+
+              final List<RentPayment> monthList = [];
+              for (final p in rawList) {
+                final titleLower = p.title.trim().toLowerCase();
+
+                // If paid exists for this title in this month, skip any redundant pending or declared row
+                if ((p.status == 'pending' || p.status == 'declared') && paidTitles.contains(titleLower)) {
+                  continue;
+                }
+
+                // If declared or paid exists for this title, skip dummy pending placeholder (amount <= 0)
+                if (p.status == 'pending' && p.amount <= 0 && (declaredTitles.contains(titleLower) || paidTitles.contains(titleLower))) {
+                  continue;
+                }
+
+                monthList.add(p);
+                allDeduplicatedPayments.add(p);
+              }
+
+              if (monthList.isNotEmpty) {
+                grouped[monthKey] = monthList;
+              }
+            }
+
+            // ── Summary counters ──────────────────────────────────────
+            final pendingCount  = allDeduplicatedPayments.where((p) => p.status == 'pending' && p.amount > 0).length;
+            final awaitingCount = allDeduplicatedPayments.where((p) => p.status == 'declared').length;
+            final paidCount     = allDeduplicatedPayments.where((p) => p.status == 'paid').length;
 
             // ── Helper: icon per category ─────────────────────────────
             IconData _iconForTitle(String title) {
