@@ -660,6 +660,9 @@ class PropertyRepository {
     if (existingToken != null && existingToken.isNotEmpty) {
       return existingToken;
     }
+    if (property.landlordId != null && property.landlordId!.isNotEmpty) {
+      return 'CLAIMED';
+    }
     return await createLandlordOwnershipInvite(
       propertyId: property.id,
       landlordEmail: property.landlordEmail,

@@ -162,7 +162,10 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
 
     final user = ref.watch(currentUserProvider);
     final roleColor = ref.watch(agencyColorSchemeProvider).primary;
-    final isLandlord = widget.property.landlordId == user?.id;
+    final userRole = ref.watch(userRoleProvider);
+    final isManager = widget.property.landlordId == user?.id ||
+        widget.property.agencyId == user?.id ||
+        userRole == 'agency';
 
     return Scaffold(
       appBar: AppBar(
@@ -173,7 +176,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
       body: Column(
         children: [
           // ── Toggle ─────────────────────────────────────────────
-        if (isLandlord)
+        if (isManager)
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: SegmentedButton<String>(
@@ -202,7 +205,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: (isLandlord && settingsSectionNotifier.value == 'property')
+            child: (isManager && settingsSectionNotifier.value == 'property')
                 ? _buildPropertyPanel(loc, roleColor)
                 : _buildContractPanel(loc, user, roleColor),
           ),
@@ -214,8 +217,11 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
 
   Widget _buildContractPanel(AppLocalizations loc, User? user, Color roleColor) {
     final activeContractAsync = ref.watch(activeContractProvider(widget.property.id));
-    final isLandlord = widget.property.landlordId == user?.id;
-    final targetRole = isLandlord ? loc.tenant : loc.landlord;
+    final userRole = ref.watch(userRoleProvider);
+    final isManager = widget.property.landlordId == user?.id ||
+        widget.property.agencyId == user?.id ||
+        userRole == 'agency';
+    final targetRole = isManager ? loc.tenant : loc.landlord;
 
 
     return activeContractAsync.when(

@@ -4084,6 +4084,8 @@ class _PropertyCard extends ConsumerWidget {
                       }
                     } else if (value == 'change_landlord') {
                       _ChangeLandlordDialog.show(context, property);
+                    } else if (value == 'property_settings') {
+                      context.push('/property-settings', extra: {'property': property, 'initialTab': 'contract'});
                     }
                   },
                   itemBuilder: (ctx) => [
@@ -4104,6 +4106,16 @@ class _PropertyCard extends ConsumerWidget {
                           const Icon(LucideIcons.qrCode, size: 16),
                           const SizedBox(width: 8),
                           Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'property_settings',
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.settings, size: 16),
+                          const SizedBox(width: 8),
+                          Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 13)),
                         ],
                       ),
                     ),
