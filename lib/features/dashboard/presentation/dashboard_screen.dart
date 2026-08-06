@@ -2413,6 +2413,8 @@ class _TenantHero extends ConsumerWidget {
           financialStatus?.paidTotals ?? {}, useSymbols: true, separator: ' + ');
     }
 
+    final hasAgency = (property.agencyId != null && property.agencyId!.isNotEmpty) || (contract.agencyId != null && contract.agencyId!.isNotEmpty);
+
     // Status badge
     Widget? statusBadge;
     if (isOverdue || hasDebt) {
@@ -2425,7 +2427,7 @@ class _TenantHero extends ConsumerWidget {
     } else if (hasPendingBills && !hasDebt) {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.clock,
-        label: loc.waitingForLandlord,
+        label: hasAgency ? loc.waitingForAgency : loc.waitingForLandlord,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
@@ -2439,7 +2441,7 @@ class _TenantHero extends ConsumerWidget {
     } else if (hasAwaiting) {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.clock,
-        label: loc.awaitingHeader,
+        label: hasAgency ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );

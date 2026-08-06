@@ -146,6 +146,8 @@
   "waitingForTenantPayment": "Waiting for tenant payment",
   "waitingForYourApproval": "Waiting for your approval",
   "waitingForOwnerApproval": "Waiting for owner approval",
+  "waitingForAgency": "Waiting for agency to respond...",
+  "waitingForAgencyApproval": "Waiting for agency approval",
   "waitingForYourPayment": "Waiting for your payment",
   "processCompleted": "Process completed",
   "declared": "declared",

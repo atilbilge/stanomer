@@ -455,6 +455,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get waitingForOwnerApproval => 'Čeka se odobrenje vlasnika';
 
   @override
+  String get waitingForAgency => 'Čeka se odgovor agencije...';
+
+  @override
+  String get waitingForAgencyApproval => 'Čeka se odobrenje agencije';
+
+  @override
   String get waitingForYourPayment => 'Čeka se tvoja uplata';
 
   @override
@@ -2345,6 +2351,12 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get waitingForOwnerApproval => 'Чека се одобрење станодавца';
+
+  @override
+  String get waitingForAgency => 'Чека се одговор агенције...';
+
+  @override
+  String get waitingForAgencyApproval => 'Чека се одобрење агенције';
 
   @override
   String get waitingForYourPayment => 'Чека се Ваша уплата';

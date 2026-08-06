@@ -194,6 +194,8 @@
   "waitingForTenantPayment": "Ожидает оплаты жильцом",
   "waitingForYourApproval": "Ожидает вашего подтверждения",
   "waitingForOwnerApproval": "Ожидает подтверждения владельца",
+  "waitingForAgency": "Ожидание ответа агентства...",
+  "waitingForAgencyApproval": "Ожидает подтверждения агентства",
   "waitingForYourPayment": "Ожидает вашей оплаты",
   "processCompleted": "Готово",
   "declared": "сообщено",

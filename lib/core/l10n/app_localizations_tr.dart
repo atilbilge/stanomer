@@ -456,6 +456,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get waitingForOwnerApproval => 'Ev sahibinin onayı bekleniyor';
 
   @override
+  String get waitingForAgency => 'Acentenin yanıtı bekleniyor...';
+
+  @override
+  String get waitingForAgencyApproval => 'Acentenin onayı bekleniyor';
+
+  @override
   String get waitingForYourPayment => 'Ödeme yapmanız bekleniyor';
 
   @override

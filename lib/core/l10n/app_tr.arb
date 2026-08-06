@@ -194,6 +194,8 @@
   "waitingForTenantPayment": "Kiracının ödemesi bekleniyor",
   "waitingForYourApproval": "Onayınız bekleniyor",
   "waitingForOwnerApproval": "Ev sahibinin onayı bekleniyor",
+  "waitingForAgency": "Acentenin yanıtı bekleniyor...",
+  "waitingForAgencyApproval": "Acentenin onayı bekleniyor",
   "waitingForYourPayment": "Ödeme yapmanız bekleniyor",
   "processCompleted": "İşlem tamamlandı",
   "declared": "bildirildi",

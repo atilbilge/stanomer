@@ -194,6 +194,8 @@
   "waitingForTenantPayment": "Čeka se uplata stanara",
   "waitingForYourApproval": "Čeka tvoje odobrenje",
   "waitingForOwnerApproval": "Čeka se odobrenje vlasnika",
+  "waitingForAgency": "Čeka se odgovor agencije...",
+  "waitingForAgencyApproval": "Čeka se odobrenje agencije",
   "waitingForYourPayment": "Čeka se tvoja uplata",
   "processCompleted": "Proces završen",
   "declared": "prijavljeno",

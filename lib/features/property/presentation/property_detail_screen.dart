@@ -3466,7 +3466,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     _SummaryChip(
                       label: loc.awaitingHeader,
                       subLabel: isTenant 
-                        ? loc.waitingForOwnerApproval
+                        ? (property.agencyId != null && property.agencyId!.isNotEmpty ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval)
                         : loc.waitingForYourApproval,
                       count: awaitingCount,
                       color: Colors.amber.shade700,

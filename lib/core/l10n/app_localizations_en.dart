@@ -455,6 +455,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waitingForOwnerApproval => 'Waiting for owner approval';
 
   @override
+  String get waitingForAgency => 'Waiting for agency to respond...';
+
+  @override
+  String get waitingForAgencyApproval => 'Waiting for agency approval';
+
+  @override
   String get waitingForYourPayment => 'Waiting for your payment';
 
   @override

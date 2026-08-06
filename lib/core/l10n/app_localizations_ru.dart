@@ -456,6 +456,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get waitingForOwnerApproval => 'Ожидает подтверждения владельца';
 
   @override
+  String get waitingForAgency => 'Ожидание ответа агентства...';
+
+  @override
+  String get waitingForAgencyApproval => 'Ожидает подтверждения агентства';
+
+  @override
   String get waitingForYourPayment => 'Ожидает вашей оплаты';
 
   @override

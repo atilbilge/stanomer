@@ -931,6 +931,18 @@ abstract class AppLocalizations {
   /// **'Čeka se odobrenje vlasnika'**
   String get waitingForOwnerApproval;
 
+  /// No description provided for @waitingForAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka se odgovor agencije...'**
+  String get waitingForAgency;
+
+  /// No description provided for @waitingForAgencyApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka se odobrenje agencije'**
+  String get waitingForAgencyApproval;
+
   /// No description provided for @waitingForYourPayment.
   ///
   /// In sr, this message translates to:
