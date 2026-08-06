@@ -233,7 +233,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
 
       // Determine Rent Status
       RentStatus rentS;
-      if (rentPayments.any((p) => p.status == 'pending' && !p.dueDate.isAfter(now))) {
+      if (rentPayments.any((p) => p.status == 'pending')) {
         rentS = RentStatus.debt;
       } else if (rentPayments.any((p) => p.status == 'declared')) {
         rentS = RentStatus.awaitingApproval;
@@ -243,7 +243,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
 
       // Determine Bill Status
       BillStatus billS;
-      if (billPayments.any((p) => p.status == 'pending' && p.amount > 0 && !p.dueDate.isAfter(now))) {
+      if (billPayments.any((p) => p.status == 'pending' && p.amount > 0)) {
         billS = BillStatus.debt;
       } else if (billPayments.any((p) => p.status == 'declared')) {
         billS = BillStatus.awaitingApproval;
