@@ -1926,10 +1926,21 @@ class _FinancePaymentItemCard extends ConsumerWidget {
         pObj?.landlordName ??
         (landlordData?['email'] as String? ?? pObj?.landlordEmail ?? loc.groupLandlordPendingInvite);
 
+    final contractsMap = ref.watch(agencyContractsMapProvider).value ?? {};
+    final contract = contractsMap[propertyId];
+
     final tenantData = payment['tenant'] as Map<String, dynamic>?;
-    final tenantName = tenantData?['full_name'] as String? ??
-        pObj?.tenantName ??
-        (tenantData?['email'] as String? ?? loc.tenantLabel);
+    final rawTenantName = tenantData?['full_name'] as String? ?? pObj?.tenantName;
+    final tenantEmail = tenantData?['email'] as String? ?? contract?.inviteeEmail;
+
+    final String tenantName;
+    if (rawTenantName != null && rawTenantName.trim().isNotEmpty) {
+      tenantName = rawTenantName;
+    } else if (tenantEmail != null && tenantEmail.trim().isNotEmpty) {
+      tenantName = tenantEmail;
+    } else {
+      tenantName = loc.tenantLabel;
+    }
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

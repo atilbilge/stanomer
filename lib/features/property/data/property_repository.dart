@@ -136,6 +136,9 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
       int pendingC = 0;
       int awaitingC = 0;
 
+      final now = DateTime.now();
+      final endOfCurrentMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
       for (var p in payments) {
         final cur = p.currency;
         if (p.status == 'paid') {
@@ -144,7 +147,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
         } else if (p.status == 'declared') {
           awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + p.amount;
           awaitingC++;
-        } else if (p.status == 'pending' && p.amount > 0) {
+        } else if (p.status == 'pending' && p.amount > 0 && !p.dueDate.isAfter(endOfCurrentMonth)) {
           pendingTotals[cur] = (pendingTotals[cur] ?? 0) + p.amount;
           pendingC++;
         }
@@ -214,16 +217,14 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
           awaitingCount: state.awaitingCount,
         );
       }
-
-      final now = DateTime.now();
       
       // Split payments
       final rentPayments = payments.where((p) => p.title == 'Kira').toList();
       final billPayments = payments.where((p) => p.title != 'Kira').toList();
 
-      // Determine Rent Status
+      // Determine Rent Status (only current/past month pending payments count as debt)
       RentStatus rentS;
-      if (rentPayments.any((p) => p.status == 'pending')) {
+      if (rentPayments.any((p) => p.status == 'pending' && !p.dueDate.isAfter(endOfCurrentMonth))) {
         rentS = RentStatus.debt;
       } else if (rentPayments.any((p) => p.status == 'declared')) {
         rentS = RentStatus.awaitingApproval;
@@ -231,9 +232,9 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
         rentS = RentStatus.paid;
       }
 
-      // Determine Bill Status
+      // Determine Bill Status (only current/past month pending payments count as debt)
       BillStatus billS;
-      if (billPayments.any((p) => p.status == 'pending' && p.amount > 0)) {
+      if (billPayments.any((p) => p.status == 'pending' && p.amount > 0 && !p.dueDate.isAfter(endOfCurrentMonth))) {
         billS = BillStatus.debt;
       } else if (billPayments.any((p) => p.status == 'declared')) {
         billS = BillStatus.awaitingApproval;
