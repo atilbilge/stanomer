@@ -2375,10 +2375,9 @@ class _TenantHero extends ConsumerWidget {
     final awaitingTotals = financialStatus?.awaitingTotals ?? {};
 
     final hasDebt = pendingTotals.values.any((v) => v > 0);
-    final hasAwaiting = awaitingTotals.values.any((v) => v > 0);
+    final hasAwaiting = awaitingTotals.values.any((v) => v > 0) || (financialStatus?.awaitingCount ?? 0) > 0;
     final hasPendingBills = financialStatus?.billStatus == BillStatus.waitingForLandlord;
-    final isAllPaid = !hasDebt && !hasAwaiting && !hasPendingBills &&
-        (financialStatus?.paidCount ?? 0) > 0;
+    final isAllPaid = !hasDebt && !hasAwaiting && (financialStatus?.paidCount ?? 0) > 0;
     final isOverdue = rentStatus == RentStatus.debt ||
         financialStatus?.billStatus == BillStatus.debt;
 
@@ -2388,8 +2387,8 @@ class _TenantHero extends ConsumerWidget {
     final Color heroColor;
     if (isOverdue || hasDebt) {
       heroColor = const Color(0xFFC0392B); // Kırmızı (Borçlu)
-    } else if (hasPendingBills) {
-      heroColor = const Color(0xFFD97706); // Nötr Amber / Turuncu (Tutar Bekleniyor)
+    } else if (hasAwaiting) {
+      heroColor = const Color(0xFFD97706); // Turuncu (Onay Bekliyor)
     } else if (isAllPaid) {
       heroColor = const Color(0xFF0F6E56); // Yeşil (Tamamı Ödendi)
     } else {
@@ -2403,7 +2402,7 @@ class _TenantHero extends ConsumerWidget {
       heroLabel = loc.totalDebt.toUpperCase();
       heroAmount = CurrencyUtils.formatCurrencyMap(
           pendingTotals, useSymbols: true, separator: ' + ');
-    } else if (hasAwaiting && !hasDebt) {
+    } else if (hasAwaiting) {
       heroLabel = loc.awaitingHeader.toUpperCase();
       heroAmount = CurrencyUtils.formatCurrencyMap(
           awaitingTotals, useSymbols: true, separator: ' + ');
@@ -2424,10 +2423,10 @@ class _TenantHero extends ConsumerWidget {
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
-    } else if (hasPendingBills && !hasDebt) {
+    } else if (hasAwaiting) {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.clock,
-        label: hasAgency ? loc.waitingForAgency : loc.waitingForLandlord,
+        label: hasAgency ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
@@ -2438,10 +2437,10 @@ class _TenantHero extends ConsumerWidget {
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
-    } else if (hasAwaiting) {
+    } else if (hasPendingBills) {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.clock,
-        label: hasAgency ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval,
+        label: hasAgency ? loc.waitingForAgency : loc.waitingForLandlord,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
