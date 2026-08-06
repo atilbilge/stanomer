@@ -136,25 +136,15 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
       int pendingC = 0;
       int awaitingC = 0;
 
-      // Current-month filter for paid amounts
-      final now2 = DateTime.now();
-      final thisMonthStart = DateTime(now2.year, now2.month, 1);
-      final nextMonthStart = DateTime(now2.year, now2.month + 1, 1);
-
       for (var p in payments) {
         final cur = p.currency;
         if (p.status == 'paid') {
-          // Only count paid payments whose due date falls in the current month
-          final isThisMonth = !p.dueDate.isBefore(thisMonthStart) &&
-              p.dueDate.isBefore(nextMonthStart);
-          if (isThisMonth) {
-            paidTotals[cur] = (paidTotals[cur] ?? 0) + p.amount;
-            paidC++;
-          }
+          paidTotals[cur] = (paidTotals[cur] ?? 0) + p.amount;
+          paidC++;
         } else if (p.status == 'declared') {
           awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + p.amount;
           awaitingC++;
-        } else {
+        } else if (p.status == 'pending' && p.amount > 0) {
           pendingTotals[cur] = (pendingTotals[cur] ?? 0) + p.amount;
           pendingC++;
         }

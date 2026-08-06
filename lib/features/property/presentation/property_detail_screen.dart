@@ -3500,7 +3500,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         final isAwaitingInv = p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0;
                         final isIncluded = p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0 && !isAwaitingInv; // Based on prior logic if needed, but practically we dropped included. Wait, included was receiverType == 'included'.
                         // Let's rely on standard status
-                        if (p.status == 'pending') pendingCountM++;
+                        if (p.status == 'pending' && p.amount > 0) pendingCountM++;
                         if (p.status == 'declared') awaitingCountM++;
                         if (p.status == 'paid') paidCountM++;
 
