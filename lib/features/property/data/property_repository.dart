@@ -1565,8 +1565,51 @@ class PropertyRepository {
           .order('due_date', ascending: false)
           .map((data) {
         // Map to domain objects
-        final list = (data as List).map((json) => RentPayment.fromJson(json as Map<String, dynamic>)).toList();
+        final rawList = (data as List).map((json) => RentPayment.fromJson(json as Map<String, dynamic>)).toList();
         
+        // ── Group and deduplicate payments by month & title ──
+        final Map<String, List<RentPayment>> groupedByMonth = {};
+        for (final p in rawList) {
+          final key = '${p.dueDate.year}-${p.dueDate.month}';
+          groupedByMonth.putIfAbsent(key, () => []).add(p);
+        }
+
+        int getPriority(RentPayment p) {
+          if (p.status == 'paid') {
+            return p.amount > 0 ? 100 : 90;
+          }
+          if (p.status == 'declared') {
+            return p.amount > 0 ? 80 : 70;
+          }
+          if (p.status == 'pending') {
+            return p.amount > 0 ? 60 : 10;
+          }
+          return 0;
+        }
+
+        final List<RentPayment> list = [];
+        for (final monthList in groupedByMonth.values) {
+          final Map<String, RentPayment> bestByTitle = {};
+          for (final p in monthList) {
+            final titleKey = p.title.trim().toLowerCase();
+            final existing = bestByTitle[titleKey];
+            if (existing == null) {
+              bestByTitle[titleKey] = p;
+            } else {
+              final existingPrio = getPriority(existing);
+              final currentPrio = getPriority(p);
+              if (currentPrio > existingPrio) {
+                bestByTitle[titleKey] = p;
+              } else if (currentPrio == existingPrio) {
+                if (p.receiptUrl != null && existing.receiptUrl == null) {
+                  bestByTitle[titleKey] = p;
+                }
+              }
+            }
+          }
+          list.addAll(bestByTitle.values);
+        }
+
         // Perform STABLE sort in Dart: due_date desc, created_at asc, id asc
         list.sort((a, b) {
           // Primary: due_date desc
