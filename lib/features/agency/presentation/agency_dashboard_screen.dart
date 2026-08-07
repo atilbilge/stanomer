@@ -2248,44 +2248,54 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                         ),
                       ),
                     ],
-                    if (receiptUrl != null && receiptUrl.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: Text(loc.viewReceipt),
-                              content: Image.network(
-                                receiptUrl,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Text(loc.cannotOpenDocument),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('OK'),
+                    ...() {
+                      final hasValidReceipt = receiptUrl != null &&
+                          receiptUrl.isNotEmpty &&
+                          receiptUrl != 'CASH' &&
+                          !isCash &&
+                          (receiptUrl.startsWith('http://') || receiptUrl.startsWith('https://'));
+
+                      if (!hasValidReceipt) return <Widget>[];
+
+                      return [
+                        const SizedBox(width: 6),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(loc.viewReceipt),
+                                content: Image.network(
+                                  receiptUrl,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => Text(loc.cannotOpenDocument),
                                 ),
-                              ],
-                            ),
-                          );
-                        },
-                        icon: const Icon(LucideIcons.fileText, size: 13),
-                        label: Text(
-                          loc.viewReceipt,
-                          style: const TextStyle(fontSize: 11),
-                          softWrap: true,
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: const Icon(LucideIcons.fileText, size: 13),
+                          label: Text(
+                            loc.viewReceipt,
+                            style: const TextStyle(fontSize: 11),
+                            softWrap: true,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary.withValues(alpha: 0.08),
+                            foregroundColor: colors.primary,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary.withValues(alpha: 0.08),
-                          foregroundColor: colors.primary,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
+                      ];
+                    }(),
                   ],
                 ),
 
