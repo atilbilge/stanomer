@@ -56,6 +56,10 @@
     <string>Stanomer uses the local network to discover and connect to your development tools.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Stanomer needs microphone access for video recordings of property issues.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Stanomer needs location access to automatically verify property addresses and nearby maintenance services.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Stanomer needs location access to verify property addresses and nearby services.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Stanomer needs access to your photo library to let you upload rent receipts and property maintenance photos.</string>
     <key>UIApplicationSceneManifest</key>
