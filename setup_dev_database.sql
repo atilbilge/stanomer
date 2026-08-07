@@ -82,12 +82,25 @@ CREATE TABLE IF NOT EXISTS public.properties (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.properties ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_monthly_rent NUMERIC(12,2);
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_deposit_amount NUMERIC(12,2);
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'EUR';
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_deposit_currency TEXT DEFAULT 'EUR';
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_due_day INT DEFAULT 1;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS expenses_template JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS owner_note TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tax_type public.tax_type DEFAULT 'included';
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_phone TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_email TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_name TEXT;
-ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS city TEXT;
 
 CREATE TABLE IF NOT EXISTS public.contracts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -119,12 +132,17 @@ CREATE TABLE IF NOT EXISTS public.contracts (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.contracts ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS invitee_email TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS inviter_name TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS token TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS deposit_currency TEXT DEFAULT 'EUR';
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_feedback TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS proposed_changes JSONB;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS pending_update JSONB;
 
 CREATE TABLE IF NOT EXISTS public.invitations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

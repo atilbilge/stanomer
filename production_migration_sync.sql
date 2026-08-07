@@ -83,7 +83,14 @@ CREATE TABLE IF NOT EXISTS public.properties (
 );
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.properties ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_monthly_rent NUMERIC(12,2);
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_deposit_amount NUMERIC(12,2);
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'EUR';
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_deposit_currency TEXT DEFAULT 'EUR';
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_due_day INT DEFAULT 1;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS expenses_template JSONB DEFAULT '[]'::jsonb;
@@ -114,6 +121,8 @@ CREATE TABLE IF NOT EXISTS public.contracts (
     special_conditions TEXT,
     rejection_reason TEXT,
     proposed_by UUID REFERENCES public.profiles(id),
+    proposed_changes JSONB,
+    pending_update JSONB,
     termination_reason TEXT,
     termination_requested_by UUID REFERENCES public.profiles(id),
     termination_requested_at TIMESTAMPTZ,
@@ -122,10 +131,16 @@ CREATE TABLE IF NOT EXISTS public.contracts (
 );
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.contracts ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS expenses JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS additional_documents JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS proposed_by UUID REFERENCES public.profiles(id);
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS proposed_changes JSONB;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS pending_update JSONB;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_reason TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_requested_by UUID REFERENCES public.profiles(id);
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_requested_at TIMESTAMPTZ;
 -- Agency support and missing contract fields
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS invitee_email TEXT;
@@ -163,6 +178,7 @@ CREATE TABLE IF NOT EXISTS public.rent_payments (
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
     due_date DATE NOT NULL,
+    amount NUMERIC(12,2) DEFAULT 0.00,
     rent_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     expenses_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
@@ -186,6 +202,10 @@ ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS contract_id UUID REFER
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS receiver_type TEXT DEFAULT 'landlord';
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS rent_amount NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS expenses_amount NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS total_amount NUMERIC(12,2) DEFAULT 0.00;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS owner_note TEXT;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS receipt_url TEXT;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS declared_at TIMESTAMPTZ;
