@@ -70,7 +70,7 @@ Mülk bazlı verilerin ve taraflar arası "mutabakat" süreçlerinin yönetildi�
 | **US-28** | **Ayarlar Onayı (Consensus)** | Ödeme ayarı değişikliği bildirim ile karşı tarafa iletilir; X gün içinde itiraz edilmezse otomatik kabul edilir. | 🟡 MVP1.5 |
 | **US-07** | Sözleşme Arşivi | PDF yükleme, güvenli Storage (Private Bucket) kullanımı. | 🟡 MVP1.5 |
 | **US-34** | **İşlem Kanıtı (Log)** | Kritik onaylarda (sözleşme/mutabakat) IP ve zaman damgası tutulur. | 🟡 MVP1.5 |
-| **US-35** | **Sözleşme Sona Erme Akışı** | Kira bitiş tarihi yaklaşınca bildirim gönderilir. Taraflar "Yenile" veya "Sonlandır" seçeneğini seçer. Sonlandırma seçilince depozito iade adımı başlatılır ve mülk "Boş" statüsüne geçer. | 🟡 MVP1.5 |
+| **US-35** | **Sözleşme Sona Erme & Yenileme Akışı** | Kira bitiş tarihinden 30 gün önce bildirim gönderilir; kiracı ve ev sahibi karşılıklı mutabakatla sözleşmeyi yenileyebilir veya sonlandırabilir. Sonlandırma seçilince depozito iade adımı başlatılır ve mülk "Boş" statüsüne geçer. | 🟡 MVP1.5 |
 | **US-36** | **Kiracı Ayrılışı & Mülk Devri** | Mevcut kiracı ayrıldıktan sonra mülk arşivlenir; ev sahibi aynı mülk için yeni kiracı daveti yapabilir. Tüm geçmiş ledger erişilebilir kalır. | 🟡 MVP1.5 |
 | **US-08** | Portföy Yönetimi | Birden fazla dairenin tek dashboard üzerinden yönetilmesi. (Pro tier) | 🔵 MVP2 |
 
