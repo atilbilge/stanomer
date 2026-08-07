@@ -1567,13 +1567,13 @@ class PropertyRepository {
 
         int getPriority(RentPayment p) {
           if (p.status == 'paid') {
-            return p.amount > 0 ? 100 : 90;
+            return p.amount > 0 ? 100 : 50;
           }
           if (p.status == 'declared') {
-            return p.amount > 0 ? 80 : 70;
+            return p.amount > 0 ? 90 : 70;
           }
           if (p.status == 'pending') {
-            return p.amount > 0 ? 60 : 10;
+            return p.amount > 0 ? 80 : 10;
           }
           return 0;
         }

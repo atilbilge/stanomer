@@ -3411,8 +3411,16 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
               for (final p in rawList) {
                 final titleLower = p.title.trim().toLowerCase();
-                // Take the most recently updated / declared record for each title
-                bestItemByTitle[titleLower] = p;
+                final existing = bestItemByTitle[titleLower];
+                if (existing == null) {
+                  bestItemByTitle[titleLower] = p;
+                } else {
+                  if (p.amount > 0 && existing.amount == 0) {
+                    bestItemByTitle[titleLower] = p;
+                  } else if (p.status == 'declared' && existing.status != 'declared') {
+                    bestItemByTitle[titleLower] = p;
+                  }
+                }
               }
 
               // Preserve relative order and ensure exactly ONE row per title
