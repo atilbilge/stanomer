@@ -2396,20 +2396,14 @@ class _TenantHero extends ConsumerWidget {
     }
 
     // Hangi tutarları göster?
+    // Hangi tutarları göster?
     final String heroLabel;
-    final String heroAmount;
     if (hasDebt) {
       heroLabel = loc.totalDebt.toUpperCase();
-      heroAmount = CurrencyUtils.formatCurrencyMap(
-          pendingTotals, useSymbols: true, separator: ' + ');
     } else if (hasAwaiting) {
       heroLabel = loc.awaitingHeader.toUpperCase();
-      heroAmount = CurrencyUtils.formatCurrencyMap(
-          awaitingTotals, useSymbols: true, separator: ' + ');
     } else {
-      heroLabel = loc.paidLabel.toUpperCase();
-      heroAmount = CurrencyUtils.formatCurrencyMap(
-          financialStatus?.paidTotals ?? {}, useSymbols: true, separator: ' + ');
+      heroLabel = loc.totalDebt.toUpperCase();
     }
 
     final hasAgency = (property.agencyId != null && property.agencyId!.isNotEmpty) || (contract.agencyId != null && contract.agencyId!.isNotEmpty);
@@ -2430,25 +2424,11 @@ class _TenantHero extends ConsumerWidget {
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
-    } else if (isAllPaid) {
+    } else {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.circleCheck,
-        label: loc.paidLabel,
+        label: loc.localeName == 'tr' ? 'Borç Yok' : 'No Debt',
         bgColor: Colors.white.withValues(alpha: 0.2),
-        textColor: Colors.white,
-      );
-    } else if (hasPendingBills) {
-      statusBadge = _HeroStatusBadge(
-        icon: LucideIcons.clock,
-        label: hasAgency ? loc.waitingForAgency : loc.waitingForLandlord,
-        bgColor: Colors.white.withValues(alpha: 0.2),
-        textColor: Colors.white,
-      );
-    } else if (daysLeft <= 3) {
-      statusBadge = _HeroStatusBadge(
-        icon: LucideIcons.alertCircle,
-        label: daysLeft == 0 ? loc.dueDayOfMonth : '$daysLeft gün',
-        bgColor: Colors.white.withValues(alpha: 0.25),
         textColor: Colors.white,
       );
     }
@@ -2516,9 +2496,15 @@ class _TenantHero extends ConsumerWidget {
                 const SizedBox(height: 6),
                 // Multi-currency tutarları satır satır göster
                 ...() {
-                  final totals = hasDebt
-                      ? pendingTotals
-                      : (hasAwaiting ? awaitingTotals : (financialStatus?.paidTotals ?? {}));
+                  final Map<String, double> totals;
+                  if (hasDebt) {
+                    totals = pendingTotals;
+                  } else if (hasAwaiting) {
+                    totals = awaitingTotals;
+                  } else {
+                    final defaultCurrency = contract.currency.isNotEmpty ? contract.currency : 'RSD';
+                    totals = pendingTotals.isEmpty ? {defaultCurrency: 0.0} : pendingTotals;
+                  }
                   final currencies = totals.keys.toList()..sort();
                   if (currencies.isEmpty) {
                     return [
