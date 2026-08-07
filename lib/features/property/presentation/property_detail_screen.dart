@@ -2455,7 +2455,45 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       ),
                     ],
 
-                    const SizedBox(height: 24),
+                    if (payment.amount > 0 || payment.invoiceUrl != null) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            setState(() => _uploadingPaymentId = payment.id);
+                            try {
+                              await ref.read(propertyRepositoryProvider).setPaymentInvoice(
+                                payment.id,
+                                widget.property.id,
+                                monthName,
+                                payment.dueDate,
+                                0.0,
+                                null,
+                                currency: selectedCurrency,
+                                ownerNote: null,
+                              );
+                            } finally {
+                              if (mounted) {
+                                setState(() => _uploadingPaymentId = null);
+                                ref.invalidate(rentPaymentsProvider(widget.property.id));
+                              }
+                            }
+                          },
+                          icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                          label: Text(
+                            loc.localeName == 'tr' ? 'Tutarı ve Faturayı Sil / Sıfırla' : 'Reset / Clear Amount & Bill',
+                            style: const TextStyle(
+                              color: StanomerColors.alertPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
                     // Actions
                     Row(
                       children: [
@@ -2528,10 +2566,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              final amountString = amountController.text.replaceAll(',', '.');
-                              final amount = double.tryParse(amountString);
+                              final amountString = amountController.text.replaceAll(',', '.').trim();
+                              final amount = amountString.isEmpty ? 0.0 : (double.tryParse(amountString) ?? 0.0);
                               
-                              if (amount == null || amount < 0) return;
+                              if (amount < 0) return;
                               
                               Navigator.pop(context);
                               
@@ -2782,7 +2820,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isDisputed = status == 'disputed';
     // An expense row is "awaiting invoice" when landlord hasn't set the amount yet
     final isOwnerExpense = payment.receiverType == 'owner' && payment.title != 'Kira';
-    final isAwaitingInvoice = isOwnerExpense && payment.amount == 0 && isPending;
+    final isAwaitingInvoice = isOwnerExpense && (payment.amount == 0 || isPending);
     final isCash = payment.receiptUrl == 'CASH';
     final monthName = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
     final catColor = colorForTitle(payment.title);
@@ -3179,7 +3217,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       ),
                     ],
                   )
-                else if ((isOwnerExpense || (payment.title == 'Kira' && isDisputed)) && (isPending || isDisputed))
+                else if ((isOwnerExpense || (payment.title == 'Kira' && isDisputed)) && (isPending || isDisputed || (isPaid && isOwnerExpense && payment.receiptUrl == null)))
                   Row(
                     children: [
                       Expanded(
