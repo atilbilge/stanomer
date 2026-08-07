@@ -1565,19 +1565,6 @@ class PropertyRepository {
           groupedByMonth.putIfAbsent(key, () => []).add(p);
         }
 
-        int getPriority(RentPayment p) {
-          if (p.status == 'paid') {
-            return p.amount > 0 ? 100 : 50;
-          }
-          if (p.status == 'declared') {
-            return p.amount > 0 ? 90 : 70;
-          }
-          if (p.status == 'pending') {
-            return p.amount > 0 ? 80 : 10;
-          }
-          return 0;
-        }
-
         final List<RentPayment> list = [];
         for (final monthList in groupedByMonth.values) {
           final Map<String, RentPayment> bestByTitle = {};
@@ -1587,14 +1574,13 @@ class PropertyRepository {
             if (existing == null) {
               bestByTitle[titleKey] = p;
             } else {
-              final existingPrio = getPriority(existing);
-              final currentPrio = getPriority(p);
-              if (currentPrio > existingPrio) {
+              // Directly pick active bill with amount > 0 or receipt declared
+              if (p.amount > 0 && existing.amount == 0) {
                 bestByTitle[titleKey] = p;
-              } else if (currentPrio == existingPrio) {
-                if (p.receiptUrl != null && existing.receiptUrl == null) {
-                  bestByTitle[titleKey] = p;
-                }
+              } else if (p.status == 'declared' && existing.status != 'declared') {
+                bestByTitle[titleKey] = p;
+              } else if (p.receiptUrl != null && existing.receiptUrl == null) {
+                bestByTitle[titleKey] = p;
               }
             }
           }
