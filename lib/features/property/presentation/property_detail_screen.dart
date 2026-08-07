@@ -1969,7 +1969,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final loc = AppLocalizations.of(context)!;
     final amountController = TextEditingController(text: payment.amount > 0 ? payment.amount.toStringAsFixed(2) : '');
     final noteController = TextEditingController(text: payment.ownerNote ?? '');
-    String selectedCurrency = payment.currency.isEmpty || payment.currency == 'EUR' ? 'RSD' : payment.currency; // Default to RSD as requested
+    String selectedCurrency = payment.currency.isNotEmpty ? payment.currency : 'RSD';
     FilePickerResult? selectedFile;
     bool isExistingRemoved = false;
 
@@ -2472,6 +2472,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 null,
                                 currency: selectedCurrency,
                                 ownerNote: null,
+                                title: payment.title,
                               );
                             } finally {
                               if (mounted) {
@@ -2609,6 +2610,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   invoiceUrl,
                                   currency: selectedCurrency,
                                   ownerNote: noteController.text.trim().isEmpty ? null : noteController.text.trim(),
+                                  title: payment.title,
                                 );
                               } finally {
                                 if (mounted) {
