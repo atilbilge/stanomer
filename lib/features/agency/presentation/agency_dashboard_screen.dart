@@ -1194,7 +1194,21 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final pendingCount = pendingPayments.length;
     final pendingTotals = calcTotals(pendingPayments);
 
-    // 2. Gecikmedeki Borçlar (Overdue / pending with due_date < today)
+    // 2. Girilmeyen Faturalar (Unentered / Awaiting Bills where amount == 0 for owner expense)
+    final unenteredBillsList = allPayments.where((item) {
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'paid' || status == 'declared') return false;
+      final receiverType = item['receiver_type'] as String? ?? 'owner';
+      final title = item['title'] as String? ?? 'Kira';
+      final isOwnerExpense = receiverType == 'owner' && title != 'Kira';
+      if (!isOwnerExpense) return false;
+
+      final amt = (item['amount'] as num?)?.toDouble() ?? 0.0;
+      return amt == 0;
+    }).toList();
+    final unenteredCount = unenteredBillsList.length;
+
+    // 3. Gecikmedeki Borçlar (Overdue / pending with due_date < today)
     final overdueList = allPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
       if (status == 'declared' || status == 'paid') return false;
@@ -1215,7 +1229,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final overdueCount = overdueList.length;
     final overdueTotals = calcTotals(overdueList);
 
-    // 3. Bu Ay Onaylanan (Paid this month)
+    // 4. Bu Ay Onaylanan (Paid this month)
     final paidThisMonthList = allPayments.where((item) {
       final status = item['status'] as String?;
       if (status != 'paid') return false;
@@ -1229,7 +1243,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final paidCount = paidThisMonthList.length;
     final paidTotals = calcTotals(paidThisMonthList);
 
-    // 4. Yaklaşan 7 Gün (Upcoming in 7 days)
+    // 5. Yaklaşan 7 Gün (Upcoming in 7 days)
     final upcomingList = allPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
       if (status != 'pending') return false;
@@ -1248,6 +1262,8 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     if (_selectedSegment == 0) {
       rawList = pendingPayments;
     } else if (_selectedSegment == 1) {
+      rawList = unenteredBillsList;
+    } else if (_selectedSegment == 2) {
       rawList = overdueList;
     } else {
       rawList = allPayments.where((p) => p['status'] == 'paid').toList();
@@ -1362,9 +1378,10 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
           // 4 KPI Summary Cards (4-column on Web/Desktop, 2x2 on Mobile)
           LayoutBuilder(
             builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth >= 850;
-              final cardsPerRow = isDesktop ? 4 : 2;
-              final cardWidth = (constraints.maxWidth - (12 * (cardsPerRow - 1))) / cardsPerRow;
+              final width = constraints.maxWidth;
+              final crossAxisCount = width > 900 ? 4 : (width > 600 ? 2 : 1);
+              final cardWidth = (width - ((crossAxisCount - 1) * 12)) / crossAxisCount;
+
               return Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -1382,13 +1399,30 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                   ),
                   _FinanceKpiCard(
                     width: cardWidth,
+                    title: loc.localeName == 'tr'
+                        ? 'Girilmeyen Faturalar'
+                        : (loc.localeName == 'ru'
+                            ? 'Невнесенные счета'
+                            : (loc.localeName.startsWith('sr')
+                                ? 'Neuneti računi'
+                                : 'Unentered Bills')),
+                    count: unenteredCount,
+                    totals: const {},
+                    color: Colors.amber.shade800,
+                    icon: LucideIcons.fileQuestion,
+                    isSelected: _selectedSegment == 1,
+                    onTap: () => setState(() => _selectedSegment = 1),
+                    colors: widget.colors,
+                  ),
+                  _FinanceKpiCard(
+                    width: cardWidth,
                     title: loc.financeOverduePayments,
                     count: overdueCount,
                     totals: overdueTotals,
                     color: Colors.red.shade600,
                     icon: LucideIcons.alertTriangle,
-                    isSelected: _selectedSegment == 1,
-                    onTap: () => setState(() => _selectedSegment = 1),
+                    isSelected: _selectedSegment == 2,
+                    onTap: () => setState(() => _selectedSegment = 2),
                     colors: widget.colors,
                   ),
                   _FinanceKpiCard(
@@ -1398,19 +1432,8 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     totals: paidTotals,
                     color: Colors.green.shade600,
                     icon: LucideIcons.checkCircle2,
-                    isSelected: false,
-                    onTap: () {},
-                    colors: widget.colors,
-                  ),
-                  _FinanceKpiCard(
-                    width: cardWidth,
-                    title: loc.financeUpcoming7Days,
-                    count: upcomingCount,
-                    totals: upcomingTotals,
-                    color: Colors.blue.shade600,
-                    icon: LucideIcons.calendar,
-                    isSelected: false,
-                    onTap: () {},
+                    isSelected: _selectedSegment == 3,
+                    onTap: () => setState(() => _selectedSegment = 3),
                     colors: widget.colors,
                   ),
                 ],
@@ -1435,19 +1458,34 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                 ),
                 const SizedBox(width: 8),
                 _FinanceSegmentChip(
-                  label: loc.tabOverdueList,
-                  badgeCount: overdueCount,
-                  badgeColor: Colors.red.shade600,
+                  label: loc.localeName == 'tr'
+                      ? 'Girilmeyen Faturalar'
+                      : (loc.localeName == 'ru'
+                          ? 'Невнесенные счета'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Neuneti računi'
+                              : 'Unentered Bills')),
+                  badgeCount: unenteredCount,
+                  badgeColor: Colors.amber.shade800,
                   isSelected: _selectedSegment == 1,
                   onTap: () => setState(() => _selectedSegment = 1),
                   colors: widget.colors,
                 ),
                 const SizedBox(width: 8),
                 _FinanceSegmentChip(
-                  label: loc.tabAllHistory,
-                  badgeCount: allPayments.where((p) => p['status'] == 'paid').length,
+                  label: loc.tabOverdueList,
+                  badgeCount: overdueCount,
+                  badgeColor: Colors.red.shade600,
                   isSelected: _selectedSegment == 2,
                   onTap: () => setState(() => _selectedSegment = 2),
+                  colors: widget.colors,
+                ),
+                const SizedBox(width: 8),
+                _FinanceSegmentChip(
+                  label: loc.tabAllHistory,
+                  badgeCount: allPayments.where((p) => p['status'] == 'paid').length,
+                  isSelected: _selectedSegment == 3,
+                  onTap: () => setState(() => _selectedSegment = 3),
                   colors: widget.colors,
                 ),
               ],
@@ -1912,6 +1950,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
       periodText = DateFormat('MMMM yyyy', loc.localeName).format(dueDate);
     }
     final isCash = payment['is_cash'] == true;
+    final receiverType = payment['receiver_type'] as String? ?? 'owner';
     final status = payment['status'] as String? ?? 'pending';
     final receiptUrl = payment['receipt_url'] as String?;
 
@@ -2409,8 +2448,42 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                           ),
                         ),
                       ]
-                // Segment 1: Overdue Actions
-                else if (segment == 1 || status == 'overdue' || status == 'pending') ...[
+                      // Segment 1: Girilmeyen Faturalar (Fatura Gir Butonu)
+                      else if (segment == 1 || (amount == 0 && receiverType == 'owner' && rawTitle != 'Kira')) ...[
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final targetProperty = propertiesMap[propertyId];
+                            if (targetProperty != null) {
+                              context.push(
+                                '/property-detail',
+                                extra: {
+                                  'property': targetProperty,
+                                  'initialTabIndex': 1,
+                                  'initialExpandedPaymentId': id,
+                                },
+                              );
+                            }
+                          },
+                          icon: const Icon(LucideIcons.filePlus, size: 14),
+                          label: Text(
+                            loc.enterBill,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            maxLines: 2,
+                            softWrap: true,
+                            textAlign: TextAlign.center,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ]
+                      // Segment 2: Gecikmedeki Borçlar Actions
+                      else if (segment == 2 || status == 'overdue' || (status == 'pending' && amount > 0)) ...[
                   ElevatedButton.icon(
                     onPressed: () async {
                       final message = loc.overduePaymentReminderMessage(

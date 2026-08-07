@@ -3445,6 +3445,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             }
 
             // ── Summary counters ──────────────────────────────────────
+            final unenteredCount = allDeduplicatedPayments.where((p) => p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0).length;
             final pendingCount  = allDeduplicatedPayments.where((p) => p.status == 'pending' && p.amount > 0).length;
             final awaitingCount = allDeduplicatedPayments.where((p) => p.status == 'declared').length;
             final paidCount     = allDeduplicatedPayments.where((p) => p.status == 'paid').length;
@@ -3474,33 +3475,51 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
                 // ── Summary bar ───────────────────────────────────────
-                Row(
-                  children: [
-                    _SummaryChip(
-                      label: loc.pendingHeader,
-                      subLabel: isTenant 
-                        ? loc.waitingForYourPayment
-                        : loc.waitingForTenantPayment,
-                      count: pendingCount,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 8),
-                    _SummaryChip(
-                      label: loc.awaitingHeader,
-                      subLabel: isTenant 
-                        ? (property.agencyId != null && property.agencyId!.isNotEmpty ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval)
-                        : loc.waitingForYourApproval,
-                      count: awaitingCount,
-                      color: Colors.amber.shade700,
-                    ),
-                    const SizedBox(width: 8),
-                    _SummaryChip(
-                      label: loc.paidHeader,
-                      subLabel: loc.processCompleted,
-                      count: paidCount,
-                      color: Colors.green,
-                    ),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      if (unenteredCount > 0) ...[
+                        _SummaryChip(
+                          label: loc.localeName == 'tr'
+                              ? 'Girilmeyen Faturalar'
+                              : (loc.localeName == 'ru'
+                                  ? 'Невнесенные счета'
+                                  : (loc.localeName.startsWith('sr')
+                                      ? 'Neuneti računi'
+                                      : 'Unentered Bills')),
+                          subLabel: loc.localeName == 'tr' ? 'Tutar bekleniyor' : 'Awaiting bill amount',
+                          count: unenteredCount,
+                          color: Colors.amber.shade800,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      _SummaryChip(
+                        label: loc.pendingHeader,
+                        subLabel: isTenant 
+                          ? loc.waitingForYourPayment
+                          : loc.waitingForTenantPayment,
+                        count: pendingCount,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      _SummaryChip(
+                        label: loc.awaitingHeader,
+                        subLabel: isTenant 
+                          ? (property.agencyId != null && property.agencyId!.isNotEmpty ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval)
+                          : loc.waitingForYourApproval,
+                        count: awaitingCount,
+                        color: Colors.amber.shade700,
+                      ),
+                      const SizedBox(width: 8),
+                      _SummaryChip(
+                        label: loc.paidHeader,
+                        subLabel: loc.processCompleted,
+                        count: paidCount,
+                        color: Colors.green,
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 20),
 
