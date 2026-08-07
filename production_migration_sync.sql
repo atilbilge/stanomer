@@ -96,6 +96,8 @@ ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS default_due_day INT DEFAU
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS expenses_template JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS owner_note TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tax_type public.tax_type DEFAULT 'included';
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 -- Agency support
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_phone TEXT;
@@ -141,6 +143,8 @@ ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS pending_update JSONB;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_reason TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_requested_by UUID REFERENCES public.profiles(id);
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_requested_at TIMESTAMPTZ;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 -- Agency support and missing contract fields
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS invitee_email TEXT;
@@ -167,6 +171,7 @@ ALTER TABLE public.invitations ALTER COLUMN invitee_email DROP NOT NULL;
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS inviter_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS target_role TEXT DEFAULT 'tenant';
+ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
 -- 2.5 rent_payments
 CREATE TABLE IF NOT EXISTS public.rent_payments (
@@ -213,6 +218,8 @@ ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS auto_approval_at TIMES
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS dispute_reason TEXT;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_by UUID REFERENCES public.profiles(id);
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_at TIMESTAMPTZ;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
 -- 2.6 maintenance_requests & maintenance_messages
 CREATE TABLE IF NOT EXISTS public.maintenance_requests (
