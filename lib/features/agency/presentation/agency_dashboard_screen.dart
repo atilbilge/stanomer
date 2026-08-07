@@ -1902,6 +1902,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
 
     final dueDateStr = payment['due_date'] as String?;
     final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+    final dueDateFormatted = dueDate != null ? DateFormat('dd MMM yyyy', loc.localeName).format(dueDate) : null;
 
     final rawMonth = payment['month'] as String?;
     String periodText = '';
@@ -2184,7 +2185,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                 // Indicators & Badges Row
                 Row(
                   children: [
-                    if (periodText.isNotEmpty) ...[
+                    if (dueDateFormatted != null || periodText.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
@@ -2198,7 +2199,9 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             Icon(LucideIcons.calendar, size: 11, color: colors.primary),
                             const SizedBox(width: 4),
                             Text(
-                              periodText,
+                              dueDateFormatted != null
+                                  ? '${loc.localeName == 'tr' ? 'Vade:' : 'Due:'} $dueDateFormatted'
+                                  : periodText,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -4384,94 +4387,15 @@ class _PendingPaymentRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final id = payment['id'] as String;
-    final propertyId = payment['property_id'] as String;
-    final title = payment['title'] as String? ?? loc.payment;
-    final amount = (payment['amount'] as num?)?.toDouble() ?? 0.0;
-    final currency = payment['currency'] as String? ?? 'EUR';
-    final month = payment['month'] as String? ?? '';
-    final propertyName = payment['property_name'] as String? ?? '';
-    final tenantName = payment['tenant_name'] as String? ?? '';
-    final isCash = payment['is_cash'] == true;
+    final propertiesList = ref.watch(agencyPropertiesProvider).value ?? [];
+    final propertiesMap = {for (var p in propertiesList) p.id: p};
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colors.bgWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.brandGold.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      propertyName,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: colors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      '$title • $tenantName ($month)',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colors.textPrimary.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                '${amount.toStringAsFixed(0)} $currency',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: colors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              if (isCash)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(loc.cashPayment, style: TextStyle(fontSize: 10, color: Colors.amber.shade900, fontWeight: FontWeight.bold)),
-                ),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await ref.read(propertyRepositoryProvider).approveRentPayment(id, propertyId, month, DateTime.now());
-                  ref.invalidate(agencyPendingPaymentsProvider);
-                  ref.invalidate(agencyPropertiesProvider);
-                },
-                icon: const Icon(LucideIcons.check, size: 14),
-                label: Text(loc.approve, style: const TextStyle(fontSize: 12)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return _FinancePaymentItemCard(
+      payment: payment,
+      propertiesMap: propertiesMap,
+      colors: colors,
+      loc: loc,
+      segment: 0,
     );
   }
 }
