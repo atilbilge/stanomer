@@ -283,65 +283,72 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
           ),
           Expanded(
-            child: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(propertiesStreamProvider);
-          ref.invalidate(pendingInvitesForUserProvider);
-          // Wait for the invites future to complete
-          try {
-            await ref.read(pendingInvitesForUserProvider.future);
-          } catch (_) {}
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1360),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (zzplDocumentVersion == null) ...[
-                    _ZzplConsentCard(
-                      onConsent: () async {
-                    setState(() => _roleSelectionLoading = true);
-                    try {
-                      final client = Supabase.instance.client;
-                      await client.auth.updateUser(UserAttributes(
-                        data: {'zzpl_document_version': 'v1.0'},
-                      ));
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(e.toString()),
-                          backgroundColor: StanomerColors.alertPrimary,
-                        ));
-                      }
-                    } finally {
-                      if (mounted) {
-                        setState(() => _roleSelectionLoading = false);
-                      }
-                    }
-                  },
-                  isLoading: _roleSelectionLoading,
-                ),
-              ] else if (isLandlord) ...[
-                if (propertiesAsync.hasValue) ...[
-                  () {
-                    final properties = propertiesAsync.value!;
-                    final totalUnits = properties.length;
-                    final totalTenants = properties.where((p) => p.tenantId != null).length;
-                    final statsAsync = ref.watch(landlordSummaryProvider);
-
-                    // Tab 1: Portföy (AgencyPortfolioTab ile birebir aynı)
-                    if (_landlordCurrentTab == 1) {
-                      return AgencyPortfolioTab(colors: agencyColors);
-                    }
-
-                    // Tab 2: Finans (AgencyFinanceTab ile birebir aynı)
-                    if (_landlordCurrentTab == 2) {
-                      return AgencyFinanceTab(colors: agencyColors);
-                    }
+            child: (isLandlord && (_landlordCurrentTab == 1 || _landlordCurrentTab == 2))
+                ? RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(propertiesStreamProvider);
+                      ref.invalidate(pendingInvitesForUserProvider);
+                      ref.invalidate(agencyAllPaymentsProvider);
+                      ref.invalidate(agencyPendingPaymentsProvider);
+                      ref.invalidate(agencyPropertiesProvider);
+                    },
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1360),
+                        child: _landlordCurrentTab == 1
+                            ? AgencyPortfolioTab(colors: agencyColors)
+                            : AgencyFinanceTab(colors: agencyColors),
+                      ),
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(propertiesStreamProvider);
+                      ref.invalidate(pendingInvitesForUserProvider);
+                      try {
+                        await ref.read(pendingInvitesForUserProvider.future);
+                      } catch (_) {}
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1360),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (zzplDocumentVersion == null) ...[
+                                _ZzplConsentCard(
+                                  onConsent: () async {
+                                    setState(() => _roleSelectionLoading = true);
+                                    try {
+                                      final client = Supabase.instance.client;
+                                      await client.auth.updateUser(UserAttributes(
+                                        data: {'zzpl_document_version': 'v1.0'},
+                                      ));
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                          content: Text(e.toString()),
+                                          backgroundColor: StanomerColors.alertPrimary,
+                                        ));
+                                      }
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() => _roleSelectionLoading = false);
+                                      }
+                                    }
+                                  },
+                                  isLoading: _roleSelectionLoading,
+                                ),
+                              ] else if (isLandlord) ...[
+                                if (propertiesAsync.hasValue) ...[
+                                  () {
+                                    final properties = propertiesAsync.value!;
+                                    final totalUnits = properties.length;
+                                    final totalTenants = properties.where((p) => p.tenantId != null).length;
+                                    final statsAsync = ref.watch(landlordSummaryProvider);
 
                     // Tab 3: Bakım & Onarım — navigate to maintenance screen
                     if (_landlordCurrentTab == 3) {

@@ -28,7 +28,7 @@ _Property _$PropertyFromJson(Map<String, dynamic> json) => _Property(
       TaxType.included,
   expensesTemplate:
       (json['expenses_template'] as List<dynamic>?)
-          ?.map((e) => ExpenseItem.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => e is ExpenseItem ? e : ExpenseItem.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
   createdAt: json['created_at'] == null

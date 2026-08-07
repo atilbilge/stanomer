@@ -196,7 +196,7 @@ class Contract {
       startDate: json['start_date'] != null ? DateTime.parse(json['start_date'] as String) : null,
       endDate: json['end_date'] != null ? DateTime.parse(json['end_date'] as String) : null,
       expensesConfig: (json['expenses_config'] as List?)
-              ?.map((e) => ExpenseItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => e is ExpenseItem ? e : ExpenseItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       taxType: _parseTaxType(json['tax_type'] as String?),
