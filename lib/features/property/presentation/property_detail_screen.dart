@@ -3475,51 +3475,48 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
                 // ── Summary bar ───────────────────────────────────────
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      if (unenteredCount > 0) ...[
-                        _SummaryChip(
-                          label: loc.localeName == 'tr'
-                              ? 'Girilmeyen Faturalar'
-                              : (loc.localeName == 'ru'
-                                  ? 'Невнесенные счета'
-                                  : (loc.localeName.startsWith('sr')
-                                      ? 'Neuneti računi'
-                                      : 'Unentered Bills')),
-                          subLabel: loc.localeName == 'tr' ? 'Tutar bekleniyor' : 'Awaiting bill amount',
-                          count: unenteredCount,
-                          color: Colors.amber.shade800,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
+                Row(
+                  children: [
+                    if (unenteredCount > 0) ...[
                       _SummaryChip(
-                        label: loc.pendingHeader,
-                        subLabel: isTenant 
-                          ? loc.waitingForYourPayment
-                          : loc.waitingForTenantPayment,
-                        count: pendingCount,
-                        color: Colors.grey,
+                        label: loc.localeName == 'tr'
+                            ? 'Girilmeyen'
+                            : (loc.localeName == 'ru'
+                                ? 'Невнесен'
+                                : (loc.localeName.startsWith('sr')
+                                    ? 'Neuneti'
+                                    : 'Unentered')),
+                        subLabel: loc.localeName == 'tr' ? 'Tutar bekleniyor' : 'Awaiting bill',
+                        count: unenteredCount,
+                        color: Colors.amber.shade800,
                       ),
-                      const SizedBox(width: 8),
-                      _SummaryChip(
-                        label: loc.awaitingHeader,
-                        subLabel: isTenant 
-                          ? (property.agencyId != null && property.agencyId!.isNotEmpty ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval)
-                          : loc.waitingForYourApproval,
-                        count: awaitingCount,
-                        color: Colors.amber.shade700,
-                      ),
-                      const SizedBox(width: 8),
-                      _SummaryChip(
-                        label: loc.paidHeader,
-                        subLabel: loc.processCompleted,
-                        count: paidCount,
-                        color: Colors.green,
-                      ),
+                      const SizedBox(width: 6),
                     ],
-                  ),
+                    _SummaryChip(
+                      label: loc.pendingHeader,
+                      subLabel: isTenant 
+                        ? loc.waitingForYourPayment
+                        : loc.waitingForTenantPayment,
+                      count: pendingCount,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 6),
+                    _SummaryChip(
+                      label: loc.awaitingHeader,
+                      subLabel: isTenant 
+                        ? (property.agencyId != null && property.agencyId!.isNotEmpty ? loc.waitingForAgencyApproval : loc.waitingForOwnerApproval)
+                        : loc.waitingForYourApproval,
+                      count: awaitingCount,
+                      color: Colors.amber.shade700,
+                    ),
+                    const SizedBox(width: 6),
+                    _SummaryChip(
+                      label: loc.paidHeader,
+                      subLabel: loc.processCompleted,
+                      count: paidCount,
+                      color: Colors.green,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 
