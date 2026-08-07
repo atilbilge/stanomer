@@ -2822,9 +2822,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isDeclared = status == 'declared';
     final isPending = status == 'pending';
     final isDisputed = status == 'disputed';
-    // An expense row is "awaiting invoice" when landlord hasn't set the amount yet
+    // An expense row is "awaiting invoice" when landlord hasn't set the amount yet (amount == 0)
     final isOwnerExpense = payment.receiverType == 'owner' && payment.title != 'Kira';
-    final isAwaitingInvoice = isOwnerExpense && (payment.amount == 0 || isPending);
+    final isAwaitingInvoice = isOwnerExpense && payment.amount == 0;
     final isCash = payment.receiptUrl == 'CASH';
     final monthName = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
     final catColor = colorForTitle(payment.title);
