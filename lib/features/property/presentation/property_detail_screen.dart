@@ -2477,6 +2477,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               if (mounted) {
                                 setState(() => _uploadingPaymentId = null);
                                 ref.invalidate(rentPaymentsProvider(widget.property.id));
+                                ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
                               }
                             }
                           },
@@ -2613,6 +2614,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 if (mounted) {
                                   setState(() => _uploadingPaymentId = null);
                                   ref.invalidate(rentPaymentsProvider(widget.property.id));
+                                  ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
                                 }
                               }
                             },
@@ -3406,13 +3408,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             // Helper to get priority score for a payment item (higher is better)
             int _getPaymentPriority(RentPayment p) {
               if (p.status == 'paid') {
-                return p.amount > 0 ? 100 : 90;
+                return p.amount > 0 ? 100 : 50;
               }
               if (p.status == 'declared') {
-                return p.amount > 0 ? 80 : 70;
+                return p.amount > 0 ? 90 : 70;
               }
               if (p.status == 'pending') {
-                return p.amount > 0 ? 60 : 10;
+                return p.amount > 0 ? 80 : 10;
               }
               return 0;
             }
