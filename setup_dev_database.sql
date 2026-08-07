@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS public.rent_payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
     contract_id UUID REFERENCES public.contracts(id) ON DELETE SET NULL,
-    landlord_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
@@ -169,6 +169,20 @@ CREATE TABLE IF NOT EXISTS public.rent_payments (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.rent_payments ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS contract_id UUID REFERENCES public.contracts(id) ON DELETE SET NULL;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS receiver_type TEXT DEFAULT 'landlord';
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS owner_note TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS receipt_url TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS declared_at TIMESTAMPTZ;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS auto_approval_at TIMESTAMPTZ;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS dispute_reason TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_by UUID REFERENCES public.profiles(id);
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_at TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS public.maintenance_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
