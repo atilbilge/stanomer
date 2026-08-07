@@ -3405,42 +3405,14 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             final Map<String, List<RentPayment>> grouped = {};
             final List<RentPayment> allDeduplicatedPayments = [];
 
-            // Helper to get priority score for a payment item (higher is better)
-            int _getPaymentPriority(RentPayment p) {
-              if (p.status == 'paid') {
-                return p.amount > 0 ? 100 : 50;
-              }
-              if (p.status == 'declared') {
-                return p.amount > 0 ? 90 : 70;
-              }
-              if (p.status == 'pending') {
-                return p.amount > 0 ? 80 : 10;
-              }
-              return 0;
-            }
-
             for (final monthKey in rawGrouped.keys) {
               final rawList = rawGrouped[monthKey]!;
               final Map<String, RentPayment> bestItemByTitle = {};
 
               for (final p in rawList) {
                 final titleLower = p.title.trim().toLowerCase();
-                final existing = bestItemByTitle[titleLower];
-
-                if (existing == null) {
-                  bestItemByTitle[titleLower] = p;
-                } else {
-                  final existingPriority = _getPaymentPriority(existing);
-                  final currentPriority = _getPaymentPriority(p);
-
-                  if (currentPriority > existingPriority) {
-                    bestItemByTitle[titleLower] = p;
-                  } else if (currentPriority == existingPriority) {
-                    if (p.receiptUrl != null && existing.receiptUrl == null) {
-                      bestItemByTitle[titleLower] = p;
-                    }
-                  }
-                }
+                // Take the most recently updated / declared record for each title
+                bestItemByTitle[titleLower] = p;
               }
 
               // Preserve relative order and ensure exactly ONE row per title

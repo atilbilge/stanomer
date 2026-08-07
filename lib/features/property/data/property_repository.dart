@@ -1735,14 +1735,45 @@ class PropertyRepository {
 
   Future<void> setPaymentInvoice(String paymentId, String propertyId, String monthName, DateTime dueDate, double amount, String? invoiceUrl, {String currency = 'RSD', String? ownerNote}) async {
     final isZero = amount == 0;
+    final newStatus = isZero ? 'paid' : 'pending';
+
+    // 1. Get payment details to find title & due date month
+    final currentPayment = await _client.from('rent_payments').select('title, due_date').eq('id', paymentId).maybeSingle();
+
+    // 2. Direct Update target record
     await _client.from('rent_payments').update({
       'amount': amount,
       'currency': currency,
       'invoice_url': invoiceUrl,
-      'status': isZero ? 'paid' : 'pending',
+      'status': newStatus,
       'dispute_reason': null,
       'owner_note': ownerNote,
     }).eq('id', paymentId);
+
+    // 3. Directly update any duplicate records for the same title and month so DB is 100% synchronized
+    if (currentPayment != null) {
+      final title = currentPayment['title'] as String?;
+      final dueDateStr = currentPayment['due_date'] as String?;
+      if (title != null && dueDateStr != null) {
+        final dt = DateTime.parse(dueDateStr);
+        final startOfMonth = DateTime(dt.year, dt.month, 1).toIso8601String();
+        final endOfMonth = DateTime(dt.year, dt.month + 1, 0, 23, 59, 59).toIso8601String();
+
+        await _client.from('rent_payments').update({
+          'amount': amount,
+          'currency': currency,
+          'invoice_url': invoiceUrl,
+          'status': newStatus,
+          'dispute_reason': null,
+          'owner_note': ownerNote,
+        })
+        .eq('property_id', propertyId)
+        .eq('title', title)
+        .gte('due_date', startOfMonth)
+        .lte('due_date', endOfMonth)
+        .neq('id', paymentId);
+      }
+    }
 
     final isUploaded = invoiceUrl != null && (invoiceUrl.startsWith('http://') || invoiceUrl.startsWith('https://'));
     final logType = isUploaded ? 'invoice_uploaded' : 'invoice_entered';
