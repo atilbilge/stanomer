@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useLanguage } from "../components/LanguageProvider";
 import { InteractiveFlow } from "../components/InteractiveFlow";
-import { Shield, Cloud, Heart, ClipboardList, FileText, Bell, Wrench, Globe } from "lucide-react";
+import { Shield, Cloud, Heart, ClipboardList, FileText, Bell, Wrench, Globe, Sparkles } from "lucide-react";
 
 export function HomeContent() {
   const { t } = useLanguage();
@@ -111,6 +112,37 @@ export function HomeContent() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Featured Agencies Card with NEW Badge */}
+        <div className="mt-4 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white backdrop-blur-[16px] border border-blue-200/80 rounded-2xl p-6 relative overflow-hidden shadow-sm hover:shadow-md transition">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-[18px] font-bold text-slate-900">{t("roles_agency")}</h3>
+              <span className="bg-blue-600 text-white text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full shadow-sm animate-pulse">
+                {t("roles_agency_badge")}
+              </span>
+            </div>
+            <Sparkles className="w-5 h-5 text-blue-600" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-2.5 text-[13px] text-slate-700 items-start py-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0" />
+                <span>{t(`roles_agency_${i}`)}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-3 border-t border-blue-100/80 flex justify-end">
+            <Link
+              href="/agencies"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-800 transition group"
+            >
+              <span>{t("roles_agency_btn")}</span>
+            </Link>
           </div>
         </div>
       </section>

@@ -17,6 +17,7 @@ import '../../features/support/presentation/support_screen.dart';
 import '../../features/auth/data/auth_providers.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/agency/presentation/agency_dashboard_screen.dart';
+import '../../features/agency/presentation/agency_demo_request_screen.dart';
 
 import '../../features/property/presentation/join_property_sheet.dart';
 
@@ -251,6 +252,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/support',
         builder: (context, state) => const SupportScreen(),
+      ),
+      GoRoute(
+        path: '/agency_demo',
+        builder: (context, state) => const AgencyDemoRequestScreen(),
+      ),
+      GoRoute(
+        path: '/agency-demo',
+        builder: (context, state) => const AgencyDemoRequestScreen(),
       ),
     ],
   );

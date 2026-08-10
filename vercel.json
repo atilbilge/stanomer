@@ -5,6 +5,8 @@
     { "source": "/privacy", "destination": "/privacy/index.html" },
     { "source": "/terms", "destination": "/terms/index.html" },
     { "source": "/support", "destination": "/support/index.html" },
+    { "source": "/agency_demo", "destination": "/agency_demo/index.html" },
+    { "source": "/agency-demo", "destination": "/agency-demo/index.html" },
     { "source": "/app", "destination": "/app/index.html" },
     { "source": "/app/(.*)", "destination": "/app/index.html" },
     { "source": "/dev-app", "destination": "/dev-app/index.html" },

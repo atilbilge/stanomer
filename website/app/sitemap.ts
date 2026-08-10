@@ -33,6 +33,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/guide/izdavanje-stana-strancima-beli-karton",
     "/guide/izdavanje-stana-strancima-beli-karton-cirilica",
     "/guide/renting-to-foreigners-digital-nomads-beli-karton-ru",
+    // Agency Routes
+    "/agencies",
+    "/agency-demo",
     // Legal & Support
     "/privacy",
     "/terms",

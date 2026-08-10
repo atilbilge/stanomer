@@ -12,6 +12,7 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Kararlı",
     initial: "İlk Lansman",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_0_date: "Ağustos 2026",
     v1_3_0_date: "Haziran 2026",
     v1_2_0_date: "Mayıs 2026",
     v1_1_0_date: "Nisan 2026",
@@ -19,6 +20,13 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     mockup_header: "Arayüz Göstergesi Önizleme",
     mockup_preview_text: "📱 Yerel Mod: Belge sadece bu cihazda saklanacak ve çevrimdışı kalacaktır.",
     
+    // v2.0.0 Item 1
+    v200_i1_title: "Emlak Ofisleri İçin Acente Profili & White-Label Altyapısı",
+    v200_i1_desc: "Mülk yönetimini profesyonel boyuta taşımak isteyen emlak ofisleri için özel Acente Profili ve White-Label marka özelleştirme mimarisi yayına alındı.",
+    v200_i1_li1: "Tam Yetkili Yönetim: Kiracı veya ev sahibinin onay kuyruğunda beklemeden kira, fatura ve kontrat işlemlerini doğrudan acente yetkisiyle yürütme imkanı.",
+    v200_i1_li2: "White-Label Branding: Acentenin kendi logosu, kurumsal renkleri ve özel lansman arayüzü ile müşterilerine hizmet sunma altyapısı.",
+    v200_i1_li3: "Tek Tıkla Davet & Senkronizasyon: Kiracı ve ev sahiplerini e-posta ile davet etme ve şeffaf rol bazlı erişim yönetimi.",
+
     // v1.3.0 Item 1
     v130_i1_title: "Bulut Yükleme / Yerel Depolama Seçeneği (Privacy-First)",
     v130_i1_desc: "Kullanıcıların mülk yönetim belgelerini (sözleşmeler, faturalar, fişler) nerede saklayacağını tamamen kendilerinin belirleyebileceği esnek bir güvenlik altyapısı entegre edildi.",
@@ -62,6 +70,7 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Stable",
     initial: "Initial Launch",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_0_date: "August 2026",
     v1_3_0_date: "June 2026",
     v1_2_0_date: "May 2026",
     v1_1_0_date: "April 2026",
@@ -69,6 +78,13 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     mockup_header: "UI Indicator Preview",
     mockup_preview_text: "📱 Local Mode: Document will be stored on this device only and will remain offline.",
     
+    // v2.0.0 Item 1
+    v200_i1_title: "Agency Profile & White-Label Infrastructure for Real Estate Offices",
+    v200_i1_desc: "Launched a dedicated Agency Profile and White-Label branding architecture for real estate offices seeking professional property management.",
+    v200_i1_li1: "Full Authority Management: Directly execute rent, utility bill, and contract workflows under agency authority without waiting in tenant or landlord approval queues.",
+    v200_i1_li2: "White-Label Branding: Serve clients with custom agency logo, corporate brand colors, and tailored presentation interfaces.",
+    v200_i1_li3: "One-Click Invite & Sync: Invite tenants and landlords via email with transparent role-based access control.",
+
     // v1.3.0 Item 1
     v130_i1_title: "Cloud Upload / Local Storage Option (Privacy-First)",
     v130_i1_desc: "A flexible security infrastructure has been integrated, allowing users to determine exactly where to store their property management documents (contracts, invoices, receipts).",
@@ -112,12 +128,20 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Stabilno",
     initial: "Prvo lansiranje",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_0_date: "Avgust 2026",
     v1_3_0_date: "Jun 2026",
     v1_2_0_date: "Maj 2026",
     v1_1_0_date: "April 2026",
     v1_0_0_date: "Mart 2026",
     mockup_header: "Pregled interfejsa",
     mockup_preview_text: "📱 Lokalni režim: Dokument se čuva samo na uređaju i ostaje van mreže.",
+
+    // v2.0.0 Item 1
+    v200_i1_title: "Agencijski Profil i White-Label Infrastruktura za Agencije za Nekretnine",
+    v200_i1_desc: "Pokrenut je namenski Agencijski Profil i White-Label arhitektura brendiranja za agencije koje žele profesionalno upravljanje nekretninama.",
+    v200_i1_li1: "Potpuno Ovlašćeno Upravljanje: Direktno izvršavanje procesa kirije, računa i ugovora uz agencijska ovlašćenja bez čekanja na odobrenja.",
+    v200_i1_li2: "White-Label Brending: Pružanje usluga klijentima sa sopstvenim logotipom agencije, korporativnim bojama i prilagođenim interfejsom.",
+    v200_i1_li3: "Poziv i Sinhronizacija Jednim Klikom: Pozovite zakupce i vlasnike putem imejla sa transparentnim upravljanjem ulogama.",
 
     // v1.3.0 Item 1
     v130_i1_title: "Opcija otpremanja u oblak / Lokalnog skladištenja (Najpre privatnost)",
@@ -162,12 +186,20 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Стабилно",
     initial: "Прво лансирање",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_0_date: "Август 2026",
     v1_3_0_date: "Јун 2026",
     v1_2_0_date: "Мај 2026",
     v1_1_0_date: "Април 2026",
     v1_0_0_date: "Март 2026",
     mockup_header: "Преглед интерфејса",
     mockup_preview_text: "📱 Локални режим: Документ се чува само на уређају и остаје ван мреже.",
+
+    // v2.0.0 Item 1
+    v200_i1_title: "Агенцијски Профил и White-Label Инфраструктура за Агенције за Некретнине",
+    v200_i1_desc: "Покренут је наменски Агенцијски Профил и White-Label архитектура брендирања за агенције које желе професионално управљање некретнинама.",
+    v200_i1_li1: "Потпуно Овлашћено Управљање: Директно извршавање процеса кирије, рачуна и уговора уз агенцијска овлашћења без чекања на одобрења.",
+    v200_i1_li2: "White-Label Брендинг: Пружање услуга клијентима са сопственим логотипом агенције, корпоративним бојама и прилагођеним интерфејсом.",
+    v200_i1_li3: "Позив и Синхронизација Једним Кликом: Позовите закупце и власнике путем имејла са транспарентним управљањем улогама.",
 
     // v1.3.0 Item 1
     v130_i1_title: "Опција отпремања у облак / Локалног складиштења (Најпре приватност)",
@@ -212,12 +244,20 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Стабильно",
     initial: "Первый запуск",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_0_date: "Август 2026",
     v1_3_0_date: "Июнь 2026",
     v1_2_0_date: "Май 2026",
     v1_1_0_date: "Апрель 2026",
     v1_0_0_date: "Март 2026",
     mockup_header: "Предварительный просмотр",
     mockup_preview_text: "📱 Локальный режим: Документ сохраняется только на устройстве и остается офлайн.",
+
+    // v2.0.0 Item 1
+    v200_i1_title: "Агентский Профиль и White-Label Инфраструктура для Агентств Недвижимости",
+    v200_i1_desc: "Запущен персональный Агентский Профиль и White-Label архитектура брендинга для агентств недвижимости.",
+    v200_i1_li1: "Полные Полномочия: Прямое проведение платежей, счетов и договоров с правами агентства без ожидания в очередях согласования.",
+    v200_i1_li2: "White-Label Брендинг: Обслуживание клиентов с собственным логотипом агентства, фирменными цветами и адаптивным интерфейсом.",
+    v200_i1_li3: "Приглашения в Один Клик: Быстрое добавление арендаторов и собственников по email с прозрачным контролем доступа.",
 
     // v1.3.0 Item 1
     v130_i1_title: "Облачная загрузка / Локальное хранение (Приоритет приватности)",
@@ -279,10 +319,55 @@ function ChangelogContent() {
       </header>
 
       <div className="relative pl-6 sm:pl-8 border-l border-gray-200 ml-1 sm:ml-2">
+        {/* SÜRÜM 2.0 */}
+        <div className="relative mb-16">
+          {/* dot */}
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow-[0_0_0_6px_rgba(37,99,235,0.2)]"></div>
+          
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="text-2xl font-bold text-gray-900">v2.0.0</span>
+            <span className="text-[13px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-semibold">
+              {tLocal("v2_0_0_date")}
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
+              {tLocal("latest")}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            {/* Item 1 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-xl">🏢</span>
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v200_i1_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  agency_profile
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v200_i1_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v200_i1_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v200_i1_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v200_i1_li3")}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         {/* SÜRÜM 1.3 */}
         <div className="relative mb-16">
           {/* dot */}
-          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-brand-blue border-4 border-white shadow-[0_0_0_6px_rgba(59,130,246,0.15)]"></div>
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-gray-400 border-4 border-white shadow-sm"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v1.3.0</span>
@@ -290,7 +375,7 @@ function ChangelogContent() {
               {tLocal("v1_3_0_date")}
             </span>
             <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full">
-              {tLocal("latest")}
+              {tLocal("stable")}
             </span>
           </div>
 

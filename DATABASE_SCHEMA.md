@@ -306,6 +306,31 @@ Ev sahibinin kiracıyı sisteme davet etmek için oluşturduğu tek kullanımlı
 
 ---
 
+### 2.10 `agency_demo_requests`
+Acentelerin landing page / web sitesi üzerinden gönderdiği demo taleplerini tutar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Demo talep benzersiz kimliği |
+| `agency_name` | `TEXT` | **NO** | - | - | Acente / şirket adı |
+| `email` | `TEXT` | **NO** | - | - | İletişim e-posta adresi |
+| `website` | `TEXT` | YES | `NULL` | - | Web sitesi URL |
+| `phone_number` | `TEXT` | YES | `NULL` | - | Telefon numarası |
+| `special_requests` | `TEXT` | YES | `NULL` | - | Özel istekler / notlar |
+| `status` | `TEXT` | YES | `'pending'` | - | Talep durumu (`pending`, `email_verified`, `contacted`, `approved`, `rejected`) |
+| `verification_token` | `UUID` | YES | `gen_random_uuid()` | - | E-posta doğrulama jetonu |
+| `is_email_verified` | `BOOLEAN` | YES | `false` | - | E-posta doğrulandı mı? |
+| `token_expires_at` | `TIMESTAMPTZ` | YES | `now() + 24 hours` | - | Jetonun geçerlilik bitiş zamanı |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma zamanı |
+| `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme zamanı |
+
+#### RLS Politikaları (`public.agency_demo_requests`)
+* **`agency_demo_requests_insert_policy`**: `FOR INSERT TO public WITH CHECK (true)` (Anonim ve giriş yapmış tüm kullanıcılar demo talebi gönderebilir)
+* **`agency_demo_requests_select_policy`**: `FOR SELECT TO public USING (true)` (Giriş yapmış veya anonim tüm kullanıcılar talepleri sorgulayabilir/döndürebilir)
+
+---
+
 ## 3. Görünümler (Views)
 
 ### 3.1 `properties_with_names`
