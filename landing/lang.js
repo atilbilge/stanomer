@@ -95,7 +95,7 @@ const translations = {
         "feature_4_desc": "Your tenant notifies you via the app when there's an issue. Nothing gets lost in messages.",
         "feature_5_title": "English, Turkish, Serbian, Russian",
         "feature_5_desc": "Have a foreign tenant? The app works in their language too.",
-        "agency_teaser_label": "For Real Estate Agencies",
+        "agency_teaser_label": "FOR REAL ESTATE AGENCIES",
         "agency_teaser_text": "Managing a real estate agency? White-label profile and full-access portfolio management →",
         "agency_teaser_link": "Explore Agency Profile",
         "footer_cta_title": "Start Today, Feel the Difference",
