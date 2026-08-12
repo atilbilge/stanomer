@@ -2,7 +2,7 @@
 
 import { LanguageProvider, useLanguage } from "../../components/LanguageProvider";
 import { LegalLayout } from "../../components/LegalLayout";
-import { Shield, Smartphone } from "lucide-react";
+import { Shield, Smartphone, Building2, Lock, Settings, BarChart3 } from "lucide-react";
 
 const changelogTranslations: Record<string, Record<string, string>> = {
   TR: {
@@ -338,7 +338,7 @@ function ChangelogContent() {
             {/* Item 1 */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xl">🏢</span>
+                <Building2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
                   {tLocal("v200_i1_title")}
                 </h3>
@@ -383,7 +383,7 @@ function ChangelogContent() {
             {/* Item 1 */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xl">🔒</span>
+                <Lock className="w-5 h-5 text-slate-700 flex-shrink-0" />
                 <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
                   {tLocal("v130_i1_title")}
                 </h3>
@@ -410,7 +410,7 @@ function ChangelogContent() {
             {/* Item 2 */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xl">⚙️</span>
+                <Settings className="w-5 h-5 text-slate-700 flex-shrink-0" />
                 <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
                   {tLocal("v130_i2_title")}
                 </h3>
@@ -441,7 +441,7 @@ function ChangelogContent() {
             {/* Item 3 */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xl">📊</span>
+                <BarChart3 className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
                   {tLocal("v130_i3_title")}
                 </h3>

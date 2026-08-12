@@ -23,6 +23,7 @@ import {
   Battery,
   Wrench,
   Camera,
+  ZoomIn,
   MessageCircle,
   AlertTriangle
 } from "lucide-react";
@@ -172,8 +173,9 @@ export function InteractiveFlow() {
             loading="lazy"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 bg-black/75 text-white text-[11px] font-semibold px-3 py-1.5 rounded-full backdrop-blur-md transition-opacity shadow-lg">
-              🔍 {lang === "TR" ? "Büyütmek için tıklayın" : lang === "RU" ? "Нажмите для увеличения" : lang === "SR_LAT" || lang === "SR_CYR" ? "Kliknite za uvećanje" : "Click to enlarge"}
+            <span className="opacity-0 group-hover:opacity-100 bg-black/75 text-white text-[11px] font-semibold px-3 py-1.5 rounded-full backdrop-blur-md transition-opacity shadow-lg flex items-center gap-1.5">
+              <ZoomIn className="w-3.5 h-3.5" />
+              <span>{lang === "TR" ? "Büyütmek için tıklayın" : lang === "RU" ? "Нажмите для увеличения" : lang === "SR_LAT" || lang === "SR_CYR" ? "Kliknite za uvećanje" : "Click to enlarge"}</span>
             </span>
           </div>
         </div>
