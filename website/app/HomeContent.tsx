@@ -151,30 +151,6 @@ export function HomeContent() {
       <InteractiveFlow />
 
 
-      {/* Trust Grid */}
-      <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
-        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">
-          {t("trust_label")}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
-            <Shield className="w-6 h-6 text-brand-blue mx-auto mb-3" />
-            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_1_title")}</h4>
-            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_1_desc")}</p>
-          </div>
-          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
-            <Cloud className="w-6 h-6 text-brand-blue mx-auto mb-3" />
-            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_2_title")}</h4>
-            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_2_desc")}</p>
-          </div>
-          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
-            <Heart className="w-6 h-6 text-brand-blue mx-auto mb-3" />
-            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_3_title")}</h4>
-            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_3_desc")}</p>
-          </div>
-        </div>
-      </section>
-
       {/* Features List */}
       <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
         <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">
@@ -199,6 +175,30 @@ export function HomeContent() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Grid */}
+      <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
+        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+          {t("trust_label")}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
+            <Shield className="w-6 h-6 text-brand-blue mx-auto mb-3" />
+            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_1_title")}</h4>
+            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_1_desc")}</p>
+          </div>
+          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
+            <Cloud className="w-6 h-6 text-brand-blue mx-auto mb-3" />
+            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_2_title")}</h4>
+            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_2_desc")}</p>
+          </div>
+          <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-xl p-5 text-center">
+            <Heart className="w-6 h-6 text-brand-blue mx-auto mb-3" />
+            <h4 className="text-[14px] font-bold text-gray-900 mb-2">{t("trust_3_title")}</h4>
+            <p className="text-[12px] text-gray-500 leading-normal">{t("trust_3_desc")}</p>
           </div>
         </div>
       </section>
