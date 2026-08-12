@@ -68,7 +68,7 @@ cp -r build/web/* build/web_dev/
 echo "Step 6: Building Next.js Website..."
 cd website
 npm install
-npm run build
+NEXT_PUBLIC_SUPABASE_URL="$PROD_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$PROD_KEY" npm run build
 cd ..
 
 # 7. Prepare Public Directory
