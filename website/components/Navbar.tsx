@@ -77,7 +77,7 @@ export function Navbar() {
 
   return (
     <nav className="h-[80px] flex items-center fixed top-0 w-full z-[1000] bg-white/80 backdrop-blur-[16px] border-b border-gray-200/80">
-      <div className="max-w-[680px] mx-auto px-6 w-full flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex justify-between items-center">
         {/* Logo */}
         <a href="/" className="flex items-center gap-[0.5rem] no-underline">
           <img src="/assets/logo.png" alt="Stanomer Logo" className="h-[32px] w-auto object-contain" style={{ height: "32px", width: "auto" }} />
