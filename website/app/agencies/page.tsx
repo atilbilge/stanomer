@@ -249,6 +249,28 @@ export default function AgenciesPage() {
         </div>
       </section>
 
+      {/* FOOTER */}
+      <footer className="py-12 border-t border-slate-200/80 bg-white w-full mt-auto">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="flex items-center justify-center gap-2 opacity-60 mb-6">
+            <img src="/assets/logo.png" alt="Stanomer Logo" className="w-6 h-6 object-contain" />
+            <span className="font-bold text-sm tracking-tight text-slate-900">Stanomer</span>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-xs font-medium text-slate-600">
+            <a href="/guide" className="hover:text-blue-600 transition-colors font-bold text-blue-600">{t("footer_guide")}</a>
+            <a href="/privacy" className="hover:text-blue-600 transition-colors">{t("footer_privacy")}</a>
+            <a href="/terms" className="hover:text-blue-600 transition-colors">{t("footer_terms")}</a>
+            <a href="/changelog" className="hover:text-blue-600 transition-colors">{t("footer_changelog")}</a>
+            <a href="/support" className="hover:text-blue-600 transition-colors">{t("footer_support")}</a>
+          </div>
+
+          <p className="text-slate-400 text-xs">
+            © 2026 Stanomer. {t("footer_rights")}
+          </p>
+        </div>
+      </footer>
+
     </div>
   );
 }
