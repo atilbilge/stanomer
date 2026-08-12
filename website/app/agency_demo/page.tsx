@@ -56,7 +56,7 @@ export default function AgencyDemoPage() {
 
       console.log("[Stanomer Agency Demo Payload]", payload);
 
-      const res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
+      let res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,6 +66,33 @@ export default function AgencyDemoPage() {
         },
         body: JSON.stringify(payload)
       });
+
+      // Fallback: If DB schema cache does not have UTM columns yet, retry without UTM params
+      if (!res.ok && res.status === 400) {
+        try {
+          const errText = await res.clone().text();
+          if (errText.includes("utm_") || errText.includes("schema cache")) {
+            console.warn("[Stanomer Agency Demo] UTM columns missing in target DB schema, retrying without UTM fields...");
+            const fallbackPayload = { ...payload };
+            delete fallbackPayload.utm_source;
+            delete fallbackPayload.utm_medium;
+            delete fallbackPayload.utm_campaign;
+
+            res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": supabaseKey,
+                "Authorization": `Bearer ${supabaseKey}`,
+                "Prefer": "return=representation"
+              },
+              body: JSON.stringify(fallbackPayload)
+            });
+          }
+        } catch (e) {
+          // Ignore clone/text parse errors and proceed to normal status handling
+        }
+      }
 
       if (res.ok || res.status === 201) {
         const data = await res.json();
