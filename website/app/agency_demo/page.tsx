@@ -36,7 +36,7 @@ export default function AgencyDemoPage() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://thvbpifahvasyzmngpzp.supabase.co";
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
 
-      const utm = getStoredUtmParams();
+      const utm = captureUtmParams();
 
       const payload: Record<string, any> = {
         agency_name: formData.agencyName,
@@ -49,11 +49,10 @@ export default function AgencyDemoPage() {
         phone_number: formData.phoneNumber || null,
         special_requests: formData.specialRequests || null,
         status: "pending",
+        utm_source: utm.utm_source || null,
+        utm_medium: utm.utm_medium || null,
+        utm_campaign: utm.utm_campaign || null,
       };
-
-      if (utm.utm_source) payload.utm_source = utm.utm_source;
-      if (utm.utm_medium) payload.utm_medium = utm.utm_medium;
-      if (utm.utm_campaign) payload.utm_campaign = utm.utm_campaign;
 
       const res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
         method: "POST",
