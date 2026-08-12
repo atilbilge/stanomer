@@ -38,6 +38,23 @@ export default function AgencyDemoPage() {
 
       const utm = getStoredUtmParams();
 
+      const payload: Record<string, any> = {
+        agency_name: formData.agencyName,
+        email: formData.email.toLowerCase().trim(),
+        website: formData.website
+          ? (/^https?:\/\//i.test(formData.website.trim())
+              ? formData.website.trim()
+              : `https://${formData.website.trim()}`)
+          : null,
+        phone_number: formData.phoneNumber || null,
+        special_requests: formData.specialRequests || null,
+        status: "pending",
+      };
+
+      if (utm.utm_source) payload.utm_source = utm.utm_source;
+      if (utm.utm_medium) payload.utm_medium = utm.utm_medium;
+      if (utm.utm_campaign) payload.utm_campaign = utm.utm_campaign;
+
       const res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
         method: "POST",
         headers: {
@@ -46,21 +63,7 @@ export default function AgencyDemoPage() {
           "Authorization": `Bearer ${supabaseKey}`,
           "Prefer": "return=representation"
         },
-        body: JSON.stringify({
-          agency_name: formData.agencyName,
-          email: formData.email.toLowerCase().trim(),
-          website: formData.website
-            ? (/^https?:\/\//i.test(formData.website.trim())
-                ? formData.website.trim()
-                : `https://${formData.website.trim()}`)
-            : null,
-          phone_number: formData.phoneNumber || null,
-          special_requests: formData.specialRequests || null,
-          status: "pending",
-          utm_source: utm.utm_source,
-          utm_medium: utm.utm_medium,
-          utm_campaign: utm.utm_campaign,
-        })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok || res.status === 201) {

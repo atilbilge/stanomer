@@ -45,3 +45,6 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4. Notify PostgREST to reload schema cache
+NOTIFY pgrst, 'reload schema';
