@@ -76,7 +76,7 @@ const translations = {
         "step_2_desc": "Send a link to your tenant's phone, and they'll join the app.",
         "step_3_title": "Enjoy peace of mind",
         "step_3_desc": "Approve with one tap when rent is paid. Stanomer handles the rest.",
-        "trust_label": "Security and convenience",
+        "trust_label": "SECURITY AND CONVENIENCE",
         "trust_1_title": "Your data is safe",
         "trust_1_desc": "No one can see your data without your permission",
         "trust_2_title": "Safe even if phone breaks",
