@@ -35,7 +35,7 @@ export default function AgenciesPage() {
               {t("agencies_hero_subtitle")}
             </p>
 
-            {/* Side-by-Side CTA Buttons */}
+            {/* CTA Button */}
             <div className="pt-4 flex flex-col sm:flex-row gap-4 sm:items-center">
               <Link
                 href="/agency-demo"
@@ -43,14 +43,6 @@ export default function AgenciesPage() {
               >
                 <span>{t("agencies_cta_demo")}</span>
                 <ArrowRight className="w-5 h-5" />
-              </Link>
-
-              <Link
-                href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2 px-7 py-4 rounded-xl text-slate-800 bg-white hover:bg-slate-100 border border-slate-300 font-semibold text-base shadow-sm transition-all hover:border-slate-400"
-              >
-                <span>{t("agencies_cta_free")}</span>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
             </div>
           </div>
@@ -244,20 +236,13 @@ export default function AgenciesPage() {
               {t("agencies_bottom_title")}
             </h2>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <div className="flex justify-center">
               <Link
                 href="/agency-demo"
                 className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-500 font-bold text-base shadow-xl shadow-blue-600/30 transition"
               >
                 <span>{t("agencies_cta_demo")}</span>
                 <ArrowRight className="w-5 h-5" />
-              </Link>
-
-              <Link
-                href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-slate-200 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 font-semibold text-base transition"
-              >
-                <span>{t("agencies_cta_free")}</span>
               </Link>
             </div>
           </div>
