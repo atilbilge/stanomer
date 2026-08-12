@@ -203,6 +203,21 @@ export function HomeContent() {
         </div>
       </section>
 
+      {/* Agency Teaser Banner */}
+      <section className="max-w-[680px] mx-auto px-6 py-3 w-full">
+        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white backdrop-blur-[16px] border border-blue-200/80 rounded-2xl p-5 text-center text-[14px] text-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="font-medium text-slate-700 text-center sm:text-left">
+            {t("agency_teaser_text")}
+          </span>
+          <Link
+            href="/agencies"
+            className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-sm whitespace-nowrap flex-shrink-0"
+          >
+            {t("agency_teaser_link")}
+          </Link>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="max-w-[680px] mx-auto px-6 py-12 w-full">
         <div className="bg-white/80 backdrop-blur-[16px] border border-gray-200 rounded-3xl p-10 text-center shadow-xl">
