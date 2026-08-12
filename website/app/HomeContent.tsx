@@ -174,25 +174,25 @@ export function HomeContent() {
                     <Building2 className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900">Beograd Daire 12</p>
-                    <p className="text-[10px] text-slate-500 font-medium">Milan Jovanović • Aktif Kiracı</p>
+                    <p className="text-xs font-bold text-slate-900">{t("hero_mockup_title")}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{t("hero_mockup_subtitle")}</p>
                   </div>
                 </div>
                 <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-200/80 inline-flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Aktif Kontrat
+                  {t("hero_mockup_contract_badge")}
                 </span>
               </div>
 
               {/* Property Stats & Status */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-[10px] text-slate-500 font-semibold">Aylık Kira</p>
-                  <p className="text-base font-extrabold text-slate-900">€650 <span className="text-[10px] text-emerald-600 font-bold ml-1">✓ Ödendi</span></p>
+                  <p className="text-[10px] text-slate-500 font-semibold">{t("hero_mockup_monthly_rent")}</p>
+                  <p className="text-base font-extrabold text-slate-900">€650 <span className="text-[10px] text-emerald-600 font-bold ml-1">{t("hero_mockup_paid")}</span></p>
                 </div>
                 <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100">
-                  <p className="text-[10px] text-blue-600 font-semibold">Kontrat Süresi</p>
-                  <p className="text-base font-extrabold text-blue-700">234 Gün Kalan</p>
+                  <p className="text-[10px] text-blue-600 font-semibold">{t("hero_mockup_duration_label")}</p>
+                  <p className="text-base font-extrabold text-blue-700">{t("hero_mockup_days_left")}</p>
                 </div>
               </div>
 
@@ -200,18 +200,18 @@ export function HomeContent() {
               <div className="bg-slate-900 text-white rounded-xl p-3.5 shadow-lg space-y-2 border border-slate-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-200">Ağustos 2026 Kira Ödemesi</span>
+                    <span className="text-xs font-bold text-slate-200">{t("hero_mockup_payment_title")}</span>
                   </div>
                   <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">
-                    Onaylandı
+                    {t("hero_mockup_confirmed")}
                   </span>
                 </div>
                 <div className="bg-slate-800/90 p-2.5 rounded-lg text-xs space-y-1">
                   <div className="flex justify-between text-[10px] text-slate-300">
-                    <span>Dekont Numarası: #TRX-8921</span>
-                    <span>12 Ağustos 2026</span>
+                    <span>{t("hero_mockup_receipt_no")}</span>
+                    <span>{t("hero_mockup_date")}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-emerald-300">€650 banka transferi onaylandı</p>
+                  <p className="text-[11px] font-semibold text-emerald-300">{t("hero_mockup_transfer_confirmed")}</p>
                 </div>
               </div>
 
@@ -222,12 +222,12 @@ export function HomeContent() {
                     <Wrench className="w-3.5 h-3.5 text-amber-800" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-amber-950">Kombi Yıllık Bakımı</p>
-                    <p className="text-[10px] text-amber-700">Teknisyen randevusu tamamlandı</p>
+                    <p className="text-[11px] font-bold text-amber-950">{t("hero_mockup_maint_title")}</p>
+                    <p className="text-[10px] text-amber-700">{t("hero_mockup_maint_desc")}</p>
                   </div>
                 </div>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                  Tamamlandı
+                  {t("hero_mockup_completed")}
                 </span>
               </div>
 
