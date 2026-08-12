@@ -204,7 +204,10 @@ export function HomeContent() {
       </section>
 
       {/* Agency Teaser Banner */}
-      <section className="max-w-[680px] mx-auto px-6 py-3 w-full">
+      <section className="max-w-[680px] mx-auto px-6 py-6 w-full">
+        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+          {t("agency_teaser_label")}
+        </div>
         <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white backdrop-blur-[16px] border border-blue-200/80 rounded-2xl p-5 text-center text-[14px] text-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="font-medium text-slate-700 text-center sm:text-left">
             {t("agency_teaser_text")}
