@@ -54,6 +54,8 @@ export default function AgencyDemoPage() {
         utm_campaign: utm.utm_campaign || null,
       };
 
+      console.log("[Stanomer Agency Demo Payload]", payload);
+
       const res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
         method: "POST",
         headers: {

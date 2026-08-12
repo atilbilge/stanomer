@@ -81,9 +81,15 @@ export function getStoredUtmParams(): UtmParams {
     localStorage.getItem(STORAGE_KEYS.CAMPAIGN) ||
     null;
 
-  return {
+  const result = {
     utm_source: source,
     utm_medium: medium,
     utm_campaign: campaign,
   };
+
+  if (source || medium || campaign) {
+    console.log("[Stanomer UTM Captured]", result);
+  }
+
+  return result;
 }
