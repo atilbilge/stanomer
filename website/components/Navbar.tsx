@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLanguage, Language } from "./LanguageProvider";
+import { captureUtmParams } from "../lib/utm";
 
 const belgradeGuideRoutes: Record<Language, string> = {
   TR: "/guide/belgrad-kiralik-daire-rehberi",
@@ -40,6 +41,10 @@ export function Navbar() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    captureUtmParams();
+  }, []);
 
   const isBeliKartonGuide = !!pathname && (
     pathname.includes("beli-karton") ||

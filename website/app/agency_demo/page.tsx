@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
+import { captureUtmParams, getStoredUtmParams } from "../../lib/utm";
 
 export default function AgencyDemoPage() {
   const { lang, t } = useLanguage();
@@ -22,6 +23,10 @@ export default function AgencyDemoPage() {
 
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
+  useEffect(() => {
+    captureUtmParams();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -30,6 +35,8 @@ export default function AgencyDemoPage() {
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ustcsvvkzsmsgzbptvpm.supabase.co";
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g";
+
+      const utm = getStoredUtmParams();
 
       const res = await fetch(`${supabaseUrl}/rest/v1/agency_demo_requests`, {
         method: "POST",
@@ -49,7 +56,10 @@ export default function AgencyDemoPage() {
             : null,
           phone_number: formData.phoneNumber || null,
           special_requests: formData.specialRequests || null,
-          status: "pending"
+          status: "pending",
+          utm_source: utm.utm_source,
+          utm_medium: utm.utm_medium,
+          utm_campaign: utm.utm_campaign,
         })
       });
 
