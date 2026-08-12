@@ -53,12 +53,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     company_name TEXT,
     logo_url TEXT,
     color_scheme JSONB DEFAULT '{}'::jsonb,
+    utm_source TEXT DEFAULT NULL,
+    utm_medium TEXT DEFAULT NULL,
+    utm_campaign TEXT DEFAULT NULL,
     updated_at TIMESTAMPTZ DEFAULT now(),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS company_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS color_scheme JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_source TEXT DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_medium TEXT DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_campaign TEXT DEFAULT NULL;
 
 CREATE TABLE IF NOT EXISTS public.properties (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -558,17 +564,32 @@ CREATE POLICY "users_view_invited_properties_by_token" ON public.properties FOR 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, role, email, active_role)
+    INSERT INTO public.profiles (
+        id, 
+        full_name, 
+        role, 
+        email, 
+        active_role,
+        utm_source,
+        utm_medium,
+        utm_campaign
+    )
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role, 'landlord'),
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'role', 'landlord')
+        COALESCE(NEW.raw_user_meta_data->>'role', 'landlord'),
+        NEW.raw_user_meta_data->>'utm_source',
+        NEW.raw_user_meta_data->>'utm_medium',
+        NEW.raw_user_meta_data->>'utm_campaign'
     )
     ON CONFLICT (id) DO UPDATE
     SET full_name = EXCLUDED.full_name,
-        email = EXCLUDED.email;
+        email = EXCLUDED.email,
+        utm_source = COALESCE(EXCLUDED.utm_source, public.profiles.utm_source),
+        utm_medium = COALESCE(EXCLUDED.utm_medium, public.profiles.utm_medium),
+        utm_campaign = COALESCE(EXCLUDED.utm_campaign, public.profiles.utm_campaign);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -1007,6 +1028,9 @@ CREATE TABLE IF NOT EXISTS public.agency_demo_requests (
     verification_token UUID DEFAULT gen_random_uuid(),
     is_email_verified BOOLEAN DEFAULT FALSE,
     token_expires_at TIMESTAMPTZ DEFAULT (now() + interval '24 hours'),
+    utm_source TEXT DEFAULT NULL,
+    utm_medium TEXT DEFAULT NULL,
+    utm_campaign TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -1014,6 +1038,9 @@ CREATE TABLE IF NOT EXISTS public.agency_demo_requests (
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS verification_token UUID DEFAULT gen_random_uuid();
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS is_email_verified BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ DEFAULT (now() + interval '24 hours');
+ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_source TEXT DEFAULT NULL;
+ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_medium TEXT DEFAULT NULL;
+ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_campaign TEXT DEFAULT NULL;
 
 ALTER TABLE public.agency_demo_requests ENABLE ROW LEVEL SECURITY;
 

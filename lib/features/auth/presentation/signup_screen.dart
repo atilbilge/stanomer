@@ -13,6 +13,7 @@ import '../../../core/widgets/bottom_sheet_wrapper.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
+import '../../../core/utils/utm_tracker.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -56,8 +57,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
+      UtmTracker.captureFromUri();
       final repo = ref.read(authRepositoryProvider);
-      await repo.signUp(_emailController.text.trim(), _passwordController.text.trim(), '127.0.0.1', _nameController.text.trim());
+      await repo.signUp(
+        _emailController.text.trim(), 
+        _passwordController.text.trim(), 
+        '127.0.0.1', 
+        _nameController.text.trim(),
+        utmSource: UtmTracker.utmSource,
+        utmMedium: UtmTracker.utmMedium,
+        utmCampaign: UtmTracker.utmCampaign,
+      );
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

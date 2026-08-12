@@ -24,7 +24,16 @@ class AuthRepository {
     return _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<AuthResponse> signUp(String email, String password, String ipAddress, String fullName, {String? role}) async {
+  Future<AuthResponse> signUp(
+    String email, 
+    String password, 
+    String ipAddress, 
+    String fullName, {
+    String? role,
+    String? utmSource,
+    String? utmMedium,
+    String? utmCampaign,
+  }) async {
     return _client.auth.signUp(
       email: email, 
       password: password,
@@ -33,8 +42,32 @@ class AuthRepository {
         'full_name': fullName,
         'zzpl_document_version': 'v1.0',
         'zzpl_ip_address': ipAddress,
+        if (utmSource != null) 'utm_source': utmSource,
+        if (utmMedium != null) 'utm_medium': utmMedium,
+        if (utmCampaign != null) 'utm_campaign': utmCampaign,
       },
     );
+  }
+
+  Future<void> updateProfileUtmParams({
+    required String userId,
+    String? utmSource,
+    String? utmMedium,
+    String? utmCampaign,
+  }) async {
+    if (utmSource == null && utmMedium == null && utmCampaign == null) return;
+    try {
+      final updates = <String, dynamic>{};
+      if (utmSource != null) updates['utm_source'] = utmSource;
+      if (utmMedium != null) updates['utm_medium'] = utmMedium;
+      if (utmCampaign != null) updates['utm_campaign'] = utmCampaign;
+
+      if (updates.isNotEmpty) {
+        await _client.from('profiles').update(updates).eq('id', userId);
+      }
+    } catch (e) {
+      debugPrint('Error updating profile UTM params: $e');
+    }
   }
 
   // We rely on Supabase DB Trigger to insert the consent row using the metadata 

@@ -62,6 +62,9 @@ Kullanıcıların profil, kimlik ve rol bilgilerini saklar. `auth.users` ile Bir
 | `company_name` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente şirket adı (beyaz etiket branding) |
 | `logo_url` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente logo URL'si |
 | `color_scheme` | `JSONB` | YES | `'{}'::jsonb` | - | **[YENİ]** Acente renk şeması JSON (`primary`, `accent`, `brand_gold`, `bg_white`, `text_primary`, `border`) |
+| `utm_source` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kaynak bilgisi (örn. `google`, `facebook`) |
+| `utm_medium` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM mecrası (örn. `cpc`, `email`) |
+| `utm_campaign` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kampanya adı (örn. `summer_promo`) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
 
@@ -322,6 +325,9 @@ Acentelerin landing page / web sitesi üzerinden gönderdiği demo taleplerini t
 | `verification_token` | `UUID` | YES | `gen_random_uuid()` | - | E-posta doğrulama jetonu |
 | `is_email_verified` | `BOOLEAN` | YES | `false` | - | E-posta doğrulandı mı? |
 | `token_expires_at` | `TIMESTAMPTZ` | YES | `now() + 24 hours` | - | Jetonun geçerlilik bitiş zamanı |
+| `utm_source` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kaynak bilgisi |
+| `utm_medium` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM mecrası |
+| `utm_campaign` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kampanya adı |
 | `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme zamanı |
 

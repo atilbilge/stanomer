@@ -12,6 +12,7 @@ import '../../../core/theme/colors.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
+import '../../../core/utils/utm_tracker.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -44,8 +45,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      UtmTracker.captureFromUri();
       final repo = ref.read(authRepositoryProvider);
-      await repo.signIn(_emailController.text.trim(), _passwordController.text.trim());
+      final res = await repo.signIn(_emailController.text.trim(), _passwordController.text.trim());
+      if (res.user != null) {
+        await repo.updateProfileUtmParams(
+          userId: res.user!.id,
+          utmSource: UtmTracker.utmSource,
+          utmMedium: UtmTracker.utmMedium,
+          utmCampaign: UtmTracker.utmCampaign,
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

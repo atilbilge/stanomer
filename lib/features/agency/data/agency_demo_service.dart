@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/utils/utm_tracker.dart';
+
 final agencyDemoServiceProvider = Provider((ref) => AgencyDemoService());
 
 class AgencyDemoService {
@@ -16,8 +18,16 @@ class AgencyDemoService {
     String? website,
     String? phoneNumber,
     String? specialRequests,
+    String? utmSource,
+    String? utmMedium,
+    String? utmCampaign,
   }) async {
     try {
+      UtmTracker.captureFromUri();
+      final src = utmSource ?? UtmTracker.utmSource;
+      final med = utmMedium ?? UtmTracker.utmMedium;
+      final cmp = utmCampaign ?? UtmTracker.utmCampaign;
+
       await _supabase.from('agency_demo_requests').insert({
         'agency_name': agencyName.trim(),
         'email': email.trim().toLowerCase(),
@@ -25,6 +35,9 @@ class AgencyDemoService {
         'phone_number': phoneNumber?.trim(),
         'special_requests': specialRequests?.trim(),
         'status': 'pending',
+        'utm_source': src,
+        'utm_medium': med,
+        'utm_campaign': cmp,
       });
       return true;
     } catch (e) {
