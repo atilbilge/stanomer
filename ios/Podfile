@@ -50,12 +50,12 @@ post_install do |installer|
     end
   end
   installer.pods_project.targets.each do |target|
+    next unless target.name == 'Pods-Runner'
     target.build_phases.each do |phase|
-      next unless phase.respond_to?(:files)
-      dups = phase.files.select { |f| f.display_name == 'RevenueCat_RevenueCatUI.bundle' }
-      if dups.length > 1
-        dups[1..].each { |f| phase.remove_build_file(f) }
-      end
+      next unless phase.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
+      next unless phase.name&.include?('Copy Pods Resources')
+      phase.input_paths.reject!  { |p| p.include?('RevenueCat_RevenueCatUI') }
+      phase.output_paths.reject! { |p| p.include?('RevenueCat_RevenueCatUI') }
     end
   end
 end
