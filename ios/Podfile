@@ -50,18 +50,42 @@ post_install do |installer|
     end
   end
   # RevenueCat_RevenueCatUI.bundle is produced by BOTH CocoaPods AND SPM.
-  # Nuclear fix: empty all build phases of the CocoaPods bundle target.
-  installer.pods_project.targets.each do |target|
-    if target.name == 'RevenueCatUI-RevenueCat_RevenueCatUI'
-      target.build_phases.clear
+  # Remove the CocoaPods bundle target completely so only SPM provides it.
+  target_to_remove = installer.pods_project.targets.find do |t|
+    t.name == 'RevenueCatUI-RevenueCat_RevenueCatUI'
+  end
+  if target_to_remove
+    product_ref = target_to_remove.product_reference
+    # Remove the native target itself
+    target_to_remove.remove_from_project
+    # Remove the product file reference (.bundle)
+    product_ref&.remove_from_project
+    # Remove any build file entries that referenced the removed product
+    installer.pods_project.targets.each do |t|
+      t.build_phases.each do |phase|
+        next unless phase.respond_to?(:files)
+        phase.files.to_a.each do |f|
+          if f.display_name.to_s.include?('RevenueCat_RevenueCatUI')
+            phase.remove_build_file(f)
+          end
+        end
+      end
+      # Strip from shell script input/output paths
+      t.build_phases.each do |phase|
+        next unless phase.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
+        phase.input_paths.reject!  { |p| p.to_s.include?('RevenueCat_RevenueCatUI') }
+        phase.output_paths.reject! { |p| p.to_s.include?('RevenueCat_RevenueCatUI') }
+      end
     end
-    next unless target.name == 'Pods-Runner'
-    target.build_phases.each do |phase|
-      next unless phase.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
-      phase.input_paths.reject!  { |p| p.to_s.include?('RevenueCat_RevenueCatUI') }
-      phase.output_paths.reject! { |p| p.to_s.include?('RevenueCat_RevenueCatUI') }
+    # Remove any container item proxy or target dependency pointing to old target
+    installer.pods_project.root_object.targets.to_a.each do |t|
+      next unless t.respond_to?(:dependencies)
+      t.dependencies.reject! { |d| d.respond_to?(:name) && d.name.to_s.include?('RevenueCat_RevenueCatUI') }
     end
+    installer.pods_project.save
   end
 end
+
+
 
 
