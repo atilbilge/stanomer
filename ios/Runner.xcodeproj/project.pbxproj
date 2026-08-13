@@ -555,6 +555,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aboptima.stanomer;
+				DEVELOPMENT_TEAM = HNFV6KKZP8;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -695,6 +696,7 @@
 			baseConfigurationReference = 77AEBF1151F163D8F75B391E /* prodRelease.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				DEVELOPMENT_TEAM = HNFV6KKZP8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Release-prod";
@@ -704,6 +706,7 @@
 			baseConfigurationReference = 95CC96B7C56C508BDFA52D5F /* devProfile.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				DEVELOPMENT_TEAM = HNFV6KKZP8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Profile-dev";
@@ -713,6 +716,7 @@
 			baseConfigurationReference = 0E0D1146B53C8293590A7BF1 /* devDebug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				DEVELOPMENT_TEAM = HNFV6KKZP8;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
@@ -1189,6 +1193,7 @@
 			baseConfigurationReference = D4BE0B9494F36FE23151B8F8 /* devRelease.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				DEVELOPMENT_TEAM = HNFV6KKZP8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Release-dev";
