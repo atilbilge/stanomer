@@ -14,6 +14,7 @@ import 'widgets/google_sign_in_button.dart';
 import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
 import '../../../core/utils/utm_tracker.dart';
+import '../../../core/config/env_config.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
