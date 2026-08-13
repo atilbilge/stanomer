@@ -10,7 +10,7 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>stanomer://invite</string>
+		<string>applinks:stanomer.online</string>
 	</array>
 </dict>
 </plist>
