@@ -49,5 +49,15 @@ post_install do |installer|
       config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
     end
   end
+  installer.pods_project.targets.each do |target|
+    target.build_phases.each do |phase|
+      next unless phase.respond_to?(:files)
+      dups = phase.files.select { |f| f.display_name == 'RevenueCat_RevenueCatUI.bundle' }
+      if dups.length > 1
+        dups[1..].each { |f| phase.remove_build_file(f) }
+      end
+    end
+  end
 end
+
 
