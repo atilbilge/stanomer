@@ -16,9 +16,6 @@ class F {
     if (cliFlavor.toLowerCase() == 'dev') return Flavor.dev;
     if (cliFlavor.toLowerCase() == 'prod') return Flavor.prod;
 
-    // Fallback based on EnvConfig
-    if (EnvConfig.isDev) return Flavor.dev;
-
     // Default fallback to Production
     return Flavor.prod;
   }
