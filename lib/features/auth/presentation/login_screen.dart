@@ -105,6 +105,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.signInWithApple();
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        // User canceled, no error needed
+        return;
+      }
+      if (mounted) {
+        final message = e.code == AuthorizationErrorCode.unknown
+            ? 'Apple ile giriş için Simülatör ayarlarından Apple ID ile oturum açılmalı veya gerçek cihazda test edilmelidir.'
+            : 'Apple ile giriş yapılırken bir hata oluştu.';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(message),
+          backgroundColor: StanomerColors.alertPrimary,
+        ));
+      }
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

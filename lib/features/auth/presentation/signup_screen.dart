@@ -11,6 +11,7 @@ import '../../../core/widgets/app_logo.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
 import 'widgets/google_sign_in_button.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
 import '../../../core/utils/utm_tracker.dart';
@@ -143,6 +144,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.signInWithApple();
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        // User canceled, no error needed
+        return;
+      }
+      if (mounted) {
+        final message = e.code == AuthorizationErrorCode.unknown
+            ? 'Apple ile giriş için Simülatör ayarlarından Apple ID ile oturum açılmalı veya gerçek cihazda test edilmelidir.'
+            : 'Apple ile giriş yapılırken bir hata oluştu.';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(message),
+          backgroundColor: StanomerColors.alertPrimary,
+        ));
+      }
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
