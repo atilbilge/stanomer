@@ -1,7 +1,7 @@
 -- ============================================================================
 -- STANOMER DEV DATABASE SETUP SCRIPT (COMPLETE & EXACT SCHEMA)
 -- Safely sets up public schema, ENUMs, tables, RLS, Realtime & Functions
--- Last Updated: 2026-07-29 — Added B2B2C Agency Support
+-- Last Updated: 2026-08-13 — Added email_unsubscribes table
 -- ============================================================================
 
 -- 1. ENUM TYPES
@@ -1088,4 +1088,25 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.verify_agency_demo_token(UUID) TO anon, authenticated;
 
+-- EMAIL_UNSUBSCRIBES TABLE (2026-08-13)
+CREATE TABLE IF NOT EXISTS public.email_unsubscribes (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email           TEXT NOT NULL,
+    unsubscribed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    source          TEXT DEFAULT 'unsubscribe_page',
+    ip_address      TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
+CREATE UNIQUE INDEX IF NOT EXISTS email_unsubscribes_email_idx
+    ON public.email_unsubscribes (lower(email));
+
+ALTER TABLE public.email_unsubscribes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "email_unsubscribes_insert_policy" ON public.email_unsubscribes;
+CREATE POLICY "email_unsubscribes_insert_policy" ON public.email_unsubscribes
+    FOR INSERT TO public WITH CHECK (true);
+
+DROP POLICY IF EXISTS "email_unsubscribes_select_policy" ON public.email_unsubscribes;
+CREATE POLICY "email_unsubscribes_select_policy" ON public.email_unsubscribes
+    FOR SELECT TO authenticated USING (true);

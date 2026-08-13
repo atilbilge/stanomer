@@ -1,4 +1,11 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, key);
+}
 
 export async function POST(request: Request) {
   try {
@@ -29,25 +36,40 @@ export async function POST(request: Request) {
     );
 
     // 204 = success (no content), 404 = contact not found (still treat as success)
-    if (brevoResponse.status === 204 || brevoResponse.status === 404) {
-      return NextResponse.json({
-        success: true,
-        message: "E-posta listemizden başarıyla çıkarıldınız.",
-      });
-    }
+    const brevoOk =
+      brevoResponse.status === 204 ||
+      brevoResponse.status === 404 ||
+      brevoResponse.ok;
 
-    const brevoData = await brevoResponse.json().catch(() => ({}));
-
-    if (!brevoResponse.ok) {
+    if (!brevoOk) {
+      const brevoData = await brevoResponse.json().catch(() => ({}));
       console.error("Brevo Unsubscribe Error:", brevoData);
       return NextResponse.json(
         {
           success: false,
-          message: brevoData.message || "Bir hata oluştu.",
+          message: (brevoData as any).message || "Bir hata oluştu.",
           details: brevoData,
         },
         { status: brevoResponse.status }
       );
+    }
+
+    // Supabase: kayıt al (duplicate email'e sessizce geç)
+    try {
+      const supabase = getSupabaseClient();
+      const ip =
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      await supabase.from("email_unsubscribes").upsert(
+        {
+          email: email.toLowerCase(),
+          source: "unsubscribe_page",
+          ip_address: ip,
+        },
+        { onConflict: "email", ignoreDuplicates: true }
+      );
+    } catch (dbErr) {
+      // DB hatası kullanıcıya gösterilmez, sadece logla
+      console.error("Supabase unsubscribe insert error:", dbErr);
     }
 
     return NextResponse.json({
