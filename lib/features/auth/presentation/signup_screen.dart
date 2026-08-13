@@ -426,7 +426,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       color: StanomerColors.textPrimary,
                     ),
                   ),
-                  if (kDebugMode) ...[
+                  if (EnvConfig.isDev) ...[
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
