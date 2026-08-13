@@ -161,4 +161,5 @@ flavorizr:
       ios:
         bundleId: "com.aboptima.stanomer"
       icon: "assets/icons/icon_prod.png"
-
+dependency_overrides:
+  google_sign_in_ios: 5.7.7
