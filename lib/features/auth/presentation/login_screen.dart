@@ -10,6 +10,7 @@ import '../../../core/widgets/language_picker.dart';
 import '../../../core/widgets/app_logo.dart';
 import '../../../core/theme/colors.dart';
 import 'widgets/google_sign_in_button.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
 import '../../../core/utils/utm_tracker.dart';
