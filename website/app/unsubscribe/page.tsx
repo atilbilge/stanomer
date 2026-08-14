@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useLanguage } from "../../components/LanguageProvider";
+import { supabase } from "../../lib/supabaseClient";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -15,22 +16,51 @@ function UnsubscribeContent() {
   const { t } = useLanguage();
 
   const handleUnsubscribe = async () => {
-    if (!email) return;
+    if (!email || !email.includes("@")) return;
     setStatus("loading");
     try {
-      const res = await fetch("/api/unsubscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-        setMessage(data.message || t("error_msg"));
+      // 1. Supabase'e kaydet (Client-side insert via anon key - works on static export)
+      try {
+        const { error: dbError } = await supabase
+          .from("email_unsubscribes")
+          .insert({
+            email: email.toLowerCase(),
+            source: "unsubscribe_page",
+          });
+
+        if (dbError && dbError.code !== "23505") {
+          console.error("Supabase unsubscribe insert error:", dbError);
+        }
+      } catch (dbErr) {
+        console.error("Supabase exception:", dbErr);
       }
-    } catch {
+
+      // 2. Brevo'da kara listeye al (Client-side API call if key available)
+      const brevoApiKey =
+        process.env.NEXT_PUBLIC_BREVO_API_KEY || process.env.BREVO_API_KEY;
+
+      if (brevoApiKey) {
+        try {
+          await fetch(
+            `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
+            {
+              method: "PUT",
+              headers: {
+                accept: "application/json",
+                "content-type": "application/json",
+                "api-key": brevoApiKey,
+              },
+              body: JSON.stringify({ emailBlacklisted: true }),
+            }
+          );
+        } catch (brevoErr) {
+          console.error("Brevo API error:", brevoErr);
+        }
+      }
+
+      setStatus("success");
+    } catch (err) {
+      console.error("Unsubscribe error:", err);
       setStatus("error");
       setMessage(t("error_msg"));
     }
