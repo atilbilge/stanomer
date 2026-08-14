@@ -24,9 +24,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const params = new URLSearchParams(window.location.search);
       const urlLangRaw = params.get("lang") || params.get("locale");
       if (urlLangRaw) {
-        const urlLang = urlLangRaw.toUpperCase().replace("-", "_") as Language;
+        let urlLang = urlLangRaw.toUpperCase().replace("-", "_");
+        if (urlLang === "SR" || urlLang === "RS" || urlLang === "SRB") urlLang = "SR_LAT";
         if (["TR", "EN", "SR_LAT", "SR_CYR", "RU"].includes(urlLang)) {
-          setLang(urlLang);
+          setLang(urlLang as Language);
           localStorage.setItem("stanomer_lang", urlLang);
           return;
         }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useLanguage } from "../../components/LanguageProvider";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -11,6 +12,7 @@ function UnsubscribeContent() {
   const email = searchParams.get("email") || "";
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const { t } = useLanguage();
 
   const handleUnsubscribe = async () => {
     if (!email) return;
@@ -26,11 +28,11 @@ function UnsubscribeContent() {
         setStatus("success");
       } else {
         setStatus("error");
-        setMessage(data.message || "Bir hata oluştu.");
+        setMessage(data.message || t("error_msg"));
       }
     } catch {
       setStatus("error");
-      setMessage("Bağlantı hatası. Lütfen tekrar deneyin.");
+      setMessage(t("error_msg"));
     }
   };
 
@@ -68,11 +70,10 @@ function UnsubscribeContent() {
                 </div>
 
                 <h1 className="text-xl font-bold text-slate-800 mb-2">
-                  E-posta Aboneliğini İptal Et
+                  {t("unsub_title")}
                 </h1>
                 <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-                  Aşağıdaki e-posta adresini tüm Stanomer bülten ve bildirim
-                  listelerinden çıkarmak istediğinizi onaylıyor musunuz?
+                  {t("unsub_desc")}
                 </p>
 
                 {email ? (
@@ -84,7 +85,7 @@ function UnsubscribeContent() {
                 ) : (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-8">
                     <span className="text-red-500 text-sm">
-                      E-posta adresi bulunamadı.
+                      {t("unsub_no_email")}
                     </span>
                   </div>
                 )}
@@ -94,12 +95,11 @@ function UnsubscribeContent() {
                   disabled={!email}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 text-sm shadow-sm hover:shadow-md active:scale-[0.98]"
                 >
-                  Aboneliği İptal Et
+                  {t("unsub_btn")}
                 </button>
 
                 <p className="text-xs text-slate-400 mt-4">
-                  Bu işlem geri alınamaz. Tekrar abone olmak için
-                  uygulamayı kullanabilirsiniz.
+                  {t("unsub_note")}
                 </p>
               </>
             )}
@@ -127,7 +127,7 @@ function UnsubscribeContent() {
                     />
                   </svg>
                 </div>
-                <p className="text-slate-600 font-medium">İşleniyor...</p>
+                <p className="text-slate-600 font-medium">{t("unsub_loading")}</p>
               </>
             )}
 
@@ -149,12 +149,11 @@ function UnsubscribeContent() {
                   </svg>
                 </div>
                 <h2 className="text-lg font-bold text-slate-800 mb-2">
-                  Abonelik İptal Edildi
+                  {t("unsub_success_title")}
                 </h2>
                 <p className="text-slate-500 text-sm leading-relaxed">
                   <span className="font-semibold text-slate-700">{email}</span>{" "}
-                  adresi e-posta listemizden başarıyla çıkarıldı. Artık bu
-                  adrse pazarlama e-postası göndermeyeceğiz.
+                  {t("unsub_success_desc")}
                 </p>
               </>
             )}
@@ -177,7 +176,7 @@ function UnsubscribeContent() {
                   </svg>
                 </div>
                 <h2 className="text-lg font-bold text-slate-800 mb-2">
-                  Bir Hata Oluştu
+                  {t("unsub_error_title")}
                 </h2>
                 <p className="text-slate-500 text-sm mb-6">
                   {message}
@@ -186,7 +185,7 @@ function UnsubscribeContent() {
                   onClick={() => setStatus("idle")}
                   className="w-full border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-600 font-semibold py-3 px-6 rounded-xl transition-all duration-200 text-sm"
                 >
-                  Tekrar Dene
+                  {t("unsub_retry_btn")}
                 </button>
               </>
             )}
@@ -195,7 +194,7 @@ function UnsubscribeContent() {
           {/* Footer */}
           <div className="bg-slate-50 border-t border-slate-100 px-8 py-4 text-center">
             <p className="text-xs text-slate-400">
-              © 2026 Stanomer. Tüm hakları saklıdır.
+              © 2026 Stanomer. {t("footer_rights")}
             </p>
           </div>
         </div>

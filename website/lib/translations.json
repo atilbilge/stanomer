@@ -296,7 +296,17 @@
     "agencies_mockup_tenant_notif": "Kiracı Ödeme Bildirimi",
     "agencies_mockup_rent_collected": "€650 Kira Tahsil Edildi ✓",
     "agencies_mockup_auto_notif_sent": "Ev sahibi ve kiracı bildirimleri otomatik gönderildi.",
-    "agencies_mockup_white_label_badge": "Markanıza Özel Logo & Renkler"
+    "agencies_mockup_white_label_badge": "Markanıza Özel Logo & Renkler",
+    "unsub_title": "E-posta Aboneliğini İptal Et",
+    "unsub_desc": "Aşağıdaki e-posta adresini tüm Stanomer bülten ve bildirim listelerinden çıkarmak istediğinizi onaylıyor musunuz?",
+    "unsub_no_email": "E-posta adresi bulunamadı.",
+    "unsub_btn": "Aboneliği İptal Et",
+    "unsub_note": "Bu işlem geri alınamaz. Tekrar abone olmak için uygulamayı kullanabilirsiniz.",
+    "unsub_loading": "İşleniyor...",
+    "unsub_success_title": "Abonelik İptal Edildi",
+    "unsub_success_desc": "adresi e-posta listemizden başarıyla çıkarıldı. Artık bu adrese pazarlama e-postası göndermeyiz.",
+    "unsub_error_title": "Bir Hata Oluştu",
+    "unsub_retry_btn": "Tekrar Dene"
   },
   "EN": {
     "privacy_title": "Privacy Policy",
@@ -591,7 +601,17 @@
     "agencies_mockup_tenant_notif": "Tenant Payment Notification",
     "agencies_mockup_rent_collected": "€650 Rent Collected ✓",
     "agencies_mockup_auto_notif_sent": "Automatic notifications sent to landlord and tenant.",
-    "agencies_mockup_white_label_badge": "Custom Logo & Brand Colors"
+    "agencies_mockup_white_label_badge": "Custom Logo & Brand Colors",
+    "unsub_title": "Unsubscribe from Email List",
+    "unsub_desc": "Do you confirm that you want to remove the email address below from all Stanomer newsletter and notification lists?",
+    "unsub_no_email": "Email address not found.",
+    "unsub_btn": "Unsubscribe",
+    "unsub_note": "This action cannot be undone. You can resubscribe using the application.",
+    "unsub_loading": "Processing...",
+    "unsub_success_title": "Subscription Cancelled",
+    "unsub_success_desc": "has been successfully removed from our email list. We will no longer send marketing emails to this address.",
+    "unsub_error_title": "An Error Occurred",
+    "unsub_retry_btn": "Try Again"
   },
   "SR_LAT": {
     "privacy_title": "Politika privatnosti",
@@ -879,7 +899,17 @@
     "agencies_mockup_tenant_notif": "Obaveštenje o Uplati Zakupca",
     "agencies_mockup_rent_collected": "€650 Kirija Naplaćena ✓",
     "agencies_mockup_auto_notif_sent": "Automatska obaveštenja poslata vlasniku i zakupcu.",
-    "agencies_mockup_white_label_badge": "Prilagođeni Logo i Boje Brenda"
+    "agencies_mockup_white_label_badge": "Prilagođeni Logo i Boje Brenda",
+    "unsub_title": "Otkažite prijavu na imejl listu",
+    "unsub_desc": "Da li potvrđujete da želite da uklonite imejl adresu ispod sa svih Stanomer obaveštenja i vesti?",
+    "unsub_no_email": "Imejl adresa nije pronađena.",
+    "unsub_btn": "Otkaži prijavu",
+    "unsub_note": "Ova radnja se ne može opozvati. Možete se ponovo prijaviti putem aplikacije.",
+    "unsub_loading": "Obrada u toku...",
+    "unsub_success_title": "Prijava je otkazana",
+    "unsub_success_desc": "je uspešno uklonjena sa naše imejl liste. Više nećemo slati marketinške imejlove na ovu adresu.",
+    "unsub_error_title": "Došlo je do greške",
+    "unsub_retry_btn": "Pokušajte ponovo"
   },
   "SR_CYR": {
     "privacy_title": "Политика приватности",
@@ -1171,7 +1201,17 @@
     "agencies_mockup_tenant_notif": "Обавештење о Уплати Закупца",
     "agencies_mockup_rent_collected": "€650 Кирији Наплаћена ✓",
     "agencies_mockup_auto_notif_sent": "Аутоматска обавештења послата власнику и закупцу.",
-    "agencies_mockup_white_label_badge": "Прилагођени Лого и Боје Бренда"
+    "agencies_mockup_white_label_badge": "Прилагођени Лого и Боје Бренда",
+    "unsub_title": "Откажите пријаву на имејл листу",
+    "unsub_desc": "Да ли потврђујете да желите да уклоните имејл адресу испод са свих Станомер обавештења и вести?",
+    "unsub_no_email": "Имејл адреса није пронађена.",
+    "unsub_btn": "Откажи пријаву",
+    "unsub_note": "Ова радња се не може опозвати. Можете се поново пријавити путем апликације.",
+    "unsub_loading": "Обрада у току...",
+    "unsub_success_title": "Пријава је отказана",
+    "unsub_success_desc": "је успешно уклоњена са наше имејл листе. Више нећемо слати маркетиншке имејлове на ову адресу.",
+    "unsub_error_title": "Дошло је до грешке",
+    "unsub_retry_btn": "Покушајте поново"
   },
   "RU": {
     "privacy_title": "Политика конфиденциальности",
@@ -1459,6 +1499,16 @@
     "agencies_mockup_tenant_notif": "Уведомление об Оплате Арендатора",
     "agencies_mockup_rent_collected": "€650 Аренда Получена ✓",
     "agencies_mockup_auto_notif_sent": "Автоматические уведомления отправлены собственнику и арендатору.",
-    "agencies_mockup_white_label_badge": "Ваш Логотип и Фирменные Цвета"
+    "agencies_mockup_white_label_badge": "Ваш Логотип и Фирменные Цвета",
+    "unsub_title": "Отписаться от рассылки",
+    "unsub_desc": "Вы подтверждаете, что хотите удалить указанный адрес электронной почты из всех списков рассылки и уведомлений Stanomer?",
+    "unsub_no_email": "Email адрес не найден.",
+    "unsub_btn": "Отписаться",
+    "unsub_note": "Это действие нельзя отменить. Вы можете снова подписаться через приложение.",
+    "unsub_loading": "Обработка...",
+    "unsub_success_title": "Подписка отменена",
+    "unsub_success_desc": "успешно удален из нашей рассылки. Мы больше не будем отправлять маркетинговые письма на этот адрес.",
+    "unsub_error_title": "Произошла ошибка",
+    "unsub_retry_btn": "Попробовать снова"
   }
 }
