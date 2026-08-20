@@ -141,6 +141,8 @@ if [ -d "website/.next/server/app" ]; then
         fi
       done
     fi
+  done
+
   # 4. Copy Sitemap & Robots
   if [ -f "website/.next/server/app/sitemap.xml.body" ]; then
     cp -f website/.next/server/app/sitemap.xml.body public/sitemap.xml
