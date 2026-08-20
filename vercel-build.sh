@@ -99,11 +99,56 @@ if [ -d "build/web_dev" ]; then
   cp -rf build/web_dev/* public/dev-app/
 fi
 
-# Copy other website public files (excluding symlinked assets to avoid overwrite conflict)
+# Copy Next.js static assets and CSS/JS chunks
+if [ -d "website/.next/static" ]; then
+  mkdir -p public/_next/static
+  cp -rf website/.next/static/* public/_next/static/
+fi
+
+# Copy Next.js generated HTML pages to public/
+if [ -d "website/.next/server/app" ]; then
+  # 1. Main Landing Page
+  if [ -f "website/.next/server/app/index.html" ]; then
+    cp -f website/.next/server/app/index.html public/index.html
+  fi
+
+  # 2. Root-level pages (privacy.html, terms.html, agencies.html, etc.)
+  for html_file in website/.next/server/app/*.html; do
+    [ -e "$html_file" ] || continue
+    page_name=$(basename "$html_file" .html)
+    if [ "$page_name" != "index" ] && [ "$page_name" != "_not-found" ]; then
+      mkdir -p "public/$page_name"
+      cp -f "$html_file" "public/$page_name/index.html"
+      cp -f "$html_file" "public/$page_name.html"
+    fi
+  done
+
+  # 3. Subdirectories (guide/, tr/, etc.)
+  for subdir in website/.next/server/app/*/; do
+    [ -d "$subdir" ] || continue
+    dir_name=$(basename "$subdir")
+    if [ "$dir_name" != "api" ] && [ "$dir_name" != "_not-found" ] && [ "$dir_name" != "app" ]; then
+      mkdir -p "public/$dir_name"
+      for sub_html in "$subdir"*.html; do
+        [ -e "$sub_html" ] || continue
+        sub_name=$(basename "$sub_html" .html)
+        if [ "$sub_name" = "index" ] || [ "$sub_name" = "$dir_name" ]; then
+          cp -f "$sub_html" "public/$dir_name/index.html"
+        else
+          mkdir -p "public/$dir_name/$sub_name"
+          cp -f "$sub_html" "public/$dir_name/$sub_name/index.html"
+          cp -f "$sub_html" "public/$dir_name/$sub_name.html"
+        fi
+      done
+    fi
+  done
+fi
+
+# Copy other website public files (excluding symlinks/special dirs)
 if [ -d "website/public" ]; then
   for item in website/public/*; do
     name=$(basename "$item")
-    if [ "$name" != "assets" ] && [ "$name" != "app" ] && [ "$name" != "dev-app" ]; then
+    if [ "$name" != "assets" ] && [ "$name" != "app" ] && [ "$name" != "dev-app" ] && [ "$name" != "_next" ]; then
       cp -rf "$item" public/
     fi
   done
