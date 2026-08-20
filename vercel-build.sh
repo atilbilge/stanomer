@@ -64,49 +64,48 @@ flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-de
 mkdir -p build/web_dev
 cp -r build/web/* build/web_dev/
 
-# 6. Build Next.js Website (Legal Pages)
+# Copy Flutter web builds into website/public/ for Next.js serving
+mkdir -p website/public/app
+mkdir -p website/public/dev-app
+cp -r build/web_prod/* website/public/app/
+cp -r build/web_dev/* website/public/dev-app/
+
+# 6. Build Next.js Website & API Routes
 echo "Step 6: Building Next.js Website..."
 cd website
 npm install
 NEXT_PUBLIC_SUPABASE_URL="$PROD_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$PROD_KEY" npm run build
 cd ..
 
-# 7. Prepare Public Directory
+# 7. Prepare Public Directory & Final Distribution
 echo "Step 7: Preparing public directory..."
 rm -rf public
 mkdir -p public/app
 mkdir -p public/dev-app
 
-# 8. Final Distribution
-echo "Step 8: Copying Assets..."
-
-# Copy landing page files
-if [ -d "landing" ]; then
-  cp -r landing/* public/
+# Copy Next.js public assets & Flutter web builds
+if [ -d "website/public" ]; then
+  cp -r website/public/* public/
 fi
 
-# Copy Next.js static files (privacy, terms, etc.)
-if [ -d "website/out" ]; then
-  cp -r website/out/* public/
-else
-  echo "Error: website/out directory not found! Check Next.js build."
-  exit 1
-fi
-
-# Copy Production Flutter web build
+# Copy Production Flutter web build to public/app/
 if [ -d "build/web_prod" ]; then
   cp -r build/web_prod/* public/app/
-else
-  echo "Error: Production Flutter web build not found!"
-  exit 1
 fi
 
-# Copy Dev Flutter web build
+# Copy Dev Flutter web build to public/dev-app/
 if [ -d "build/web_dev" ]; then
   cp -r build/web_dev/* public/dev-app/
-else
-  echo "Error: Dev Flutter web build not found!"
-  exit 1
+fi
+
+# Copy Next.js static output if it exists (fallback)
+if [ -d "website/out" ]; then
+  cp -r website/out/* public/
+fi
+
+# Copy landing page files if they exist
+if [ -d "landing" ]; then
+  cp -r landing/* public/
 fi
 
 echo "--- VERCEL DUAL BUILD COMPLETE! (/app = PROD | /dev-app = DEV) ---"
