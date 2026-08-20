@@ -1,0 +1,7 @@
+User-Agent: *
+Allow: /
+Disallow: /app
+Disallow: /dev-app
+Disallow: /api
+
+Sitemap: https://www.stanomer.online/sitemap.xml

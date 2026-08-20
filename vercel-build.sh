@@ -141,7 +141,18 @@ if [ -d "website/.next/server/app" ]; then
         fi
       done
     fi
-  done
+  # 4. Copy Sitemap & Robots
+  if [ -f "website/.next/server/app/sitemap.xml.body" ]; then
+    cp -f website/.next/server/app/sitemap.xml.body public/sitemap.xml
+  elif [ -f "website/.next/server/app/sitemap.xml" ]; then
+    cp -f website/.next/server/app/sitemap.xml public/sitemap.xml
+  fi
+
+  if [ -f "website/.next/server/app/robots.txt.body" ]; then
+    cp -f website/.next/server/app/robots.txt.body public/robots.txt
+  elif [ -f "website/.next/server/app/robots.txt" ]; then
+    cp -f website/.next/server/app/robots.txt public/robots.txt
+  fi
 fi
 
 # Copy other website public files (excluding symlinks/special dirs)
