@@ -21,14 +21,21 @@ import {
   AlertCircle
 } from "lucide-react";
 
+import {
+  ReferralPartner,
+  requestAgencyOtp,
+  verifyAgencyOtp,
+  lookupReferralAgency
+} from "../../lib/referralClientService";
+
 interface PartnerInfo {
   id: string;
   agency_name: string;
-  contact_name: string;
+  contact_name?: string;
   email: string;
   slug: string;
   referral_code: string;
-  city: string;
+  city?: string;
 }
 
 interface StatsData {
@@ -70,6 +77,20 @@ export default function AgencyStatsPage() {
   useEffect(() => {
     async function checkSession() {
       try {
+        // Try localStorage first
+        const localPartnerStr = localStorage.getItem("stanomer_agency_partner");
+        if (localPartnerStr) {
+          const localPartner = JSON.parse(localPartnerStr);
+          if (localPartner?.email) {
+            setPartner(localPartner);
+            const lookup = await lookupReferralAgency(localPartner.email);
+            if (lookup.stats) setStats(lookup.stats);
+            setScreenState("dashboard");
+            setInitialChecking(false);
+            return;
+          }
+        }
+
         const res = await fetch("/api/agency-stats/dashboard");
         if (res.ok) {
           const contentType = res.headers.get("content-type") || "";
@@ -137,19 +158,7 @@ export default function AgencyStatsPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/agency-stats/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() })
-      });
-
-      const contentType = res.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        setErrorMessage(t("error_msg") || "Sunucudan geçersiz yanıt alındı.");
-        return;
-      }
-
-      const data = await res.json();
+      const data = await requestAgencyOtp(email.trim());
 
       if (data.isRateLimited) {
         setErrorMessage(data.message);
@@ -180,29 +189,13 @@ export default function AgencyStatsPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/agency-stats/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), code: otpCode.trim() })
-      });
+      const data = await verifyAgencyOtp(email.trim(), otpCode.trim());
 
-      const contentType = res.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        setErrorMessage(t("error_msg") || "Sunucudan geçersiz yanıt alındı.");
-        return;
-      }
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success && data.partner) {
         setPartner(data.partner);
-        // Load dashboard stats
-        const dashRes = await fetch("/api/agency-stats/dashboard");
-        if (dashRes.ok) {
-          const dashData = await dashRes.json();
-          if (dashData.stats) setStats(dashData.stats);
-          if (dashData.trend) setTrend(dashData.trend);
-        }
+        // Load stats
+        const lookup = await lookupReferralAgency(data.partner.email);
+        if (lookup.stats) setStats(lookup.stats);
         setScreenState("dashboard");
       } else {
         setErrorMessage(data.message || "Hatalı doğrulama kodu.");
@@ -219,6 +212,7 @@ export default function AgencyStatsPage() {
   const handleLogout = async () => {
     setLoading(true);
     try {
+      localStorage.removeItem("stanomer_agency_partner");
       await fetch("/api/agency-stats/logout", { method: "POST" });
     } catch (e) {
       console.error("Logout error:", e);

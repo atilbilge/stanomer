@@ -24,19 +24,12 @@ import {
   Search
 } from "lucide-react";
 
-interface ReferralPartner {
-  id?: string;
-  agency_name: string;
-  contact_name: string;
-  email: string;
-  phone: string;
-  city: string;
-  website?: string;
-  agency_size?: string;
-  referral_source?: string;
-  slug: string;
-  referral_code: string;
-}
+import {
+  ReferralPartner,
+  registerReferralAgency,
+  lookupReferralAgency,
+  sendReferralQrEmail
+} from "../../lib/referralClientService";
 
 export default function AgencyReferralPage() {
   const { t, lang } = useLanguage();
@@ -139,32 +132,26 @@ export default function AgencyReferralPage() {
         formattedWebsite = `https://${formattedWebsite}`;
       }
 
-      const response = await fetch("/api/register-referral-agency", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agencyName: agencyName.trim(),
-          contactName: contactName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          city: city.trim(),
-          website: formattedWebsite || undefined,
-          agencySize: agencySize || undefined,
-          referralSource: referralSource || undefined,
-          lang: lang || "TR"
-        })
+      const res = await registerReferralAgency({
+        agencyName: agencyName.trim(),
+        contactName: contactName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        city: city.trim(),
+        website: formattedWebsite || undefined,
+        agencySize: agencySize || undefined,
+        referralSource: referralSource || undefined,
+        lang: lang || "TR"
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success && data.partner) {
-        setPartnerResult(data.partner);
-        setIsExisting(!!data.isExisting);
+      if (res.success && res.partner) {
+        setPartnerResult(res.partner);
+        setIsExisting(!!res.isExisting);
         setFromLookup(false);
         setResendEmailSuccess(false);
-        if (data.stats) setReferralStats(data.stats);
+        if (res.stats) setReferralStats(res.stats);
       } else {
-        setErrorMessage(data.message || "Bir hata oluştu. Lütfen tekrar deneyiniz.");
+        setErrorMessage(res.message || "Bir hata oluştu. Lütfen tekrar deneyiniz.");
       }
     } catch (err: any) {
       console.error("Referral registration error:", err);
@@ -187,25 +174,16 @@ export default function AgencyReferralPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/lookup-referral-agency", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: lookupEmail.trim(),
-          lang: lang || "TR"
-        })
-      });
+      const res = await lookupReferralAgency(lookupEmail.trim(), lang || "TR");
 
-      const data = await response.json();
-
-      if (response.ok && data.success && data.partner) {
-        setPartnerResult(data.partner);
+      if (res.success && res.partner) {
+        setPartnerResult(res.partner);
         setIsExisting(true);
         setFromLookup(true);
         setResendEmailSuccess(false);
-        if (data.stats) setReferralStats(data.stats);
+        if (res.stats) setReferralStats(res.stats);
       } else {
-        setErrorMessage(t("ref_lookup_not_found") || data.message || "Bu e-posta adresi ile kayıtlı bir acente bulunamadı.");
+        setErrorMessage(t("ref_lookup_not_found") || res.message || "Bu e-posta adresi ile kayıtlı bir acente bulunamadı.");
       }
     } catch (err: any) {
       console.error("Referral lookup error:", err);
@@ -219,18 +197,8 @@ export default function AgencyReferralPage() {
     if (!partnerResult || resendingEmail) return;
     setResendingEmail(true);
     try {
-      const response = await fetch("/api/send-referral-qr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: partnerResult.email,
-          agencyName: partnerResult.agency_name,
-          slug: partnerResult.slug,
-          referralCode: partnerResult.referral_code,
-          lang: lang || "TR"
-        })
-      });
-      if (response.ok) {
+      const res = await sendReferralQrEmail(partnerResult, lang || "TR");
+      if (res.success) {
         setResendEmailSuccess(true);
       }
     } catch (e) {
