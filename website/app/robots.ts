@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/app"],
+      disallow: ["/app", "/dev-app", "/api"],
     },
     sitemap: "https://www.stanomer.online/sitemap.xml",
   };
