@@ -127,10 +127,9 @@ if [ -d "website/.next/server/app" ]; then
   for subdir in website/.next/server/app/*/; do
     [ -d "$subdir" ] || continue
     dir_name=$(basename "$subdir")
-    if [ "$dir_name" != "api" ] && [ "$dir_name" != "_not-found" ] && [ "$dir_name" != "app" ]; then
+    if [ "$dir_name" != "api" ] && [ "$dir_name" != "_not-found" ] && [ "$dir_name" != "app" ] && [ "$dir_name" != "dev-app" ] && [ "$dir_name" != "robots.txt" ] && [ "$dir_name" != "sitemap.xml" ]; then
       mkdir -p "public/$dir_name"
-      for sub_html in "$subdir"*.html; do
-        [ -e "$sub_html" ] || continue
+      find "$subdir" -maxdepth 1 -name "*.html" -type f | while read -r sub_html; do
         sub_name=$(basename "$sub_html" .html)
         if [ "$sub_name" = "index" ] || [ "$sub_name" = "$dir_name" ]; then
           cp -f "$sub_html" "public/$dir_name/index.html"
@@ -143,7 +142,8 @@ if [ -d "website/.next/server/app" ]; then
     fi
   done
 
-  # 4. Copy Sitemap & Robots
+  # 4. Copy Sitemap & Robots (Ensure files, not directories)
+  rm -rf public/robots.txt public/sitemap.xml
   if [ -f "website/.next/server/app/sitemap.xml.body" ]; then
     cp -f website/.next/server/app/sitemap.xml.body public/sitemap.xml
   elif [ -f "website/.next/server/app/sitemap.xml" ]; then
