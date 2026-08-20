@@ -1915,4 +1915,20 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get statusApproved => 'Potvrđeno';
+
+  @override
+  String get referringAgency => 'Рекомендующее Агентство';
+
+  @override
+  String get noReferringAgency => 'Нет Рекомендующего Агентства';
+
+  @override
+  String get noReferringAgencyDesc =>
+      'Если вас рекомендовало агентство недвижимости, отсканируйте QR-код агентства для привязки аккаунта.';
+
+  @override
+  String get scanAgencyReferralQrBtn => 'Сканировать Referral QR-код Агентства';
+
+  @override
+  String get referralCodeLabel => 'Реферальный Код';
 }

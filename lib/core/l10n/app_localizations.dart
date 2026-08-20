@@ -3555,6 +3555,36 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Potvrđeno'**
   String get statusApproved;
+
+  /// No description provided for @referringAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Agencija Koja Je Preporučila'**
+  String get referringAgency;
+
+  /// No description provided for @noReferringAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nemate Preporučenu Agenciju'**
+  String get noReferringAgency;
+
+  /// No description provided for @noReferringAgencyDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ako vas je preporučila agencija za nekretnine, skenirajte QR kod vaše agencije da povežete nalog.'**
+  String get noReferringAgencyDesc;
+
+  /// No description provided for @scanAgencyReferralQrBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Skeniraj Referral QR Kod Agencije'**
+  String get scanAgencyReferralQrBtn;
+
+  /// No description provided for @referralCodeLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Referral Kod'**
+  String get referralCodeLabel;
 }
 
 class _AppLocalizationsDelegate

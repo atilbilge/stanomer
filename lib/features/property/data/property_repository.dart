@@ -86,6 +86,13 @@ final propertiesFutureProvider = FutureProvider<List<Property>>((ref) {
   return repo.getProperties(role: role);
 });
 
+final agencyReferralFutureProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return Future.value(null);
+  final repo = ref.watch(propertyRepositoryProvider);
+  return repo.getAgencyReferralInfo();
+});
+
 final propertyContractsProvider = StreamProvider.autoDispose.family<List<Contract>, String>((ref, propertyId) {
   final repo = ref.watch(propertyRepositoryProvider);
   return repo.getPropertyContractsStream(propertyId);
@@ -1971,5 +1978,175 @@ class PropertyRepository {
     }
     
     return targetUserId;
+  }
+
+  /// Bind current user's profile to an agency referral code (e.g. agency_ref_axia-exclusive)
+  Future<Map<String, dynamic>?> bindAgencyReferralCode(String rawToken) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final token = extractToken(rawToken);
+    if (token.isEmpty) return null;
+
+    String agencyCode = token;
+    String? agencyName;
+    String? website;
+
+    try {
+      // 1. Search in agency_referral_partners table by slug or referral_code
+      try {
+        final partnerRes = await _client
+            .from('agency_referral_partners')
+            .select('*')
+            .or('slug.ilike.$token,referral_code.ilike.$token')
+            .maybeSingle();
+
+        if (partnerRes != null) {
+          agencyCode = partnerRes['referral_code'] ?? partnerRes['slug'] ?? token;
+          agencyName = partnerRes['agency_name'] as String?;
+          website = partnerRes['website'] as String?;
+        }
+      } catch (e) {
+        debugPrint('agency_referral_partners lookup warning: $e');
+      }
+
+      // 2. Update user profile with referred_by_agency_code
+      try {
+        await _client.from('profiles').update({
+          'referred_by_agency_code': agencyCode,
+        }).eq('id', user.id);
+      } catch (dbErr) {
+        debugPrint('Profiles table update warning (using metadata fallback): $dbErr');
+      }
+
+      // 3. Always update user_metadata as robust fallback
+      try {
+        await _client.auth.updateUser(
+          UserAttributes(data: {'referred_by_agency_code': agencyCode}),
+        );
+      } catch (metaErr) {
+        debugPrint('User metadata update error: $metaErr');
+      }
+
+      return {
+        'agency_name': agencyName ?? agencyCode,
+        'referral_code': agencyCode,
+        'website': website,
+      };
+    } catch (e) {
+      debugPrint('Error binding agency referral code: $e');
+      return {
+        'agency_name': agencyCode,
+        'referral_code': agencyCode,
+        'website': null,
+      };
+    }
+  }
+
+  /// Get active agency referral info for the current user
+  Future<Map<String, dynamic>?> getAgencyReferralInfo() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    try {
+      // 1. Check user profile's referred_by_agency_code or user_metadata
+      String? code;
+      String? userEmail = user.email;
+
+      try {
+        final profile = await _client
+            .from('profiles')
+            .select('referred_by_agency_code, email')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        code = profile?['referred_by_agency_code'] as String?;
+        if (profile?['email'] != null) {
+          userEmail = profile!['email'] as String;
+        }
+      } catch (e) {
+        debugPrint('Profile select error: $e');
+      }
+
+      // Fallback to user_metadata if profile column not found or null
+      code ??= user.userMetadata?['referred_by_agency_code'] as String?;
+
+      if (code != null && code.isNotEmpty) {
+        String agencyName = code;
+        String? city;
+        String? website;
+
+        try {
+          final partner = await _client
+              .from('agency_referral_partners')
+              .select('agency_name, referral_code, slug, city, website')
+              .or('slug.ilike.$code,referral_code.ilike.$code')
+              .maybeSingle();
+
+          if (partner != null) {
+            agencyName = partner['agency_name'] ?? code;
+            city = partner['city'] as String?;
+            website = partner['website'] as String?;
+          }
+        } catch (e) {
+          debugPrint('Partner lookup error: $e');
+        }
+
+        return {
+          'agency_name': agencyName,
+          'referral_code': code,
+          'city': city,
+          'website': website,
+          'is_managed': false,
+        };
+      }
+
+      // 2. Check properties table where user is landlord_id or tenant_id and agency_id IS NOT NULL
+      final prop = await _client
+          .from('properties')
+          .select('agency_id, profiles!agency_id(company_name, full_name)')
+          .or('landlord_id.eq.${user.id},tenant_id.eq.${user.id}')
+          .not('agency_id', 'is', null)
+          .limit(1)
+          .maybeSingle();
+
+      if (prop != null && prop['agency_id'] != null) {
+        final agencyProfile = prop['profiles'];
+        final name = agencyProfile?['company_name'] ?? agencyProfile?['full_name'] ?? 'Emlak Acentesi';
+        return {
+          'agency_name': name,
+          'referral_code': 'Acente Yönetiminde Mülk',
+          'is_managed': true,
+        };
+      }
+
+      // 3. Check contracts table where user is tenant_id or invitee_email
+      if (userEmail != null && userEmail.isNotEmpty) {
+        final contracts = await _client
+            .from('contracts')
+            .select('id, property_id, properties!inner(agency_id, profiles!agency_id(company_name, full_name))')
+            .or('tenant_id.eq.${user.id},invitee_email.ilike.$userEmail')
+            .limit(10);
+
+        final contractsList = contracts as List;
+        for (final c in contractsList) {
+            final propData = c['properties'];
+            if (propData != null && propData['agency_id'] != null) {
+              final agencyProfile = propData['profiles'];
+              final name = agencyProfile?['company_name'] ?? agencyProfile?['full_name'] ?? 'Emlak Acentesi';
+              return {
+                'agency_name': name,
+                'referral_code': 'Acente Yönetiminde Mülk',
+                'is_managed': true,
+              };
+            }
+          }
+        }
+
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching agency referral info: $e');
+      return null;
+    }
   }
 }

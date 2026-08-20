@@ -1900,4 +1900,20 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get statusApproved => 'Onaylandı';
+
+  @override
+  String get referringAgency => 'Referans Veren Acente';
+
+  @override
+  String get noReferringAgency => 'Acente Referansınız Bulunmuyor';
+
+  @override
+  String get noReferringAgencyDesc =>
+      'Bir emlak acentesi tarafından yönlendirildiyseniz, acentenizin QR kodunu taratarak hesabınızı eşleştirebilirsiniz.';
+
+  @override
+  String get scanAgencyReferralQrBtn => 'Acente Referral QR Kodunu Tara';
+
+  @override
+  String get referralCodeLabel => 'Referans Kodu';
 }

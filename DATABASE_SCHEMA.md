@@ -65,6 +65,7 @@ Kullanıcıların profil, kimlik ve rol bilgilerini saklar. `auth.users` ile Bir
 | `utm_source` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kaynak bilgisi (örn. `google`, `facebook`) |
 | `utm_medium` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM mecrası (örn. `cpc`, `email`) |
 | `utm_campaign` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kampanya adı (örn. `summer_promo`) |
+| `referred_by_agency_code` | `TEXT` | YES | `NULL` | - | **[YENİ]** Kullanıcının bağlandığı acente referral kodu (örn. `agency_ref_axia-exclusive`) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
 
@@ -336,6 +337,140 @@ Acentelerin landing page / web sitesi üzerinden gönderdiği demo taleplerini t
 * **`agency_demo_requests_select_policy`**: `FOR SELECT TO public USING (true)` (Giriş yapmış veya anonim tüm kullanıcılar talepleri sorgulayabilir/döndürebilir)
 
 ---
+
+### 2.11 `agency_referral_partners`
+Referral acente başvuruları ve üretilen kalıcı QR / referral kodlarını saklayan tablodur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `UUID` | NO | `gen_random_uuid()` | - | Birincil Anahtar |
+| `agency_name` | `TEXT` | NO | - | - | Acente Adı |
+| `contact_name` | `TEXT` | NO | - | - | Yetkili Kişi Adı |
+| `email` | `TEXT` | NO | - | - | E-posta Adresi (**UNIQUE Constraint**, Unique Index: `lower(email)`) |
+| `phone` | `TEXT` | YES | `NULL` | - | Telefon Numarası (Opsiyonel) |
+| `city` | `TEXT` | NO | - | - | Şehir / Bölge |
+| `website` | `TEXT` | YES | `NULL` | - | Acente Web Sitesi (Opsiyonel) |
+| `agency_size` | `TEXT` | YES | `NULL` | - | Acente Büyüklüğü (örn. '1-9', '10-49', '50+') |
+| `referral_source` | `TEXT` | YES | `NULL` | - | Nereden Duydunuz bilgisi |
+| `slug` | `TEXT` | NO | - | - | Acente Slug Kodu (**UNIQUE Constraint**, Unique Index: `lower(slug)`) |
+| `referral_code` | `TEXT` | NO | - | - | Referral Kod (**UNIQUE Constraint**, Unique Index: `lower(referral_code)`) |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+| `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme Tarihi |
+
+#### RLS Politikaları (`public.agency_referral_partners`)
+* **`agency_referral_partners_insert_policy`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`agency_referral_partners_select_policy`**: `FOR SELECT TO public USING (true)`
+
+### 2.12 `email_unsubscribes`
+E-posta bülten ve işlem e-postalarından abonelik iptali (unsubscribe) yapan kullanıcıların listesini tutar.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `UUID` | NO | `gen_random_uuid()` | - | Birincil Anahtar |
+| `email` | `TEXT` | NO | - | - | Abonelikten çıkan e-posta adresi (**Unique Index**: `lower(email)`) |
+| `reason` | `TEXT` | YES | `NULL` | - | Ayrılma sebebi |
+| `created_at` | `TIMESTAMPTZ` | NO | `now()` | - | Oluşturulma Tarihi |
+| `updated_at` | `TIMESTAMPTZ` | NO | `now()` | - | Güncellenme Tarihi |
+
+#### RLS Politikaları (`public.email_unsubscribes`)
+* **`email_unsubscribes_insert_policy`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`email_unsubscribes_select_policy`**: `FOR SELECT TO public USING (true)`
+
+---
+
+### 2.13 `agency_otp_codes`
+Acente istatistik portalına (`/agency-stats`) şifresiz, tek kullanımlık e-posta kodu (OTP) ile güvenli giriş yapmak için kullanılan geçici kod tablosudur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `UUID` | NO | `gen_random_uuid()` | - | Birincil Anahtar |
+| `email` | `TEXT` | NO | - | - | OTP talep eden acente e-postası |
+| `otp_hash` | `TEXT` | NO | - | - | SHA-256 ile özetlenmiş OTP şifresi |
+| `attempts` | `INTEGER` | YES | `0` | - | Hatalı deneme sayısı |
+| `is_used` | `BOOLEAN` | YES | `false` | - | Kod kullanıldı mı? |
+| `expires_at` | `TIMESTAMPTZ` | NO | - | - | Kodun son geçerlilik zamanı |
+| `blocked_until` | `TIMESTAMPTZ` | YES | `NULL` | - | Çok fazla hatalı denemede bloklanma bitiş zamanı |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+
+#### RLS Politikaları (`public.agency_otp_codes`)
+* **`agency_otp_codes_insert_policy`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`agency_otp_codes_select_policy`**: `FOR SELECT TO public USING (true)`
+* **`agency_otp_codes_update_policy`**: `FOR UPDATE TO public USING (true)`
+
+### 2.14 `agencies`
+Sırbistan genelindeki kayıtlı emlak acentelerinin ana/üst veri tablosudur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `BIGINT` | NO | `IDENTITY` | - | Birincil Anahtar |
+| `name` | `TEXT` | NO | - | - | Acente Tanınan / Ticari Adı |
+| `long_name` | `TEXT` | YES | `NULL` | - | Resmi Sicil Ünvanı |
+| `city` | `TEXT` | YES | `NULL` | - | Şehir / Bölge |
+| `address` | `TEXT` | YES | `NULL` | - | Fiziksel Adres |
+| `website` | `TEXT` | YES | `NULL` | - | Web Sitesi URL |
+| `is_partner` | `BOOLEAN` | YES | `false` | - | Stanomer Partner Acente mi? |
+| `uses_stanomer` | `BOOLEAN` | YES | `false` | - | Portföyünü Stanomer ile Yöneten Acente mi? |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+| `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme Tarihi |
+
+#### RLS Politikaları (`public.agencies`)
+* **`agencies_select_policy`**: `FOR SELECT TO public USING (true)`
+
+---
+
+### 2.15 `agency_phones`
+Acentelere ait 1:N ilişkili telefon numaralarını saklayan child tablodur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `BIGINT` | NO | `IDENTITY` | - | Birincil Anahtar |
+| `agency_id` | `BIGINT` | YES | `NULL` | `REFERENCES agencies(id) ON DELETE CASCADE` | Bağlı olduğu acente |
+| `phone` | `TEXT` | NO | - | - | Telefon Numarası |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+
+#### RLS Politikaları (`public.agency_phones`)
+* **`agency_phones_select_policy`**: `FOR SELECT TO public USING (true)`
+
+---
+
+### 2.16 `agency_emails`
+Acentelere ait 1:N ilişkili e-posta adreslerini saklayan child tablodur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `BIGINT` | NO | `IDENTITY` | - | Birincil Anahtar |
+| `agency_id` | `BIGINT` | YES | `NULL` | `REFERENCES agencies(id) ON DELETE CASCADE` | Bağlı olduğu acente |
+| `email` | `TEXT` | NO | - | - | E-posta Adresi |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+
+#### RLS Politikaları (`public.agency_emails`)
+* **`agency_emails_select_policy`**: `FOR SELECT TO public USING (true)`
+
+---
+
+### 2.17 `view_clean_agencies`
+Web sitesi üzerinden (`/real-estate-agencies`, `/find-agency`, `/acente-bul`) halka açık emlak acentelerinin listelendiği, filtrelendiği ve iletişim bilgilerinin sunulduğu optimize rehber tablosudur.
+
+| Kolon | Tip | Nullable | Default | FK | Açıklama |
+|---|---|---|---|---|---|
+| `id` | `BIGINT` | NO | `IDENTITY` | - | Birincil Anahtar |
+| `acente_adi` | `TEXT` | NO | - | - | Acente Ticari / Tanınan Adı |
+| `resmi_tam_unvan` | `TEXT` | YES | `NULL` | - | Resmi Sicil Ünvanı |
+| `sehir` | `TEXT` | YES | `NULL` | - | Şehir / Bölge |
+| `adres` | `TEXT` | YES | `NULL` | - | Fiziksel Adres |
+| `web_sitesi` | `TEXT` | YES | `NULL` | - | Web Sitesi URL |
+| `telefonlar` | `TEXT` | YES | `NULL` | - | İletişim Telefon Numaraları |
+| `eposta_adresleri` | `TEXT` | YES | `NULL` | - | İletişim E-posta Adresleri |
+| `is_partner` | `BOOLEAN` | YES | `false` | - | Stanomer Anlaşmalı Partner Acente mi? |
+| `uses_stanomer` | `BOOLEAN` | YES | `false` | - | Portföyünü Stanomer ile Yöneten Acente mi? |
+| `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma Tarihi |
+| `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme Tarihi |
+
+#### RLS Politikaları (`public.view_clean_agencies`)
+* **`view_clean_agencies_select_policy`**: `FOR SELECT TO public USING (true)`
+
+---
+
 
 ## 3. Görünümler (Views)
 
@@ -1039,3 +1174,6 @@ $$;
 | `maintenance_messages` | `MaintenanceMessage` | [maintenance_message.dart](file:///Users/atilbilgeorum/projects/stanomer/lib/features/maintenance/domain/maintenance_message.dart) |
 | `activity_logs` | `ActivityLog` | [activity_log.dart](file:///Users/atilbilgeorum/projects/stanomer/lib/features/property/domain/activity_log.dart) |
 | `notifications` | `NotificationItem` | [notification_item.dart](file:///Users/atilbilgeorum/projects/stanomer/lib/features/notifications/domain/notification_item.dart) |
+| `agency_referral_partners` | `ReferralPartner` | [agency-referral/page.tsx](file:///Users/atilbilgeorum/projects/stanomer/website/app/agency-referral/page.tsx) |
+| `agency_otp_codes` | `AgencyOtpCode` | [api/agency-stats](file:///Users/atilbilgeorum/projects/stanomer/website/app/api/agency-stats) |
+

@@ -796,5 +796,10 @@
   "invalidInviteCodeOrLink": "Please enter a valid invite link or invite code.",
   "landlordOwnershipTransferredSuccess": "Congratulations! Property ownership successfully transferred to your account.",
   "landlordOwnershipInviteInvalid": "Ownership invite is invalid, expired or already accepted.",
-  "statusApproved": "Confirmed"
+  "statusApproved": "Confirmed",
+  "referringAgency": "Referring Agency",
+  "noReferringAgency": "No Referring Agency",
+  "noReferringAgencyDesc": "If you were referred by a real estate agency, scan your agency's QR code to link your account.",
+  "scanAgencyReferralQrBtn": "Scan Agency Referral QR Code",
+  "referralCodeLabel": "Referral Code"
 }

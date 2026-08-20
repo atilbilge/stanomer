@@ -58,7 +58,29 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
       _isProcessing = true;
     });
 
-    if (token.startsWith('landlord_')) {
+    if (token.startsWith('agency_ref_') || raw.contains('referral')) {
+      final repo = ref.read(propertyRepositoryProvider);
+      final agencyInfo = await repo.bindAgencyReferralCode(token);
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (agencyInfo != null) {
+          ref.invalidate(agencyReferralFutureProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Acente referansı tanımlandı: ${agencyInfo['agency_name']}'),
+              backgroundColor: StanomerColors.successPrimary,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Geçersiz veya bulunamayan acente referral kodu.'),
+              backgroundColor: StanomerColors.alertPrimary,
+            ),
+          );
+        }
+      }
+    } else if (token.startsWith('landlord_')) {
       final repo = ref.read(propertyRepositoryProvider);
       final success = await repo.claimLandlordOwnership(token: token);
       if (mounted) {

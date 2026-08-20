@@ -492,6 +492,46 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
 
                   const SizedBox(height: 24),
 
+                  // ── Sözleşmesi Bitmeye Yaklaşan Kontratlar (Expiring Contracts) ──
+                  propertiesAsync.when(
+                    loading: () => _LoadingCard(colors: colors),
+                    error: (e, _) => _ErrorCard(message: e.toString()),
+                    data: (allProps) => _ExpiringContractsSection(
+                      properties: allProps,
+                      contractsMap: contractsMap,
+                      colors: colors,
+                      loc: loc,
+                      lang: Localizations.localeOf(context).languageCode.toLowerCase(),
+                      onViewInPortfolio: () {
+                        setState(() {
+                          _selectedInsight = ActionableInsightType.expiringContracts;
+                          _currentTab = 1;
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Bekleyen Bakım Talepleri (En Eskiler) ──
+                  propertiesAsync.when(
+                    loading: () => _LoadingCard(colors: colors),
+                    error: (e, _) => _ErrorCard(message: e.toString()),
+                    data: (allProps) => _OldestPendingMaintenanceSection(
+                      properties: allProps,
+                      colors: colors,
+                      loc: loc,
+                      lang: Localizations.localeOf(context).languageCode.toLowerCase(),
+                      onSeeAllRequests: () {
+                        setState(() {
+                          _currentTab = 3; // Switch to Bakım / Talepler tab
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Pending Payment Approvals Queue
                   _SectionHeader(
                     icon: LucideIcons.clipboardCheck,
@@ -3847,6 +3887,730 @@ class _ActionableInsightCardState extends State<_ActionableInsightCard> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Expiring Contracts & Pending Maintenance Helper Texts & Widgets
+// ---------------------------------------------------------------------------
+
+Map<String, String> _getExpiringContractsTexts(String lang) {
+  switch (lang) {
+    case 'tr':
+      return {
+        'section_title': 'Sözleşmesi Bitmeye Yaklaşan Kontratlar',
+        'see_all_portfolio': 'Tümünü Gör',
+        'no_expiring': 'Yakın zamanda sona erecek sözleşme bulunmuyor',
+        'no_expiring_sub': 'Tüm aktif sözleşmelerinizin süresi güvende.',
+        'days_left': 'gün kaldı',
+        'today_expires': 'Bugün bitiyor!',
+        'expired': 'Süresi Doldu',
+        'tenant': 'Kiracı',
+        'rent': 'Kira',
+      };
+    case 'sr':
+      return {
+        'section_title': 'Ugovori koji uskoro ističu',
+        'see_all_portfolio': 'Prikaži sve',
+        'no_expiring': 'Nema ugovora koji uskoro ističu',
+        'no_expiring_sub': 'Svi vaši aktivni ugovori su važeći.',
+        'days_left': 'dana preostalo',
+        'today_expires': 'Ističe danas!',
+        'expired': 'Istekao',
+        'tenant': 'Stanar',
+        'rent': 'Kirija',
+      };
+    case 'ru':
+      return {
+        'section_title': 'Договоры, истекающие в ближайшее время',
+        'see_all_portfolio': 'Все договоры',
+        'no_expiring': 'Нет договоров с истекающим сроком',
+        'no_expiring_sub': 'Все активные договоры действуют.',
+        'days_left': 'дн. осталось',
+        'today_expires': 'Истекает сегодня!',
+        'expired': 'Истек',
+        'tenant': 'Жилец',
+        'rent': 'Аренда',
+      };
+    case 'en':
+    default:
+      return {
+        'section_title': 'Contracts Expiring Soon',
+        'see_all_portfolio': 'View All',
+        'no_expiring': 'No contracts expiring soon',
+        'no_expiring_sub': 'All active lease agreements are safely in validity.',
+        'days_left': 'days left',
+        'today_expires': 'Expires today!',
+        'expired': 'Expired',
+        'tenant': 'Tenant',
+        'rent': 'Rent',
+      };
+  }
+}
+
+Map<String, String> _getPendingMaintenanceTexts(String lang) {
+  switch (lang) {
+    case 'tr':
+      return {
+        'section_title': 'Bekleyen Bakım Talepleri (En Eskiler)',
+        'see_all_requests': 'Tüm Talepler',
+        'no_pending': 'Bekleyen bakım veya arıza talebi bulunmuyor',
+        'no_pending_sub': 'Tüm talepler çözüldü veya onaylandı.',
+        'waiting_days': 'gündür bekliyor',
+        'waiting_today': 'Bugün oluşturuldu',
+        'waiting_yesterday': '1 gündür bekliyor',
+        'urgent': 'ACİL',
+        'high': 'YÜKSEK',
+        'normal': 'NORMAL',
+        'low': 'DÜŞÜK',
+      };
+    case 'sr':
+      return {
+        'section_title': 'Zahtevi za održavanje na čekanju (Najstariji)',
+        'see_all_requests': 'Svi zahtevi',
+        'no_pending': 'Nema zahteva na čekanju',
+        'no_pending_sub': 'Svi zahtevi su rešeni ili zatvoreni.',
+        'waiting_days': 'dana na čekanju',
+        'waiting_today': 'Kreirano danas',
+        'waiting_yesterday': '1 dan na čekanju',
+        'urgent': 'HITNO',
+        'high': 'VISOK',
+        'normal': 'NORMALNO',
+        'low': 'NISKO',
+      };
+    case 'ru':
+      return {
+        'section_title': 'Заявки на обслуживание (Самые старые)',
+        'see_all_requests': 'Все заявки',
+        'no_pending': 'Нет заявок на рассмотрении',
+        'no_pending_sub': 'Все заявки закрыты или решены.',
+        'waiting_days': 'дн. ожидает',
+        'waiting_today': 'Создано сегодня',
+        'waiting_yesterday': '1 день ожидает',
+        'urgent': 'СРОЧНО',
+        'high': 'ВЫСОКИЙ',
+        'normal': 'ОБЫЧНЫЙ',
+        'low': 'НИЗКИЙ',
+      };
+    case 'en':
+    default:
+      return {
+        'section_title': 'Oldest Pending Maintenance Requests',
+        'see_all_requests': 'All Requests',
+        'no_pending': 'No pending maintenance requests',
+        'no_pending_sub': 'All requests are resolved or closed.',
+        'waiting_days': 'days waiting',
+        'waiting_today': 'Created today',
+        'waiting_yesterday': '1 day waiting',
+        'urgent': 'URGENT',
+        'high': 'HIGH',
+        'normal': 'NORMAL',
+        'low': 'LOW',
+      };
+  }
+}
+
+class _ExpiringContractsSection extends StatelessWidget {
+  final List<Property> properties;
+  final Map<String, Contract?> contractsMap;
+  final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final String lang;
+  final VoidCallback onViewInPortfolio;
+
+  const _ExpiringContractsSection({
+    required this.properties,
+    required this.contractsMap,
+    required this.colors,
+    required this.loc,
+    required this.lang,
+    required this.onViewInPortfolio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final txt = _getExpiringContractsTexts(lang);
+    final now = DateTime.now();
+
+    final expiringList = <Map<String, dynamic>>[];
+
+    for (final property in properties) {
+      final contract = contractsMap[property.id];
+      if (contract != null &&
+          (contract.status == ContractStatus.active || contract.status == ContractStatus.negotiating) &&
+          contract.endDate != null) {
+        final daysRemaining = contract.endDate!.difference(now).inDays;
+        if (daysRemaining <= 60) {
+          expiringList.add({
+            'property': property,
+            'contract': contract,
+            'daysRemaining': daysRemaining,
+          });
+        }
+      }
+    }
+
+    expiringList.sort((a, b) {
+      final contractA = a['contract'] as Contract;
+      final contractB = b['contract'] as Contract;
+      return contractA.endDate!.compareTo(contractB.endDate!);
+    });
+
+    final displayList = expiringList.take(5).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(LucideIcons.calendarClock, size: 18, color: colors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  txt['section_title']!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: StanomerColors.textPrimary,
+                  ),
+                ),
+                if (expiringList.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${expiringList.length}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (expiringList.length > 5)
+              TextButton(
+                onPressed: onViewInPortfolio,
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      txt['see_all_portfolio']!,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(LucideIcons.chevronRight, size: 14, color: colors.primary),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (displayList.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colors.bgWhite,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.checkCheck, size: 18, color: Colors.green),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        txt['no_expiring']!,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        txt['no_expiring_sub']!,
+                        style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: displayList.map((item) {
+              final property = item['property'] as Property;
+              final contract = item['contract'] as Contract;
+              final daysRemaining = item['daysRemaining'] as int;
+
+              final Color badgeColor;
+              final Color badgeBg;
+              final String badgeText;
+
+              if (daysRemaining < 0) {
+                badgeColor = Colors.red.shade700;
+                badgeBg = Colors.red.withValues(alpha: 0.12);
+                badgeText = txt['expired']!;
+              } else if (daysRemaining == 0) {
+                badgeColor = Colors.red.shade700;
+                badgeBg = Colors.red.withValues(alpha: 0.12);
+                badgeText = txt['today_expires']!;
+              } else if (daysRemaining <= 15) {
+                badgeColor = Colors.red.shade700;
+                badgeBg = Colors.red.withValues(alpha: 0.12);
+                badgeText = '$daysRemaining ${txt['days_left']}';
+              } else if (daysRemaining <= 30) {
+                badgeColor = Colors.orange.shade800;
+                badgeBg = Colors.orange.withValues(alpha: 0.12);
+                badgeText = '$daysRemaining ${txt['days_left']}';
+              } else {
+                badgeColor = Colors.amber.shade800;
+                badgeBg = Colors.amber.withValues(alpha: 0.15);
+                badgeText = '$daysRemaining ${txt['days_left']}';
+              }
+
+              final formattedEndDate = contract.endDate != null
+                  ? DateFormat('d MMM yyyy').format(contract.endDate!)
+                  : '-';
+
+              final rentFormatted = CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.push('/property/${property.id}'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: colors.bgWhite,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colors.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(LucideIcons.calendarClock, size: 20, color: badgeColor),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  property.name,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: StanomerColors.textPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 3),
+                                Row(
+                                  children: [
+                                    if (property.tenantName != null && property.tenantName!.isNotEmpty) ...[
+                                      const Icon(LucideIcons.user, size: 11, color: StanomerColors.textTertiary),
+                                      const SizedBox(width: 3),
+                                      Flexible(
+                                        child: Text(
+                                          property.tenantName!,
+                                          style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    Text(
+                                      '$rentFormatted / ay',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: colors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: badgeBg,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  badgeText,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: badgeColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                formattedEndDate,
+                                style: const TextStyle(fontSize: 10, color: StanomerColors.textTertiary),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(LucideIcons.chevronRight, size: 16, color: StanomerColors.textTertiary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+}
+
+class _OldestPendingMaintenanceSection extends ConsumerWidget {
+  final List<Property> properties;
+  final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final String lang;
+  final VoidCallback onSeeAllRequests;
+
+  const _OldestPendingMaintenanceSection({
+    required this.properties,
+    required this.colors,
+    required this.loc,
+    required this.lang,
+    required this.onSeeAllRequests,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final txt = _getPendingMaintenanceTexts(lang);
+    final requestsAsync = ref.watch(agencyMaintenanceRequestsProvider);
+
+    return requestsAsync.when(
+      loading: () => _LoadingCard(colors: colors),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (allRequests) {
+        final propertiesMap = {for (var p in properties) p.id: p};
+
+        final pendingRequests = allRequests.where((r) =>
+            r.status == MaintenanceStatus.open ||
+            r.status == MaintenanceStatus.investigating ||
+            r.status == MaintenanceStatus.inProgress ||
+            r.status == MaintenanceStatus.pending).toList();
+
+        pendingRequests.sort((a, b) {
+          if (a.createdAt == null && b.createdAt == null) return 0;
+          if (a.createdAt == null) return 1;
+          if (b.createdAt == null) return -1;
+          return a.createdAt!.compareTo(b.createdAt!);
+        });
+
+        final displayList = pendingRequests.take(5).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(LucideIcons.wrench, size: 18, color: colors.brandGold),
+                    const SizedBox(width: 8),
+                    Text(
+                      txt['section_title']!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: StanomerColors.textPrimary,
+                      ),
+                    ),
+                    if (pendingRequests.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${pendingRequests.length}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (pendingRequests.length > 5)
+                  TextButton(
+                    onPressed: onSeeAllRequests,
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          txt['see_all_requests']!,
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(LucideIcons.chevronRight, size: 14, color: colors.primary),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (displayList.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colors.bgWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.checkCheck, size: 18, color: Colors.green),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            txt['no_pending']!,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            txt['no_pending_sub']!,
+                            style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Column(
+                children: displayList.map((req) {
+                  final propName = propertiesMap[req.propertyId]?.name ?? loc.propertyName;
+                  final daysWaiting = req.createdAt != null
+                      ? DateTime.now().difference(req.createdAt!).inDays
+                      : 0;
+
+                  final String waitingText;
+                  if (daysWaiting == 0) {
+                    waitingText = txt['waiting_today']!;
+                  } else if (daysWaiting == 1) {
+                    waitingText = txt['waiting_yesterday']!;
+                  } else {
+                    waitingText = '$daysWaiting ${txt['waiting_days']}';
+                  }
+
+                  final Color priorityColor;
+                  final Color priorityBg;
+                  final String priorityText;
+
+                  switch (req.priority) {
+                    case MaintenancePriority.urgent:
+                      priorityColor = Colors.red.shade700;
+                      priorityBg = Colors.red.withValues(alpha: 0.12);
+                      priorityText = txt['urgent']!;
+                      break;
+                    case MaintenancePriority.high:
+                      priorityColor = Colors.orange.shade800;
+                      priorityBg = Colors.orange.withValues(alpha: 0.12);
+                      priorityText = txt['high']!;
+                      break;
+                    case MaintenancePriority.medium:
+                    case MaintenancePriority.normal:
+                      priorityColor = Colors.blue.shade700;
+                      priorityBg = Colors.blue.withValues(alpha: 0.12);
+                      priorityText = txt['normal']!;
+                      break;
+                    case MaintenancePriority.low:
+                      priorityColor = Colors.grey.shade700;
+                      priorityBg = Colors.grey.withValues(alpha: 0.12);
+                      priorityText = txt['low']!;
+                      break;
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => context.push('/maintenance/detail', extra: req),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: colors.bgWhite,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: priorityBg,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(LucideIcons.wrench, size: 20, color: priorityColor),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      req.title,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: StanomerColors.textPrimary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Row(
+                                      children: [
+                                        Icon(LucideIcons.building, size: 11, color: StanomerColors.textTertiary),
+                                        const SizedBox(width: 3),
+                                        Flexible(
+                                          child: Text(
+                                            propName,
+                                            style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: priorityBg,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: priorityColor.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      priorityText,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: priorityColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    waitingText,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: daysWaiting > 5 ? FontWeight.bold : FontWeight.normal,
+                                      color: daysWaiting > 5 ? Colors.red.shade700 : StanomerColors.textTertiary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(LucideIcons.chevronRight, size: 16, color: StanomerColors.textTertiary),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1900,6 +1900,22 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get statusApproved => 'Potvrđeno';
+
+  @override
+  String get referringAgency => 'Agencija Koja Je Preporučila';
+
+  @override
+  String get noReferringAgency => 'Nemate Preporučenu Agenciju';
+
+  @override
+  String get noReferringAgencyDesc =>
+      'Ako vas je preporučila agencija za nekretnine, skenirajte QR kod vaše agencije da povežete nalog.';
+
+  @override
+  String get scanAgencyReferralQrBtn => 'Skeniraj Referral QR Kod Agencije';
+
+  @override
+  String get referralCodeLabel => 'Referral Kod';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -3713,4 +3729,20 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get forgotPassword => 'Заборавили сте лозинку?';
+
+  @override
+  String get referringAgency => 'Агенција Која Је Препоручила';
+
+  @override
+  String get noReferringAgency => 'Немате Препоручену Агенцију';
+
+  @override
+  String get noReferringAgencyDesc =>
+      'Ако вас је препоручила агенција за некретнине, скенирајте КР код ваше агенције да повежете налог.';
+
+  @override
+  String get scanAgencyReferralQrBtn => 'Скенирај Реферрал КР Код Агенције';
+
+  @override
+  String get referralCodeLabel => 'Реферрал Код';
 }

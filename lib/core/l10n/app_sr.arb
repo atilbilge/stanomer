@@ -895,5 +895,10 @@
   "invalidInviteCodeOrLink": "Molimo unesite važeću vezu ili kod pozivnice.",
   "landlordOwnershipTransferredSuccess": "Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.",
   "landlordOwnershipInviteInvalid": "Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.",
-  "statusApproved": "Potvrđeno"
+  "statusApproved": "Potvrđeno",
+  "referringAgency": "Agencija Koja Je Preporučila",
+  "noReferringAgency": "Nemate Preporučenu Agenciju",
+  "noReferringAgencyDesc": "Ako vas je preporučila agencija za nekretnine, skenirajte QR kod vaše agencije da povežete nalog.",
+  "scanAgencyReferralQrBtn": "Skeniraj Referral QR Kod Agencije",
+  "referralCodeLabel": "Referral Kod"
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/auth_repository.dart';
 import '../data/auth_providers.dart';
@@ -16,6 +17,8 @@ import '../../subscriptions/presentation/premium_mobile_only_sheet.dart';
 import '../../../core/utils/platform_utils.dart';
 import '../../../core/services/document_storage_service.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
+import '../../property/data/property_repository.dart';
+import '../../property/presentation/join_property_sheet.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -307,6 +310,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onSave: _updateProfile,
               loc: loc,
             ),
+            
+            if (role != 'agency') ...[
+              const SizedBox(height: 32),
+              _AgencyReferralCard(loc: loc),
+            ],
             
             const SizedBox(height: 32),
             _SectionHeader(title: loc.settingsHeader.toUpperCase()), // Using custom key or loc
@@ -911,6 +919,275 @@ class _SwitchListTile extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AgencyReferralCard extends ConsumerWidget {
+  final AppLocalizations loc;
+
+  const _AgencyReferralCard({required this.loc});
+
+  Future<void> _openWebsite(String url) async {
+    String formattedUrl = url.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://$formattedUrl';
+    }
+    final uri = Uri.parse(formattedUrl);
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      debugPrint('Error launching URL $formattedUrl: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final agencyInfoAsync = ref.watch(agencyReferralFutureProvider);
+    final propertiesAsync = ref.watch(propertiesFutureProvider);
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
+
+    // Check if user has any property managed by an agency
+    final properties = propertiesAsync.value ?? [];
+    final hasAgencyManagedProperty = properties.any((p) => p.agencyId != null && p.agencyId!.isNotEmpty);
+
+    if (hasAgencyManagedProperty) {
+      return const SizedBox.shrink();
+    }
+
+    return agencyInfoAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (agencyInfo) {
+        // If user belongs to an agency-managed property, hide referral section completely
+        if (agencyInfo != null && agencyInfo['is_managed'] == true) {
+          return const SizedBox.shrink();
+        }
+
+        final hasExplicitReferral = agencyInfo != null &&
+            agencyInfo['agency_name'] != null &&
+            agencyInfo['is_managed'] != true;
+
+        if (hasExplicitReferral) {
+          final agencyName = agencyInfo['agency_name'].toString();
+          final code = agencyInfo['referral_code']?.toString() ?? '';
+          final website = agencyInfo['website']?.toString();
+          final hasWebsite = website != null && website.trim().isNotEmpty;
+
+          final cardContent = Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: StanomerColors.bgCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(LucideIcons.building2, size: 20, color: primaryColor),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.referringAgency.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: primaryColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  agencyName,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: hasWebsite ? primaryColor : StanomerColors.textPrimary,
+                                    decoration: hasWebsite ? TextDecoration.underline : TextDecoration.none,
+                                    decorationColor: primaryColor.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ),
+                              if (hasWebsite) ...[
+                                const SizedBox(width: 6),
+                                Icon(LucideIcons.externalLink, size: 14, color: primaryColor),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: StanomerColors.successPrimary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.shieldCheck, size: 12, color: StanomerColors.successPrimary),
+                          SizedBox(width: 4),
+                          Text(
+                            'Active',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: StanomerColors.successPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (code.isNotEmpty && code != 'Acente Yönetiminde Mülk') ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: StanomerColors.bgPage,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.qrCode, size: 14, color: StanomerColors.textTertiary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${loc.referralCodeLabel}: $code',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: StanomerColors.textSecondary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+
+          if (hasWebsite) {
+            return InkWell(
+              onTap: () => _openWebsite(website),
+              borderRadius: BorderRadius.circular(16),
+              child: cardContent,
+            );
+          }
+
+          return cardContent;
+        }
+
+        // User has NO agency referral -> Show shortcut button to scan agency QR code
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: StanomerColors.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: StanomerColors.borderDefault),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: StanomerColors.textTertiary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(LucideIcons.building2, size: 20, color: StanomerColors.textSecondary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.referringAgency.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: StanomerColors.textTertiary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          loc.noReferringAgency,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: StanomerColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                loc.noReferringAgencyDesc,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: StanomerColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => JoinPropertySheet.show(context),
+                  icon: const Icon(LucideIcons.qrCode, size: 18),
+                  label: Text(loc.scanAgencyReferralQrBtn),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

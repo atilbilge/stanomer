@@ -1904,4 +1904,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusApproved => 'Confirmed';
+
+  @override
+  String get referringAgency => 'Referring Agency';
+
+  @override
+  String get noReferringAgency => 'No Referring Agency';
+
+  @override
+  String get noReferringAgencyDesc =>
+      'If you were referred by a real estate agency, scan your agency\'s QR code to link your account.';
+
+  @override
+  String get scanAgencyReferralQrBtn => 'Scan Agency Referral QR Code';
+
+  @override
+  String get referralCodeLabel => 'Referral Code';
 }

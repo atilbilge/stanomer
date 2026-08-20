@@ -382,7 +382,7 @@ export function HomeContent() {
               {t("features_label")}
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Mülk Yönetiminde İhtiyacınız Olan Her Şey
+              {t("features_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
           </div>
@@ -483,7 +483,7 @@ export function HomeContent() {
               {t("trust_label")}
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Verileriniz Güvende, İçiniz Rahat
+              {t("trust_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
           </div>
