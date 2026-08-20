@@ -67,8 +67,8 @@ cp -r build/web/* build/web_dev/
 # Copy Flutter web builds into website/public/ for Next.js serving
 mkdir -p website/public/app
 mkdir -p website/public/dev-app
-cp -r build/web_prod/* website/public/app/
-cp -r build/web_dev/* website/public/dev-app/
+cp -rf build/web_prod/* website/public/app/
+cp -rf build/web_dev/* website/public/dev-app/
 
 # 6. Build Next.js Website & API Routes
 echo "Step 6: Building Next.js Website..."
@@ -82,30 +82,31 @@ echo "Step 7: Preparing public directory..."
 rm -rf public
 mkdir -p public/app
 mkdir -p public/dev-app
+mkdir -p public/assets
 
-# Copy Next.js public assets & Flutter web builds
-if [ -d "website/public" ]; then
-  cp -r website/public/* public/
+# Copy images/media assets
+if [ -d "landing/assets" ]; then
+  cp -rf landing/assets/* public/assets/
 fi
 
 # Copy Production Flutter web build to public/app/
 if [ -d "build/web_prod" ]; then
-  cp -r build/web_prod/* public/app/
+  cp -rf build/web_prod/* public/app/
 fi
 
 # Copy Dev Flutter web build to public/dev-app/
 if [ -d "build/web_dev" ]; then
-  cp -r build/web_dev/* public/dev-app/
+  cp -rf build/web_dev/* public/dev-app/
 fi
 
-# Copy Next.js static output if it exists (fallback)
-if [ -d "website/out" ]; then
-  cp -r website/out/* public/
-fi
-
-# Copy landing page files if they exist
-if [ -d "landing" ]; then
-  cp -r landing/* public/
+# Copy other website public files (excluding symlinked assets to avoid overwrite conflict)
+if [ -d "website/public" ]; then
+  for item in website/public/*; do
+    name=$(basename "$item")
+    if [ "$name" != "assets" ] && [ "$name" != "app" ] && [ "$name" != "dev-app" ]; then
+      cp -rf "$item" public/
+    fi
+  done
 fi
 
 echo "--- VERCEL DUAL BUILD COMPLETE! (/app = PROD | /dev-app = DEV) ---"
