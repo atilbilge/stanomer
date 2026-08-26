@@ -241,6 +241,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
   String _searchQuery = '';
   String _filterBy = 'all'; // 'all', 'has_debt', 'open_consent', 'occupied', 'vacant'
   ActionableInsightType? _selectedInsight;
+  int? _selectedFinanceSegment;
   String _groupBy = 'none'; // 'none', 'landlord', 'city', 'status', 'debt_consent'
   String _sortBy = 'newest'; // 'newest', 'name_asc', 'city_asc', 'landlord_asc'
 
@@ -309,8 +310,15 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
     final contractsMapAsync = ref.watch(agencyContractsMapProvider);
     final contractsMap = contractsMapAsync.value ?? {};
 
+    final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
+    final allPayments = allPaymentsAsync.value ?? [];
+
     final pendingPaymentsAsync = ref.watch(agencyPendingPaymentsProvider);
     final pendingPayments = pendingPaymentsAsync.value ?? [];
+
+    final maintenanceRequestsAsync = ref.watch(agencyMaintenanceRequestsProvider);
+    final maintenanceRequests = maintenanceRequestsAsync.value ?? [];
+
     final pendingPropertyIds =
         pendingPayments.map((p) => p['property_id'] as String?).whereType<String>().toSet();
 
@@ -336,7 +344,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
       onTabChanged: (index) => setState(() => _currentTab = index),
       onRoleSwitcherTap: () => context.push('/profile'),
       child: Scaffold(
-      backgroundColor: colors.bgWhite == StanomerColors.bgCard ? StanomerColors.bgPage : colors.bgWhite,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: isDesktop
           ? null
           : AppBar(
@@ -457,7 +465,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             child: IndexedStack(
           index: _currentTab.clamp(0, 3),
           children: [
-            // ── Tab 0: Ana Sayfa (Özet, Aksiyonlar & Ödeme Kuyruğu) ───────
+            // ── Tab 0: Ana Sayfa (Ajans Kokpiti) ─────────────────────────
             SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
@@ -471,90 +479,32 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Actionable Insights Cards Section
-                  propertiesAsync.when(
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                    data: (allProps) => _ActionableInsightsSection(
-                      properties: allProps,
-                      contractsMap: contractsMap,
-                      selectedInsight: _selectedInsight,
-                      onSelectInsight: (type) {
-                        setState(() {
-                          _selectedInsight = type;
-                          _currentTab = 1; // Switch automatically to Portföy tab
-                        });
-                      },
-                      colors: colors,
-                      loc: loc,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Sözleşmesi Bitmeye Yaklaşan Kontratlar (Expiring Contracts) ──
-                  propertiesAsync.when(
-                    loading: () => _LoadingCard(colors: colors),
-                    error: (e, _) => _ErrorCard(message: e.toString()),
-                    data: (allProps) => _ExpiringContractsSection(
-                      properties: allProps,
-                      contractsMap: contractsMap,
-                      colors: colors,
-                      loc: loc,
-                      lang: Localizations.localeOf(context).languageCode.toLowerCase(),
-                      onViewInPortfolio: () {
-                        setState(() {
-                          _selectedInsight = ActionableInsightType.expiringContracts;
-                          _currentTab = 1;
-                        });
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Bekleyen Bakım Talepleri (En Eskiler) ──
-                  propertiesAsync.when(
-                    loading: () => _LoadingCard(colors: colors),
-                    error: (e, _) => _ErrorCard(message: e.toString()),
-                    data: (allProps) => _OldestPendingMaintenanceSection(
-                      properties: allProps,
-                      colors: colors,
-                      loc: loc,
-                      lang: Localizations.localeOf(context).languageCode.toLowerCase(),
-                      onSeeAllRequests: () {
-                        setState(() {
-                          _currentTab = 3; // Switch to Bakım / Talepler tab
-                        });
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Pending Payment Approvals Queue
-                  _SectionHeader(
-                    icon: LucideIcons.clipboardCheck,
-                    label: loc.paymentApprovalQueue,
-                    color: colors.brandGold,
-                  ),
-                  const SizedBox(height: 12),
-                  pendingPaymentsAsync.when(
-                    loading: () => _LoadingCard(colors: colors),
-                    error: (e, _) => _ErrorCard(message: e.toString()),
-                    data: (payments) {
-                      if (payments.isEmpty) {
-                        return _EmptyCard(
-                          icon: LucideIcons.checkCircle2,
-                          message: loc.noPendingPaymentApprovals,
-                          colors: colors,
-                        );
-                      }
-                      return Column(
-                        children: payments
-                            .map((p) => _PendingPaymentRow(payment: p, colors: colors))
-                            .toList(),
-                      );
+                  // ── Apple Stili Bento Kokpit Kartları ─────────────────
+                  _AgencyCockpitSection(
+                    properties: propertiesAsync.value ?? [],
+                    contractsMap: contractsMap,
+                    allPayments: allPayments,
+                    pendingPayments: pendingPayments,
+                    maintenanceRequests: maintenanceRequests,
+                    colors: colors,
+                    loc: loc,
+                    lang: Localizations.localeOf(context).languageCode.toLowerCase(),
+                    onSelectInsight: (type) {
+                      setState(() {
+                        _selectedInsight = type;
+                        _currentTab = 1; // Portföy tab
+                      });
+                    },
+                    onSelectFinanceSegment: (segment) {
+                      setState(() {
+                        _selectedFinanceSegment = segment;
+                        _currentTab = 2; // Finans tab
+                      });
+                    },
+                    onOpenMaintenance: () {
+                      setState(() {
+                        _currentTab = 3; // Bakım tab
+                      });
                     },
                   ),
 
@@ -570,7 +520,10 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             ),
 
             // ── Tab 2: Finans (Ödemeler Raporu & İşlemleri) ───────────────
-            AgencyFinanceTab(colors: colors),
+            AgencyFinanceTab(
+              colors: colors,
+              initialSegment: _selectedFinanceSegment,
+            ),
 
             // ── Tab 3: Bakım / Talepler (Arıza & Bakım Talepleri) ─────────
             _AgencyMaintenanceTab(colors: colors),
@@ -671,6 +624,8 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
   String _filterBy = 'all';
   String _groupBy = 'none';
   String _sortBy = 'newest';
+  String? _viewMode; // null = auto (mobile: grid, desktop: table)
+  bool _isFilterExpanded = false;
 
   @override
   void initState() {
@@ -725,6 +680,36 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
 
     filtered.sort((a, b) {
       switch (_sortBy) {
+        case 'oldest':
+          final dateA = a.createdAt ?? DateTime(2000);
+          final dateB = b.createdAt ?? DateTime(2000);
+          return dateA.compareTo(dateB);
+        case 'debt':
+          final hasDebtA = debtPropertyIds.contains(a.id) ? 1 : 0;
+          final hasDebtB = debtPropertyIds.contains(b.id) ? 1 : 0;
+          final debtComp = hasDebtB.compareTo(hasDebtA);
+          if (debtComp != 0) return debtComp;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        case 'rent_desc':
+          final rentA = contractsMap[a.id]?.monthlyRent ?? a.defaultMonthlyRent;
+          final rentB = contractsMap[b.id]?.monthlyRent ?? b.defaultMonthlyRent;
+          final rentComp = rentB.compareTo(rentA);
+          if (rentComp != 0) return rentComp;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        case 'rent_asc':
+          final rentA = contractsMap[a.id]?.monthlyRent ?? a.defaultMonthlyRent;
+          final rentB = contractsMap[b.id]?.monthlyRent ?? b.defaultMonthlyRent;
+          final rentComp = rentA.compareTo(rentB);
+          if (rentComp != 0) return rentComp;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        case 'name_asc':
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        case 'city_asc':
+          return (a.city ?? '').toLowerCase().compareTo((b.city ?? '').toLowerCase());
+        case 'landlord_asc':
+          final landA = (a.landlordName ?? a.landlordEmail ?? '').toLowerCase();
+          final landB = (b.landlordName ?? b.landlordEmail ?? '').toLowerCase();
+          return landA.compareTo(landB);
         case 'newest':
         default:
           final dateA = a.createdAt ?? DateTime(2000);
@@ -844,6 +829,43 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
     );
   }
 
+  Widget _buildViewModeToggle({
+    required IconData icon,
+    required bool isSelected,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    )
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 15,
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -879,199 +901,346 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
     final rawPropertiesList = propertiesAsync.value ?? [];
     final showSearchPanel = !isLandlord || rawPropertiesList.length > 1;
 
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final effectiveViewMode = _viewMode ?? (isMobile ? 'grid' : 'table');
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header & Property Counter
+          // Header (Bento Style)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _SectionHeader(
-                icon: LucideIcons.building2,
-                label: isLandlord ? loc.myProperties : loc.managedProperties,
-                color: widget.colors.primary,
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
+                ),
+                child: const Icon(LucideIcons.building2, size: 18, color: Color(0xFF2563EB)),
               ),
-              propertiesAsync.whenData((props) => Text(
-                    loc.propertiesCount(props.length),
-                    style: TextStyle(
-                      color: widget.colors.textPrimary.withValues(alpha: 0.6),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )).value ?? const SizedBox.shrink(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isLandlord ? loc.myProperties : loc.managedProperties,
+                  style: TextStyle(
+                    fontSize: isMobile ? 17 : 20,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
 
-          // Search & Grouping & Sorting Control Panel (Distinct Toolbar Panel)
-          if (showSearchPanel) ...[
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: widget.colors.primary.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: widget.colors.primary.withValues(alpha: 0.18)),
-              ),
-            child: Column(
+          // 1. Quick Filter Chips Bar (Always Outside & Visible)
+          propertiesAsync.maybeWhen(
+            data: (allProps) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Toolbar Header Label
-                Row(
+                _buildFilterChips(widget.colors, debtPropertyIds, allProps, loc),
+                const SizedBox(height: 12),
+              ],
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+
+          // 2. Active Insight Active Filter Indicator Bar (Always Outside & Visible)
+          if (_selectedInsight != null) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: getInsightConfig(_selectedInsight!, loc).severityColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: getInsightConfig(_selectedInsight!, loc).severityColor.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Icon(getInsightConfig(_selectedInsight!, loc).icon, size: 14, color: getInsightConfig(_selectedInsight!, loc).severityColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      loc.filterAppliedLabel(getInsightConfig(_selectedInsight!, loc).title),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: getInsightConfig(_selectedInsight!, loc).severityColor,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => setState(() => _selectedInsight = null),
+                    child: Icon(LucideIcons.x, size: 14, color: getInsightConfig(_selectedInsight!, loc).severityColor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // 3. Collapsible Search & Grouping & Sorting Panel
+          if (showSearchPanel) ...[
+            InkWell(
+              onTap: () => setState(() => _isFilterExpanded = !_isFilterExpanded),
+              borderRadius: BorderRadius.circular(14),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: _isFilterExpanded ? const Color(0xFFF1F5F9) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
                   children: [
-                    Icon(LucideIcons.slidersHorizontal, size: 14, color: widget.colors.primary),
-                    const SizedBox(width: 6),
+                    Icon(
+                      LucideIcons.slidersHorizontal,
+                      size: 15,
+                      color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                          ? widget.colors.primary
+                          : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
                       loc.searchAndFilterPanel,
                       style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: widget.colors.primary,
-                        letterSpacing: 1.0,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                            ? widget.colors.primary
+                            : const Color(0xFF334155),
                       ),
+                    ),
+                    if (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest') ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: widget.colors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          loc.filterActiveLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: widget.colors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    AnimatedRotation(
+                      turns: _isFilterExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(LucideIcons.chevronDown, size: 16, color: Color(0xFF64748B)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+              ),
+            ),
+            const SizedBox(height: 10),
 
-                // Search Bar (Crisp White Background)
-                TextField(
-                  controller: _searchController,
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  decoration: InputDecoration(
-                    hintText: loc.searchPlaceholder,
-                    hintStyle: TextStyle(fontSize: 12, color: widget.colors.textPrimary.withValues(alpha: 0.45)),
-                    prefixIcon: Icon(LucideIcons.search, size: 18, color: widget.colors.primary),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(LucideIcons.x, size: 16),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                          )
-                        : null,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    isDense: true,
-                    filled: true,
-                    fillColor: widget.colors.bgWhite,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: widget.colors.primary.withValues(alpha: 0.15)),
+            // 4. Expanded Filter Form Card
+            if (_isFilterExpanded) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: widget.colors.primary.withValues(alpha: 0.15)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
-                    ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-
-                // Quick Filter Chips Bar
-                propertiesAsync.maybeWhen(
-                  data: (allProps) => _buildFilterChips(widget.colors, debtPropertyIds, allProps, loc),
-                  orElse: () => const SizedBox.shrink(),
-                ),
-                const SizedBox(height: 10),
-
-                // Active Insight Active Filter Indicator Bar
-                if (_selectedInsight != null) ...[
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: getInsightConfig(_selectedInsight!, loc).severityColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: getInsightConfig(_selectedInsight!, loc).severityColor.withValues(alpha: 0.3)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      decoration: InputDecoration(
+                        hintText: loc.searchPlaceholder,
+                        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                        prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+                        ),
+                      ),
                     ),
-                    child: Row(
+                    const SizedBox(height: 12),
+
+                    // Group & Sort Dropdowns
+                    Row(
                       children: [
-                        Icon(getInsightConfig(_selectedInsight!, loc).icon, size: 14, color: getInsightConfig(_selectedInsight!, loc).severityColor),
-                        const SizedBox(width: 8),
+                        // Grouping
                         Expanded(
-                          child: Text(
-                            loc.filterAppliedLabel(getInsightConfig(_selectedInsight!, loc).title),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: getInsightConfig(_selectedInsight!, loc).severityColor,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _groupBy,
+                                isExpanded: true,
+                                icon: const Icon(LucideIcons.layers, size: 14, color: Color(0xFF64748B)),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                                items: [
+                                  DropdownMenuItem(value: 'none', child: Text(loc.groupNone)),
+                                  DropdownMenuItem(value: 'landlord', child: Text(loc.groupByLandlord)),
+                                  DropdownMenuItem(value: 'city', child: Text(loc.groupByCity)),
+                                  DropdownMenuItem(value: 'status', child: Text(loc.groupByStatus)),
+                                  DropdownMenuItem(value: 'debt_consent', child: Text(loc.groupByDebtConsent)),
+                                ],
+                                onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
+                              ),
                             ),
                           ),
                         ),
-                        InkWell(
-                          onTap: () => setState(() => _selectedInsight = null),
-                          child: Icon(LucideIcons.x, size: 14, color: getInsightConfig(_selectedInsight!, loc).severityColor),
+                        const SizedBox(width: 10),
+
+                        // Sorting
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _sortBy,
+                                isExpanded: true,
+                                icon: const Icon(LucideIcons.arrowUpDown, size: 14, color: Color(0xFF64748B)),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                                items: [
+                                  DropdownMenuItem(value: 'newest', child: Text(loc.sortByNewest)),
+                                  DropdownMenuItem(value: 'oldest', child: Text(loc.sortByOldest)),
+                                  DropdownMenuItem(value: 'debt', child: Text(loc.sortByDebt)),
+                                  DropdownMenuItem(value: 'rent_desc', child: Text(loc.sortByRentDesc)),
+                                  DropdownMenuItem(value: 'rent_asc', child: Text(loc.sortByRentAsc)),
+                                  DropdownMenuItem(value: 'name_asc', child: Text(loc.sortByNameAsc)),
+                                  DropdownMenuItem(value: 'city_asc', child: Text(loc.sortByCityAsc)),
+                                  DropdownMenuItem(value: 'landlord_asc', child: Text(loc.sortByLandlordAsc)),
+                                ],
+                                onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            const SizedBox(height: 6),
+          ],
 
-                // Group & Sort Dropdowns
-                Row(
+          // View Mode & Counter Toolbar (Between Filter Card and List)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // "x properties" Badge
+              propertiesAsync.maybeWhen(
+                data: (props) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.building2, size: 13, color: Color(0xFF64748B)),
+                      const SizedBox(width: 6),
+                      Text(
+                        loc.propertiesCount(props.length),
+                        style: const TextStyle(
+                          color: Color(0xFF475569),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                orElse: () => const SizedBox.shrink(),
+              ),
+
+              // View Mode Toggle (Table vs Grid)
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: widget.colors.bgWhite,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _groupBy,
-                            isExpanded: true,
-                            icon: Icon(LucideIcons.layers, size: 14, color: widget.colors.primary),
-                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: widget.colors.textPrimary),
-                            items: [
-                              DropdownMenuItem(value: 'none', child: Text(loc.groupNone)),
-                              DropdownMenuItem(value: 'landlord', child: Text(loc.groupByLandlord)),
-                              DropdownMenuItem(value: 'city', child: Text(loc.groupByCity)),
-                              DropdownMenuItem(value: 'status', child: Text(loc.groupByStatus)),
-                              DropdownMenuItem(value: 'debt_consent', child: Text(loc.groupByDebtConsent)),
-                            ],
-                            onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
-                          ),
-                        ),
-                      ),
+                    _buildViewModeToggle(
+                      icon: LucideIcons.table,
+                      isSelected: effectiveViewMode == 'table',
+                      tooltip: loc.viewModeTable,
+                      onTap: () => setState(() => _viewMode = 'table'),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: widget.colors.bgWhite,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _sortBy,
-                            isExpanded: true,
-                            icon: Icon(LucideIcons.arrowUpDown, size: 14, color: widget.colors.primary),
-                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: widget.colors.textPrimary),
-                            items: [
-                              DropdownMenuItem(value: 'newest', child: Text(loc.sortByNewest)),
-                            ],
-                            onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
-                          ),
-                        ),
-                      ),
+                    const SizedBox(width: 2),
+                    _buildViewModeToggle(
+                      icon: LucideIcons.layoutGrid,
+                      isSelected: effectiveViewMode == 'grid',
+                      tooltip: loc.viewModeGrid,
+                      onTap: () => setState(() => _viewMode = 'grid'),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          ],
+          const SizedBox(height: 14),
 
           // Properties List / Grouped View
           propertiesAsync.when(
@@ -1146,18 +1315,25 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                           ),
                         ),
                       ],
-                      ...groupProps.map((property) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _PropertyCard(
-                              property: property,
-                              hasPendingDebt: debtPropertyIds.contains(property.id),
-                              colors: widget.colors,
-                              onTap: () => context.push(
-                                '/property-detail',
-                                extra: property,
+                      if (effectiveViewMode == 'table')
+                        _PropertyTableView(
+                          properties: groupProps,
+                          debtPropertyIds: debtPropertyIds,
+                          colors: widget.colors,
+                        )
+                      else
+                        ...groupProps.map((property) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _PropertyCard(
+                                property: property,
+                                hasPendingDebt: debtPropertyIds.contains(property.id),
+                                colors: widget.colors,
+                                onTap: () => context.push(
+                                  '/property-detail',
+                                  extra: property,
+                                ),
                               ),
-                            ),
-                          )),
+                            )),
                     ],
                   );
                 }).toList(),
@@ -1174,29 +1350,90 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
 }
 
 // ---------------------------------------------------------------------------
-// Agency Finance Tab Implementation
+// Agency Finance Tab Implementation (Apple & Stripe Pro Design)
 // ---------------------------------------------------------------------------
 
 class AgencyFinanceTab extends ConsumerStatefulWidget {
   final AgencyColorScheme colors;
+  final int? initialSegment;
 
-  const AgencyFinanceTab({super.key, required this.colors});
+  const AgencyFinanceTab({
+    super.key,
+    required this.colors,
+    this.initialSegment,
+  });
 
   @override
   ConsumerState<AgencyFinanceTab> createState() => _AgencyFinanceTabState();
 }
 
 class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
-  int _selectedSegment = 0; // 0: Onay Kuyruğu, 1: Borçlular, 2: Tüm Geçmiş
+  late int _selectedSegment;
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  String _typeFilter = 'all'; // 'all', 'rent', 'bill', 'dues', 'deposit'
   String _groupBy = 'none'; // 'none', 'landlord', 'city', 'status'
-  String _sortBy = 'newest'; // 'newest', 'amount_desc', 'name_asc', 'landlord_asc'
+  String _sortBy = 'newest'; // 'newest', 'oldest', 'amount_desc', 'amount_asc', 'name_asc', 'landlord_asc'
+  String? _viewMode; // null = auto (mobile: grid, desktop: table)
+  bool _isFilterExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedSegment = widget.initialSegment ?? 0;
+  }
+
+  @override
+  void didUpdateWidget(covariant AgencyFinanceTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSegment != null && widget.initialSegment != oldWidget.initialSegment) {
+      setState(() {
+        _selectedSegment = widget.initialSegment!;
+      });
+    }
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Widget _buildViewModeToggle({
+    required IconData icon,
+    required bool isSelected,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -1213,6 +1450,9 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final effectiveViewMode = _viewMode ?? (isMobile ? 'grid' : 'table');
 
     Map<String, double> calcTotals(List<Map<String, dynamic>> items) {
       final Map<String, double> totals = {};
@@ -1283,20 +1523,6 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final paidCount = paidThisMonthList.length;
     final paidTotals = calcTotals(paidThisMonthList);
 
-    // 5. Yaklaşan 7 Gün (Upcoming in 7 days)
-    final upcomingList = allPayments.where((item) {
-      final status = item['status'] as String? ?? 'pending';
-      if (status != 'pending') return false;
-      final dueDateStr = item['due_date'] as String?;
-      if (dueDateStr == null) return false;
-      final dueDate = DateTime.tryParse(dueDateStr);
-      if (dueDate == null) return false;
-      final diff = dueDate.difference(today).inDays;
-      return diff >= 0 && diff <= 7;
-    }).toList();
-    final upcomingCount = upcomingList.length;
-    final upcomingTotals = calcTotals(upcomingList);
-
     // Active Segment Raw List
     List<Map<String, dynamic>> rawList;
     if (_selectedSegment == 0) {
@@ -1309,9 +1535,19 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       rawList = allPayments.where((p) => p['status'] == 'paid').toList();
     }
 
-    // 1. Search & Filter
+    // 1. Search & Type Filtering
     final query = _searchQuery.trim().toLowerCase();
     var filtered = rawList.where((payment) {
+      // Type Filter
+      if (_typeFilter != 'all') {
+        final rawTitle = (payment['title'] as String? ?? 'Kira').toLowerCase();
+        if (_typeFilter == 'rent' && !(rawTitle == 'kira' || rawTitle.contains('rent'))) return false;
+        if (_typeFilter == 'dues' && !rawTitle.contains('aidat') && !rawTitle.contains('due')) return false;
+        if (_typeFilter == 'deposit' && !rawTitle.contains('depozit') && !rawTitle.contains('deposit')) return false;
+        if (_typeFilter == 'bill' && (rawTitle == 'kira' || rawTitle.contains('rent') || rawTitle.contains('aidat') || rawTitle.contains('depozit'))) return false;
+      }
+
+      // Search Query
       if (query.isEmpty) return true;
       final propertyId = payment['property_id'] as String? ?? '';
       final pObj = propertiesMap[propertyId];
@@ -1326,12 +1562,14 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
 
       final tenantMap = payment['tenant'] as Map<String, dynamic>?;
       final tenant = (tenantMap?['full_name'] as String? ?? pObj?.tenantName ?? '').toLowerCase();
+      final title = (payment['title'] as String? ?? '').toLowerCase();
 
       return propName.contains(query) ||
           propAddress.contains(query) ||
           city.contains(query) ||
           landlord.contains(query) ||
-          tenant.contains(query);
+          tenant.contains(query) ||
+          title.contains(query);
     }).toList();
 
     // 2. Sort
@@ -1351,17 +1589,22 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       final landlordA = ((propMapA?['landlord'] as Map<String, dynamic>?)?['full_name'] as String? ?? pObjA?.landlordName ?? '').toLowerCase();
       final landlordB = ((propMapB?['landlord'] as Map<String, dynamic>?)?['full_name'] as String? ?? pObjB?.landlordName ?? '').toLowerCase();
 
+      final dueAStr = a['due_date'] as String? ?? a['created_at'] as String? ?? '';
+      final dueBStr = b['due_date'] as String? ?? b['created_at'] as String? ?? '';
+
       switch (_sortBy) {
+        case 'oldest':
+          return dueAStr.compareTo(dueBStr);
         case 'amount_desc':
           return amountB.compareTo(amountA);
+        case 'amount_asc':
+          return amountA.compareTo(amountB);
         case 'name_asc':
           return nameA.compareTo(nameB);
         case 'landlord_asc':
           return landlordA.compareTo(landlordB);
         case 'newest':
         default:
-          final dueAStr = a['due_date'] as String? ?? a['created_at'] as String? ?? '';
-          final dueBStr = b['due_date'] as String? ?? b['created_at'] as String? ?? '';
           return dueBStr.compareTo(dueAStr);
       }
     });
@@ -1408,18 +1651,42 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
-            icon: LucideIcons.wallet,
-            label: loc.financeAndPaymentsHeader,
-            color: widget.colors.primary,
+          // Header (Bento Style)
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF059669).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.2)),
+                ),
+                child: const Icon(LucideIcons.wallet, size: 18, color: Color(0xFF059669)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  loc.financeAndPaymentsHeader,
+                  style: TextStyle(
+                    fontSize: isMobile ? 17 : 20,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // 4 KPI Summary Cards (4-column on Web/Desktop, 2x2 on Mobile)
+          // 4 Bento KPI Summary Cards (Interactive Segment Selector)
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-              final crossAxisCount = width > 900 ? 4 : (width > 600 ? 2 : 1);
+              final crossAxisCount = width > 850 ? 4 : 2;
               final cardWidth = (width - ((crossAxisCount - 1) * 12)) / crossAxisCount;
 
               return Wrap(
@@ -1431,7 +1698,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     title: loc.financePendingApprovals,
                     count: pendingCount,
                     totals: pendingTotals,
-                    color: widget.colors.brandGold,
+                    color: const Color(0xFFD97706),
                     icon: LucideIcons.clock,
                     isSelected: _selectedSegment == 0,
                     onTap: () => setState(() => _selectedSegment = 0),
@@ -1439,16 +1706,10 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                   ),
                   _FinanceKpiCard(
                     width: cardWidth,
-                    title: loc.localeName == 'tr'
-                        ? 'Girilmeyen Faturalar'
-                        : (loc.localeName == 'ru'
-                            ? 'Невнесенные счета'
-                            : (loc.localeName.startsWith('sr')
-                                ? 'Neuneti računi'
-                                : 'Unentered Bills')),
+                    title: loc.unenteredBillsTitle,
                     count: unenteredCount,
                     totals: const {},
-                    color: Colors.amber.shade800,
+                    color: const Color(0xFFEA580C),
                     icon: LucideIcons.fileQuestion,
                     isSelected: _selectedSegment == 1,
                     onTap: () => setState(() => _selectedSegment = 1),
@@ -1459,7 +1720,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     title: loc.financeOverduePayments,
                     count: overdueCount,
                     totals: overdueTotals,
-                    color: Colors.red.shade600,
+                    color: const Color(0xFFE11D48),
                     icon: LucideIcons.alertTriangle,
                     isSelected: _selectedSegment == 2,
                     onTap: () => setState(() => _selectedSegment = 2),
@@ -1470,7 +1731,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     title: loc.financePaidThisMonth,
                     count: paidCount,
                     totals: paidTotals,
-                    color: Colors.green.shade600,
+                    color: const Color(0xFF059669),
                     icon: LucideIcons.checkCircle2,
                     isSelected: _selectedSegment == 3,
                     onTap: () => setState(() => _selectedSegment = 3),
@@ -1480,212 +1741,300 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
               );
             },
           ),
+          const SizedBox(height: 16),
 
-          const SizedBox(height: 24),
-
-          // Segment Filter Toolbar (Onay Kuyruğu / Borçlular / Tüm Geçmiş)
+          // Quick Expense Type Filter Chips Bar (Always Outside & Visible)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _FinanceSegmentChip(
-                  label: loc.tabPendingQueue,
-                  badgeCount: pendingCount,
-                  badgeColor: widget.colors.brandGold,
-                  isSelected: _selectedSegment == 0,
-                  onTap: () => setState(() => _selectedSegment = 0),
-                  colors: widget.colors,
-                ),
+                _buildTypeFilterChip('all', loc.allPropertiesGroup, _typeFilter == 'all'),
                 const SizedBox(width: 8),
-                _FinanceSegmentChip(
-                  label: loc.localeName == 'tr'
-                      ? 'Girilmeyen Faturalar'
-                      : (loc.localeName == 'ru'
-                          ? 'Невнесенные счета'
-                          : (loc.localeName.startsWith('sr')
-                              ? 'Neuneti računi'
-                              : 'Unentered Bills')),
-                  badgeCount: unenteredCount,
-                  badgeColor: Colors.amber.shade800,
-                  isSelected: _selectedSegment == 1,
-                  onTap: () => setState(() => _selectedSegment = 1),
-                  colors: widget.colors,
-                ),
+                _buildTypeFilterChip('rent', loc.filterRent, _typeFilter == 'rent'),
                 const SizedBox(width: 8),
-                _FinanceSegmentChip(
-                  label: loc.tabOverdueList,
-                  badgeCount: overdueCount,
-                  badgeColor: Colors.red.shade600,
-                  isSelected: _selectedSegment == 2,
-                  onTap: () => setState(() => _selectedSegment = 2),
-                  colors: widget.colors,
-                ),
+                _buildTypeFilterChip('bill', loc.filterBills, _typeFilter == 'bill'),
                 const SizedBox(width: 8),
-                _FinanceSegmentChip(
-                  label: loc.tabAllHistory,
-                  badgeCount: allPayments.where((p) => p['status'] == 'paid').length,
-                  isSelected: _selectedSegment == 3,
-                  onTap: () => setState(() => _selectedSegment = 3),
-                  colors: widget.colors,
-                ),
+                _buildTypeFilterChip('dues', loc.filterDues, _typeFilter == 'dues'),
+                const SizedBox(width: 8),
+                _buildTypeFilterChip('deposit', loc.filterDeposit, _typeFilter == 'deposit'),
               ],
             ),
           ),
+          const SizedBox(height: 12),
 
-          const SizedBox(height: 16),
-
-          // Search & Grouping & Sorting Panel
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: widget.colors.primary.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: widget.colors.primary.withValues(alpha: 0.18)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(LucideIcons.slidersHorizontal, size: 14, color: widget.colors.primary),
-                    const SizedBox(width: 6),
-                    Text(
-                      loc.searchAndFilterPanel,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: widget.colors.primary,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Search Input
-                TextField(
-                  controller: _searchController,
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  style: TextStyle(fontSize: 13, color: widget.colors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: loc.searchPlaceholder,
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: widget.colors.textPrimary.withValues(alpha: 0.45),
-                    ),
-                    prefixIcon: Icon(LucideIcons.search, size: 18, color: widget.colors.primary),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(LucideIcons.x, size: 16),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: widget.colors.bgWhite,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: widget.colors.primary.withValues(alpha: 0.2)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: widget.colors.primary.withValues(alpha: 0.15)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+          // Collapsible Search & Grouping & Sorting Panel Toggle
+          InkWell(
+            onTap: () => setState(() => _isFilterExpanded = !_isFilterExpanded),
+            borderRadius: BorderRadius.circular(14),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _isFilterExpanded ? const Color(0xFFF1F5F9) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.slidersHorizontal,
+                    size: 15,
+                    color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                        ? widget.colors.primary
+                        : const Color(0xFF64748B),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    loc.searchAndFilterPanel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                          ? widget.colors.primary
+                          : const Color(0xFF334155),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                // Grouping & Sorting Dropdowns Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: widget.colors.bgWhite,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _groupBy,
-                            isExpanded: true,
-                            icon: Icon(LucideIcons.chevronDown, size: 16, color: widget.colors.primary),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: widget.colors.textPrimary,
-                            ),
-                            items: [
-                              DropdownMenuItem(value: 'none', child: Text(loc.groupNone)),
-                              DropdownMenuItem(value: 'landlord', child: Text(loc.groupByLandlord)),
-                              DropdownMenuItem(value: 'city', child: Text(loc.groupByCity)),
-                              DropdownMenuItem(value: 'status', child: Text(loc.groupByStatus)),
-                            ],
-                            onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
-                          ),
-                        ),
-                      ),
-                    ),
+                  if (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest') ...[
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: widget.colors.bgWhite,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _sortBy,
-                            isExpanded: true,
-                            icon: Icon(LucideIcons.chevronDown, size: 16, color: widget.colors.primary),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: widget.colors.textPrimary,
-                            ),
-                            items: [
-                              DropdownMenuItem(value: 'newest', child: Text(loc.sortByNewest)),
-                              DropdownMenuItem(value: 'amount_desc', child: Text(loc.sortByNameAsc)),
-                              DropdownMenuItem(value: 'name_asc', child: Text(loc.sortByNameAsc)),
-                              DropdownMenuItem(value: 'landlord_asc', child: Text(loc.sortByLandlordAsc)),
-                            ],
-                            onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: widget.colors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        loc.filterActiveLabel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: widget.colors.primary,
                         ),
                       ),
                     ),
                   ],
-                ),
-              ],
+                  const Spacer(),
+                  AnimatedRotation(
+                    turns: _isFilterExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(LucideIcons.chevronDown, size: 16, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
             ),
           ),
+          const SizedBox(height: 10),
 
-          const SizedBox(height: 16),
+          // Expanded Filter Form Card
+          if (_isFilterExpanded) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.025),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Search Input
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    decoration: InputDecoration(
+                      hintText: loc.searchPlaceholder,
+                      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
-          // Render List (Ungrouped vs Grouped)
+                  // Grouping & Sorting Dropdowns Row
+                  Row(
+                    children: [
+                      // Grouping Dropdown
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _groupBy,
+                              isExpanded: true,
+                              icon: const Icon(LucideIcons.layers, size: 14, color: Color(0xFF64748B)),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                              items: [
+                                DropdownMenuItem(value: 'none', child: Text(loc.groupNone)),
+                                DropdownMenuItem(value: 'landlord', child: Text(loc.groupByLandlord)),
+                                DropdownMenuItem(value: 'city', child: Text(loc.groupByCity)),
+                                DropdownMenuItem(value: 'status', child: Text(loc.groupByStatus)),
+                              ],
+                              onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Sorting Dropdown
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _sortBy,
+                              isExpanded: true,
+                              icon: const Icon(LucideIcons.arrowUpDown, size: 14, color: Color(0xFF64748B)),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                              items: [
+                                DropdownMenuItem(value: 'newest', child: Text(loc.sortByNewest)),
+                                DropdownMenuItem(value: 'oldest', child: Text(loc.sortByOldest)),
+                                DropdownMenuItem(value: 'amount_desc', child: Text(loc.sortByAmountDesc)),
+                                DropdownMenuItem(value: 'amount_asc', child: Text(loc.sortByAmountAsc)),
+                                DropdownMenuItem(value: 'name_asc', child: Text(loc.sortByNameAsc)),
+                                DropdownMenuItem(value: 'landlord_asc', child: Text(loc.sortByLandlordAsc)),
+                              ],
+                              onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          const SizedBox(height: 6),
+
+          // View Mode & Counter Toolbar (Between Filter Card and List)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Transactions Count Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.receipt, size: 13, color: Color(0xFF64748B)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${filtered.length} ${loc.paymentRequests.toLowerCase()}',
+                      style: const TextStyle(
+                        color: Color(0xFF475569),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // View Mode Switcher (Table vs Grid)
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildViewModeToggle(
+                      icon: LucideIcons.table,
+                      isSelected: effectiveViewMode == 'table',
+                      tooltip: loc.viewModeTable,
+                      onTap: () => setState(() => _viewMode = 'table'),
+                    ),
+                    const SizedBox(width: 2),
+                    _buildViewModeToggle(
+                      icon: LucideIcons.layoutGrid,
+                      isSelected: effectiveViewMode == 'grid',
+                      tooltip: loc.viewModeGrid,
+                      onTap: () => setState(() => _viewMode = 'grid'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Render List (Table View vs Card View & Grouping)
           if (filtered.isEmpty)
             _EmptyCard(
               icon: LucideIcons.receipt,
               message: loc.noPropertiesMatchingFilter,
               colors: widget.colors,
             )
-          else if (_groupBy == 'none')
-            ...filtered.map((payment) => _FinancePaymentItemCard(
-                  payment: payment,
-                  propertiesMap: propertiesMap,
-                  colors: widget.colors,
-                  loc: loc,
-                  segment: _selectedSegment,
-                ))
-          else
+          else if (_groupBy == 'none') ...[
+            if (effectiveViewMode == 'table')
+              _FinanceTableView(
+                payments: filtered,
+                propertiesMap: propertiesMap,
+                colors: widget.colors,
+                loc: loc,
+                segment: _selectedSegment,
+              )
+            else
+              ...filtered.map((payment) => _FinancePaymentItemCard(
+                    payment: payment,
+                    propertiesMap: propertiesMap,
+                    colors: widget.colors,
+                    loc: loc,
+                    segment: _selectedSegment,
+                  )),
+          ] else ...[
             ...groupedPayments.entries.map((entry) {
               final groupTitle = entry.key;
               final groupItems = entry.value;
@@ -1694,54 +2043,57 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 14, bottom: 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _groupBy == 'city'
-                              ? LucideIcons.mapPin
-                              : (_groupBy == 'landlord' ? LucideIcons.userCheck : LucideIcons.tag),
-                          size: 15,
-                          color: widget.colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          groupTitle,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: widget.colors.textPrimary,
+                    padding: const EdgeInsets.only(top: 8, bottom: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: widget.colors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _groupBy == 'city'
+                                ? LucideIcons.mapPin
+                                : (_groupBy == 'landlord' ? LucideIcons.userCheck : LucideIcons.tag),
+                            size: 13,
+                            color: widget.colors.primary,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: widget.colors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${groupItems.length}',
+                          const SizedBox(width: 6),
+                          Text(
+                            '$groupTitle (${groupItems.length})',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: widget.colors.primary,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  ...groupItems.map((payment) => _FinancePaymentItemCard(
-                        payment: payment,
-                        propertiesMap: propertiesMap,
-                        colors: widget.colors,
-                        loc: loc,
-                        segment: _selectedSegment,
-                      )),
+                  if (effectiveViewMode == 'table')
+                    _FinanceTableView(
+                      payments: groupItems,
+                      propertiesMap: propertiesMap,
+                      colors: widget.colors,
+                      loc: loc,
+                      segment: _selectedSegment,
+                    )
+                  else
+                    ...groupItems.map((payment) => _FinancePaymentItemCard(
+                          payment: payment,
+                          propertiesMap: propertiesMap,
+                          colors: widget.colors,
+                          loc: loc,
+                          segment: _selectedSegment,
+                        )),
+                  const SizedBox(height: 12),
                 ],
               );
             }),
+          ],
 
           const SizedBox(height: 24),
           PoweredByStanomerFooter(textColor: widget.colors.textPrimary),
@@ -1750,10 +2102,36 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       ),
     );
   }
+
+  Widget _buildTypeFilterChip(String key, String label, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _typeFilter = key),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? Colors.white : const Color(0xFF475569),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Finance KPI Card
+// Bento KPI Card
 // ---------------------------------------------------------------------------
 
 class _FinanceKpiCard extends StatelessWidget {
@@ -1791,21 +2169,21 @@ class _FinanceKpiCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         width: width,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.08) : colors.bgWhite,
+          color: isSelected ? color.withValues(alpha: 0.06) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : color.withValues(alpha: 0.25),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? color : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: isSelected ? 0.04 : 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -1826,7 +2204,7 @@ class _FinanceKpiCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -1845,21 +2223,21 @@ class _FinanceKpiCard extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: colors.textPrimary.withValues(alpha: 0.65),
+                color: Color(0xFF64748B),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              formattedTotal,
+              formattedTotal.isNotEmpty ? formattedTotal : '$count',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: totals.length > 1 ? 12 : 15,
                 fontWeight: FontWeight.w900,
-                color: colors.textPrimary,
+                color: const Color(0xFF0F172A),
               ),
             ),
           ],
@@ -1869,75 +2247,632 @@ class _FinanceKpiCard extends StatelessWidget {
   }
 }
 
+
 // ---------------------------------------------------------------------------
-// Finance Segment Chip
+// High Density Dense Finance Table View & Rows
 // ---------------------------------------------------------------------------
 
-class _FinanceSegmentChip extends StatelessWidget {
-  final String label;
-  final int badgeCount;
-  final Color? badgeColor;
-  final bool isSelected;
-  final VoidCallback onTap;
+class _FinanceTableView extends StatelessWidget {
+  final List<Map<String, dynamic>> payments;
+  final Map<String, Property> propertiesMap;
   final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final int segment;
 
-  const _FinanceSegmentChip({
-    required this.label,
-    required this.badgeCount,
-    this.badgeColor,
-    required this.isSelected,
-    required this.onTap,
+  const _FinanceTableView({
+    required this.payments,
+    required this.propertiesMap,
     required this.colors,
+    required this.loc,
+    required this.segment,
   });
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = badgeColor ?? colors.primary;
+    const colProperty = 260.0;
+    const colLandlord = 200.0;
+    const colDueDate = 120.0;
+    const colAmount = 130.0;
+    const colStatus = 120.0;
+    const colAction = 140.0;
+    const tableWidth = colProperty + colLandlord + colDueDate + colAmount + colStatus + colAction;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor : colors.bgWhite,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? activeColor : colors.textPrimary.withValues(alpha: 0.15),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double width = constraints.maxWidth > tableWidth ? constraints.maxWidth : tableWidth;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                color: isSelected ? Colors.white : colors.textPrimary,
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: SizedBox(
+              width: width,
+              child: Column(
+                children: [
+                  // Table Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: colProperty,
+                          child: Text(
+                            loc.colPropertyAndType,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colLandlord,
+                          child: Text(
+                            '${loc.landlordLabel.toUpperCase()} / ${loc.tenantLabel.toUpperCase()}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colDueDate,
+                          child: Text(
+                            loc.colDueDate,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colAmount,
+                          child: Text(
+                            loc.colAmount,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colStatus,
+                          child: Text(
+                            loc.statusLabel,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colAction,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              loc.colAction,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Rows
+                  ...payments.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final payment = entry.value;
+                    final isLast = index == payments.length - 1;
+
+                    return _FinanceTableRow(
+                      payment: payment,
+                      propertiesMap: propertiesMap,
+                      colors: colors,
+                      loc: loc,
+                      segment: segment,
+                      isLast: isLast,
+                      colProperty: colProperty,
+                      colLandlord: colLandlord,
+                      colDueDate: colDueDate,
+                      colAmount: colAmount,
+                      colStatus: colStatus,
+                      colAction: colAction,
+                    );
+                  }),
+                ],
               ),
             ),
-            if (badgeCount > 0) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : activeColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FinanceTableRow extends ConsumerStatefulWidget {
+  final Map<String, dynamic> payment;
+  final Map<String, Property> propertiesMap;
+  final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final int segment;
+  final bool isLast;
+  final double colProperty;
+  final double colLandlord;
+  final double colDueDate;
+  final double colAmount;
+  final double colStatus;
+  final double colAction;
+
+  const _FinanceTableRow({
+    required this.payment,
+    required this.propertiesMap,
+    required this.colors,
+    required this.loc,
+    required this.segment,
+    required this.isLast,
+    required this.colProperty,
+    required this.colLandlord,
+    required this.colDueDate,
+    required this.colAmount,
+    required this.colStatus,
+    required this.colAction,
+  });
+
+  @override
+  ConsumerState<_FinanceTableRow> createState() => _FinanceTableRowState();
+}
+
+class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final payment = widget.payment;
+    final id = payment['id'] as String;
+    final propertyId = payment['property_id'] as String? ?? '';
+    final pObj = widget.propertiesMap[propertyId];
+
+    final amount = (payment['amount'] as num?)?.toDouble() ??
+        (payment['total_amount'] as num?)?.toDouble() ??
+        (payment['rent_amount'] as num?)?.toDouble() ??
+        0.0;
+    final currency = payment['currency'] as String? ?? pObj?.currency ?? 'EUR';
+
+    final rawTitle = payment['title'] as String? ?? 'Kira';
+    final localizedTitle = ExpenseUtils.getLocalizedExpenseName(rawTitle, widget.loc);
+
+    final dueDateStr = payment['due_date'] as String?;
+    final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+    final dueDateFormatted = dueDate != null ? DateFormat('dd MMM yyyy', widget.loc.localeName).format(dueDate) : null;
+
+    final rawMonth = payment['month'] as String?;
+    String periodText = '';
+    if (rawMonth != null && rawMonth.trim().isNotEmpty && rawMonth != localizedTitle && rawMonth != rawTitle) {
+      periodText = rawMonth;
+    } else if (dueDate != null) {
+      periodText = DateFormat('MMMM yyyy', widget.loc.localeName).format(dueDate);
+    }
+    final isCash = payment['is_cash'] == true;
+    final receiverType = payment['receiver_type'] as String? ?? 'owner';
+    final status = payment['status'] as String? ?? 'pending';
+    final receiptUrl = payment['receipt_url'] as String?;
+
+    // Property info extraction
+    final propertyData = payment['property'] as Map<String, dynamic>?;
+    final propertyName = propertyData?['name'] as String? ?? pObj?.name ?? widget.loc.managedProperties;
+    final cityName = propertyData?['city'] as String? ?? pObj?.city ?? '';
+
+    // Landlord & Tenant info extraction
+    final landlordData = propertyData?['landlord'] as Map<String, dynamic>?;
+    final landlordName = landlordData?['full_name'] as String? ??
+        pObj?.landlordName ??
+        (landlordData?['email'] as String? ?? pObj?.landlordEmail ?? widget.loc.groupLandlordPendingInvite);
+
+    final contractsMap = ref.watch(agencyContractsMapProvider).value ?? {};
+    final contract = contractsMap[propertyId];
+
+    final tenantData = payment['tenant'] as Map<String, dynamic>?;
+    final rawTenantName = tenantData?['full_name'] as String? ?? pObj?.tenantName;
+    final tenantEmail = tenantData?['email'] as String? ?? contract?.inviteeEmail;
+
+    final String tenantName;
+    if (rawTenantName != null && rawTenantName.trim().isNotEmpty) {
+      tenantName = rawTenantName;
+    } else if (tenantEmail != null && tenantEmail.trim().isNotEmpty) {
+      tenantName = tenantEmail;
+    } else {
+      tenantName = widget.loc.tenantLabel;
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final isOverdue = (status == 'overdue') || (status == 'pending' && dueDate != null && dueDate.isBefore(today) && amount > 0);
+    final daysOverdue = dueDate != null && dueDate.isBefore(today) ? today.difference(dueDate).inDays : 0;
+
+    final targetProperty = pObj ?? (propertyData != null && propertyData['id'] != null ? Property.fromJson(propertyData) : null);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: InkWell(
+        onTap: () {
+          if (targetProperty != null) {
+            context.push(
+              '/property-detail',
+              extra: {
+                'property': targetProperty,
+                'initialTabIndex': 1,
+                'initialExpandedPaymentId': id,
+              },
+            );
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: _isHovered ? const Color(0xFFF8FAFC) : Colors.white,
+            border: widget.isLast ? null : const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+          ),
+          child: Row(
+            children: [
+              // 1. Property & Expense Title / Type
+              SizedBox(
+                width: widget.colProperty,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.building2, size: 15, color: Color(0xFF2563EB)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            propertyName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  localizedTitle,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              if (cityName.isNotEmpty) ...[
+                                const SizedBox(width: 4),
+                                Text(
+                                  '· $cityName',
+                                  style: const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  '$badgeCount',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : activeColor,
-                  ),
+              ),
+
+              // 2. Landlord & Tenant
+              SizedBox(
+                width: widget.colLandlord,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.userCheck, size: 12, color: Color(0xFF2563EB)),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            landlordName,
+                            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.user, size: 12, color: Color(0xFF64748B)),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            tenantName,
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Due Date / Period
+              SizedBox(
+                width: widget.colDueDate,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dueDateFormatted ?? (periodText.isNotEmpty ? periodText : '—'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isOverdue ? const Color(0xFFE11D48) : const Color(0xFF334155),
+                      ),
+                    ),
+                    if (isOverdue && daysOverdue > 0) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.loc.daysOverdue(daysOverdue),
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFE11D48)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // 4. Amount
+              SizedBox(
+                width: widget.colAmount,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      amount > 0 ? '${amount.toStringAsFixed(0)} $currency' : '—',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    if (isCash) ...[
+                      const SizedBox(height: 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          widget.loc.cashBadge,
+                          style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // 5. Status Badge
+              SizedBox(
+                width: widget.colStatus,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: () {
+                    if (status == 'paid') {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFA7F3D0)),
+                        ),
+                        child: Text(
+                          widget.loc.filterActiveLabel,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF065F46)),
+                        ),
+                      );
+                    } else if (status == 'declared') {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Text(
+                          widget.loc.financePendingApprovals,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
+                        ),
+                      );
+                    } else if (isOverdue) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFFE4E6)),
+                        ),
+                        child: Text(
+                          widget.loc.statusOverdue,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFE11D48)),
+                        ),
+                      );
+                    } else if (amount == 0 && receiverType == 'owner' && rawTitle != 'Kira') {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF7ED),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFFEDD5)),
+                        ),
+                        child: Text(
+                          widget.loc.unenteredBillsTitle,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFC2410C)),
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Text(
+                          status.toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+                        ),
+                      );
+                    }
+                  }(),
+                ),
+              ),
+
+              // 6. Action Buttons
+              SizedBox(
+                width: widget.colAction,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Receipt dialog button
+                    if (receiptUrl != null &&
+                        receiptUrl.isNotEmpty &&
+                        receiptUrl != 'CASH' &&
+                        !isCash &&
+                        (receiptUrl.startsWith('http://') || receiptUrl.startsWith('https://'))) ...[
+                      IconButton(
+                        icon: const Icon(LucideIcons.fileText, size: 15, color: Color(0xFF2563EB)),
+                        tooltip: widget.loc.viewReceipt,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text(widget.loc.viewReceipt),
+                              content: Image.network(
+                                receiptUrl,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Text(widget.loc.cannotOpenDocument),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+
+                    // Quick Approve for Declared
+                    if (widget.segment == 0 || status == 'declared') ...[
+                      IconButton(
+                        icon: const Icon(LucideIcons.check, size: 15, color: Color(0xFF059669)),
+                        tooltip: widget.loc.approvePayment,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                        onPressed: () async {
+                          try {
+                            final propRepo = ref.read(propertyRepositoryProvider);
+                            final monthName = periodText.isNotEmpty ? periodText : 'Kira';
+                            await propRepo.approveRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+
+                            ref.invalidate(agencyPendingPaymentsProvider);
+                            ref.invalidate(agencyAllPaymentsProvider);
+                            ref.invalidate(agencyPropertiesProvider);
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Ödeme onaylandı.'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Onay hatası: $e'),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+
+                    // Chevron Detail button
+                    const SizedBox(width: 4),
+                    const Icon(LucideIcons.chevronRight, size: 16, color: Color(0xFF94A3B8)),
+                  ],
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -1953,7 +2888,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
   final Map<String, Property> propertiesMap;
   final AgencyColorScheme colors;
   final AppLocalizations loc;
-  final int segment; // 0: Onay Kuyruğu, 1: Borçlular, 2: Tüm Geçmiş
+  final int segment; // 0: Onay Kuyruğu, 1: Girilmeyen Faturalar, 2: Borçlular, 3: Tüm Geçmiş
 
   const _FinancePaymentItemCard({
     required this.payment,
@@ -1974,7 +2909,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
         (payment['rent_amount'] as num?)?.toDouble() ??
         0.0;
     final currency = payment['currency'] as String? ?? pObj?.currency ?? 'EUR';
-    
+
     final rawTitle = payment['title'] as String? ?? 'Kira';
     final localizedTitle = ExpenseUtils.getLocalizedExpenseName(rawTitle, loc);
 
@@ -2024,30 +2959,29 @@ class _FinancePaymentItemCard extends ConsumerWidget {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final daysOverdue = dueDate != null && dueDate.isBefore(today)
-        ? today.difference(dueDate).inDays
-        : 0;
+    final isOverdue = (status == 'overdue') || (status == 'pending' && dueDate != null && dueDate.isBefore(today) && amount > 0);
+    final daysOverdue = dueDate != null && dueDate.isBefore(today) ? today.difference(dueDate).inDays : 0;
 
     final targetProperty = pObj ?? (propertyData != null && propertyData['id'] != null ? Property.fromJson(propertyData) : null);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: colors.bgWhite,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: segment == 1
-              ? Colors.red.withValues(alpha: 0.35)
-              : segment == 0
-                  ? colors.brandGold.withValues(alpha: 0.35)
-                  : colors.textPrimary.withValues(alpha: 0.12),
-          width: segment == 1 ? 1.5 : 1.0,
+          color: isOverdue
+              ? const Color(0xFFFDA4AF)
+              : (segment == 0
+                  ? const Color(0xFFFDE68A)
+                  : const Color(0xFFE2E8F0)),
+          width: isOverdue ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -2081,21 +3015,21 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: segment == 1
-                            ? Colors.red.withValues(alpha: 0.1)
+                        color: isOverdue
+                            ? const Color(0xFFFFF1F2)
                             : (segment == 0
-                                ? colors.brandGold.withValues(alpha: 0.12)
-                                : colors.primary.withValues(alpha: 0.1)),
+                                ? const Color(0xFFFFFBEB)
+                                : const Color(0xFF2563EB).withValues(alpha: 0.08)),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
-                        segment == 1
+                        isOverdue
                             ? LucideIcons.alertTriangle
                             : (segment == 0 ? LucideIcons.clock : LucideIcons.building),
                         size: 18,
-                        color: segment == 1
-                            ? Colors.red
-                            : (segment == 0 ? colors.brandGold : colors.primary),
+                        color: isOverdue
+                            ? const Color(0xFFE11D48)
+                            : (segment == 0 ? const Color(0xFFD97706) : const Color(0xFF2563EB)),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -2108,10 +3042,10 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   propertyName,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: colors.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -2122,20 +3056,20 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: colors.primary.withValues(alpha: 0.08),
+                                    color: const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(LucideIcons.mapPin, size: 10, color: colors.primary),
+                                      const Icon(LucideIcons.mapPin, size: 10, color: Color(0xFF64748B)),
                                       const SizedBox(width: 3),
                                       Text(
                                         cityName,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
-                                          color: colors.primary,
+                                          color: Color(0xFF475569),
                                         ),
                                       ),
                                     ],
@@ -2148,9 +3082,9 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             const SizedBox(height: 2),
                             Text(
                               propertyAddress,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
-                                color: colors.textPrimary.withValues(alpha: 0.55),
+                                color: Color(0xFF64748B),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -2164,19 +3098,19 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${amount.toStringAsFixed(0)} $currency',
-                          style: TextStyle(
+                          amount > 0 ? '${amount.toStringAsFixed(0)} $currency' : '—',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
-                            color: colors.primary,
+                            color: Color(0xFF0F172A),
                           ),
                         ),
                         Text(
                           periodText.isNotEmpty ? '$localizedTitle · $periodText' : localizedTitle,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: colors.primary.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF64748B),
                           ),
                         ),
                       ],
@@ -2185,31 +3119,31 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                 ),
 
                 const SizedBox(height: 10),
-                const Divider(height: 1, thickness: 0.5),
+                const Divider(height: 1, thickness: 0.5, color: Color(0xFFF1F5F9)),
                 const SizedBox(height: 10),
 
-                // Inline Landlord & Tenant Clean Display
+                // Landlord & Tenant Clean Display
                 Row(
                   children: [
                     // Landlord Info
                     Expanded(
                       child: Row(
                         children: [
-                          Icon(LucideIcons.userCheck, size: 13, color: colors.primary),
+                          const Icon(LucideIcons.userCheck, size: 13, color: Color(0xFF2563EB)),
                           const SizedBox(width: 5),
                           Expanded(
                             child: RichText(
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               text: TextSpan(
-                                style: TextStyle(fontSize: 11, color: colors.textPrimary),
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF1E293B)),
                                 children: [
                                   TextSpan(
-                                    text: loc.landlordLabel,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                    text: '${loc.landlordLabel}: ',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 11,
-                                      color: colors.textPrimary.withValues(alpha: 0.6),
+                                      color: Color(0xFF64748B),
                                     ),
                                   ),
                                   TextSpan(
@@ -2228,21 +3162,21 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          Icon(LucideIcons.user, size: 13, color: Colors.blue.shade700),
+                          const Icon(LucideIcons.user, size: 13, color: Color(0xFF64748B)),
                           const SizedBox(width: 5),
                           Expanded(
                             child: RichText(
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               text: TextSpan(
-                                style: TextStyle(fontSize: 11, color: colors.textPrimary),
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF1E293B)),
                                 children: [
                                   TextSpan(
-                                    text: loc.tenantLabel,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                    text: '${loc.tenantLabel}: ',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 11,
-                                      color: colors.textPrimary.withValues(alpha: 0.6),
+                                      color: Color(0xFF64748B),
                                     ),
                                   ),
                                   TextSpan(
@@ -2268,23 +3202,23 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: colors.primary.withValues(alpha: 0.08),
+                          color: const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(LucideIcons.calendar, size: 11, color: colors.primary),
+                            const Icon(LucideIcons.calendar, size: 11, color: Color(0xFF64748B)),
                             const SizedBox(width: 4),
                             Text(
                               dueDateFormatted != null
                                   ? '${loc.localeName == 'tr' ? 'Vade:' : 'Due:'} $dueDateFormatted'
                                   : periodText,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: colors.primary,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF475569),
                               ),
                             ),
                           ],
@@ -2296,16 +3230,16 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50,
+                          color: const Color(0xFFFFF1F2),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.red.shade200),
+                          border: Border.all(color: const Color(0xFFFFE4E6)),
                         ),
                         child: Text(
                           loc.daysOverdue(daysOverdue),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red.shade800,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE11D48),
                           ),
                         ),
                       ),
@@ -2314,14 +3248,14 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade50,
+                          color: const Color(0xFFFEF3C7),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           loc.cashPayment,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
-                            color: Colors.amber.shade900,
+                            color: Color(0xFFB45309),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -2365,8 +3299,8 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             softWrap: true,
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.primary.withValues(alpha: 0.08),
-                            foregroundColor: colors.primary,
+                            backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                            foregroundColor: const Color(0xFF2563EB),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             minimumSize: Size.zero,
@@ -2380,7 +3314,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
 
                 const SizedBox(height: 10),
 
-                // Action Buttons Wrap Section (Multi-line Word-wrapping Layout, Borderless White/Secondary Buttons)
+                // Action Buttons Section
                 Align(
                   alignment: Alignment.centerRight,
                   child: Wrap(
@@ -2423,8 +3357,8 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade50,
-                            foregroundColor: Colors.red.shade700,
+                            backgroundColor: const Color(0xFFFFF1F2),
+                            foregroundColor: const Color(0xFFE11D48),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             minimumSize: Size.zero,
@@ -2451,10 +3385,9 @@ class _FinancePaymentItemCard extends ConsumerWidget {
 
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Ödeme başarıyla onaylandı.'),
+                                  const SnackBar(
+                                    content: Text('Ödeme başarıyla onaylandı.'),
                                     behavior: SnackBarBehavior.floating,
-                                    backgroundColor: Colors.green.shade700,
                                   ),
                                 );
                               }
@@ -2464,7 +3397,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                                   SnackBar(
                                     content: Text('Onay hatası: $e'),
                                     behavior: SnackBarBehavior.floating,
-                                    backgroundColor: Colors.red.shade700,
+                                    backgroundColor: Colors.red,
                                   ),
                                 );
                               }
@@ -2479,7 +3412,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             textAlign: TextAlign.center,
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: const Color(0xFF059669),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -2524,101 +3457,102 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       ]
                       // Segment 2: Gecikmedeki Borçlar Actions
                       else if (segment == 2 || status == 'overdue' || (status == 'pending' && amount > 0)) ...[
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final message = loc.overduePaymentReminderMessage(
-                        tenantName,
-                        propertyName,
-                        amount.toStringAsFixed(0),
-                        currency,
-                      );
-                      await Clipboard.setData(ClipboardData(text: message));
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(loc.reminderMessageCopied),
-                            behavior: SnackBarBehavior.floating,
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final message = loc.overduePaymentReminderMessage(
+                              tenantName,
+                              propertyName,
+                              amount.toStringAsFixed(0),
+                              currency,
+                            );
+                            await Clipboard.setData(ClipboardData(text: message));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(loc.reminderMessageCopied),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(LucideIcons.messageSquare, size: 13),
+                          label: Text(
+                            loc.sendReminder,
+                            style: const TextStyle(fontSize: 11),
+                            maxLines: 2,
+                            softWrap: true,
+                            textAlign: TextAlign.center,
                           ),
-                        );
-                      }
-                    },
-                    icon: const Icon(LucideIcons.messageSquare, size: 13),
-                    label: Text(
-                      loc.sendReminder,
-                      style: const TextStyle(fontSize: 11),
-                      maxLines: 2,
-                      softWrap: true,
-                      textAlign: TextAlign.center,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary.withValues(alpha: 0.08),
-                      foregroundColor: colors.primary,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            foregroundColor: const Color(0xFF334155),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final repo = AgencyRepository(ref.read(propertyRepositoryProvider).client);
+                            await repo.markPaymentAsCashPaid(id);
+                            ref.invalidate(agencyPendingPaymentsProvider);
+                            ref.invalidate(agencyAllPaymentsProvider);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            loc.markAsCashPaid,
+                            style: const TextStyle(fontSize: 11),
+                            maxLines: 2,
+                            softWrap: true,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ]
+                      // Status Indicator Badge
+                      else ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: status == 'paid'
+                                ? const Color(0xFFECFDF5)
+                                : (status == 'declared' ? const Color(0xFFFFFBEB) : const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: status == 'paid'
+                                  ? const Color(0xFFA7F3D0)
+                                  : (status == 'declared' ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0)),
+                            ),
+                          ),
+                          child: Text(
+                            status.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: status == 'paid'
+                                  ? const Color(0xFF065F46)
+                                  : (status == 'declared' ? const Color(0xFFB45309) : const Color(0xFF64748B)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final repo = AgencyRepository(ref.read(propertyRepositoryProvider).client);
-                      await repo.markPaymentAsCashPaid(id);
-                      ref.invalidate(agencyPendingPaymentsProvider);
-                      ref.invalidate(agencyAllPaymentsProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      loc.markAsCashPaid,
-                      style: const TextStyle(fontSize: 11),
-                      maxLines: 2,
-                      softWrap: true,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ]
-                // Segment 2: Status Indicator Badge
-                else ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: status == 'paid'
-                          ? Colors.green.shade50
-                          : status == 'declared'
-                              ? Colors.amber.shade50
-                              : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      status.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: status == 'paid'
-                            ? Colors.green.shade800
-                            : status == 'declared'
-                                ? Colors.amber.shade900
-                                : Colors.grey.shade700,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
-    ),
-  ),
-),
-);
-}
+    );
+  }
 }
 
 class _AgencyMaintenanceTab extends ConsumerStatefulWidget {
@@ -2636,6 +3570,8 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
   String _groupBy = 'none'; // 'none', 'status', 'priority', 'category', 'property'
   String _sortBy = 'newest'; // 'newest', 'oldest', 'priority_desc', 'title_asc'
   String? _selectedKpiFilter; // null, 'urgent', 'active', 'resolved'
+  bool _isFilterExpanded = false;
+  String? _viewMode; // null = auto (mobile: grid, desktop: table)
 
   @override
   void dispose() {
@@ -2643,7 +3579,43 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
     super.dispose();
   }
 
-  @override
+  Widget _buildViewModeToggle({
+    required IconData icon,
+    required bool isSelected,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 15,
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
   Map<String, String> _getLocalizedTexts(String lang) {
     switch (lang) {
       case 'tr':
@@ -2695,6 +3667,9 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'other_group': 'Diğer',
           'property_detail': 'Mülk Detayı',
           'managed_unit': 'Yönetilen Daire',
+          'view_detail': 'Detayı Gör',
+          'col_priority': 'Öncelik',
+          'col_date': 'Tarih',
         };
       case 'sr':
         return {
@@ -2745,6 +3720,9 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'other_group': 'Ostalo',
           'property_detail': 'Detalji Nekretnine',
           'managed_unit': 'Upravljani Stan',
+          'view_detail': 'Pogledaj Detalje',
+          'col_priority': 'Prioritet',
+          'col_date': 'Datum',
         };
       case 'ru':
         return {
@@ -2795,6 +3773,9 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'other_group': 'Другое',
           'property_detail': 'Детали Объекта',
           'managed_unit': 'Управляемый Объект',
+          'view_detail': 'Подробнее',
+          'col_priority': 'Приоритет',
+          'col_date': 'Дата',
         };
       case 'en':
       default:
@@ -2846,6 +3827,9 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'other_group': 'Other',
           'property_detail': 'Property Details',
           'managed_unit': 'Managed Property',
+          'view_detail': 'View Details',
+          'col_priority': 'Priority',
+          'col_date': 'Date',
         };
     }
   }
@@ -2860,19 +3844,45 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
     final propertiesAsync = ref.watch(agencyPropertiesProvider);
     final properties = propertiesAsync.asData?.value ?? [];
 
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final effectiveViewMode = _viewMode ?? (isMobile ? 'grid' : 'table');
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Header
-          _SectionHeader(
-            icon: LucideIcons.wrench,
-            label: loc.maintenanceRequestsHeader,
-            color: widget.colors.primary,
+          // Section Header (Bento Style)
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9333EA).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: const Color(0xFF9333EA).withValues(alpha: 0.2)),
+                ),
+                child: const Icon(LucideIcons.wrench, size: 18, color: Color(0xFF9333EA)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  loc.maintenanceRequestsHeader,
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width < 768 ? 17 : 20,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           requestsAsync.when(
             data: (allRequests) {
@@ -2948,7 +3958,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- INTERACTIVE KPI SUMMARY CARDS (4-column on Web/Desktop, 2x2 on Mobile) ---
+                  // --- INTERACTIVE BENTO KPI SUMMARY STRIP ---
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isDesktop = constraints.maxWidth >= 850;
@@ -2964,7 +3974,8 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                             title: txt['kpi_urgent_title']!,
                             count: urgentCount,
                             mainValue: '$urgentCount ${txt['request_unit']}',
-                            color: StanomerColors.alertPrimary,
+                            color: const Color(0xFFE11D48),
+                            bgColor: const Color(0xFFFFF1F2),
                             icon: LucideIcons.alertTriangle,
                             isSelected: _selectedKpiFilter == 'urgent',
                             onTap: () {
@@ -2980,6 +3991,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                             count: activeCount,
                             mainValue: '$activeCount ${txt['request_unit']}',
                             color: const Color(0xFFD97706),
+                            bgColor: const Color(0xFFFFFBEB),
                             icon: LucideIcons.wrench,
                             isSelected: _selectedKpiFilter == 'active',
                             onTap: () {
@@ -2994,7 +4006,8 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                             title: txt['kpi_resolved_title']!,
                             count: resolvedThisMonth,
                             mainValue: '$resolvedThisMonth ${txt['request_unit']}',
-                            color: Colors.green.shade600,
+                            color: const Color(0xFF10B981),
+                            bgColor: const Color(0xFFECFDF5),
                             icon: LucideIcons.checkCircle2,
                             isSelected: _selectedKpiFilter == 'resolved',
                             onTap: () {
@@ -3010,7 +4023,8 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                             count: 0,
                             customBadge: 'SLA',
                             mainValue: slaText,
-                            color: Colors.blue.shade600,
+                            color: const Color(0xFF2563EB),
+                            bgColor: const Color(0xFFEFF6FF),
                             icon: LucideIcons.clock,
                             isSelected: false,
                             onTap: () {
@@ -3032,7 +4046,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: widget.colors.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: widget.colors.primary.withValues(alpha: 0.2)),
                       ),
                       child: Row(
@@ -3050,7 +4064,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                                         : '${txt['filter_banner_resolved']} (${filtered.length})'),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                   color: widget.colors.primary,
                                 ),
                               ),
@@ -3077,131 +4091,267 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                       ),
                     ),
 
-                  // --- SEARCH & GROUP/SORT CONTROLS (MATCHING FINANCE TAB STYLING) ---
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: widget.colors.primary.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: widget.colors.primary.withValues(alpha: 0.18)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(LucideIcons.slidersHorizontal, size: 14, color: widget.colors.primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              loc.searchAndFilterPanel,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: widget.colors.primary,
-                                letterSpacing: 1.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Search Bar
-                        TextField(
-                          controller: _searchController,
-                          onChanged: (val) => setState(() => _searchQuery = val.trim()),
-                          decoration: InputDecoration(
-                            hintText: txt['search_hint'],
-                            prefixIcon: Icon(LucideIcons.search, size: 18, color: widget.colors.primary),
-                            suffixIcon: _searchQuery.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(LucideIcons.x, size: 16),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(() => _searchQuery = '');
-                                    },
-                                  )
-                                : null,
-                            filled: true,
-                            fillColor: Theme.of(context).cardColor,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
+                  // --- COLLAPSIBLE SEARCH & FILTERS TOGGLE ---
+                  InkWell(
+                    onTap: () => setState(() => _isFilterExpanded = !_isFilterExpanded),
+                    borderRadius: BorderRadius.circular(14),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _isFilterExpanded ? const Color(0xFFF1F5F9) : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.slidersHorizontal,
+                            size: 15,
+                            color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                                ? widget.colors.primary
+                                : const Color(0xFF64748B),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            AppLocalizations.of(context)!.searchAndFilterPanel,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest' || _isFilterExpanded)
+                                  ? widget.colors.primary
+                                  : const Color(0xFF334155),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Group & Sort Dropdowns
-                        Row(
-                          children: [
-                            // Grouping
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _groupBy,
-                                    isExpanded: true,
-                                    icon: Icon(LucideIcons.layers, size: 14, color: widget.colors.primary),
-                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: widget.colors.textPrimary),
-                                    items: [
-                                      DropdownMenuItem(value: 'none', child: Text(txt['group_none']!)),
-                                      DropdownMenuItem(value: 'status', child: Text(txt['group_status']!)),
-                                      DropdownMenuItem(value: 'priority', child: Text(txt['group_priority']!)),
-                                      DropdownMenuItem(value: 'category', child: Text(txt['group_category']!)),
-                                      DropdownMenuItem(value: 'property', child: Text(txt['group_property']!)),
-                                      DropdownMenuItem(value: 'landlord', child: Text(txt['group_landlord']!)),
-                                    ],
-                                    onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
-                                  ),
-                                ),
-                              ),
-                            ),
+                          if (_searchQuery.isNotEmpty || _groupBy != 'none' || _sortBy != 'newest') ...[
                             const SizedBox(width: 8),
-
-                            // Sorting
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: widget.colors.primary.withValues(alpha: 0.15)),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _sortBy,
-                                    isExpanded: true,
-                                    icon: Icon(LucideIcons.arrowUpDown, size: 14, color: widget.colors.primary),
-                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: widget.colors.textPrimary),
-                                    items: [
-                                      DropdownMenuItem(value: 'newest', child: Text(txt['sort_newest']!)),
-                                      DropdownMenuItem(value: 'oldest', child: Text(txt['sort_oldest']!)),
-                                      DropdownMenuItem(value: 'priority_desc', child: Text(txt['sort_priority']!)),
-                                      DropdownMenuItem(value: 'title_asc', child: Text(txt['sort_title']!)),
-                                    ],
-                                    onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: widget.colors.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)!.filterActiveLabel,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: widget.colors.primary,
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                      ],
+                          const Spacer(),
+                          AnimatedRotation(
+                            turns: _isFilterExpanded ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: const Icon(LucideIcons.chevronDown, size: 16, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-                  // --- REQUEST LIST (GROUPED OR UNGROUPED) ---
+                  // --- LINEAR / APPLE PRO TOOLBAR (SEARCH & FILTERS) ---
+                  if (_isFilterExpanded) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.025),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Search Bar
+                          TextField(
+                            controller: _searchController,
+                            onChanged: (val) => setState(() => _searchQuery = val.trim()),
+                            decoration: InputDecoration(
+                              hintText: txt['search_hint'],
+                              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                              prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() => _searchQuery = '');
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Group & Sort Dropdowns
+                          Row(
+                            children: [
+                              // Grouping
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _groupBy,
+                                      isExpanded: true,
+                                      icon: const Icon(LucideIcons.layers, size: 14, color: Color(0xFF64748B)),
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                                      items: [
+                                        DropdownMenuItem(value: 'none', child: Text(txt['group_none']!)),
+                                        DropdownMenuItem(value: 'status', child: Text(txt['group_status']!)),
+                                        DropdownMenuItem(value: 'priority', child: Text(txt['group_priority']!)),
+                                        DropdownMenuItem(value: 'category', child: Text(txt['group_category']!)),
+                                        DropdownMenuItem(value: 'property', child: Text(txt['group_property']!)),
+                                        DropdownMenuItem(value: 'landlord', child: Text(txt['group_landlord']!)),
+                                      ],
+                                      onChanged: (val) => setState(() => _groupBy = val ?? 'none'),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+
+                              // Sorting
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _sortBy,
+                                      isExpanded: true,
+                                      icon: const Icon(LucideIcons.arrowUpDown, size: 14, color: Color(0xFF64748B)),
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                                      items: [
+                                        DropdownMenuItem(value: 'newest', child: Text(txt['sort_newest']!)),
+                                        DropdownMenuItem(value: 'oldest', child: Text(txt['sort_oldest']!)),
+                                        DropdownMenuItem(value: 'priority_desc', child: Text(txt['sort_priority']!)),
+                                        DropdownMenuItem(value: 'title_asc', child: Text(txt['sort_title']!)),
+                                      ],
+                                      onChanged: (val) => setState(() => _sortBy = val ?? 'newest'),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const SizedBox(height: 6),
+
+                  // --- VIEW MODE & COUNTER TOOLBAR (Between Filter Card and List) ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Requests Count Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.wrench, size: 13, color: widget.colors.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${filtered.length} ${txt['request_unit']?.toLowerCase() ?? loc.tabRequests.toLowerCase()}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF334155),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // View Mode Selector (Dense Segmented Control)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        padding: const EdgeInsets.all(2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildViewModeToggle(
+                              icon: LucideIcons.table,
+                              isSelected: effectiveViewMode == 'table',
+                              tooltip: loc.viewModeTable,
+                              onTap: () => setState(() => _viewMode = 'table'),
+                            ),
+                            const SizedBox(width: 2),
+                            _buildViewModeToggle(
+                              icon: LucideIcons.layoutGrid,
+                              isSelected: effectiveViewMode == 'grid',
+                              tooltip: loc.viewModeGrid,
+                              onTap: () => setState(() => _viewMode = 'grid'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // --- REQUEST LIST (TABLE OR CARDS) ---
                   if (filtered.isEmpty)
                     _EmptyCard(
                       icon: LucideIcons.clipboardCheck,
                       message: _searchQuery.isNotEmpty ? txt['no_search_results']! : loc.noOpenRequestsYet,
+                      colors: widget.colors,
+                    )
+                  else if (effectiveViewMode == 'table')
+                    _MaintenanceTableView(
+                      requests: filtered,
+                      properties: properties,
+                      loc: loc,
+                      txt: txt,
                       colors: widget.colors,
                     )
                   else
@@ -3242,6 +4392,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
     String? customBadge,
     required String mainValue,
     required Color color,
+    required Color bgColor,
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
@@ -3250,23 +4401,24 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         width: width,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.08) : widget.colors.bgWhite,
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : color.withValues(alpha: 0.25),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? color.withValues(alpha: 0.8) : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.8 : 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: isSelected ? color.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.025),
+              blurRadius: isSelected ? 16 : 8,
+              offset: Offset(0, isSelected ? 4 : 2),
             ),
           ],
         ),
@@ -3274,21 +4426,24 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withValues(alpha: 0.2)),
                   ),
                   child: Icon(icon, size: 16, color: color),
                 ),
-                const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withValues(alpha: 0.25)),
                   ),
                   child: Text(
                     badgeStr,
@@ -3301,15 +4456,16 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
+              style: const TextStyle(
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: widget.colors.textPrimary.withValues(alpha: 0.65),
+                color: Color(0xFF64748B),
+                letterSpacing: -0.1,
               ),
             ),
             const SizedBox(height: 4),
@@ -3317,10 +4473,11 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
               mainValue,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                color: widget.colors.textPrimary,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+                letterSpacing: -0.4,
               ),
             ),
           ],
@@ -3372,7 +4529,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            padding: const EdgeInsets.only(top: 8, bottom: 12, left: 4),
             child: Row(
               children: [
                 Container(
@@ -3386,17 +4543,18 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
                 const SizedBox(width: 8),
                 Text(
                   '${entry.key} (${entry.value.length})',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: widget.colors.textPrimary,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.2,
                   ),
                 ),
               ],
             ),
           ),
           ...entry.value.map((req) => _buildRequestCard(req, properties, loc, txt)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
       );
     }).toList();
@@ -3425,463 +4583,982 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
   }
 
   Widget _buildRequestCard(MaintenanceRequest req, List<Property> properties, AppLocalizations loc, Map<String, String> txt) {
-    // Find matching property
     final property = properties.firstWhere(
       (p) => p.id == req.propertyId,
       orElse: () => Property(
         id: req.propertyId,
         landlordId: '',
-        agencyId: widget.colors.primary.value.toString(),
         name: txt['property_detail']!,
         address: txt['managed_unit']!,
         defaultMonthlyRent: 0,
       ),
     );
 
-    Color statusColor = Colors.grey;
-    String statusText = 'Bilinmiyor';
-    switch (req.status) {
-      case MaintenanceStatus.open:
-        statusColor = Colors.orange;
-        statusText = loc.statusActive;
-        break;
-      case MaintenanceStatus.investigating:
-        statusColor = Colors.blue;
-        statusText = loc.statusInvestigating;
-        break;
-      case MaintenanceStatus.inProgress:
-        statusColor = const Color(0xFFD97706);
-        statusText = txt['status_technician_sent']!;
-        break;
-      case MaintenanceStatus.resolved:
-        statusColor = const Color(0xFF10B981);
-        statusText = loc.statusResolved;
-        break;
-      case MaintenanceStatus.closed:
-        statusColor = Colors.grey;
-        statusText = txt['status_closed']!;
-        break;
-      case MaintenanceStatus.pending:
-        statusColor = Colors.amber;
-        statusText = txt['status_pending']!;
-        break;
-      case MaintenanceStatus.cancelled:
-        statusColor = Colors.red;
-        statusText = txt['status_cancelled']!;
-        break;
-    }
-
-    final isUrgent = req.priority == MaintenancePriority.urgent || req.priority == MaintenancePriority.high;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: widget.colors.bgWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isUrgent ? StanomerColors.alertPrimary.withValues(alpha: 0.5) : widget.colors.primary.withValues(alpha: 0.12),
-          width: isUrgent ? 1.5 : 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            context.push(
-              '/maintenance/detail',
-              extra: {
-                'property': property,
-                'request': req,
-              },
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Property Title & Status Badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Icon(LucideIcons.building2, size: 14, color: widget.colors.primary),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              property.name.isNotEmpty ? property.name : property.address,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: widget.colors.textPrimary.withValues(alpha: 0.8),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        statusText.toUpperCase(),
-                        style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: statusColor),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Issue Title
-                Text(
-                  req.title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: widget.colors.textPrimary,
-                  ),
-                ),
-                if (req.description != null && req.description!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    req.description!,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: widget.colors.textPrimary.withValues(alpha: 0.7),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                const SizedBox(height: 12),
-
-                // Bottom Row: Category, Priority, Date & Chevron
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        // Category Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: widget.colors.primary.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            _getCategoryLabel(req.category, loc),
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: widget.colors.primary),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-
-                        // Priority Badge
-                        if (isUrgent)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: StanomerColors.alertPrimary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(LucideIcons.alertTriangle, size: 10, color: StanomerColors.alertPrimary),
-                                const SizedBox(width: 3),
-                                Text(
-                                  req.priority == MaintenancePriority.urgent ? txt['urgent_badge']! : txt['high_badge']!,
-                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: StanomerColors.alertPrimary),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          req.createdAt != null ? DateFormat('dd MMM, HH:mm').format(req.createdAt!) : '-',
-                          style: TextStyle(fontSize: 11, color: widget.colors.textPrimary.withValues(alpha: 0.5)),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(LucideIcons.chevronRight, size: 16, color: widget.colors.primary.withValues(alpha: 0.6)),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _MaintenanceTicketCard(
+      req: req,
+      property: property,
+      loc: loc,
+      txt: txt,
+      colors: widget.colors,
     );
   }
 
   String _getCategoryLabel(MaintenanceCategory cat, AppLocalizations loc) {
     switch (cat) {
-      case MaintenanceCategory.plumbing: return loc.categoryPlumbing;
-      case MaintenanceCategory.electrical: return loc.categoryElectrical;
-      case MaintenanceCategory.heating: return loc.categoryHeating;
-      case MaintenanceCategory.internet: return loc.categoryInternet;
+      case MaintenanceCategory.plumbing:
+        return loc.categoryPlumbing;
+      case MaintenanceCategory.electrical:
+        return loc.categoryElectrical;
+      case MaintenanceCategory.heating:
+        return loc.categoryHeating;
+      case MaintenanceCategory.internet:
+        return loc.categoryInternet;
       case MaintenanceCategory.appliance:
       case MaintenanceCategory.structural:
       case MaintenanceCategory.other:
-      default:
         return loc.categoryOther;
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Actionable Insights Cards Section Component
-// ---------------------------------------------------------------------------
-
-class _ActionableInsightsSection extends StatelessWidget {
-  final List<Property> properties;
-  final Map<String, Contract?> contractsMap;
-  final ActionableInsightType? selectedInsight;
-  final ValueChanged<ActionableInsightType> onSelectInsight;
-  final AgencyColorScheme colors;
+class _MaintenanceTicketCard extends StatefulWidget {
+  final MaintenanceRequest req;
+  final Property property;
   final AppLocalizations loc;
+  final Map<String, String> txt;
+  final AgencyColorScheme colors;
 
-  const _ActionableInsightsSection({
-    required this.properties,
-    required this.contractsMap,
-    required this.selectedInsight,
-    required this.onSelectInsight,
-    required this.colors,
+  const _MaintenanceTicketCard({
+    required this.req,
+    required this.property,
     required this.loc,
+    required this.txt,
+    required this.colors,
   });
 
   @override
+  State<_MaintenanceTicketCard> createState() => _MaintenanceTicketCardState();
+}
+
+class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
+  bool _isHovered = false;
+
+  IconData _getCategoryIcon(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return LucideIcons.droplets;
+      case MaintenanceCategory.electrical:
+        return LucideIcons.zap;
+      case MaintenanceCategory.heating:
+        return LucideIcons.flame;
+      case MaintenanceCategory.internet:
+        return LucideIcons.wifi;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return LucideIcons.wrench;
+    }
+  }
+
+  Color _getCategoryColor(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return const Color(0xFF0284C7);
+      case MaintenanceCategory.electrical:
+        return const Color(0xFFD97706);
+      case MaintenanceCategory.heating:
+        return const Color(0xFFEA580C);
+      case MaintenanceCategory.internet:
+        return const Color(0xFF2563EB);
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return const Color(0xFF9333EA);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final typesInOrder = [
-      ActionableInsightType.expiredContracts,
-      ActionableInsightType.expiringContracts,
-      ActionableInsightType.pendingApprovals,
-      ActionableInsightType.withoutContracts,
-    ];
+    final req = widget.req;
+    final property = widget.property;
+    final loc = widget.loc;
+    final txt = widget.txt;
 
-    final activeCards = <ActionableInsightConfig, int>{};
+    // Status mapping (Soft Tinted)
+    Color statusBg = const Color(0xFFF1F5F9);
+    Color statusColor = const Color(0xFF475569);
+    String statusText = 'Bilinmiyor';
 
-    for (final type in typesInOrder) {
-      final matchingCount = properties.where((p) => _matchesInsight(p, contractsMap[p.id], type)).length;
-      if (matchingCount > 0) {
-        activeCards[getInsightConfig(type, loc)] = matchingCount;
-      }
+    switch (req.status) {
+      case MaintenanceStatus.open:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFB45309);
+        statusText = loc.statusActive;
+        break;
+      case MaintenanceStatus.investigating:
+        statusBg = const Color(0xFFEFF6FF);
+        statusColor = const Color(0xFF1D4ED8);
+        statusText = loc.statusInvestigating;
+        break;
+      case MaintenanceStatus.inProgress:
+        statusBg = const Color(0xFFFFF7ED);
+        statusColor = const Color(0xFFC2410C);
+        statusText = txt['status_technician_sent']!;
+        break;
+      case MaintenanceStatus.resolved:
+        statusBg = const Color(0xFFECFDF5);
+        statusColor = const Color(0xFF065F46);
+        statusText = loc.statusResolved;
+        break;
+      case MaintenanceStatus.closed:
+        statusBg = const Color(0xFFF1F5F9);
+        statusColor = const Color(0xFF64748B);
+        statusText = txt['status_closed']!;
+        break;
+      case MaintenanceStatus.pending:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFD97706);
+        statusText = txt['status_pending']!;
+        break;
+      case MaintenanceStatus.cancelled:
+        statusBg = const Color(0xFFFEF2F2);
+        statusColor = const Color(0xFFDC2626);
+        statusText = txt['status_cancelled']!;
+        break;
     }
 
-    if (activeCards.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    // Priority mapping (Soft Tinted)
+    final isUrgent = req.priority == MaintenancePriority.urgent;
+    final isHigh = req.priority == MaintenancePriority.high;
+    final categoryColor = _getCategoryColor(req.category);
+    final categoryIcon = _getCategoryIcon(req.category);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(LucideIcons.sparkles, size: 16, color: colors.primary),
-            const SizedBox(width: 8),
-            Text(
-              loc.actionableInsightsHeader,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: colors.primary,
-                letterSpacing: 1.2,
-              ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(bottom: 12),
+        transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _isHovered
+                ? widget.colors.primary.withValues(alpha: 0.35)
+                : (isUrgent ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0)),
+            width: _isHovered || isUrgent ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: _isHovered ? 0.055 : 0.025),
+              blurRadius: _isHovered ? 16 : 8,
+              offset: Offset(0, _isHovered ? 5 : 2),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Column(
-          children: activeCards.entries.map((entry) {
-            final config = entry.key;
-            final count = entry.value;
-            final isSelected = selectedInsight == config.type;
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              context.push(
+                '/maintenance/detail',
+                extra: {
+                  'property': property,
+                  'request': req,
+                },
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: Category Squircle + Property Info + Status & Priority Badges
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Category Squircle Icon
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: categoryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                        ),
+                        child: Icon(categoryIcon, size: 16, color: categoryColor),
+                      ),
+                      const SizedBox(width: 12),
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _ActionableInsightCard(
-                config: config,
-                matchingCount: count,
-                isSelected: isSelected,
-                onTap: () => onSelectInsight(config.type),
-                loc: loc,
+                      // Property Title
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              property.name.isNotEmpty ? property.name : property.address,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (property.address.isNotEmpty && property.name.isNotEmpty)
+                              Text(
+                                property.address,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Priority Badge (if urgent/high)
+                      if (isUrgent || isHigh) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isUrgent ? const Color(0xFFFFF1F2) : const Color(0xFFFFF7ED),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isUrgent ? const Color(0xFFFFE4E6) : const Color(0xFFFFEDD5),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.alertTriangle,
+                                size: 10,
+                                color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFFEA580C),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isUrgent ? txt['urgent_badge']! : txt['high_badge']!,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFFEA580C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Issue Title
+                  Text(
+                    req.title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  if (req.description != null && req.description!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      req.description!,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                        height: 1.35,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+
+                  // Footer Divider & Meta info
+                  Container(
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Date info
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.clock, size: 12, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 5),
+                            Text(
+                              req.createdAt != null ? DateFormat('dd MMM yyyy, HH:mm').format(req.createdAt!) : '-',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Action arrow with hover slide
+                        Row(
+                          children: [
+                            Text(
+                              txt['view_detail']!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _isHovered ? widget.colors.primary : const Color(0xFF64748B),
+                              ),
+                            ),
+                            AnimatedPadding(
+                              duration: const Duration(milliseconds: 180),
+                              padding: EdgeInsets.only(left: _isHovered ? 6 : 2),
+                              child: Icon(
+                                LucideIcons.arrowRight,
+                                size: 13,
+                                color: _isHovered ? widget.colors.primary : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            );
-          }).toList(),
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _ActionableInsightCard extends StatefulWidget {
-  final ActionableInsightConfig config;
-  final int matchingCount;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final AppLocalizations loc;
+// ---------------------------------------------------------------------------
+// High Density Dense Maintenance Table View & Rows
+// ---------------------------------------------------------------------------
 
-  const _ActionableInsightCard({
-    required this.config,
-    required this.matchingCount,
-    required this.isSelected,
-    required this.onTap,
+class _MaintenanceTableView extends StatelessWidget {
+  final List<MaintenanceRequest> requests;
+  final List<Property> properties;
+  final AppLocalizations loc;
+  final Map<String, String> txt;
+  final AgencyColorScheme colors;
+
+  const _MaintenanceTableView({
+    required this.requests,
+    required this.properties,
     required this.loc,
+    required this.txt,
+    required this.colors,
   });
 
   @override
-  State<_ActionableInsightCard> createState() => _ActionableInsightCardState();
-}
-
-class _ActionableInsightCardState extends State<_ActionableInsightCard> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final color = widget.config.severityColor;
+    final propertiesMap = {for (var p in properties) p.id: p};
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: widget.isSelected || _isHovered
-                ? color.withValues(alpha: 0.12)
-                : color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: widget.isSelected
-                  ? color
-                  : (_isHovered ? color.withValues(alpha: 0.6) : color.withValues(alpha: 0.25)),
-              width: widget.isSelected ? 2 : 1,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final isDesktop = screenWidth >= 768;
+
+        if (!isDesktop) {
+          // Mobile / Small Screen: Compact List View
+          return Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.025),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: requests.length,
+                separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (ctx, i) {
+                  final req = requests[i];
+                  final prop = propertiesMap[req.propertyId] ??
+                      Property(
+                        id: req.propertyId,
+                        landlordId: '',
+                        name: txt['property_detail']!,
+                        address: txt['managed_unit']!,
+                        defaultMonthlyRent: 0,
+                      );
+                  return _MaintenanceCompactRow(
+                    req: req,
+                    property: prop,
+                    loc: loc,
+                    txt: txt,
+                    colors: colors,
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        // Desktop High-Density Proportional Table View
+        final tableWidth = screenWidth > 880 ? screenWidth : 880.0;
+        const colAction = 50.0;
+        const horizontalPadding = 32.0; // 16 left + 16 right
+        final usableWidth = tableWidth - horizontalPadding - colAction;
+        final colTitle = usableWidth * 0.32;
+        final colProperty = usableWidth * 0.24;
+        final colPriority = usableWidth * 0.14;
+        final colStatus = usableWidth * 0.16;
+        final colDate = usableWidth * 0.14;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: _isHovered || widget.isSelected
-                    ? color.withValues(alpha: 0.15)
-                    : Colors.black.withValues(alpha: 0.02),
-                blurRadius: _isHovered ? 12 : 6,
-                offset: _isHovered ? const Offset(0, 4) : const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Icon + Title + Counter Badge
-              Row(
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: SizedBox(
+              width: tableWidth,
+              child: Column(
                 children: [
+                  // Table Header
                   Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(widget.config.icon, size: 16, color: color),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.config.title,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${widget.matchingCount}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(
+                        bottom: BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: colTitle,
+                          child: Text(
+                            loc.tabRequests.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colProperty,
+                          child: Text(
+                            loc.propertyDetailsHeader.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colPriority,
+                          child: Text(
+                            txt['col_priority']!.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colStatus,
+                          child: Text(
+                            loc.statusLabel.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colDate,
+                          child: Text(
+                            txt['col_date']!.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: colAction,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              loc.colAction.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+
+                  // Rows
+                  ...requests.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final req = entry.value;
+                    final isLast = index == requests.length - 1;
+                    final prop = propertiesMap[req.propertyId] ??
+                        Property(
+                          id: req.propertyId,
+                          landlordId: '',
+                          name: txt['property_detail']!,
+                          address: txt['managed_unit']!,
+                          defaultMonthlyRent: 0,
+                        );
+
+                    return _MaintenanceTableRow(
+                      req: req,
+                      property: prop,
+                      loc: loc,
+                      txt: txt,
+                      colors: colors,
+                      isLast: isLast,
+                      colTitle: colTitle,
+                      colProperty: colProperty,
+                      colPriority: colPriority,
+                      colStatus: colStatus,
+                      colDate: colDate,
+                      colAction: colAction,
+                    );
+                  }),
                 ],
               ),
-              const SizedBox(height: 8),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
-              // Description Text
-              Text(
-                widget.config.desc,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  color: Colors.black87.withValues(alpha: 0.75),
-                  height: 1.35,
+class _MaintenanceTableRow extends StatefulWidget {
+  final MaintenanceRequest req;
+  final Property property;
+  final AppLocalizations loc;
+  final Map<String, String> txt;
+  final AgencyColorScheme colors;
+  final bool isLast;
+  final double colTitle;
+  final double colProperty;
+  final double colPriority;
+  final double colStatus;
+  final double colDate;
+  final double colAction;
+
+  const _MaintenanceTableRow({
+    required this.req,
+    required this.property,
+    required this.loc,
+    required this.txt,
+    required this.colors,
+    required this.isLast,
+    required this.colTitle,
+    required this.colProperty,
+    required this.colPriority,
+    required this.colStatus,
+    required this.colDate,
+    required this.colAction,
+  });
+
+  @override
+  State<_MaintenanceTableRow> createState() => _MaintenanceTableRowState();
+}
+
+class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
+  bool _isHovered = false;
+
+  IconData _getCategoryIcon(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return LucideIcons.droplets;
+      case MaintenanceCategory.electrical:
+        return LucideIcons.zap;
+      case MaintenanceCategory.heating:
+        return LucideIcons.flame;
+      case MaintenanceCategory.internet:
+        return LucideIcons.wifi;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return LucideIcons.wrench;
+    }
+  }
+
+  Color _getCategoryColor(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return const Color(0xFF0284C7);
+      case MaintenanceCategory.electrical:
+        return const Color(0xFFD97706);
+      case MaintenanceCategory.heating:
+        return const Color(0xFFEA580C);
+      case MaintenanceCategory.internet:
+        return const Color(0xFF2563EB);
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return const Color(0xFF9333EA);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final req = widget.req;
+    final property = widget.property;
+    final loc = widget.loc;
+    final txt = widget.txt;
+
+    // Status mapping
+    Color statusBg = const Color(0xFFF1F5F9);
+    Color statusColor = const Color(0xFF475569);
+    String statusText = 'Bilinmiyor';
+
+    switch (req.status) {
+      case MaintenanceStatus.open:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFB45309);
+        statusText = loc.statusActive;
+        break;
+      case MaintenanceStatus.investigating:
+        statusBg = const Color(0xFFEFF6FF);
+        statusColor = const Color(0xFF1D4ED8);
+        statusText = loc.statusInvestigating;
+        break;
+      case MaintenanceStatus.inProgress:
+        statusBg = const Color(0xFFFFF7ED);
+        statusColor = const Color(0xFFC2410C);
+        statusText = txt['status_technician_sent']!;
+        break;
+      case MaintenanceStatus.resolved:
+        statusBg = const Color(0xFFECFDF5);
+        statusColor = const Color(0xFF065F46);
+        statusText = loc.statusResolved;
+        break;
+      case MaintenanceStatus.closed:
+        statusBg = const Color(0xFFF1F5F9);
+        statusColor = const Color(0xFF64748B);
+        statusText = txt['status_closed']!;
+        break;
+      case MaintenanceStatus.pending:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFD97706);
+        statusText = txt['status_pending']!;
+        break;
+      case MaintenanceStatus.cancelled:
+        statusBg = const Color(0xFFFEF2F2);
+        statusColor = const Color(0xFFDC2626);
+        statusText = txt['status_cancelled']!;
+        break;
+    }
+
+    // Priority mapping
+    Color priorityBg = const Color(0xFFF1F5F9);
+    Color priorityColor = const Color(0xFF64748B);
+    String priorityText = txt['normal_badge']!;
+
+    switch (req.priority) {
+      case MaintenancePriority.urgent:
+        priorityBg = const Color(0xFFFFF1F2);
+        priorityColor = const Color(0xFFE11D48);
+        priorityText = txt['urgent_badge']!;
+        break;
+      case MaintenancePriority.high:
+        priorityBg = const Color(0xFFFFFBEB);
+        priorityColor = const Color(0xFFD97706);
+        priorityText = txt['high_badge']!;
+        break;
+      case MaintenancePriority.medium:
+        priorityBg = const Color(0xFFEFF6FF);
+        priorityColor = const Color(0xFF2563EB);
+        priorityText = txt['medium_badge']!;
+        break;
+      case MaintenancePriority.normal:
+        priorityBg = const Color(0xFFF8FAFC);
+        priorityColor = const Color(0xFF475569);
+        priorityText = txt['normal_badge']!;
+        break;
+      case MaintenancePriority.low:
+        priorityBg = const Color(0xFFF1F5F9);
+        priorityColor = const Color(0xFF94A3B8);
+        priorityText = txt['low_badge']!;
+        break;
+    }
+
+    final categoryColor = _getCategoryColor(req.category);
+    final categoryIcon = _getCategoryIcon(req.category);
+
+    String dateStr = '-';
+    if (req.createdAt != null) {
+      dateStr = '${req.createdAt!.day.toString().padLeft(2, '0')}.${req.createdAt!.month.toString().padLeft(2, '0')}.${req.createdAt!.year}';
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          context.push(
+            '/maintenance/detail',
+            extra: {
+              'property': property,
+              'request': req,
+            },
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: _isHovered ? const Color(0xFFF8FAFC) : Colors.white,
+            border: widget.isLast
+                ? null
+                : const Border(
+                    bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                  ),
+          ),
+          child: Row(
+            children: [
+              // 1. Title & Category
+              SizedBox(
+                width: widget.colTitle,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: categoryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                      ),
+                      child: Icon(categoryIcon, size: 15, color: categoryColor),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            req.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          if (req.description != null && req.description!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              req.description!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
 
-              // Action Link Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        widget.config.action,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(LucideIcons.arrowRight, size: 12, color: color),
-                    ],
-                  ),
-                  if (widget.isSelected)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.loc.filterActiveLabel,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
+              // 2. Property
+              SizedBox(
+                width: widget.colProperty,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      property.name.isNotEmpty ? property.name : txt['property_detail']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                ],
+                    if (property.address.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        property.address,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // 3. Priority
+              SizedBox(
+                width: widget.colPriority,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: priorityBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: priorityColor.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      priorityText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: priorityColor,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 4. Status
+              SizedBox(
+                width: widget.colStatus,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      statusText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. Date
+              SizedBox(
+                width: widget.colDate,
+                child: Text(
+                  dateStr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+              ),
+
+              // 6. Action
+              SizedBox(
+                width: widget.colAction,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: widget.colors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      LucideIcons.arrowRight,
+                      size: 14,
+                      color: widget.colors.primary,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -3891,726 +5568,1392 @@ class _ActionableInsightCardState extends State<_ActionableInsightCard> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Expiring Contracts & Pending Maintenance Helper Texts & Widgets
-// ---------------------------------------------------------------------------
-
-Map<String, String> _getExpiringContractsTexts(String lang) {
-  switch (lang) {
-    case 'tr':
-      return {
-        'section_title': 'Sözleşmesi Bitmeye Yaklaşan Kontratlar',
-        'see_all_portfolio': 'Tümünü Gör',
-        'no_expiring': 'Yakın zamanda sona erecek sözleşme bulunmuyor',
-        'no_expiring_sub': 'Tüm aktif sözleşmelerinizin süresi güvende.',
-        'days_left': 'gün kaldı',
-        'today_expires': 'Bugün bitiyor!',
-        'expired': 'Süresi Doldu',
-        'tenant': 'Kiracı',
-        'rent': 'Kira',
-      };
-    case 'sr':
-      return {
-        'section_title': 'Ugovori koji uskoro ističu',
-        'see_all_portfolio': 'Prikaži sve',
-        'no_expiring': 'Nema ugovora koji uskoro ističu',
-        'no_expiring_sub': 'Svi vaši aktivni ugovori su važeći.',
-        'days_left': 'dana preostalo',
-        'today_expires': 'Ističe danas!',
-        'expired': 'Istekao',
-        'tenant': 'Stanar',
-        'rent': 'Kirija',
-      };
-    case 'ru':
-      return {
-        'section_title': 'Договоры, истекающие в ближайшее время',
-        'see_all_portfolio': 'Все договоры',
-        'no_expiring': 'Нет договоров с истекающим сроком',
-        'no_expiring_sub': 'Все активные договоры действуют.',
-        'days_left': 'дн. осталось',
-        'today_expires': 'Истекает сегодня!',
-        'expired': 'Истек',
-        'tenant': 'Жилец',
-        'rent': 'Аренда',
-      };
-    case 'en':
-    default:
-      return {
-        'section_title': 'Contracts Expiring Soon',
-        'see_all_portfolio': 'View All',
-        'no_expiring': 'No contracts expiring soon',
-        'no_expiring_sub': 'All active lease agreements are safely in validity.',
-        'days_left': 'days left',
-        'today_expires': 'Expires today!',
-        'expired': 'Expired',
-        'tenant': 'Tenant',
-        'rent': 'Rent',
-      };
-  }
-}
-
-Map<String, String> _getPendingMaintenanceTexts(String lang) {
-  switch (lang) {
-    case 'tr':
-      return {
-        'section_title': 'Bekleyen Bakım Talepleri (En Eskiler)',
-        'see_all_requests': 'Tüm Talepler',
-        'no_pending': 'Bekleyen bakım veya arıza talebi bulunmuyor',
-        'no_pending_sub': 'Tüm talepler çözüldü veya onaylandı.',
-        'waiting_days': 'gündür bekliyor',
-        'waiting_today': 'Bugün oluşturuldu',
-        'waiting_yesterday': '1 gündür bekliyor',
-        'urgent': 'ACİL',
-        'high': 'YÜKSEK',
-        'normal': 'NORMAL',
-        'low': 'DÜŞÜK',
-      };
-    case 'sr':
-      return {
-        'section_title': 'Zahtevi za održavanje na čekanju (Najstariji)',
-        'see_all_requests': 'Svi zahtevi',
-        'no_pending': 'Nema zahteva na čekanju',
-        'no_pending_sub': 'Svi zahtevi su rešeni ili zatvoreni.',
-        'waiting_days': 'dana na čekanju',
-        'waiting_today': 'Kreirano danas',
-        'waiting_yesterday': '1 dan na čekanju',
-        'urgent': 'HITNO',
-        'high': 'VISOK',
-        'normal': 'NORMALNO',
-        'low': 'NISKO',
-      };
-    case 'ru':
-      return {
-        'section_title': 'Заявки на обслуживание (Самые старые)',
-        'see_all_requests': 'Все заявки',
-        'no_pending': 'Нет заявок на рассмотрении',
-        'no_pending_sub': 'Все заявки закрыты или решены.',
-        'waiting_days': 'дн. ожидает',
-        'waiting_today': 'Создано сегодня',
-        'waiting_yesterday': '1 день ожидает',
-        'urgent': 'СРОЧНО',
-        'high': 'ВЫСОКИЙ',
-        'normal': 'ОБЫЧНЫЙ',
-        'low': 'НИЗКИЙ',
-      };
-    case 'en':
-    default:
-      return {
-        'section_title': 'Oldest Pending Maintenance Requests',
-        'see_all_requests': 'All Requests',
-        'no_pending': 'No pending maintenance requests',
-        'no_pending_sub': 'All requests are resolved or closed.',
-        'waiting_days': 'days waiting',
-        'waiting_today': 'Created today',
-        'waiting_yesterday': '1 day waiting',
-        'urgent': 'URGENT',
-        'high': 'HIGH',
-        'normal': 'NORMAL',
-        'low': 'LOW',
-      };
-  }
-}
-
-class _ExpiringContractsSection extends StatelessWidget {
-  final List<Property> properties;
-  final Map<String, Contract?> contractsMap;
-  final AgencyColorScheme colors;
+class _MaintenanceCompactRow extends StatelessWidget {
+  final MaintenanceRequest req;
+  final Property property;
   final AppLocalizations loc;
-  final String lang;
-  final VoidCallback onViewInPortfolio;
+  final Map<String, String> txt;
+  final AgencyColorScheme colors;
 
-  const _ExpiringContractsSection({
-    required this.properties,
-    required this.contractsMap,
-    required this.colors,
+  const _MaintenanceCompactRow({
+    required this.req,
+    required this.property,
     required this.loc,
-    required this.lang,
-    required this.onViewInPortfolio,
+    required this.txt,
+    required this.colors,
   });
+
+  IconData _getCategoryIcon(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return LucideIcons.droplets;
+      case MaintenanceCategory.electrical:
+        return LucideIcons.zap;
+      case MaintenanceCategory.heating:
+        return LucideIcons.flame;
+      case MaintenanceCategory.internet:
+        return LucideIcons.wifi;
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return LucideIcons.wrench;
+    }
+  }
+
+  Color _getCategoryColor(MaintenanceCategory cat) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing:
+        return const Color(0xFF0284C7);
+      case MaintenanceCategory.electrical:
+        return const Color(0xFFD97706);
+      case MaintenanceCategory.heating:
+        return const Color(0xFFEA580C);
+      case MaintenanceCategory.internet:
+        return const Color(0xFF2563EB);
+      case MaintenanceCategory.appliance:
+      case MaintenanceCategory.structural:
+      case MaintenanceCategory.other:
+        return const Color(0xFF9333EA);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final txt = _getExpiringContractsTexts(lang);
-    final now = DateTime.now();
+    // Status mapping
+    Color statusBg = const Color(0xFFF1F5F9);
+    Color statusColor = const Color(0xFF475569);
+    String statusText = 'Bilinmiyor';
 
-    final expiringList = <Map<String, dynamic>>[];
-
-    for (final property in properties) {
-      final contract = contractsMap[property.id];
-      if (contract != null &&
-          (contract.status == ContractStatus.active || contract.status == ContractStatus.negotiating) &&
-          contract.endDate != null) {
-        final daysRemaining = contract.endDate!.difference(now).inDays;
-        if (daysRemaining <= 60) {
-          expiringList.add({
-            'property': property,
-            'contract': contract,
-            'daysRemaining': daysRemaining,
-          });
-        }
-      }
+    switch (req.status) {
+      case MaintenanceStatus.open:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFB45309);
+        statusText = loc.statusActive;
+        break;
+      case MaintenanceStatus.investigating:
+        statusBg = const Color(0xFFEFF6FF);
+        statusColor = const Color(0xFF1D4ED8);
+        statusText = loc.statusInvestigating;
+        break;
+      case MaintenanceStatus.inProgress:
+        statusBg = const Color(0xFFFFF7ED);
+        statusColor = const Color(0xFFC2410C);
+        statusText = txt['status_technician_sent']!;
+        break;
+      case MaintenanceStatus.resolved:
+        statusBg = const Color(0xFFECFDF5);
+        statusColor = const Color(0xFF065F46);
+        statusText = loc.statusResolved;
+        break;
+      case MaintenanceStatus.closed:
+        statusBg = const Color(0xFFF1F5F9);
+        statusColor = const Color(0xFF64748B);
+        statusText = txt['status_closed']!;
+        break;
+      case MaintenanceStatus.pending:
+        statusBg = const Color(0xFFFFFBEB);
+        statusColor = const Color(0xFFD97706);
+        statusText = txt['status_pending']!;
+        break;
+      case MaintenanceStatus.cancelled:
+        statusBg = const Color(0xFFFEF2F2);
+        statusColor = const Color(0xFFDC2626);
+        statusText = txt['status_cancelled']!;
+        break;
     }
 
-    expiringList.sort((a, b) {
-      final contractA = a['contract'] as Contract;
-      final contractB = b['contract'] as Contract;
-      return contractA.endDate!.compareTo(contractB.endDate!);
-    });
+    final categoryColor = _getCategoryColor(req.category);
+    final categoryIcon = _getCategoryIcon(req.category);
 
-    final displayList = expiringList.take(5).toList();
+    String dateStr = '-';
+    if (req.createdAt != null) {
+      dateStr = '${req.createdAt!.day.toString().padLeft(2, '0')}.${req.createdAt!.month.toString().padLeft(2, '0')}.${req.createdAt!.year}';
+    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return InkWell(
+      onTap: () {
+        context.push(
+          '/maintenance/detail',
+          extra: {
+            'property': property,
+            'request': req,
+          },
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(LucideIcons.calendarClock, size: 18, color: colors.primary),
-                const SizedBox(width: 8),
-                Text(
-                  txt['section_title']!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: StanomerColors.textPrimary,
-                  ),
-                ),
-                if (expiringList.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${expiringList.length}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.orange.shade800,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            if (expiringList.length > 5)
-              TextButton(
-                onPressed: onViewInPortfolio,
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      txt['see_all_portfolio']!,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(LucideIcons.chevronRight, size: 14, color: colors.primary),
-                  ],
-                ),
+            // Category Icon
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: categoryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
               ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (displayList.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colors.bgWhite,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colors.border),
+              child: Icon(categoryIcon, size: 17, color: categoryColor),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+            const SizedBox(width: 12),
+
+            // Info column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    req.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
                   ),
-                  child: const Icon(LucideIcons.checkCheck, size: 18, color: Colors.green),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 3),
+                  Row(
                     children: [
-                      Text(
-                        txt['no_expiring']!,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                      Flexible(
+                        child: Text(
+                          property.name.isNotEmpty ? property.name : txt['property_detail']!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(width: 6),
+                      const Text('•', style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+                      const SizedBox(width: 6),
                       Text(
-                        txt['no_expiring_sub']!,
-                        style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                        dateStr,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )
-        else
-          Column(
-            children: displayList.map((item) {
-              final property = item['property'] as Property;
-              final contract = item['contract'] as Contract;
-              final daysRemaining = item['daysRemaining'] as int;
+            const SizedBox(width: 10),
 
-              final Color badgeColor;
-              final Color badgeBg;
-              final String badgeText;
+            // Status Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: statusBg,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+              ),
+              child: Text(
+                statusText,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: statusColor,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
 
-              if (daysRemaining < 0) {
-                badgeColor = Colors.red.shade700;
-                badgeBg = Colors.red.withValues(alpha: 0.12);
-                badgeText = txt['expired']!;
-              } else if (daysRemaining == 0) {
-                badgeColor = Colors.red.shade700;
-                badgeBg = Colors.red.withValues(alpha: 0.12);
-                badgeText = txt['today_expires']!;
-              } else if (daysRemaining <= 15) {
-                badgeColor = Colors.red.shade700;
-                badgeBg = Colors.red.withValues(alpha: 0.12);
-                badgeText = '$daysRemaining ${txt['days_left']}';
-              } else if (daysRemaining <= 30) {
-                badgeColor = Colors.orange.shade800;
-                badgeBg = Colors.orange.withValues(alpha: 0.12);
-                badgeText = '$daysRemaining ${txt['days_left']}';
-              } else {
-                badgeColor = Colors.amber.shade800;
-                badgeBg = Colors.amber.withValues(alpha: 0.15);
-                badgeText = '$daysRemaining ${txt['days_left']}';
-              }
+            // Arrow Action
+            Icon(
+              LucideIcons.chevronRight,
+              size: 16,
+              color: const Color(0xFF94A3B8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              final formattedEndDate = contract.endDate != null
-                  ? DateFormat('d MMM yyyy').format(contract.endDate!)
-                  : '-';
+// ---------------------------------------------------------------------------
+// Apple-Styled Ajans Kokpiti & Actionable Insights Components
+// ---------------------------------------------------------------------------
 
-              final rentFormatted = CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency);
+Map<String, String> _getCockpitTexts(String lang) {
+  switch (lang) {
+    case 'tr':
+      return {
+        'section_contracts': 'Sözleşme ve Portföy',
+        'section_finance': 'Finans ve Tahsilat',
+        'section_operations': 'Operasyon ve Bakım',
+        'expired_title': 'Süresi Dolanlar',
+        'expired_action': 'Portföy detaylarını gör',
+        'expiring_title': 'Bitişi Yaklaşanlar',
+        'expiring_action': 'Süresi yaklaşanları incele',
+        'without_contracts_title': 'Kontratsız Mülkler',
+        'without_contracts_action': 'Boş mülkleri yönet',
+        'overdue_title': 'Geciken Borçlar',
+        'overdue_action': 'Borçlu listesine git',
+        'upcoming_title': 'Vadesi Yaklaşanlar',
+        'upcoming_action': 'Bekleyen işlemleri gör',
+        'pending_approvals_title': 'Bekleyen Onaylar',
+        'pending_approvals_action': 'Onay merkezini aç',
+        'maintenance_title': 'Bakım Talepleri',
+        'maintenance_action': 'Aktif talepleri yönet',
+        'contract_unit': 'Kontrat',
+        'property_unit': 'Mülk',
+        'operation_unit': 'İşlem',
+        'request_unit': 'Talep',
+        'action_pending': 'Aksiyon Bekliyor',
+        'in_negotiation': 'Müzakerede',
+        'vacant': 'Boşta',
+        'invite_pending': 'Davet Aşamasında',
+        'rent': 'Kira',
+        'bill': 'Fatura',
+        'rent_collection': 'Kira Tahsilatı',
+        'bill_due': 'Fatura Vadesi',
+        'receipt_approval': 'Dekont Onayı',
+        'contract_invite_approval': 'Sözleşme / Davet Onayı',
+        'days_oldest': 'En eski: {days} gün',
+        'no_open_requests': 'Açık talep bulunmuyor',
+        'no_overdue_debt': 'Gecikmiş borç yok',
+        'days_7_badge': '7 Günlük',
+        'urgent': 'Acil',
+        'high': 'Yüksek',
+        'normal': 'Normal',
+        'today': 'Bugün',
+        'days_1_15': '1–15 Gün',
+        'days_16_30': '16–30 Gün',
+        'months_1_2': '1–2 Ay',
+        'empty_tooltip_overdue': 'Gecikmiş borcu bulunan kontrat veya fatura yok.',
+        'empty_tooltip_upcoming': 'Önümüzdeki 7 gün içinde vadesi dolan işlem yok.',
+        'empty_tooltip_pending_approvals': 'Ajans onayı bekleyen dekont veya sözleşme bulunmuyor.',
+        'empty_tooltip_expired': 'Süresi dolmuş veya aksiyon bekleyen sözleşme yok.',
+        'empty_tooltip_expiring': 'Önümüzdeki 60 gün içinde bitecek aktif sözleşme yok.',
+        'empty_tooltip_without_contracts': 'Tüm mülkleriniz aktif bir sözleşmeye bağlı.',
+        'empty_tooltip_maintenance': 'İşlem bekleyen açık bakım talebi bulunmuyor.',
+        'no_action_needed': 'İşlem gerekmiyor',
+        'view_list': 'Listeyi Gör',
+        'agency_management_portal': 'Ajans Yönetim Portalı',
+        'quick_portfolio': 'Mülk Portföyü',
+        'quick_contracts': 'Aktif Sözleşmeler',
+        'quick_actions': 'Hızlı Aksiyonlar',
+        'status_all_good': 'Tümü Güncel',
+        'status_actions_pending': '{count} İşlem Bekliyor',
+      };
+    case 'sr':
+      return {
+        'section_contracts': 'Ugovori i portfolio',
+        'section_finance': 'Finansije i naplata',
+        'section_operations': 'Operacije i održavanje',
+        'expired_title': 'Istekli ugovori',
+        'expired_action': 'Pogledaj portfolio',
+        'expiring_title': 'Ugovori koji uskoro ističu',
+        'expiring_action': 'Pregledaj ugovore',
+        'without_contracts_title': 'Nekretnine bez ugovora',
+        'without_contracts_action': 'Upravljaj praznim stanovima',
+        'overdue_title': 'Dugovanja',
+        'overdue_action': 'Lista dužnika',
+        'upcoming_title': 'Predstojeća plaćanja',
+        'upcoming_action': 'Prikaži na čekanju',
+        'pending_approvals_title': 'Čeka odobrenje',
+        'pending_approvals_action': 'Otvori centar za odobrenja',
+        'maintenance_title': 'Zahtevi za održavanje',
+        'maintenance_action': 'Upravljaj zahtevima',
+        'contract_unit': 'Ugovor',
+        'property_unit': 'Nekretnina',
+        'operation_unit': 'Transakcija',
+        'request_unit': 'Zahtev',
+        'action_pending': 'Čeka akciju',
+        'in_negotiation': 'U pregovorima',
+        'vacant': 'Prazno',
+        'invite_pending': 'Pozivnica na čekanju',
+        'rent': 'Kirija',
+        'bill': 'Račun',
+        'rent_collection': 'Naplata kirije',
+        'bill_due': 'Dospeće računa',
+        'receipt_approval': 'Odobrenje priznanice',
+        'contract_invite_approval': 'Odobrenje ugovora/pozivnice',
+        'days_oldest': 'Najstariji: {days} dana',
+        'no_open_requests': 'Nema otvorenih zahteva',
+        'no_overdue_debt': 'Nema dugovanja',
+        'days_7_badge': '7 Dana',
+        'urgent': 'Hitno',
+        'high': 'Visoko',
+        'normal': 'Normalno',
+        'today': 'Danas',
+        'days_1_15': '1–15 dana',
+        'days_16_30': '16–30 dana',
+        'months_1_2': '1–2 meseca',
+        'empty_tooltip_overdue': 'Nema ugovora ili računa sa zakašnjenjem.',
+        'empty_tooltip_upcoming': 'Nema plaćanja koja dospevaju u narednih 7 dana.',
+        'empty_tooltip_pending_approvals': 'Nema priznanica ili ugovora koji čekaju odobrenje.',
+        'empty_tooltip_expired': 'Nema isteklih ugovora ili ugovora koji čekaju akciju.',
+        'empty_tooltip_expiring': 'Nema ugovora koji ističu u narednih 60 dana.',
+        'empty_tooltip_without_contracts': 'Sve nekretnine su povezane sa aktivnim ugovorom.',
+        'empty_tooltip_maintenance': 'Nema otvorenih zahteva za održavanje.',
+        'no_action_needed': 'Nije potrebna akcija',
+        'view_list': 'Prikaži listu',
+        'agency_management_portal': 'Agencijski portal',
+        'quick_portfolio': 'Portfolio nekretnina',
+        'quick_contracts': 'Aktivni ugovori',
+        'quick_actions': 'Brze akcije',
+        'status_all_good': 'Sve ažurno',
+        'status_actions_pending': '{count} na čekanju',
+      };
+    case 'ru':
+      return {
+        'section_contracts': 'Договоры и портфель',
+        'section_finance': 'Финансы и платежи',
+        'section_operations': 'Обслуживание и операции',
+        'expired_title': 'Истекшие договоры',
+        'expired_action': 'Посмотреть портфель',
+        'expiring_title': 'Истекающие договоры',
+        'expiring_action': 'Проверить договоры',
+        'without_contracts_title': 'Объекты без договора',
+        'without_contracts_action': 'Управление объектами',
+        'overdue_title': 'Просроченная задолженность',
+        'overdue_action': 'Список должников',
+        'upcoming_title': 'Ближайшие платежи',
+        'upcoming_action': 'Ожидающие операции',
+        'pending_approvals_title': 'Ожидают подтверждения',
+        'pending_approvals_action': 'Центр подтверждений',
+        'maintenance_title': 'Заявки на ремонт',
+        'maintenance_action': 'Управление заявками',
+        'contract_unit': 'Договор',
+        'property_unit': 'Объект',
+        'operation_unit': 'Операций',
+        'request_unit': 'Заявок',
+        'action_pending': 'Требует действий',
+        'in_negotiation': 'На согласовании',
+        'vacant': 'Свободно',
+        'invite_pending': 'Ожидает приглашения',
+        'rent': 'Аренда',
+        'bill': 'Счет',
+        'rent_collection': 'Сбор аренды',
+        'bill_due': 'Срок счета',
+        'receipt_approval': 'Проверка чека',
+        'contract_invite_approval': 'Подтверждение договора',
+        'days_oldest': 'Самая старая: {days} дн.',
+        'no_open_requests': 'Нет открытых заявок',
+        'no_overdue_debt': 'Нет задолженности',
+        'days_7_badge': '7 Дней',
+        'urgent': 'Срочно',
+        'high': 'Высокий',
+        'normal': 'Обычный',
+        'today': 'Сегодня',
+        'days_1_15': '1–15 дней',
+        'days_16_30': '16–30 дней',
+        'months_1_2': '1–2 месяца',
+        'empty_tooltip_overdue': 'Нет договоров или счетов с просрочкой.',
+        'empty_tooltip_upcoming': 'Нет платежей со сроком в ближайшие 7 дней.',
+        'empty_tooltip_pending_approvals': 'Нет чеков или договоров, ожидающих подтверждения.',
+        'empty_tooltip_expired': 'Нет истекших договоров или требующих действий.',
+        'empty_tooltip_expiring': 'Нет активных договоров, истекающих в ближайшие 60 дней.',
+        'empty_tooltip_without_contracts': 'Все объекты привязаны к активным договорам.',
+        'empty_tooltip_maintenance': 'Нет открытых заявок на ремонт.',
+        'no_action_needed': 'Действий не требуется',
+        'view_list': 'Посмотреть список',
+        'agency_management_portal': 'Портал управления агентством',
+        'quick_portfolio': 'Портфель объектов',
+        'quick_contracts': 'Активные договоры',
+        'quick_actions': 'Быстрые действия',
+        'status_all_good': 'Все актуально',
+        'status_actions_pending': '{count} в ожидании',
+      };
+    case 'en':
+    default:
+      return {
+        'section_contracts': 'Contracts & Portfolio',
+        'section_finance': 'Finance & Collections',
+        'section_operations': 'Operations & Maintenance',
+        'expired_title': 'Expired Contracts',
+        'expired_action': 'View portfolio details',
+        'expiring_title': 'Expiring Soon',
+        'expiring_action': 'Inspect expiring contracts',
+        'without_contracts_title': 'Properties Without Contracts',
+        'without_contracts_action': 'Manage vacant units',
+        'overdue_title': 'Overdue Debts',
+        'overdue_action': 'Go to debtors list',
+        'upcoming_title': 'Upcoming Due',
+        'upcoming_action': 'View pending operations',
+        'pending_approvals_title': 'Pending Approvals',
+        'pending_approvals_action': 'Open approval center',
+        'maintenance_title': 'Maintenance Requests',
+        'maintenance_action': 'Manage active requests',
+        'contract_unit': 'Contracts',
+        'property_unit': 'Properties',
+        'operation_unit': 'Operations',
+        'request_unit': 'Requests',
+        'action_pending': 'Action Required',
+        'in_negotiation': 'In Negotiation',
+        'vacant': 'Vacant',
+        'invite_pending': 'Invite Pending',
+        'rent': 'Rent',
+        'bill': 'Bill',
+        'rent_collection': 'Rent Collection',
+        'bill_due': 'Bill Due',
+        'receipt_approval': 'Receipt Approval',
+        'contract_invite_approval': 'Contract / Invite Approval',
+        'days_oldest': 'Oldest: {days} days',
+        'no_open_requests': 'No open requests',
+        'no_overdue_debt': 'No overdue debts',
+        'days_7_badge': '7 Days',
+        'urgent': 'Urgent',
+        'high': 'High',
+        'normal': 'Normal',
+        'today': 'Today',
+        'days_1_15': '1–15 Days',
+        'days_16_30': '16–30 Days',
+        'months_1_2': '1–2 Months',
+        'empty_tooltip_overdue': 'No contracts or bills with overdue debts.',
+        'empty_tooltip_upcoming': 'No operations due in the next 7 days.',
+        'empty_tooltip_pending_approvals': 'No receipts or contracts awaiting agency approval.',
+        'empty_tooltip_expired': 'No expired contracts requiring action.',
+        'empty_tooltip_expiring': 'No active contracts expiring in the next 60 days.',
+        'empty_tooltip_without_contracts': 'All properties are covered by active contracts.',
+        'empty_tooltip_maintenance': 'No open maintenance requests pending.',
+        'no_action_needed': 'No action needed',
+        'view_list': 'View List',
+        'agency_management_portal': 'Agency Management Portal',
+        'quick_portfolio': 'Property Portfolio',
+        'quick_contracts': 'Active Contracts',
+        'quick_actions': 'Quick Actions',
+        'status_all_good': 'All Current',
+        'status_actions_pending': '{count} Pending',
+      };
+  }
+}
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => context.push('/property/${property.id}'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: colors.bgWhite,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colors.border),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: badgeBg,
-                              borderRadius: BorderRadius.circular(12),
+String _formatCockpitCurrencyTotals(Map<String, double> totals, String emptyText) {
+  if (totals.isEmpty || totals.values.every((v) => v <= 0)) {
+    return emptyText;
+  }
+  final parts = <String>[];
+  totals.forEach((curr, amount) {
+    if (amount > 0) {
+      if (curr.toUpperCase() == 'EUR') {
+        parts.add(CurrencyUtils.formatAmount(amount, 'EUR', useSymbol: true));
+      } else if (curr.toUpperCase() == 'RSD') {
+        if (amount >= 1000) {
+          final k = (amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1);
+          parts.add('${k}k RSD');
+        } else {
+          parts.add('${amount.toInt()} RSD');
+        }
+      } else if (curr.toUpperCase() == 'USD') {
+        parts.add(CurrencyUtils.formatAmount(amount, 'USD', useSymbol: true));
+      } else {
+        parts.add('${CurrencyUtils.formatAmount(amount, curr)} $curr');
+      }
+    }
+  });
+  return parts.isEmpty ? emptyText : parts.join(' + ');
+}
+
+class _ActionCockpitCard extends StatefulWidget {
+  final String title;
+  final String metric;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBgColor;
+  final Color? iconBorderColor;
+  final Color actionTextColor;
+  final List<String> items;
+  final String linkText;
+  final VoidCallback onTap;
+  final bool isMuted;
+  final String? tooltipText;
+
+  const _ActionCockpitCard({
+    required this.title,
+    required this.metric,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBgColor,
+    this.iconBorderColor,
+    required this.actionTextColor,
+    required this.items,
+    required this.linkText,
+    required this.onTap,
+    this.isMuted = false,
+    this.tooltipText,
+  });
+
+  @override
+  State<_ActionCockpitCard> createState() => _ActionCockpitCardState();
+}
+
+class _ActionCockpitCardState extends State<_ActionCockpitCard> {
+  bool _isHovered = false;
+
+  void _handleTap(BuildContext context) {
+    if (widget.isMuted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.tooltipText ?? widget.title,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'Listeyi Gör',
+            textColor: const Color(0xFF38BDF8),
+            onPressed: widget.onTap,
+          ),
+        ),
+      );
+    } else {
+      widget.onTap();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveIconColor = widget.isMuted ? const Color(0xFF94A3B8) : widget.iconColor;
+    final effectiveIconBg = widget.isMuted ? const Color(0xFFF8FAFC) : widget.iconBgColor;
+    final effectiveBorderColor = widget.isMuted
+        ? const Color(0xFFE2E8F0)
+        : (widget.iconBorderColor ?? widget.iconColor.withValues(alpha: 0.15));
+
+    Widget cardBody = MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: widget.isMuted ? (_isHovered ? 0.92 : 0.65) : 1.0,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: _isHovered
+                  ? (widget.isMuted ? const Color(0xFFCBD5E1) : widget.iconColor.withValues(alpha: 0.35))
+                  : const Color(0xFFE2E8F0),
+              width: _isHovered ? 1.5 : 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: _isHovered ? 0.055 : 0.025),
+                blurRadius: _isHovered ? 20 : 12,
+                offset: Offset(0, _isHovered ? 6 : 3),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Arkaplan silik ikonu (Watermark ~2.5% opacity)
+              Positioned(
+                right: -24,
+                bottom: -24,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: widget.isMuted ? 0.012 : 0.025,
+                    child: Icon(
+                      widget.icon,
+                      size: 150,
+                      color: effectiveIconColor,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Card Content
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _handleTap(context),
+                  hoverColor: widget.isMuted
+                      ? Colors.black.withValues(alpha: 0.01)
+                      : widget.iconColor.withValues(alpha: 0.02),
+                  splashColor: widget.isMuted
+                      ? Colors.black.withValues(alpha: 0.03)
+                      : widget.iconColor.withValues(alpha: 0.05),
+                  highlightColor: Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Top: Squircle Icon + Chevron / Zen Checkmark
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: effectiveIconBg,
+                                borderRadius: BorderRadius.circular(13),
+                                border: Border.all(color: effectiveBorderColor),
+                              ),
+                              child: Icon(widget.icon, size: 20, color: effectiveIconColor),
                             ),
-                            child: Icon(LucideIcons.calendarClock, size: 20, color: badgeColor),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: widget.isMuted
+                                    ? const Color(0xFFF8FAFC)
+                                    : (_isHovered ? effectiveIconBg : const Color(0xFFF8FAFC)),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: widget.isMuted
+                                      ? const Color(0xFFE2E8F0)
+                                      : (_isHovered ? effectiveBorderColor : const Color(0xFFF1F5F9)),
+                                ),
+                              ),
+                              child: Icon(
+                                widget.isMuted ? LucideIcons.check : LucideIcons.chevronRight,
+                                size: widget.isMuted ? 14 : 15,
+                                color: widget.isMuted
+                                    ? const Color(0xFF10B981)
+                                    : (_isHovered ? effectiveIconColor : const Color(0xFF94A3B8)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Title
+                        Text(
+                          widget.title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: widget.isMuted ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            letterSpacing: -0.1,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Big Metric
+                        Text(
+                          widget.metric,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: widget.isMuted ? const Color(0xFF64748B) : const Color(0xFF0F172A),
+                            letterSpacing: -0.6,
+                            height: 1.1,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Items List (Bullet points with subtle dots)
+                        ...widget.items.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  property.name,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: StanomerColors.textPrimary,
+                                Container(
+                                  margin: const EdgeInsets.only(top: 6),
+                                  width: 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: widget.isMuted
+                                        ? const Color(0xFFCBD5E1)
+                                        : effectiveIconColor.withValues(alpha: 0.7),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 3),
-                                Row(
-                                  children: [
-                                    if (property.tenantName != null && property.tenantName!.isNotEmpty) ...[
-                                      const Icon(LucideIcons.user, size: 11, color: StanomerColors.textTertiary),
-                                      const SizedBox(width: 3),
-                                      Flexible(
-                                        child: Text(
-                                          property.tenantName!,
-                                          style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    Text(
-                                      '$rentFormatted / ay',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: colors.primary,
-                                      ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: widget.isMuted ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.3,
                                     ),
-                                  ],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Footer Action Link
+                        Container(
+                          padding: const EdgeInsets.only(top: 12),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+                            ),
+                          ),
+                          child: Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: badgeBg,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
-                                ),
+                              Expanded(
                                 child: Text(
-                                  badgeText,
+                                  widget.linkText,
                                   style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: badgeColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: widget.isMuted
+                                        ? const Color(0xFF94A3B8)
+                                        : (_isHovered ? effectiveIconColor : const Color(0xFF475569)),
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                formattedEndDate,
-                                style: const TextStyle(fontSize: 10, color: StanomerColors.textTertiary),
+                              AnimatedPadding(
+                                duration: const Duration(milliseconds: 180),
+                                padding: EdgeInsets.only(left: _isHovered ? 4 : 0),
+                                child: Icon(
+                                  widget.isMuted ? LucideIcons.checkCircle : LucideIcons.arrowRight,
+                                  size: 13,
+                                  color: widget.isMuted
+                                      ? const Color(0xFF10B981)
+                                      : (_isHovered ? effectiveIconColor : const Color(0xFF64748B)),
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(LucideIcons.chevronRight, size: 16, color: StanomerColors.textTertiary),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+
+    if (widget.isMuted && widget.tooltipText != null && widget.tooltipText!.isNotEmpty) {
+      return Tooltip(
+        message: widget.tooltipText!,
+        preferBelow: false,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+        child: cardBody,
+      );
+    }
+
+    return cardBody;
+  }
+}
+
+class _AgencyCockpitSection extends StatefulWidget {
+  final List<Property> properties;
+  final Map<String, Contract?> contractsMap;
+  final List<Map<String, dynamic>> allPayments;
+  final List<Map<String, dynamic>> pendingPayments;
+  final List<MaintenanceRequest> maintenanceRequests;
+  final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final String lang;
+  final ValueChanged<ActionableInsightType> onSelectInsight;
+  final ValueChanged<int> onSelectFinanceSegment;
+  final VoidCallback onOpenMaintenance;
+
+  const _AgencyCockpitSection({
+    required this.properties,
+    required this.contractsMap,
+    required this.allPayments,
+    required this.pendingPayments,
+    required this.maintenanceRequests,
+    required this.colors,
+    required this.loc,
+    required this.lang,
+    required this.onSelectInsight,
+    required this.onSelectFinanceSegment,
+    required this.onOpenMaintenance,
+  });
+
+  @override
+  State<_AgencyCockpitSection> createState() => _AgencyCockpitSectionState();
+}
+
+class _AgencyCockpitSectionState extends State<_AgencyCockpitSection> {
+  bool? _isFinanceExpanded;
+  bool? _isContractsExpanded;
+  bool? _isOperationsExpanded;
+
+  Map<String, double> _calculateCurrencyTotals(List<Map<String, dynamic>> items) {
+    final Map<String, double> totals = {};
+    for (final item in items) {
+      final amt = (item['amount'] as num?)?.toDouble() ?? 0.0;
+      final curr = item['currency'] as String? ?? 'EUR';
+      if (amt > 0) {
+        totals[curr] = (totals[curr] ?? 0.0) + amt;
+      }
+    }
+    return totals;
+  }
+
+  Widget _buildCardGrid(BuildContext context, List<Widget> cards) {
+    final width = MediaQuery.of(context).size.width;
+    final int crossAxisCount = width >= 1000 ? 3 : (width >= 640 ? 2 : 1);
+
+    if (crossAxisCount == 1) {
+      return Column(
+        children: cards.map((c) => Padding(padding: const EdgeInsets.only(bottom: 14), child: c)).toList(),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 16.0;
+        final cardWidth = (constraints.maxWidth - (gap * (crossAxisCount - 1))) / crossAxisCount;
+        return Wrap(spacing: gap, runSpacing: gap, children: cards.map((c) => SizedBox(width: cardWidth, child: c)).toList());
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final txt = _getCockpitTexts(widget.lang);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // 1. Sözleşme ve Portföy Hesaplamaları
+    final expiredProps = widget.properties.where((p) {
+      final c = widget.contractsMap[p.id];
+      if (c == null) return false;
+      if (c.status == ContractStatus.expired) return true;
+      if (c.endDate != null && c.endDate!.isBefore(now)) return true;
+      return false;
+    }).toList();
+    final expiredCount = expiredProps.length;
+    final expiredNegotiating = expiredProps.where((p) => widget.contractsMap[p.id]?.status == ContractStatus.negotiating).length;
+    final expiredPendingAction = expiredCount - expiredNegotiating;
+    final isExpiredEmpty = expiredCount == 0;
+
+    final expiringProps = widget.properties.where((p) {
+      final c = widget.contractsMap[p.id];
+      if (c == null || c.endDate == null || c.status != ContractStatus.active) return false;
+      final days = c.endDate!.difference(now).inDays;
+      return days >= 0 && days <= 60;
+    }).toList();
+    final expiringCount = expiringProps.length;
+    final t0 = expiringProps.where((p) => widget.contractsMap[p.id]!.endDate!.difference(now).inDays == 0).length;
+    final t15 = expiringProps.where((p) {
+      final d = widget.contractsMap[p.id]!.endDate!.difference(now).inDays;
+      return d >= 1 && d <= 15;
+    }).length;
+    final t30 = expiringProps.where((p) {
+      final d = widget.contractsMap[p.id]!.endDate!.difference(now).inDays;
+      return d >= 16 && d <= 30;
+    }).length;
+    final t60 = expiringProps.where((p) {
+      final d = widget.contractsMap[p.id]!.endDate!.difference(now).inDays;
+      return d >= 31 && d <= 60;
+    }).length;
+    final isExpiringEmpty = expiringCount == 0;
+
+    final withoutContractProps = widget.properties.where((p) => widget.contractsMap[p.id] == null).toList();
+    final withoutContractsCount = withoutContractProps.length;
+    final vacantCount = withoutContractProps.where((p) => p.tenantId == null).length;
+    final invitePendingCount = withoutContractProps.where((p) => p.tenantId != null || p.landlordId == null).length;
+    final isWithoutContractsEmpty = withoutContractsCount == 0;
+
+    // 2. Finans ve Tahsilat Hesaplamaları
+    final overdueList = widget.allPayments.where((item) {
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'declared' || status == 'paid') return false;
+      final amt = (item['amount'] as num?)?.toDouble() ??
+          (item['total_amount'] as num?)?.toDouble() ??
+          (item['rent_amount'] as num?)?.toDouble() ??
+          0.0;
+      if (amt <= 0) return false;
+
+      final dueDateStr = item['due_date'] as String?;
+      final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+      if (status == 'overdue') return true;
+      if (status == 'pending' && dueDate != null && dueDate.isBefore(today)) {
+        return true;
+      }
+      return false;
+    }).toList();
+    final overdueTotals = _calculateCurrencyTotals(overdueList);
+    final overdueRents = overdueList.where((p) => (p['title'] as String? ?? 'Kira') == 'Kira').toList();
+    final overdueBills = overdueList.where((p) => (p['title'] as String? ?? 'Kira') != 'Kira').toList();
+    final overdueRentCount = overdueRents.length;
+    final overdueBillCount = overdueBills.length;
+    final overdueRentTotals = _calculateCurrencyTotals(overdueRents);
+    final overdueBillTotals = _calculateCurrencyTotals(overdueBills);
+    final isOverdueEmpty = overdueList.isEmpty;
+
+    final upcomingList = widget.allPayments.where((item) {
+      final status = item['status'] as String? ?? 'pending';
+      if (status != 'pending') return false;
+      final dueDateStr = item['due_date'] as String?;
+      if (dueDateStr == null) return false;
+      final dueDate = DateTime.tryParse(dueDateStr);
+      if (dueDate == null) return false;
+      final diff = dueDate.difference(today).inDays;
+      return diff >= 0 && diff <= 7;
+    }).toList();
+    final upcomingCount = upcomingList.length;
+    final upcomingRents = upcomingList.where((p) => (p['title'] as String? ?? 'Kira') == 'Kira').length;
+    final upcomingBills = upcomingList.where((p) => (p['title'] as String? ?? 'Kira') != 'Kira').length;
+    final isUpcomingEmpty = upcomingCount == 0;
+
+    final declaredPaymentsCount = widget.pendingPayments.where((p) => (p['status'] as String?) == 'declared').length;
+    final pendingContractsCount = widget.properties.where((p) {
+      final c = widget.contractsMap[p.id];
+      return c != null && (c.status == ContractStatus.pending || c.status == ContractStatus.negotiating);
+    }).length + widget.properties.where((p) => p.landlordId == null || p.tenantId == null).length;
+    final pendingApprovalsTotal = declaredPaymentsCount + pendingContractsCount;
+    final isPendingApprovalsEmpty = pendingApprovalsTotal == 0;
+
+    // 3. Operasyon ve Bakım Hesaplamaları
+    final openRequests = widget.maintenanceRequests.where((r) =>
+        r.status == MaintenanceStatus.open ||
+        r.status == MaintenanceStatus.investigating ||
+        r.status == MaintenanceStatus.inProgress ||
+        r.status == MaintenanceStatus.pending).toList();
+    final openRequestsCount = openRequests.length;
+    final urgentCount = openRequests.where((r) => r.priority == MaintenancePriority.urgent).length;
+    final highCount = openRequests.where((r) => r.priority == MaintenancePriority.high).length;
+    final normalCount = openRequests.where((r) =>
+        r.priority == MaintenancePriority.normal ||
+        r.priority == MaintenancePriority.medium ||
+        r.priority == MaintenancePriority.low).length;
+    final oldestDays = openRequests.isEmpty
+        ? 0
+        : openRequests
+            .map((r) => r.createdAt != null ? now.difference(r.createdAt!).inDays : 0)
+            .reduce((a, b) => a > b ? a : b);
+    final isMaintenanceEmpty = openRequestsCount == 0;
+
+    final contractCards = [
+      _ActionCockpitCard(
+        title: txt['expired_title']!,
+        metric: '$expiredCount ${txt['contract_unit']}',
+        icon: LucideIcons.alertTriangle,
+        iconColor: const Color(0xFFDC2626),
+        iconBgColor: const Color(0xFFFEF2F2),
+        iconBorderColor: const Color(0xFFFEE2E2),
+        actionTextColor: const Color(0xFFB91C1C),
+        isMuted: isExpiredEmpty,
+        tooltipText: isExpiredEmpty ? txt['empty_tooltip_expired'] : null,
+        items: isExpiredEmpty
+            ? [txt['empty_tooltip_expired']!]
+            : [
+                '$expiredPendingAction ${txt['action_pending']}',
+                '$expiredNegotiating ${txt['in_negotiation']}',
+              ],
+        linkText: isExpiredEmpty ? txt['no_action_needed']! : txt['expired_action']!,
+        onTap: () => widget.onSelectInsight(ActionableInsightType.expiredContracts),
+      ),
+      _ActionCockpitCard(
+        title: txt['expiring_title']!,
+        metric: '$expiringCount ${txt['contract_unit']}',
+        icon: LucideIcons.clock,
+        iconColor: const Color(0xFFEA580C),
+        iconBgColor: const Color(0xFFFFF7ED),
+        iconBorderColor: const Color(0xFFFFEDD5),
+        actionTextColor: const Color(0xFFC2410C),
+        isMuted: isExpiringEmpty,
+        tooltipText: isExpiringEmpty ? txt['empty_tooltip_expiring'] : null,
+        items: isExpiringEmpty
+            ? [txt['empty_tooltip_expiring']!]
+            : [
+                '${txt['today']!}: $t0 • ${txt['days_1_15']!}: $t15',
+                '${txt['days_16_30']!}: $t30 • ${txt['months_1_2']!}: $t60',
+              ],
+        linkText: isExpiringEmpty ? txt['no_action_needed']! : txt['expiring_action']!,
+        onTap: () => widget.onSelectInsight(ActionableInsightType.expiringContracts),
+      ),
+      _ActionCockpitCard(
+        title: txt['without_contracts_title']!,
+        metric: '$withoutContractsCount ${txt['property_unit']}',
+        icon: LucideIcons.fileMinus,
+        iconColor: const Color(0xFF475569),
+        iconBgColor: const Color(0xFFF8FAFC),
+        iconBorderColor: const Color(0xFFE2E8F0),
+        actionTextColor: const Color(0xFF334155),
+        isMuted: isWithoutContractsEmpty,
+        tooltipText: isWithoutContractsEmpty ? txt['empty_tooltip_without_contracts'] : null,
+        items: isWithoutContractsEmpty
+            ? [txt['empty_tooltip_without_contracts']!]
+            : [
+                '$vacantCount ${txt['vacant']}',
+                '$invitePendingCount ${txt['invite_pending']}',
+              ],
+        linkText: isWithoutContractsEmpty ? txt['no_action_needed']! : txt['without_contracts_action']!,
+        onTap: () => widget.onSelectInsight(ActionableInsightType.withoutContracts),
+      ),
+    ];
+
+    final financeCards = [
+      _ActionCockpitCard(
+        title: txt['overdue_title']!,
+        metric: _formatCockpitCurrencyTotals(overdueTotals, txt['no_overdue_debt']!),
+        icon: LucideIcons.wallet,
+        iconColor: const Color(0xFFE11D48),
+        iconBgColor: const Color(0xFFFFF1F2),
+        iconBorderColor: const Color(0xFFFFE4E6),
+        actionTextColor: const Color(0xFFBE123C),
+        isMuted: isOverdueEmpty,
+        tooltipText: isOverdueEmpty ? txt['empty_tooltip_overdue'] : null,
+        items: isOverdueEmpty
+            ? [txt['empty_tooltip_overdue']!]
+            : [
+                '$overdueRentCount ${txt['rent']} (${_formatCockpitCurrencyTotals(overdueRentTotals, "0")})',
+                '$overdueBillCount ${txt['bill']} (${_formatCockpitCurrencyTotals(overdueBillTotals, "0")})',
+              ],
+        linkText: isOverdueEmpty ? txt['no_action_needed']! : txt['overdue_action']!,
+        onTap: () => widget.onSelectFinanceSegment(2), // Borçlular segment
+      ),
+      _ActionCockpitCard(
+        title: txt['upcoming_title']!,
+        metric: isUpcomingEmpty
+            ? '0 ${txt['operation_unit']}'
+            : '${txt['days_7_badge']} ($upcomingCount ${txt['operation_unit']})',
+        icon: LucideIcons.calendar,
+        iconColor: const Color(0xFFD97706),
+        iconBgColor: const Color(0xFFFFFBEB),
+        iconBorderColor: const Color(0xFFFEF3C7),
+        actionTextColor: const Color(0xFFB45309),
+        isMuted: isUpcomingEmpty,
+        tooltipText: isUpcomingEmpty ? txt['empty_tooltip_upcoming'] : null,
+        items: isUpcomingEmpty
+            ? [txt['empty_tooltip_upcoming']!]
+            : [
+                '$upcomingRents ${txt['rent_collection']}',
+                '$upcomingBills ${txt['bill_due']}',
+              ],
+        linkText: isUpcomingEmpty ? txt['no_action_needed']! : txt['upcoming_action']!,
+        onTap: () => widget.onSelectFinanceSegment(0),
+      ),
+      _ActionCockpitCard(
+        title: txt['pending_approvals_title']!,
+        metric: '$pendingApprovalsTotal ${txt['operation_unit']}',
+        icon: LucideIcons.checkCircle2,
+        iconColor: const Color(0xFF2563EB),
+        iconBgColor: const Color(0xFFEFF6FF),
+        iconBorderColor: const Color(0xFFDBEAFE),
+        actionTextColor: const Color(0xFF1D4ED8),
+        isMuted: isPendingApprovalsEmpty,
+        tooltipText: isPendingApprovalsEmpty ? txt['empty_tooltip_pending_approvals'] : null,
+        items: isPendingApprovalsEmpty
+            ? [txt['empty_tooltip_pending_approvals']!]
+            : [
+                '$declaredPaymentsCount ${txt['receipt_approval']}',
+                '$pendingContractsCount ${txt['contract_invite_approval']}',
+              ],
+        linkText: isPendingApprovalsEmpty ? txt['no_action_needed']! : txt['pending_approvals_action']!,
+        onTap: () => widget.onSelectFinanceSegment(0), // Onay Kuyruğu segment
+      ),
+    ];
+
+    final operationsCards = [
+      _ActionCockpitCard(
+        title: txt['maintenance_title']!,
+        metric: '$openRequestsCount ${txt['request_unit']}',
+        icon: LucideIcons.wrench,
+        iconColor: const Color(0xFF9333EA),
+        iconBgColor: const Color(0xFFFAF5FF),
+        iconBorderColor: const Color(0xFFF3E8FF),
+        actionTextColor: const Color(0xFF7E22CE),
+        isMuted: isMaintenanceEmpty,
+        tooltipText: isMaintenanceEmpty ? txt['empty_tooltip_maintenance'] : null,
+        items: isMaintenanceEmpty
+            ? [txt['empty_tooltip_maintenance']!]
+            : [
+                '$urgentCount ${txt['urgent']}, $highCount ${txt['high']}, $normalCount ${txt['normal']}',
+                txt['days_oldest']!.replaceAll('{days}', '$oldestDays'),
+              ],
+        linkText: isMaintenanceEmpty ? txt['no_action_needed']! : txt['maintenance_action']!,
+        onTap: widget.onOpenMaintenance,
+      ),
+    ];
+
+    final totalFinancePending = (isOverdueEmpty ? 0 : (overdueRentCount + overdueBillCount)) +
+        (isUpcomingEmpty ? 0 : upcomingCount) +
+        (isPendingApprovalsEmpty ? 0 : pendingApprovalsTotal);
+
+    final totalContractsPending = (isExpiredEmpty ? 0 : expiredCount) +
+        (isExpiringEmpty ? 0 : expiringCount) +
+        (isWithoutContractsEmpty ? 0 : withoutContractsCount);
+
+    final totalOperationsPending = (isMaintenanceEmpty ? 0 : openRequestsCount);
+
+    // Boşsa (totalPending == 0) varsayılan olarak collapsed, kayıt varsa açık
+    final isFinanceOpen = _isFinanceExpanded ?? (totalFinancePending > 0);
+    final isContractsOpen = _isContractsExpanded ?? (totalContractsPending > 0);
+    final isOperationsOpen = _isOperationsExpanded ?? (totalOperationsPending > 0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── 1. Finans ve Tahsilat Bölümü (En Üstte) ─────────────────────
+        _BentoSectionHeader(
+          number: 1,
+          title: txt['section_finance']!,
+          icon: LucideIcons.wallet,
+          accentColor: const Color(0xFF0284C7),
+          badgeText: totalFinancePending == 0
+              ? txt['status_all_good']
+              : txt['status_actions_pending']!.replaceAll('{count}', '$totalFinancePending'),
+          isBadgePositive: totalFinancePending == 0,
+          isExpanded: isFinanceOpen,
+          onToggle: () => setState(() => _isFinanceExpanded = !isFinanceOpen),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: _buildCardGrid(context, financeCards),
+          ),
+          crossFadeState: isFinanceOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 220),
+          sizeCurve: Curves.easeInOutCubic,
+        ),
+
+        // Ayrım çizgisi
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Divider(height: 1, thickness: 1, color: Color(0xFFEEEEF0)),
+        ),
+
+        // ── 2. Sözleşme ve Portföy Bölümü (İkinci Sırada) ────────────────
+        _BentoSectionHeader(
+          number: 2,
+          title: txt['section_contracts']!,
+          icon: LucideIcons.fileText,
+          accentColor: const Color(0xFF3B82F6),
+          badgeText: totalContractsPending == 0
+              ? txt['status_all_good']
+              : txt['status_actions_pending']!.replaceAll('{count}', '$totalContractsPending'),
+          isBadgePositive: totalContractsPending == 0,
+          isExpanded: isContractsOpen,
+          onToggle: () => setState(() => _isContractsExpanded = !isContractsOpen),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: _buildCardGrid(context, contractCards),
+          ),
+          crossFadeState: isContractsOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 220),
+          sizeCurve: Curves.easeInOutCubic,
+        ),
+
+        // Ayrım çizgisi
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Divider(height: 1, thickness: 1, color: Color(0xFFEEEEF0)),
+        ),
+
+        // ── 3. Operasyon ve Bakım Bölümü (En Sonda) ─────────────────────
+        _BentoSectionHeader(
+          number: 3,
+          title: txt['section_operations']!,
+          icon: LucideIcons.wrench,
+          accentColor: const Color(0xFF9333EA),
+          badgeText: totalOperationsPending == 0
+              ? txt['status_all_good']
+              : txt['status_actions_pending']!.replaceAll('{count}', '$totalOperationsPending'),
+          isBadgePositive: totalOperationsPending == 0,
+          isExpanded: isOperationsOpen,
+          onToggle: () => setState(() => _isOperationsExpanded = !isOperationsOpen),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: _buildCardGrid(context, operationsCards),
+          ),
+          crossFadeState: isOperationsOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 220),
+          sizeCurve: Curves.easeInOutCubic,
+        ),
       ],
     );
   }
 }
 
-class _OldestPendingMaintenanceSection extends ConsumerWidget {
-  final List<Property> properties;
-  final AgencyColorScheme colors;
-  final AppLocalizations loc;
-  final String lang;
-  final VoidCallback onSeeAllRequests;
+class _BentoSectionHeader extends StatefulWidget {
+  final int number;
+  final String title;
+  final IconData icon;
+  final Color accentColor;
+  final String? badgeText;
+  final bool isBadgePositive;
+  final bool isExpanded;
+  final VoidCallback onToggle;
 
-  const _OldestPendingMaintenanceSection({
-    required this.properties,
-    required this.colors,
-    required this.loc,
-    required this.lang,
-    required this.onSeeAllRequests,
+  const _BentoSectionHeader({
+    required this.number,
+    required this.title,
+    required this.icon,
+    required this.accentColor,
+    this.badgeText,
+    this.isBadgePositive = false,
+    required this.isExpanded,
+    required this.onToggle,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final txt = _getPendingMaintenanceTexts(lang);
-    final requestsAsync = ref.watch(agencyMaintenanceRequestsProvider);
+  State<_BentoSectionHeader> createState() => _BentoSectionHeaderState();
+}
 
-    return requestsAsync.when(
-      loading: () => _LoadingCard(colors: colors),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (allRequests) {
-        final propertiesMap = {for (var p in properties) p.id: p};
+class _BentoSectionHeaderState extends State<_BentoSectionHeader> {
+  bool _isHovered = false;
 
-        final pendingRequests = allRequests.where((r) =>
-            r.status == MaintenanceStatus.open ||
-            r.status == MaintenanceStatus.investigating ||
-            r.status == MaintenanceStatus.inProgress ||
-            r.status == MaintenanceStatus.pending).toList();
-
-        pendingRequests.sort((a, b) {
-          if (a.createdAt == null && b.createdAt == null) return 0;
-          if (a.createdAt == null) return 1;
-          if (b.createdAt == null) return -1;
-          return a.createdAt!.compareTo(b.createdAt!);
-        });
-
-        final displayList = pendingRequests.take(5).toList();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(LucideIcons.wrench, size: 18, color: colors.brandGold),
-                    const SizedBox(width: 8),
-                    Text(
-                      txt['section_title']!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: StanomerColors.textPrimary,
-                      ),
-                    ),
-                    if (pendingRequests.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${pendingRequests.length}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.red.shade700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                if (pendingRequests.length > 5)
-                  TextButton(
-                    onPressed: onSeeAllRequests,
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          txt['see_all_requests']!,
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(LucideIcons.chevronRight, size: 14, color: colors.primary),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (displayList.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colors.bgWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colors.border),
-                ),
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onToggle,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left Group: Icon + Title
+              Expanded(
                 child: Row(
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        color: widget.accentColor.withValues(alpha: _isHovered ? 0.16 : 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: widget.accentColor.withValues(alpha: _isHovered ? 0.35 : 0.2)),
                       ),
-                      child: const Icon(LucideIcons.checkCheck, size: 18, color: Colors.green),
+                      child: Icon(widget.icon, size: 16, color: widget.accentColor),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.4,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Right Group: Status Pill + Chevron (Always Flush Right)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.badgeText != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                      decoration: BoxDecoration(
+                        color: widget.isBadgePositive
+                            ? const Color(0xFFECFDF5)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.isBadgePositive
+                              ? const Color(0xFFA7F3D0)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            txt['no_pending']!,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: widget.isBadgePositive
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF64748B),
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(width: 6),
                           Text(
-                            txt['no_pending_sub']!,
-                            style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                            widget.badgeText!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: widget.isBadgePositive
+                                  ? const Color(0xFF065F46)
+                                  : const Color(0xFF475569),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              )
-            else
-              Column(
-                children: displayList.map((req) {
-                  final propName = propertiesMap[req.propertyId]?.name ?? loc.propertyName;
-                  final daysWaiting = req.createdAt != null
-                      ? DateTime.now().difference(req.createdAt!).inDays
-                      : 0;
 
-                  final String waitingText;
-                  if (daysWaiting == 0) {
-                    waitingText = txt['waiting_today']!;
-                  } else if (daysWaiting == 1) {
-                    waitingText = txt['waiting_yesterday']!;
-                  } else {
-                    waitingText = '$daysWaiting ${txt['waiting_days']}';
-                  }
+                  const SizedBox(width: 8),
 
-                  final Color priorityColor;
-                  final Color priorityBg;
-                  final String priorityText;
-
-                  switch (req.priority) {
-                    case MaintenancePriority.urgent:
-                      priorityColor = Colors.red.shade700;
-                      priorityBg = Colors.red.withValues(alpha: 0.12);
-                      priorityText = txt['urgent']!;
-                      break;
-                    case MaintenancePriority.high:
-                      priorityColor = Colors.orange.shade800;
-                      priorityBg = Colors.orange.withValues(alpha: 0.12);
-                      priorityText = txt['high']!;
-                      break;
-                    case MaintenancePriority.medium:
-                    case MaintenancePriority.normal:
-                      priorityColor = Colors.blue.shade700;
-                      priorityBg = Colors.blue.withValues(alpha: 0.12);
-                      priorityText = txt['normal']!;
-                      break;
-                    case MaintenancePriority.low:
-                      priorityColor = Colors.grey.shade700;
-                      priorityBg = Colors.grey.withValues(alpha: 0.12);
-                      priorityText = txt['low']!;
-                      break;
-                  }
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => context.push('/maintenance/detail', extra: req),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: colors.bgWhite,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: colors.border),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: priorityBg,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(LucideIcons.wrench, size: 20, color: priorityColor),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      req.title,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: StanomerColors.textPrimary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Row(
-                                      children: [
-                                        Icon(LucideIcons.building, size: 11, color: StanomerColors.textTertiary),
-                                        const SizedBox(width: 3),
-                                        Flexible(
-                                          child: Text(
-                                            propName,
-                                            style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: priorityBg,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: priorityColor.withValues(alpha: 0.3)),
-                                    ),
-                                    child: Text(
-                                      priorityText,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: priorityColor,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    waitingText,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: daysWaiting > 5 ? FontWeight.bold : FontWeight.normal,
-                                      color: daysWaiting > 5 ? Colors.red.shade700 : StanomerColors.textTertiary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(LucideIcons.chevronRight, size: 16, color: StanomerColors.textTertiary),
-                            ],
-                          ),
-                        ),
+                  // Animated Chevron Indicator
+                  AnimatedRotation(
+                    turns: widget.isExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: _isHovered ? const Color(0xFFF1F5F9) : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.chevronDown,
+                        size: 16,
+                        color: _isHovered ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -4636,27 +6979,39 @@ class _FilterChipButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = badgeColor ?? colors.primary;
+    final activeColor = badgeColor ?? const Color(0xFF0F172A);
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor : activeColor.withValues(alpha: 0.08),
+          color: isSelected ? activeColor : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? activeColor : activeColor.withValues(alpha: 0.2),
-            width: isSelected ? 1.5 : 1,
+            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+            width: 1.2,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected ? Colors.white : colors.textPrimary,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : const Color(0xFF475569),
+            letterSpacing: -0.1,
           ),
         ),
       ),
@@ -4664,7 +7019,7 @@ class _FilterChipButton extends StatelessWidget {
   }
 }
 
-class _WelcomeBanner extends ConsumerWidget {
+class _WelcomeBanner extends ConsumerStatefulWidget {
   final String companyName;
   final String email;
   final AgencyColorScheme colors;
@@ -4676,82 +7031,226 @@ class _WelcomeBanner extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_WelcomeBanner> createState() => _WelcomeBannerState();
+}
+
+class _WelcomeBannerState extends ConsumerState<_WelcomeBanner> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final lang = Localizations.localeOf(context).languageCode;
+    final txt = _getCockpitTexts(lang);
     final user = ref.watch(currentUserProvider);
     final userName = user?.userMetadata?['full_name'] as String?
         ?? user?.userMetadata?['name'] as String?
         ?? (user?.email != null ? user!.email!.split('@').first : '');
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.bgWhite,
-        gradient: LinearGradient(
-          colors: [
-            colors.primary.withValues(alpha: 0.08),
-            colors.primary.withValues(alpha: 0.02),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    final primaryColor = widget.colors.primary;
+    final primaryHsl = HSLColor.fromColor(primaryColor);
+    final primaryDark = primaryHsl.withLightness((primaryHsl.lightness - 0.12).clamp(0.0, 1.0)).toColor();
+    final primaryLight = primaryHsl.withLightness((primaryHsl.lightness + 0.08).clamp(0.0, 1.0)).toColor();
+    final primaryGradient = [primaryLight, primaryDark];
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _isHovered
+                ? primaryColor.withValues(alpha: 0.45)
+                : const Color(0xFFE2E8F0),
+            width: _isHovered ? 1.5 : 1.2,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: _isHovered
+                  ? primaryDark.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.04),
+              blurRadius: _isHovered ? 20 : 14,
+              offset: Offset(0, _isHovered ? 6 : 4),
             ),
-            child: Icon(LucideIcons.building2, color: colors.primary, size: 24),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (userName.isNotEmpty) ...[
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            // Arkaplan silik bina ikonu (Watermark ~3.5% opacity)
+            Positioned(
+              right: -20,
+              bottom: -20,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.035,
+                  child: Icon(
+                    LucideIcons.building2,
+                    size: 180,
+                    color: primaryDark,
+                  ),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: Squircle Gradient Brand Icon + Live Status Pill Badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: primaryGradient,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryDark.withValues(alpha: _isHovered ? 0.4 : 0.25),
+                              blurRadius: _isHovered ? 12 : 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(LucideIcons.building2, size: 24, color: Colors.white),
+                      ),
+
+                      // Live Status Pill Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: widget.colors.accent.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: widget.colors.border.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              txt['agency_management_portal'] ?? 'Agency Management Portal',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: widget.colors.textPrimary.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Eyebrow Tag
                   Text(
-                    loc.welcomeUser(userName),
+                    loc.welcomeUser(userName.isNotEmpty ? userName : widget.companyName),
                     style: TextStyle(
-                      color: colors.primary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                      letterSpacing: -0.1,
                     ),
                   ),
                   const SizedBox(height: 4),
+
+                  // Big Prominent Company Name
+                  Text(
+                    widget.companyName.isNotEmpty ? widget.companyName : 'Stanomer Exclusive',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1D1D1F),
+                      letterSpacing: -0.6,
+                      height: 1.15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Info items (Email with brand bullet)
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.email,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-                Text(
-                  companyName,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  email,
-                  style: TextStyle(
-                    color: colors.textPrimary.withValues(alpha: 0.6),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+
+            // Powered by stanomer.online (Muted White-Label Signature - Sağ Alt Köşe)
+            Positioned(
+              right: 24,
+              bottom: 16,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    LucideIcons.sparkles,
+                    size: 10,
+                    color: const Color(0xFF94A3B8).withValues(alpha: 0.8),
+                  ),
+                  const SizedBox(width: 5),
+                  const Text(
+                    'powered by stanomer.online',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF94A3B8),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -4774,13 +7273,17 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 8),
-        Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            color: color,
-            letterSpacing: 1.2,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -4788,7 +7291,757 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _PropertyCard extends ConsumerWidget {
+class _PropertyTableView extends StatelessWidget {
+  final List<Property> properties;
+  final Set<String> debtPropertyIds;
+  final AgencyColorScheme colors;
+
+  const _PropertyTableView({
+    required this.properties,
+    required this.debtPropertyIds,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final isDesktop = screenWidth >= 768;
+
+        if (!isDesktop) {
+          // Mobile / Small Screen: Compact List View
+          return Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.025),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: properties.length,
+                separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (ctx, i) {
+                  final property = properties[i];
+                  return _PropertyCompactRow(
+                    property: property,
+                    hasPendingDebt: debtPropertyIds.contains(property.id),
+                    colors: colors,
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        // Desktop High-Density Table View
+        final tableWidth = screenWidth > 900 ? screenWidth : 900.0;
+        final colAction = 60.0;
+        final usableWidth = tableWidth - 36 - colAction; // 36 is horizontal padding (18+18)
+        final colProperty = usableWidth * 0.30;
+        final colLandlord = usableWidth * 0.22;
+        final colTenant = usableWidth * 0.18;
+        final colContract = usableWidth * 0.18;
+        final colStatus = usableWidth * 0.12;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: tableWidth,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Table Column Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF8FAFC),
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: colProperty,
+                            child: Text(
+                              loc.tabPortfolio.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: colLandlord,
+                            child: Text(
+                              loc.landlord.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: colTenant,
+                            child: Text(
+                              loc.roleTenant.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: colContract,
+                            child: Text(
+                              loc.contract.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: colStatus,
+                            child: Text(
+                              loc.statusLabel,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: colAction,
+                            child: const Text(''),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Table Rows
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: properties.length,
+                      separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                      itemBuilder: (ctx, i) {
+                        final property = properties[i];
+                        return _PropertyTableRow(
+                          property: property,
+                          hasPendingDebt: debtPropertyIds.contains(property.id),
+                          colProperty: colProperty,
+                          colLandlord: colLandlord,
+                          colTenant: colTenant,
+                          colContract: colContract,
+                          colStatus: colStatus,
+                          colAction: colAction,
+                          colors: colors,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PropertyTableRow extends ConsumerStatefulWidget {
+  final Property property;
+  final bool hasPendingDebt;
+  final double colProperty;
+  final double colLandlord;
+  final double colTenant;
+  final double colContract;
+  final double colStatus;
+  final double colAction;
+  final AgencyColorScheme colors;
+
+  const _PropertyTableRow({
+    required this.property,
+    required this.hasPendingDebt,
+    required this.colProperty,
+    required this.colLandlord,
+    required this.colTenant,
+    required this.colContract,
+    required this.colStatus,
+    required this.colAction,
+    required this.colors,
+  });
+
+  @override
+  ConsumerState<_PropertyTableRow> createState() => _PropertyTableRowState();
+}
+
+class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final property = widget.property;
+    final hasPendingDebt = widget.hasPendingDebt;
+    final hasActiveTenant = property.tenantId != null;
+    final isClaimed = property.landlordId != null;
+    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
+
+    final activeContractAsync = ref.watch(activeContractProvider(property.id));
+    final contract = activeContractAsync.value;
+    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
+    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
+
+    final tenantName = (property.tenantName != null && property.tenantName!.trim().isNotEmpty)
+        ? property.tenantName!
+        : (tenantProfileName != null && tenantProfileName.trim().isNotEmpty)
+            ? tenantProfileName
+            : (contract?.inviteeEmail != null && contract!.inviteeEmail.trim().isNotEmpty)
+                ? contract.inviteeEmail
+                : (hasActiveTenant ? loc.roleTenant : loc.vacant);
+    final cityName = property.city?.trim() ?? '';
+
+    final iconBg = hasPendingDebt
+        ? const Color(0xFFFFF1F2)
+        : (hasActiveTenant ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC));
+    final iconColor = hasPendingDebt
+        ? const Color(0xFFE11D48)
+        : (hasActiveTenant ? const Color(0xFF2563EB) : const Color(0xFF94A3B8));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: Material(
+        color: _isHovered ? const Color(0xFFF8FAFC) : Colors.white,
+        child: InkWell(
+          onTap: () => context.push('/property-detail', extra: property),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            child: Row(
+              children: [
+                // 1. Property Name & City & Address
+                SizedBox(
+                  width: widget.colProperty,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: iconBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          hasPendingDebt ? LucideIcons.alertTriangle : LucideIcons.building,
+                          size: 16,
+                          color: iconColor,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    property.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.5,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (cityName.isNotEmpty) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEFF6FF),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      cityName,
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              property.address,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFF94A3B8),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 2. Landlord
+                SizedBox(
+                  width: widget.colLandlord,
+                  child: Row(
+                    children: [
+                      Icon(
+                        isClaimed ? LucideIcons.userCheck : LucideIcons.clock,
+                        size: 13,
+                        color: isClaimed ? const Color(0xFF2563EB) : const Color(0xFFD97706),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          isClaimed ? landlordName : '$landlordName (${loc.invitePending})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isClaimed ? const Color(0xFF334155) : const Color(0xFFB45309),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 3. Tenant
+                SizedBox(
+                  width: widget.colTenant,
+                  child: hasActiveTenant
+                      ? Row(
+                          children: [
+                            const Icon(LucideIcons.user, size: 13, color: Color(0xFF10B981)),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                tenantName,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            loc.vacantLabel,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                ),
+
+                // 4. Contract Info
+                SizedBox(
+                  width: widget.colContract,
+                  child: contract != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${contract.monthlyRent > 0 ? contract.monthlyRent.toStringAsFixed(0) : (property.defaultMonthlyRent > 0 ? property.defaultMonthlyRent.toStringAsFixed(0) : "-")} ${contract.currency}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              contract.endDate != null
+                                  ? DateFormat('dd.MM.yyyy').format(contract.endDate!)
+                                  : loc.unlimited,
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        )
+                      : Text(
+                          loc.latestContractNone,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF94A3B8),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                ),
+
+                // 5. Status / Debt Badge
+                SizedBox(
+                  width: widget.colStatus,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: hasPendingDebt
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF1F2),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFFFE4E6)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.alertTriangle, size: 11, color: Color(0xFFE11D48)),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    loc.statusOverdue,
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFE11D48),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFECFDF5),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFA7F3D0)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.check, size: 11, color: Color(0xFF065F46)),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    loc.statusClean,
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF065F46),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                  ),
+                ),
+
+                // 6. Action Buttons
+                SizedBox(
+                  width: widget.colAction,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      PopupMenuButton<String>(
+                        icon: const Icon(LucideIcons.moreHorizontal, size: 16, color: Color(0xFF64748B)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        onSelected: (value) async {
+                          if (value == 'invite_tenant') {
+                            context.push('/invite-tenant', extra: property);
+                          } else if (value == 'share_qr') {
+                            final repo = ref.read(propertyRepositoryProvider);
+                            final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
+                            if (context.mounted) {
+                              OwnershipShareSheet.show(
+                                context,
+                                propertyName: property.name,
+                                landlordName: property.landlordName ?? '',
+                                landlordEmail: property.landlordEmail ?? '',
+                                token: token,
+                              );
+                            }
+                          } else if (value == 'change_landlord') {
+                            _ChangeLandlordDialog.show(context, property);
+                          } else if (value == 'property_settings') {
+                            context.push('/property-settings', extra: {'property': property, 'initialTab': 'contract'});
+                          }
+                        },
+                        itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                            value: 'invite_tenant',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.userCheck, size: 15),
+                                const SizedBox(width: 8),
+                                Text(loc.inviteTenantOrAddContract, style: const TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'share_qr',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.qrCode, size: 15),
+                                const SizedBox(width: 8),
+                                Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'property_settings',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.settings, size: 15),
+                                const SizedBox(width: 8),
+                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'change_landlord',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.userPlus, size: 15),
+                                const SizedBox(width: 8),
+                                Text(loc.changeLandlord, style: const TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PropertyCompactRow extends ConsumerWidget {
+  final Property property;
+  final bool hasPendingDebt;
+  final AgencyColorScheme colors;
+
+  const _PropertyCompactRow({
+    required this.property,
+    required this.hasPendingDebt,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
+    final hasActiveTenant = property.tenantId != null;
+    final isClaimed = property.landlordId != null;
+    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
+    final cityName = property.city?.trim() ?? '';
+
+    final iconBg = hasPendingDebt
+        ? const Color(0xFFFFF1F2)
+        : (hasActiveTenant ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC));
+    final iconColor = hasPendingDebt
+        ? const Color(0xFFE11D48)
+        : (hasActiveTenant ? const Color(0xFF2563EB) : const Color(0xFF94A3B8));
+
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () => context.push('/property-detail', extra: property),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  hasPendingDebt ? LucideIcons.alertTriangle : LucideIcons.building,
+                  size: 16,
+                  color: iconColor,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            property.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13.5,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (cityName.isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              cityName,
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            isClaimed ? landlordName : loc.invitePending,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isClaimed ? const Color(0xFF64748B) : const Color(0xFFB45309),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text('•', style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 10)),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            hasActiveTenant ? (property.tenantName ?? loc.roleTenant) : loc.vacantLabel,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: hasActiveTenant ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (hasPendingDebt) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    loc.statusOverdue,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFFE11D48)),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
+              const Icon(LucideIcons.chevronRight, size: 16, color: Color(0xFF94A3B8)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PropertyCard extends ConsumerStatefulWidget {
   final Property property;
   final bool hasPendingDebt;
   final VoidCallback onTap;
@@ -4802,8 +8055,18 @@ class _PropertyCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_PropertyCard> createState() => _PropertyCardState();
+}
+
+class _PropertyCardState extends ConsumerState<_PropertyCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final property = widget.property;
+    final hasPendingDebt = widget.hasPendingDebt;
+    final colors = widget.colors;
     final hasActiveTenant = property.tenantId != null;
     final isClaimed = property.landlordId != null;
     final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
@@ -4822,306 +8085,401 @@ class _PropertyCard extends ConsumerWidget {
                 : (hasActiveTenant ? loc.roleTenant : loc.vacant);
     final cityName = property.city?.trim() ?? '';
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
+    final iconBg = hasPendingDebt
+        ? const Color(0xFFFFF1F2)
+        : (hasActiveTenant ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC));
+    final iconColor = hasPendingDebt
+        ? const Color(0xFFE11D48)
+        : (hasActiveTenant ? const Color(0xFF2563EB) : const Color(0xFF64748B));
+    final iconBorder = hasPendingDebt
+        ? const Color(0xFFFFE4E6)
+        : (hasActiveTenant ? const Color(0xFFDBEAFE) : const Color(0xFFE2E8F0));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(bottom: 12),
+        transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
         decoration: BoxDecoration(
-          color: colors.bgWhite,
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: hasPendingDebt
-                ? Colors.red.withValues(alpha: 0.5)
-                : (hasActiveTenant ? colors.primary.withValues(alpha: 0.3) : colors.border),
-            width: hasPendingDebt ? 1.5 : 1.0,
+            color: _isHovered
+                ? colors.primary.withValues(alpha: 0.35)
+                : (hasPendingDebt ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0)),
+            width: _isHovered || hasPendingDebt ? 1.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: _isHovered ? 0.055 : 0.025),
+              blurRadius: _isHovered ? 16 : 8,
+              offset: Offset(0, _isHovered ? 5 : 2),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Property Name + City + Popup Menu
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: hasPendingDebt
-                        ? Colors.red.withValues(alpha: 0.1)
-                        : (hasActiveTenant ? colors.primary.withValues(alpha: 0.12) : StanomerColors.bgPage),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    hasPendingDebt ? LucideIcons.alertTriangle : LucideIcons.building,
-                    size: 18,
-                    color: hasPendingDebt
-                        ? Colors.red
-                        : (hasActiveTenant ? colors.primary : colors.textPrimary.withValues(alpha: 0.4)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: widget.onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: Property Icon Squircle + Title & City + Popup Menu
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: iconBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: iconBorder),
+                        ),
+                        child: Icon(
+                          hasPendingDebt ? LucideIcons.alertTriangle : LucideIcons.building,
+                          size: 18,
+                          color: iconColor,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    property.name,
+                                    style: const TextStyle(
+                                      color: Color(0xFF0F172A),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      letterSpacing: -0.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (cityName.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEFF6FF),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFDBEAFE)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(LucideIcons.mapPin, size: 10, color: Color(0xFF2563EB)),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          cityName,
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              property.address,
+                              style: const TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(LucideIcons.moreHorizontal, size: 18, color: Color(0xFF64748B)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        onSelected: (value) async {
+                          if (value == 'invite_tenant') {
+                            context.push('/invite-tenant', extra: property);
+                          } else if (value == 'share_qr') {
+                            final repo = ref.read(propertyRepositoryProvider);
+                            final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
+                            if (context.mounted) {
+                              OwnershipShareSheet.show(
+                                context,
+                                propertyName: property.name,
+                                landlordName: property.landlordName ?? '',
+                                landlordEmail: property.landlordEmail ?? '',
+                                token: token,
+                              );
+                            }
+                          } else if (value == 'change_landlord') {
+                            _ChangeLandlordDialog.show(context, property);
+                          } else if (value == 'property_settings') {
+                            context.push('/property-settings', extra: {'property': property, 'initialTab': 'contract'});
+                          }
+                        },
+                        itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                            value: 'invite_tenant',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.userCheck, size: 16),
+                                const SizedBox(width: 8),
+                                Text(loc.inviteTenantOrAddContract, style: const TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'share_qr',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.qrCode, size: 16),
+                                const SizedBox(width: 8),
+                                Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'property_settings',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.settings, size: 16),
+                                const SizedBox(width: 8),
+                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'change_landlord',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.userPlus, size: 16),
+                                const SizedBox(width: 8),
+                                Text(loc.changeLandlord, style: const TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  // Pending Debt Pill
+                  if (hasPendingDebt) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF1F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFE4E6)),
+                      ),
+                      child: Row(
                         children: [
+                          const Icon(LucideIcons.alertTriangle, size: 14, color: Color(0xFFE11D48)),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              property.name,
-                              style: TextStyle(
-                                color: colors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                              loc.pendingDebtWarning,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFE11D48),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (cityName.isNotEmpty) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: colors.primary.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(6),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 14),
+
+                  // Landlord & Tenant Clean Info Rows
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                    ),
+                    child: Row(
+                      children: [
+                        // Landlord Info
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  color: isClaimed ? const Color(0xFFEFF6FF) : const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  isClaimed ? LucideIcons.userCheck : LucideIcons.clock,
+                                  size: 13,
+                                  color: isClaimed ? const Color(0xFF2563EB) : const Color(0xFFD97706),
+                                ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.mapPin, size: 10, color: colors.primary),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    cityName,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: colors.primary,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      loc.landlordLabel.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF94A3B8),
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      isClaimed ? landlordName : '$landlordName (${loc.invitePending})',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isClaimed ? const Color(0xFF0F172A) : const Color(0xFFB45309),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Tenant Info
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  color: hasActiveTenant ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  hasActiveTenant ? LucideIcons.user : LucideIcons.userX,
+                                  size: 13,
+                                  color: hasActiveTenant ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      loc.tenantLabel.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF94A3B8),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      hasActiveTenant ? (tenantName ?? loc.roleTenant) : loc.vacantLabel,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: hasActiveTenant ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Contract Info Box
+                  _ContractInfoBadge(contract: contract, colors: colors, loc: loc),
+
+                  const SizedBox(height: 10),
+
+                  // Footer Divider & Action
+                  Container(
+                    padding: const EdgeInsets.only(top: 8),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          loc.propertyDetails,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              loc.propertyDetails,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _isHovered ? colors.primary : const Color(0xFF64748B),
+                              ),
+                            ),
+                            AnimatedPadding(
+                              duration: const Duration(milliseconds: 180),
+                              padding: EdgeInsets.only(left: _isHovered ? 6 : 2),
+                              child: Icon(
+                                LucideIcons.arrowRight,
+                                size: 13,
+                                color: _isHovered ? colors.primary : const Color(0xFF64748B),
                               ),
                             ),
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        property.address,
-                        style: TextStyle(
-                          color: colors.textPrimary.withValues(alpha: 0.6),
-                          fontSize: 11,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                PopupMenuButton<String>(
-                  icon: Icon(LucideIcons.ellipsisVertical, size: 18, color: colors.textPrimary.withValues(alpha: 0.5)),
-                  onSelected: (value) async {
-                    if (value == 'invite_tenant') {
-                      context.push('/invite-tenant', extra: property);
-                    } else if (value == 'share_qr') {
-                      final repo = ref.read(propertyRepositoryProvider);
-                      final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
-                      if (context.mounted) {
-                        OwnershipShareSheet.show(
-                          context,
-                          propertyName: property.name,
-                          landlordName: property.landlordName ?? '',
-                          landlordEmail: property.landlordEmail ?? '',
-                          token: token,
-                        );
-                      }
-                    } else if (value == 'change_landlord') {
-                      _ChangeLandlordDialog.show(context, property);
-                    } else if (value == 'property_settings') {
-                      context.push('/property-settings', extra: {'property': property, 'initialTab': 'contract'});
-                    }
-                  },
-                  itemBuilder: (ctx) => [
-                    PopupMenuItem(
-                      value: 'invite_tenant',
-                      child: Row(
-                        children: [
-                          const Icon(LucideIcons.userCheck, size: 16),
-                          const SizedBox(width: 8),
-                          Text(loc.inviteTenantOrAddContract, style: const TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'share_qr',
-                      child: Row(
-                        children: [
-                          const Icon(LucideIcons.qrCode, size: 16),
-                          const SizedBox(width: 8),
-                          Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'property_settings',
-                      child: Row(
-                        children: [
-                          const Icon(LucideIcons.settings, size: 16),
-                          const SizedBox(width: 8),
-                          Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'change_landlord',
-                      child: Row(
-                        children: [
-                          const Icon(LucideIcons.userPlus, size: 16),
-                          const SizedBox(width: 8),
-                          Text(loc.changeLandlord, style: const TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            if (hasPendingDebt) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.alertTriangle, size: 13, color: Colors.red.shade700),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        loc.pendingDebtWarning,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red.shade800,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ],
-
-            const SizedBox(height: 10),
-            const Divider(height: 1, thickness: 0.5),
-            const SizedBox(height: 10),
-
-            // Landlord & Tenant Clean Inline Info
-            Row(
-              children: [
-                // Landlord Info
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        isClaimed ? LucideIcons.userCheck : LucideIcons.clock,
-                        size: 13,
-                        color: isClaimed ? colors.primary : Colors.orange.shade800,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: RichText(
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          text: TextSpan(
-                            style: TextStyle(fontSize: 11, color: colors.textPrimary),
-                            children: [
-                              TextSpan(
-                                text: loc.landlordLabel,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                  color: colors.textPrimary.withValues(alpha: 0.6),
-                                ),
-                              ),
-                              TextSpan(
-                                text: isClaimed
-                                    ? landlordName
-                                    : '$landlordName (${loc.invitePending})',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: isClaimed ? colors.textPrimary : Colors.orange.shade900,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-
-                // Tenant Info
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        hasActiveTenant ? LucideIcons.user : LucideIcons.userX,
-                        size: 13,
-                        color: hasActiveTenant ? StanomerColors.tenant : colors.textPrimary.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: RichText(
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          text: TextSpan(
-                            style: TextStyle(fontSize: 11, color: colors.textPrimary),
-                            children: [
-                              TextSpan(
-                                text: loc.tenantLabel,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                  color: colors.textPrimary.withValues(alpha: 0.6),
-                                ),
-                              ),
-                              TextSpan(
-                                text: hasActiveTenant ? tenantName : loc.vacantLabel,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
-
-            const SizedBox(height: 8),
-
-            // Contract Info Box
-            _ContractInfoBadge(contract: contract, colors: colors, loc: loc),
-          ],
+          ),
         ),
       ),
     );
@@ -5143,20 +8501,21 @@ class _ContractInfoBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (contract == null) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: colors.textPrimary.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
         ),
         child: Row(
           children: [
-            Icon(LucideIcons.fileX, size: 12, color: colors.textPrimary.withValues(alpha: 0.4)),
-            const SizedBox(width: 6),
+            const Icon(LucideIcons.fileX, size: 13, color: Color(0xFF94A3B8)),
+            const SizedBox(width: 8),
             Text(
               loc.latestContractNone,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                color: colors.textPrimary.withValues(alpha: 0.5),
+                color: Color(0xFF64748B),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -5173,45 +8532,58 @@ class _ContractInfoBadge extends StatelessWidget {
         : loc.unlimited;
     final statusLabel = contract!.status.label(loc);
 
-    Color badgeColor = Colors.grey;
-    if (contract!.status == ContractStatus.active) badgeColor = Colors.green;
-    if (contract!.status == ContractStatus.pending || contract!.status == ContractStatus.negotiating) badgeColor = Colors.orange;
-    if (contract!.status == ContractStatus.expired || contract!.status == ContractStatus.declined) badgeColor = Colors.red;
+    Color badgeBg = const Color(0xFFF1F5F9);
+    Color badgeColor = const Color(0xFF64748B);
+    Color badgeBorder = const Color(0xFFE2E8F0);
+
+    if (contract!.status == ContractStatus.active) {
+      badgeBg = const Color(0xFFECFDF5);
+      badgeColor = const Color(0xFF065F46);
+      badgeBorder = const Color(0xFFA7F3D0);
+    } else if (contract!.status == ContractStatus.pending || contract!.status == ContractStatus.negotiating) {
+      badgeBg = const Color(0xFFFFFBEB);
+      badgeColor = const Color(0xFFB45309);
+      badgeBorder = const Color(0xFFFDE68A);
+    } else if (contract!.status == ContractStatus.expired || contract!.status == ContractStatus.declined) {
+      badgeBg = const Color(0xFFFFF1F2);
+      badgeColor = const Color(0xFFE11D48);
+      badgeBorder = const Color(0xFFFFE4E6);
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: badgeColor.withValues(alpha: 0.2)),
+        color: badgeBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: badgeBorder),
       ),
       child: Row(
         children: [
           Icon(LucideIcons.fileText, size: 13, color: badgeColor),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               loc.contractDateRange('$startDateStr - $endDateStr'),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: colors.textPrimary,
+                color: badgeColor,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color: badgeColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(4),
+              color: badgeColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               statusLabel,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 color: badgeColor,
               ),
             ),

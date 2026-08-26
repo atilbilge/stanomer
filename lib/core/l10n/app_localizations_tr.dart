@@ -1549,7 +1549,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get agencyAddProperty => 'Mülk Ekle';
 
   @override
-  String get searchAndFilterPanel => 'ARAMA VE FİLTRE PANELİ';
+  String get searchAndFilterPanel => 'Arama ve Detaylı Filtreler';
 
   @override
   String get searchPlaceholder => 'Ev sahibi, kiracı, şehir veya mülk ara...';
@@ -1581,6 +1581,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sortByNewest => 'Sırala: En Yeni';
 
   @override
+  String get sortByOldest => 'Sırala: En Eski';
+
+  @override
+  String get sortByDebt => 'Sırala: Önce Borçlular';
+
+  @override
+  String get sortByRentDesc => 'Sırala: Kira (Yüksek-Düşük)';
+
+  @override
+  String get sortByRentAsc => 'Sırala: Kira (Düşük-Yüksek)';
+
+  @override
+  String get sortByAmountDesc => 'Sırala: Tutar (Yüksek-Düşük)';
+
+  @override
+  String get sortByAmountAsc => 'Sırala: Tutar (Düşük-Yüksek)';
+
+  @override
   String get sortByNameAsc => 'Sırala: Mülk A-Z';
 
   @override
@@ -1588,6 +1606,51 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sortByLandlordAsc => 'Sırala: Ev Sahibi A-Z';
+
+  @override
+  String get viewModeTable => 'Tablo Görünümü';
+
+  @override
+  String get viewModeGrid => 'Kart Görünümü';
+
+  @override
+  String get statusLabel => 'DURUM';
+
+  @override
+  String get statusOverdue => 'Gecikmede';
+
+  @override
+  String get statusClean => 'Temiz';
+
+  @override
+  String get colPropertyAndType => 'MÜLK & TÜR';
+
+  @override
+  String get colDueDate => 'VADE';
+
+  @override
+  String get colAmount => 'TUTAR';
+
+  @override
+  String get colAction => 'İŞLEM';
+
+  @override
+  String get unenteredBillsTitle => 'Girilmeyen Faturalar';
+
+  @override
+  String get cashBadge => 'Nakit';
+
+  @override
+  String get filterRent => 'Kira';
+
+  @override
+  String get filterBills => 'Faturalar';
+
+  @override
+  String get filterDeposit => 'Depozito';
+
+  @override
+  String get filterDues => 'Aidat';
 
   @override
   String get allPropertiesGroup => 'Tüm Mülkler';
@@ -1640,7 +1703,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get filterActiveLabel => 'Filtre Aktif ✓';
 
   @override
-  String get financeAndPaymentsHeader => 'FİNANS VE ÖDEMELER';
+  String get financeAndPaymentsHeader => 'Finans ve Ödemeler';
 
   @override
   String get financialSummaryTitle => 'Finansal Özet';
@@ -1655,7 +1718,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Finansal grafikler, kira takibi ve ödeme geçmişi yakında burada listelenecektir.';
 
   @override
-  String get maintenanceRequestsHeader => 'BAKIM VE ARIZA TALEPLERİ';
+  String get maintenanceRequestsHeader => 'Bakım & Arıza Talepleri';
 
   @override
   String get requestManagementTitle => 'Talep Yönetimi';
@@ -1668,7 +1731,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noOpenRequestsYet => 'Henüz açık talep bulunmuyor';
 
   @override
-  String get actionableInsightsHeader => 'HAREKETE GEÇİRİLEBİLİR MESAJLAR';
+  String get actionableInsightsHeader => 'Önemli Bildirimler & Aksiyonlar';
 
   @override
   String get inviteTenantOrAddContract => 'Kiracı Davet Et / Sözleşme Ekle';

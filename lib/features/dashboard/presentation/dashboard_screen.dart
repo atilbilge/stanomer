@@ -87,7 +87,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider);
-    final role = user?.userMetadata?['role'] as String?;
+    final role = ref.watch(userRoleProvider) ?? user?.userMetadata?['role'] as String?;
+    if (role == 'agency') {
+      return const AgencyDashboardScreen();
+    }
     final zzplDocumentVersion = user?.userMetadata?['zzpl_document_version'] as String?;
     final isLandlord = role == 'landlord';
 

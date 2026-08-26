@@ -1547,7 +1547,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get agencyAddProperty => 'Dodaj nekretninu';
 
   @override
-  String get searchAndFilterPanel => 'PANEL ZA PRETRAGU I FILTRIRANJE';
+  String get searchAndFilterPanel => 'Pretraga i detaljni filteri';
 
   @override
   String get searchPlaceholder =>
@@ -1581,6 +1581,24 @@ class AppLocalizationsSr extends AppLocalizations {
   String get sortByNewest => 'Sortiraj: Najnovije';
 
   @override
+  String get sortByOldest => 'Sortiraj: Najstarije';
+
+  @override
+  String get sortByDebt => 'Sortiraj: Prvo dužnici';
+
+  @override
+  String get sortByRentDesc => 'Sortiraj: Zakupnina (opadajuće)';
+
+  @override
+  String get sortByRentAsc => 'Sortiraj: Zakupnina (rastuće)';
+
+  @override
+  String get sortByAmountDesc => 'Sortiraj: Iznos (opadajuće)';
+
+  @override
+  String get sortByAmountAsc => 'Sortiraj: Iznos (rastuće)';
+
+  @override
   String get sortByNameAsc => 'Sortiraj: Nekretnina A-Z';
 
   @override
@@ -1588,6 +1606,51 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get sortByLandlordAsc => 'Sortiraj: Vlasnik A-Z';
+
+  @override
+  String get viewModeTable => 'Tabela';
+
+  @override
+  String get viewModeGrid => 'Kartice';
+
+  @override
+  String get statusLabel => 'STATUS';
+
+  @override
+  String get statusOverdue => 'U kašnjenju';
+
+  @override
+  String get statusClean => 'Uredno';
+
+  @override
+  String get colPropertyAndType => 'NEKRETNINA I TIP';
+
+  @override
+  String get colDueDate => 'ROK';
+
+  @override
+  String get colAmount => 'IZNOS';
+
+  @override
+  String get colAction => 'AKCIJA';
+
+  @override
+  String get unenteredBillsTitle => 'Neuneti računi';
+
+  @override
+  String get cashBadge => 'Gotovina';
+
+  @override
+  String get filterRent => 'Kirija';
+
+  @override
+  String get filterBills => 'Računi';
+
+  @override
+  String get filterDeposit => 'Depozit';
+
+  @override
+  String get filterDues => 'Komunalije';
 
   @override
   String get allPropertiesGroup => 'Sve nekretnine';
@@ -1640,7 +1703,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get filterActiveLabel => 'Filter aktivan ✓';
 
   @override
-  String get financeAndPaymentsHeader => 'FINANSIJE I PLAĆANJA';
+  String get financeAndPaymentsHeader => 'Finansije i plaćanja';
 
   @override
   String get financialSummaryTitle => 'Finansijski pregled';
@@ -1655,7 +1718,7 @@ class AppLocalizationsSr extends AppLocalizations {
       'Finansijski dijagrami, praćenje zakupnine i istorija plaćanja biće uskoro dostupni.';
 
   @override
-  String get maintenanceRequestsHeader => 'ZAHTEVI ZA ODRŽAVANJE I POPRAVKE';
+  String get maintenanceRequestsHeader => 'Zahtevi za održavanje i popravke';
 
   @override
   String get requestManagementTitle => 'Upravljanje zahtevima';
@@ -1668,7 +1731,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get noOpenRequestsYet => 'Nema otvorenih zahteva';
 
   @override
-  String get actionableInsightsHeader => 'PORUKE ZA AKCIJU';
+  String get actionableInsightsHeader => 'Poruke za akciju';
 
   @override
   String get inviteTenantOrAddContract => 'Pozovi stanara / Dodaj ugovor';
@@ -3466,7 +3529,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get agencyAddProperty => 'Додај некретнину';
 
   @override
-  String get searchAndFilterPanel => 'ПАНЕЛ ЗА ПРЕТРАГУ И ФИЛТРИРАЊЕ';
+  String get searchAndFilterPanel => 'Претрага и детаљни филтери';
 
   @override
   String get searchPlaceholder =>
@@ -3500,6 +3563,24 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get sortByNewest => 'Сортирај: Најновије';
 
   @override
+  String get sortByOldest => 'Сортирај: Најстарије';
+
+  @override
+  String get sortByDebt => 'Сортирај: Прво дужници';
+
+  @override
+  String get sortByRentDesc => 'Сортирај: Закупнина (опадајуће)';
+
+  @override
+  String get sortByRentAsc => 'Сортирај: Закупнина (растуће)';
+
+  @override
+  String get sortByAmountDesc => 'Сортирај: Износ (опадајуће)';
+
+  @override
+  String get sortByAmountAsc => 'Сортирај: Износ (растуће)';
+
+  @override
   String get sortByNameAsc => 'Сортирај: Некретнина А-Ш';
 
   @override
@@ -3507,6 +3588,51 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get sortByLandlordAsc => 'Сортирај: Власник А-Ш';
+
+  @override
+  String get viewModeTable => 'Табела';
+
+  @override
+  String get viewModeGrid => 'Картице';
+
+  @override
+  String get statusLabel => 'СТАТУС';
+
+  @override
+  String get statusOverdue => 'У кашњењу';
+
+  @override
+  String get statusClean => 'Уредно';
+
+  @override
+  String get colPropertyAndType => 'НЕКРЕТНИНА И ТИП';
+
+  @override
+  String get colDueDate => 'РОК';
+
+  @override
+  String get colAmount => 'ИЗНОС';
+
+  @override
+  String get colAction => 'АКЦИЈА';
+
+  @override
+  String get unenteredBillsTitle => 'Неунети рачуни';
+
+  @override
+  String get cashBadge => 'Готовина';
+
+  @override
+  String get filterRent => 'Кирија';
+
+  @override
+  String get filterBills => 'Рачуни';
+
+  @override
+  String get filterDeposit => 'Депозит';
+
+  @override
+  String get filterDues => 'Комуналије';
 
   @override
   String get allPropertiesGroup => 'Све некретнине';
@@ -3559,7 +3685,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get filterActiveLabel => 'Филтер активан ✓';
 
   @override
-  String get financeAndPaymentsHeader => 'ФИНАНСИЈЕ И ПЛАЋАЊА';
+  String get financeAndPaymentsHeader => 'Финансије и плаћања';
 
   @override
   String get financialSummaryTitle => 'Финансијски преглед';
@@ -3574,7 +3700,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
       'Финансијски дијаграми, праћење закупнине и историја плаћања биће ускоро доступни.';
 
   @override
-  String get maintenanceRequestsHeader => 'ЗАХТЕВИ ЗА ОДРЖАВАЊЕ И ПОПРАВКЕ';
+  String get maintenanceRequestsHeader => 'Захтеви за одржавање и поправке';
 
   @override
   String get requestManagementTitle => 'Управљање захтевима';
@@ -3587,7 +3713,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get noOpenRequestsYet => 'Нема отворених захтева';
 
   @override
-  String get actionableInsightsHeader => 'ПОРУКЕ ЗА АКЦИЈУ';
+  String get actionableInsightsHeader => 'Поруке за акцију';
 
   @override
   String get inviteTenantOrAddContract => 'Позови станара / Додај уговор';

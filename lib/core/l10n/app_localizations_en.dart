@@ -1549,7 +1549,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agencyAddProperty => 'Add Property';
 
   @override
-  String get searchAndFilterPanel => 'SEARCH AND FILTER PANEL';
+  String get searchAndFilterPanel => 'Search & Detailed Filters';
 
   @override
   String get searchPlaceholder =>
@@ -1583,6 +1583,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortByNewest => 'Sort: Newest';
 
   @override
+  String get sortByOldest => 'Sort: Oldest';
+
+  @override
+  String get sortByDebt => 'Sort: Debtors First';
+
+  @override
+  String get sortByRentDesc => 'Sort: Rent (High-Low)';
+
+  @override
+  String get sortByRentAsc => 'Sort: Rent (Low-High)';
+
+  @override
+  String get sortByAmountDesc => 'Sort: Amount (High-Low)';
+
+  @override
+  String get sortByAmountAsc => 'Sort: Amount (Low-High)';
+
+  @override
   String get sortByNameAsc => 'Sort: Property A-Z';
 
   @override
@@ -1590,6 +1608,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortByLandlordAsc => 'Sort: Landlord A-Z';
+
+  @override
+  String get viewModeTable => 'Table View';
+
+  @override
+  String get viewModeGrid => 'Grid View';
+
+  @override
+  String get statusLabel => 'STATUS';
+
+  @override
+  String get statusOverdue => 'Overdue';
+
+  @override
+  String get statusClean => 'Clean';
+
+  @override
+  String get colPropertyAndType => 'PROPERTY & TYPE';
+
+  @override
+  String get colDueDate => 'DUE DATE';
+
+  @override
+  String get colAmount => 'AMOUNT';
+
+  @override
+  String get colAction => 'ACTION';
+
+  @override
+  String get unenteredBillsTitle => 'Unentered Bills';
+
+  @override
+  String get cashBadge => 'Cash';
+
+  @override
+  String get filterRent => 'Rent';
+
+  @override
+  String get filterBills => 'Bills';
+
+  @override
+  String get filterDeposit => 'Deposit';
+
+  @override
+  String get filterDues => 'Building Dues';
 
   @override
   String get allPropertiesGroup => 'All Properties';
@@ -1642,7 +1705,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterActiveLabel => 'Filter Active ✓';
 
   @override
-  String get financeAndPaymentsHeader => 'FINANCE AND PAYMENTS';
+  String get financeAndPaymentsHeader => 'Finance & Payments';
 
   @override
   String get financialSummaryTitle => 'Financial Summary';
@@ -1657,7 +1720,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Financial charts, rent tracking and payment history will be listed here soon.';
 
   @override
-  String get maintenanceRequestsHeader => 'MAINTENANCE AND REPAIR REQUESTS';
+  String get maintenanceRequestsHeader => 'Maintenance & Repairs';
 
   @override
   String get requestManagementTitle => 'Request Management';
@@ -1670,7 +1733,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noOpenRequestsYet => 'No open requests yet';
 
   @override
-  String get actionableInsightsHeader => 'ACTIONABLE INSIGHTS';
+  String get actionableInsightsHeader => 'Actionable Insights';
 
   @override
   String get inviteTenantOrAddContract => 'Invite Tenant / Add Contract';

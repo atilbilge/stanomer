@@ -72,7 +72,7 @@ final propertiesStreamProvider = StreamProvider<List<Property>>((ref) {
   
   if (user == null) return Stream.value([]);
   
-  final role = user.userMetadata?['role'] as String?;
+  final role = ref.watch(userRoleProvider) ?? user.userMetadata?['role'] as String?;
   return repo.getPropertiesStream(userId: user.id, role: role);
 });
 
@@ -82,7 +82,7 @@ final propertiesFutureProvider = FutureProvider<List<Property>>((ref) {
   
   if (user == null) return Future.value([]);
   
-  final role = user.userMetadata?['role'] as String?;
+  final role = ref.watch(userRoleProvider) ?? user.userMetadata?['role'] as String?;
   return repo.getProperties(role: role);
 });
 

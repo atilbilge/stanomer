@@ -1561,7 +1561,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get agencyAddProperty => 'Добавить объект';
 
   @override
-  String get searchAndFilterPanel => 'ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ';
+  String get searchAndFilterPanel => 'Поиск и подробные фильтры';
 
   @override
   String get searchPlaceholder =>
@@ -1595,6 +1595,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sortByNewest => 'Сортировка: Сначала новые';
 
   @override
+  String get sortByOldest => 'Сортировка: Сначала старые';
+
+  @override
+  String get sortByDebt => 'Сортировка: Сначала должники';
+
+  @override
+  String get sortByRentDesc => 'Сортировка: Аренда (по убыванию)';
+
+  @override
+  String get sortByRentAsc => 'Сортировка: Аренда (по возрастанию)';
+
+  @override
+  String get sortByAmountDesc => 'Сортировка: Сумма (по убыванию)';
+
+  @override
+  String get sortByAmountAsc => 'Сортировка: Сумма (по возрастанию)';
+
+  @override
   String get sortByNameAsc => 'Сортировка: Название А-Я';
 
   @override
@@ -1602,6 +1620,51 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get sortByLandlordAsc => 'Сортировка: Владелец А-Я';
+
+  @override
+  String get viewModeTable => 'Таблица';
+
+  @override
+  String get viewModeGrid => 'Карточки';
+
+  @override
+  String get statusLabel => 'СТАТУС';
+
+  @override
+  String get statusOverdue => 'Просрочено';
+
+  @override
+  String get statusClean => 'В норме';
+
+  @override
+  String get colPropertyAndType => 'ОБЪЕКТ И ТИП';
+
+  @override
+  String get colDueDate => 'СРОК';
+
+  @override
+  String get colAmount => 'СУММА';
+
+  @override
+  String get colAction => 'ДЕЙСТВИЕ';
+
+  @override
+  String get unenteredBillsTitle => 'Невнесенные счета';
+
+  @override
+  String get cashBadge => 'Наличные';
+
+  @override
+  String get filterRent => 'Аренда';
+
+  @override
+  String get filterBills => 'Счета';
+
+  @override
+  String get filterDeposit => 'Депозит';
+
+  @override
+  String get filterDues => 'Коммунальные';
 
   @override
   String get allPropertiesGroup => 'Все объекты';
@@ -1654,7 +1717,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get filterActiveLabel => 'Фильтр активен ✓';
 
   @override
-  String get financeAndPaymentsHeader => 'ФИНАНСЫ И ПЛАТЕЖИ';
+  String get financeAndPaymentsHeader => 'Финансы и платежи';
 
   @override
   String get financialSummaryTitle => 'Финансовая сводка';
@@ -1669,7 +1732,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Финансовые графики, учет аренды и история платежей будут отображаться здесь.';
 
   @override
-  String get maintenanceRequestsHeader => 'ЗАЯВКИ НА РЕМОНТ И ОБСЛУЖИВАНИЕ';
+  String get maintenanceRequestsHeader => 'Заявки на ремонт и обслуживание';
 
   @override
   String get requestManagementTitle => 'Управление заявками';
@@ -1682,7 +1745,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get noOpenRequestsYet => 'Открытых заявок пока нет';
 
   @override
-  String get actionableInsightsHeader => 'УВЕДОМЛЕНИЯ К ДЕЙСТВИЮ';
+  String get actionableInsightsHeader => 'Уведомления к действию';
 
   @override
   String get inviteTenantOrAddContract =>

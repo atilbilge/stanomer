@@ -56,7 +56,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       } else {
         // Agency users go to their own dashboard
         if (role == 'agency') {
-          if (isGoingToLogin || isGoingToSignup || state.matchedLocation == '/') {
+          if (isGoingToLogin || isGoingToSignup || state.matchedLocation == '/' || state.matchedLocation == '/dashboard') {
             return '/agency-dashboard';
           }
         } else {

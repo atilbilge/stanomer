@@ -2944,7 +2944,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchAndFilterPanel.
   ///
   /// In sr, this message translates to:
-  /// **'PANEL ZA PRETRAGU I FILTRIRANJE'**
+  /// **'Pretraga i detaljni filteri'**
   String get searchAndFilterPanel;
 
   /// No description provided for @searchPlaceholder.
@@ -3001,6 +3001,42 @@ abstract class AppLocalizations {
   /// **'Sortiraj: Najnovije'**
   String get sortByNewest;
 
+  /// No description provided for @sortByOldest.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Najstarije'**
+  String get sortByOldest;
+
+  /// No description provided for @sortByDebt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Prvo dužnici'**
+  String get sortByDebt;
+
+  /// No description provided for @sortByRentDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Zakupnina (opadajuće)'**
+  String get sortByRentDesc;
+
+  /// No description provided for @sortByRentAsc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Zakupnina (rastuće)'**
+  String get sortByRentAsc;
+
+  /// No description provided for @sortByAmountDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Iznos (opadajuće)'**
+  String get sortByAmountDesc;
+
+  /// No description provided for @sortByAmountAsc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sortiraj: Iznos (rastuće)'**
+  String get sortByAmountAsc;
+
   /// No description provided for @sortByNameAsc.
   ///
   /// In sr, this message translates to:
@@ -3018,6 +3054,96 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Sortiraj: Vlasnik A-Z'**
   String get sortByLandlordAsc;
+
+  /// No description provided for @viewModeTable.
+  ///
+  /// In sr, this message translates to:
+  /// **'Tabela'**
+  String get viewModeTable;
+
+  /// No description provided for @viewModeGrid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kartice'**
+  String get viewModeGrid;
+
+  /// No description provided for @statusLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'STATUS'**
+  String get statusLabel;
+
+  /// No description provided for @statusOverdue.
+  ///
+  /// In sr, this message translates to:
+  /// **'U kašnjenju'**
+  String get statusOverdue;
+
+  /// No description provided for @statusClean.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uredno'**
+  String get statusClean;
+
+  /// No description provided for @colPropertyAndType.
+  ///
+  /// In sr, this message translates to:
+  /// **'NEKRETNINA I TIP'**
+  String get colPropertyAndType;
+
+  /// No description provided for @colDueDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'ROK'**
+  String get colDueDate;
+
+  /// No description provided for @colAmount.
+  ///
+  /// In sr, this message translates to:
+  /// **'IZNOS'**
+  String get colAmount;
+
+  /// No description provided for @colAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'AKCIJA'**
+  String get colAction;
+
+  /// No description provided for @unenteredBillsTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Neuneti računi'**
+  String get unenteredBillsTitle;
+
+  /// No description provided for @cashBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Gotovina'**
+  String get cashBadge;
+
+  /// No description provided for @filterRent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kirija'**
+  String get filterRent;
+
+  /// No description provided for @filterBills.
+  ///
+  /// In sr, this message translates to:
+  /// **'Računi'**
+  String get filterBills;
+
+  /// No description provided for @filterDeposit.
+  ///
+  /// In sr, this message translates to:
+  /// **'Depozit'**
+  String get filterDeposit;
+
+  /// No description provided for @filterDues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Komunalije'**
+  String get filterDues;
 
   /// No description provided for @allPropertiesGroup.
   ///
@@ -3106,7 +3232,7 @@ abstract class AppLocalizations {
   /// No description provided for @financeAndPaymentsHeader.
   ///
   /// In sr, this message translates to:
-  /// **'FINANSIJE I PLAĆANJA'**
+  /// **'Finansije i plaćanja'**
   String get financeAndPaymentsHeader;
 
   /// No description provided for @financialSummaryTitle.
@@ -3130,7 +3256,7 @@ abstract class AppLocalizations {
   /// No description provided for @maintenanceRequestsHeader.
   ///
   /// In sr, this message translates to:
-  /// **'ZAHTEVI ZA ODRŽAVANJE I POPRAVKE'**
+  /// **'Zahtevi za održavanje i popravke'**
   String get maintenanceRequestsHeader;
 
   /// No description provided for @requestManagementTitle.
@@ -3154,7 +3280,7 @@ abstract class AppLocalizations {
   /// No description provided for @actionableInsightsHeader.
   ///
   /// In sr, this message translates to:
-  /// **'PORUKE ZA AKCIJU'**
+  /// **'Poruke za akciju'**
   String get actionableInsightsHeader;
 
   /// No description provided for @inviteTenantOrAddContract.
