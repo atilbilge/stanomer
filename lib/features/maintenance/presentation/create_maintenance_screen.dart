@@ -303,10 +303,15 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                         Text(loc.issueCategory, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<MaintenanceCategory>(
+                          isExpanded: true,
                           initialValue: _selectedCategory,
                           items: MaintenanceCategory.values.map((cat) => DropdownMenuItem(
                             value: cat,
-                            child: Text(_getCategoryLabel(cat, loc)),
+                            child: Text(
+                              _getCategoryLabel(cat, loc),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           )).toList(),
                           onChanged: (val) => setState(() => _selectedCategory = val!),
                           decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
@@ -322,10 +327,15 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                         Text(loc.issuePriority, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<MaintenancePriority>(
+                          isExpanded: true,
                           initialValue: _selectedPriority,
                           items: const [MaintenancePriority.normal, MaintenancePriority.urgent].map((p) => DropdownMenuItem(
                             value: p,
-                            child: Text(p == MaintenancePriority.urgent ? loc.priorityUrgent : loc.priorityNormal),
+                            child: Text(
+                              p == MaintenancePriority.urgent ? loc.priorityUrgent : loc.priorityNormal,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           )).toList(),
                           onChanged: (val) => setState(() => _selectedPriority = val!),
                           decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
@@ -578,10 +588,11 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
               Expanded(
                 flex: 2,
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _selectedCurrency,
                   items: const [
-                    DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
-                    DropdownMenuItem(value: 'RSD', child: Text('RSD')),
+                    DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', overflow: TextOverflow.ellipsis, maxLines: 1)),
+                    DropdownMenuItem(value: 'RSD', child: Text('RSD', overflow: TextOverflow.ellipsis, maxLines: 1)),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedCurrency = val);
