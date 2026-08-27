@@ -351,6 +351,8 @@
   "categoryElectrical": "Электрика",
   "categoryHeating": "Отопление",
   "categoryInternet": "Интернет",
+  "categoryAppliance": "Бытовая техника",
+  "categoryStructural": "Конструкция и здание",
   "categoryOther": "Другое",
   "noIssuesTitle": "Нет активных проблем",
   "noIssuesMessage": "Всё отлично! Для этого жилья не зарегистрировано проблем.",

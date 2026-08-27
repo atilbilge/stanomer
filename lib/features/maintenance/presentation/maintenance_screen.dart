@@ -577,8 +577,8 @@ class _MaintenanceCard extends ConsumerWidget {
       case MaintenanceCategory.electrical: return loc.categoryElectrical;
       case MaintenanceCategory.heating: return loc.categoryHeating;
       case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.appliance:
-      case MaintenanceCategory.structural:
+      case MaintenanceCategory.appliance: return loc.categoryAppliance;
+      case MaintenanceCategory.structural: return loc.categoryStructural;
       case MaintenanceCategory.other:
         return loc.categoryOther;
     }

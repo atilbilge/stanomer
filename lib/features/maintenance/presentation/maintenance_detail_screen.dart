@@ -2030,6 +2030,8 @@ class _IssueHeroCard extends StatelessWidget {
       case MaintenanceCategory.electrical: return LucideIcons.zap;
       case MaintenanceCategory.heating: return LucideIcons.flame;
       case MaintenanceCategory.internet: return LucideIcons.wifi;
+      case MaintenanceCategory.appliance: return LucideIcons.tv;
+      case MaintenanceCategory.structural: return LucideIcons.building2;
       default: return LucideIcons.wrench;
     }
   }
@@ -2040,7 +2042,23 @@ class _IssueHeroCard extends StatelessWidget {
       case MaintenanceCategory.electrical: return const Color(0xFFD97706);
       case MaintenanceCategory.heating: return const Color(0xFFEA580C);
       case MaintenanceCategory.internet: return const Color(0xFF2563EB);
+      case MaintenanceCategory.appliance: return const Color(0xFF059669);
+      case MaintenanceCategory.structural: return const Color(0xFF4F46E5);
       default: return const Color(0xFF7C3AED);
+    }
+  }
+
+  String _getCategoryLabel(MaintenanceCategory cat, AppLocalizations loc) {
+    switch (cat) {
+      case MaintenanceCategory.plumbing: return loc.categoryPlumbing;
+      case MaintenanceCategory.electrical: return loc.categoryElectrical;
+      case MaintenanceCategory.heating: return loc.categoryHeating;
+      case MaintenanceCategory.internet: return loc.categoryInternet;
+      case MaintenanceCategory.appliance: return loc.categoryAppliance;
+      case MaintenanceCategory.structural: return loc.categoryStructural;
+      case MaintenanceCategory.other:
+      default:
+        return loc.categoryOther;
     }
   }
 
@@ -2085,7 +2103,7 @@ class _IssueHeroCard extends StatelessWidget {
                     Icon(categoryIcon, size: 12, color: categoryColor),
                     const SizedBox(width: 5),
                     Text(
-                      request.category.name.toUpperCase(),
+                      _getCategoryLabel(request.category, loc).toUpperCase(),
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w700,

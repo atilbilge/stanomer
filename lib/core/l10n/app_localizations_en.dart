@@ -835,6 +835,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryInternet => 'Internet';
 
   @override
+  String get categoryAppliance => 'Appliance & Equipment';
+
+  @override
+  String get categoryStructural => 'Structural & Building';
+
+  @override
   String get categoryOther => 'Other';
 
   @override

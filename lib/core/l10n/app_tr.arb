@@ -349,6 +349,8 @@
   "categoryElectrical": "Elektrik",
   "categoryHeating": "Isınma",
   "categoryInternet": "İnternet",
+  "categoryAppliance": "Beyaz Eşya & Cihaz",
+  "categoryStructural": "Yapısal & Bina",
   "categoryOther": "Diğer",
   "noIssuesTitle": "Kayıtlı sorun yok",
   "noIssuesMessage": "Her şey yolunda! Bu mülk için bildirilen bir sorun bulunmuyor.",

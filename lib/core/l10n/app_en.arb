@@ -285,6 +285,8 @@
   "categoryElectrical": "Electrical",
   "categoryHeating": "Heating",
   "categoryInternet": "Internet",
+  "categoryAppliance": "Appliance & Equipment",
+  "categoryStructural": "Structural & Building",
   "categoryOther": "Other",
   "noIssuesTitle": "No issues reported yet",
   "noIssuesMessage": "All good! No maintenance requests for this property.",

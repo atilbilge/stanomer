@@ -837,6 +837,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get categoryInternet => 'Internet';
 
   @override
+  String get categoryAppliance => 'Kućni aparati';
+
+  @override
+  String get categoryStructural => 'Građevinski radovi';
+
+  @override
   String get categoryOther => 'Ostalo';
 
   @override
@@ -3522,6 +3528,12 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get categoryInternet => 'Интернет';
+
+  @override
+  String get categoryAppliance => 'Кућни апарати';
+
+  @override
+  String get categoryStructural => 'Грађевински радови';
 
   @override
   String get categoryOther => 'Остало';

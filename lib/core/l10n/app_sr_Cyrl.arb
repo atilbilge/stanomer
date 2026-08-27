@@ -349,6 +349,8 @@
   "categoryElectrical": "Електрична енергија",
   "categoryHeating": "Грејање",
   "categoryInternet": "Интернет",
+  "categoryAppliance": "Кућни апарати",
+  "categoryStructural": "Грађевински радови",
   "categoryOther": "Остало",
   "noIssuesTitle": "Нема пријављених кварова",
   "noIssuesMessage": "Нема забележених кварова нити проблема у овом стану.",

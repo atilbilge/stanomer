@@ -323,9 +323,9 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                         const SizedBox(height: 8),
                         DropdownButtonFormField<MaintenancePriority>(
                           initialValue: _selectedPriority,
-                          items: MaintenancePriority.values.map((p) => DropdownMenuItem(
+                          items: const [MaintenancePriority.normal, MaintenancePriority.urgent].map((p) => DropdownMenuItem(
                             value: p,
-                            child: Text(_getPriorityLabel(p, loc)),
+                            child: Text(p == MaintenancePriority.urgent ? loc.priorityUrgent : loc.priorityNormal),
                           )).toList(),
                           onChanged: (val) => setState(() => _selectedPriority = val!),
                           decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
@@ -1048,8 +1048,8 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       case MaintenanceCategory.electrical: return loc.categoryElectrical;
       case MaintenanceCategory.heating: return loc.categoryHeating;
       case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.appliance:
-      case MaintenanceCategory.structural:
+      case MaintenanceCategory.appliance: return loc.categoryAppliance;
+      case MaintenanceCategory.structural: return loc.categoryStructural;
       case MaintenanceCategory.other:
       default:
         return loc.categoryOther;

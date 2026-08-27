@@ -837,6 +837,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get categoryInternet => 'İnternet';
 
   @override
+  String get categoryAppliance => 'Beyaz Eşya & Cihaz';
+
+  @override
+  String get categoryStructural => 'Yapısal & Bina';
+
+  @override
   String get categoryOther => 'Diğer';
 
   @override

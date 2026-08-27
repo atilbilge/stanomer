@@ -1657,6 +1657,18 @@ abstract class AppLocalizations {
   /// **'Internet'**
   String get categoryInternet;
 
+  /// No description provided for @categoryAppliance.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kućni aparati'**
+  String get categoryAppliance;
+
+  /// No description provided for @categoryStructural.
+  ///
+  /// In sr, this message translates to:
+  /// **'Građevinski radovi'**
+  String get categoryStructural;
+
   /// No description provided for @categoryOther.
   ///
   /// In sr, this message translates to:

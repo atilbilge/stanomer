@@ -4887,7 +4887,9 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
       case MaintenanceCategory.internet:
         return loc.categoryInternet;
       case MaintenanceCategory.appliance:
+        return loc.categoryAppliance;
       case MaintenanceCategory.structural:
+        return loc.categoryStructural;
       case MaintenanceCategory.other:
         return loc.categoryOther;
     }

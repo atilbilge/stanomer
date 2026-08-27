@@ -844,6 +844,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get categoryInternet => 'Интернет';
 
   @override
+  String get categoryAppliance => 'Бытовая техника';
+
+  @override
+  String get categoryStructural => 'Конструкция и здание';
+
+  @override
   String get categoryOther => 'Другое';
 
   @override

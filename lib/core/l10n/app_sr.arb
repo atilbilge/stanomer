@@ -349,6 +349,8 @@
   "categoryElectrical": "Električna energija",
   "categoryHeating": "Grejanje",
   "categoryInternet": "Internet",
+  "categoryAppliance": "Kućni aparati",
+  "categoryStructural": "Građevinski radovi",
   "categoryOther": "Ostalo",
   "noIssuesTitle": "Nema prijavljenih problema",
   "noIssuesMessage": "Sve je u redu, nema zabeleženih problema.",
