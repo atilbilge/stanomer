@@ -1970,11 +1970,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get landlordOwnershipTransferredSuccess =>
-      'Čestitamo! Vlasništvo nad nekretninom je uspešno preneto na vaš nalog.';
+      'Поздравляем! Права владельца объекта успешно переданы на ваш аккаунт.';
 
   @override
   String get landlordOwnershipInviteInvalid =>
-      'Pozivnica za vlasništvo je nevažeća, istekla ili je već prihvaćena.';
+      'Приглашение на владение недействительно, истекло или уже принято.';
 
   @override
   String get statusApproved => 'Potvrđeno';
@@ -2701,4 +2701,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
     return '🏠 Расход на ремонт ($amount) зачтен из платежа $paymentTitle.';
   }
+
+  @override
+  String agencyReferralBoundSuccess(String agencyName) {
+    return 'Реферал агентства привязан: $agencyName';
+  }
+
+  @override
+  String get invalidAgencyReferralCode =>
+      'Недействительный или не найденный реферальный код агентства.';
 }

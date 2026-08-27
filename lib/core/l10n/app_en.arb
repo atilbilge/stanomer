@@ -1234,5 +1234,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "agencyReferralBoundSuccess": "Agency referral linked: {agencyName}",
+  "@agencyReferralBoundSuccess": {
+    "placeholders": {
+      "agencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAgencyReferralCode": "Invalid or not found agency referral code."
 }

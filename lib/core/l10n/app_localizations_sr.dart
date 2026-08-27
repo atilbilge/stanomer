@@ -2680,6 +2680,15 @@ class AppLocalizationsSr extends AppLocalizations {
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
     return '🏠 Trošak održavanja od $amount je prebijen sa stavke $paymentTitle.';
   }
+
+  @override
+  String agencyReferralBoundSuccess(String agencyName) {
+    return 'Agencijski referral je povezan: $agencyName';
+  }
+
+  @override
+  String get invalidAgencyReferralCode =>
+      'Nevažeći ili nepronađeni agencijski referral kod.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -4558,6 +4567,14 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get forgotPassword => 'Заборавили сте лозинку?';
 
   @override
+  String get landlordOwnershipTransferredSuccess =>
+      'Честитамо! Власништво над некретнином је успешно пренето на ваш налог.';
+
+  @override
+  String get landlordOwnershipInviteInvalid =>
+      'Позивница за власништво је неважећа, истекла или је већ прихваћена.';
+
+  @override
   String get referringAgency => 'Агенција Која Је Препоручила';
 
   @override
@@ -5273,4 +5290,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
     return '🏠 Трошак одржавања од $amount је пребијен са ставке $paymentTitle.';
   }
+
+  @override
+  String agencyReferralBoundSuccess(String agencyName) {
+    return 'Агенцијски реферрал је повезан: $agencyName';
+  }
+
+  @override
+  String get invalidAgencyReferralCode =>
+      'Неважећи или непронађени агенцијски реферрал код.';
 }

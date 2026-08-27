@@ -67,14 +67,14 @@ class _JoinPropertySheetState extends ConsumerState<JoinPropertySheet> {
           ref.invalidate(agencyReferralFutureProvider);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Acente referansı tanımlandı: ${agencyInfo['agency_name']}'),
+              content: Text(loc.agencyReferralBoundSuccess(agencyInfo['agency_name'] ?? '')),
               backgroundColor: StanomerColors.successPrimary,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Geçersiz veya bulunamayan acente referral kodu.'),
+              content: Text(loc.invalidAgencyReferralCode),
               backgroundColor: StanomerColors.alertPrimary,
             ),
           );

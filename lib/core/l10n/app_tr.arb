@@ -1333,5 +1333,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "agencyReferralBoundSuccess": "Acente referansı tanımlandı: {agencyName}",
+  "@agencyReferralBoundSuccess": {
+    "placeholders": {
+      "agencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAgencyReferralCode": "Geçersiz veya bulunamayan acente referans kodu."
 }

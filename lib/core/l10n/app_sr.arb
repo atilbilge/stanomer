@@ -1333,5 +1333,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "agencyReferralBoundSuccess": "Agencijski referral je povezan: {agencyName}",
+  "@agencyReferralBoundSuccess": {
+    "placeholders": {
+      "agencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAgencyReferralCode": "Nevažeći ili nepronađeni agencijski referral kod."
 }

@@ -83,7 +83,7 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
     try {
       if (_inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_')) {
         final success = await ref.read(propertyRepositoryProvider).claimLandlordOwnership(token: widget.token);
-        if (!success) throw Exception('Ev sahipliği devri başarısız oldu veya davet süresi dolmuş.');
+        if (!success) throw Exception(loc.landlordOwnershipInviteInvalid);
       } else if (_inviteType == 'contract') {
         await ref.read(propertyRepositoryProvider).acceptContract(widget.token);
       } else {
@@ -91,9 +91,13 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
       }
 
       if (mounted) {
+        final successMsg = (_inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_'))
+            ? loc.landlordOwnershipTransferredSuccess
+            : loc.invitationAcceptedSuccess;
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tebrikler! Daveti başarıyla kabul ettiniz.'),
+          SnackBar(
+            content: Text(successMsg),
             backgroundColor: StanomerColors.successPrimary,
           ),
         );

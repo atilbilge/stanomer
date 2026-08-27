@@ -2682,4 +2682,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
     return '🏠 $amount maintenance expense was offset from $paymentTitle.';
   }
+
+  @override
+  String agencyReferralBoundSuccess(String agencyName) {
+    return 'Agency referral linked: $agencyName';
+  }
+
+  @override
+  String get invalidAgencyReferralCode =>
+      'Invalid or not found agency referral code.';
 }

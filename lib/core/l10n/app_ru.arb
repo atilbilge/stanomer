@@ -1283,5 +1283,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "landlordOwnershipTransferredSuccess": "Поздравляем! Права владельца объекта успешно переданы на ваш аккаунт.",
+  "landlordOwnershipInviteInvalid": "Приглашение на владение недействительно, истекло или уже принято.",
+  "agencyReferralBoundSuccess": "Реферал агентства привязан: {agencyName}",
+  "@agencyReferralBoundSuccess": {
+    "placeholders": {
+      "agencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAgencyReferralCode": "Недействительный или не найденный реферальный код агентства."
 }

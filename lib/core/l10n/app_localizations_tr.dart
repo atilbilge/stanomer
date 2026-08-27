@@ -2682,4 +2682,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
     return '🏠 $amount bakım masrafı $paymentTitle kaleminden mahsup edildi.';
   }
+
+  @override
+  String agencyReferralBoundSuccess(String agencyName) {
+    return 'Acente referansı tanımlandı: $agencyName';
+  }
+
+  @override
+  String get invalidAgencyReferralCode =>
+      'Geçersiz veya bulunamayan acente referans kodu.';
 }

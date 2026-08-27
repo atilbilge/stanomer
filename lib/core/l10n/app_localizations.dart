@@ -4929,6 +4929,18 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'🏠 Trošak održavanja od {amount} je prebijen sa stavke {paymentTitle}.'**
   String maintenanceOffsetActivityMsg(String amount, String paymentTitle);
+
+  /// No description provided for @agencyReferralBoundSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Agencijski referral je povezan: {agencyName}'**
+  String agencyReferralBoundSuccess(String agencyName);
+
+  /// No description provided for @invalidAgencyReferralCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nevažeći ili nepronađeni agencijski referral kod.'**
+  String get invalidAgencyReferralCode;
 }
 
 class _AppLocalizationsDelegate

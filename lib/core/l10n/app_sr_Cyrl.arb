@@ -1281,5 +1281,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "landlordOwnershipTransferredSuccess": "Честитамо! Власништво над некретнином је успешно пренето на ваш налог.",
+  "landlordOwnershipInviteInvalid": "Позивница за власништво је неважећа, истекла или је већ прихваћена.",
+  "agencyReferralBoundSuccess": "Агенцијски реферрал је повезан: {agencyName}",
+  "@agencyReferralBoundSuccess": {
+    "placeholders": {
+      "agencyName": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAgencyReferralCode": "Неважећи или непронађени агенцијски реферрал код."
 }
