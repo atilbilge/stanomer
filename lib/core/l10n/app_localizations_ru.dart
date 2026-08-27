@@ -2716,4 +2716,74 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get invalidAgencyReferralCode =>
       'Недействительный или не найденный реферальный код агентства.';
+
+  @override
+  String get occupancyRate => 'Заполняемость';
+
+  @override
+  String get allPropertiesUpToDate =>
+      'Все объекты и платежи в актуальном состоянии. Нет ожидающих подтверждений.';
+
+  @override
+  String overduePaymentsAlert(int count) {
+    return 'Имеется $count просроченных платежей. Проверьте список объектов для подробностей.';
+  }
+
+  @override
+  String get filterAll => 'Все';
+
+  @override
+  String get filterRented => 'Сдано';
+
+  @override
+  String get filterVacant => 'Свободно';
+
+  @override
+  String get noPropertiesForFilter => 'Не найдено объектов для этого фильтра.';
+
+  @override
+  String get attentionTag => 'ВНИМАНИЕ';
+
+  @override
+  String get reviewAction => 'Проверить';
+
+  @override
+  String get detailsAction => 'Детали';
+
+  @override
+  String get noActiveContractTapToInvite =>
+      'Нет активного договора. Нажмите, чтобы пригласить жильца.';
+
+  @override
+  String get activeTenantsCount => 'Активные жильцы';
+
+  @override
+  String get totalPropertiesCount => 'Всего объектов';
+
+  @override
+  String get collectedRentSubtitle => 'Собранная аренда';
+
+  @override
+  String get awaitingApprovalSubtitle => 'Подтверждение квитанций';
+
+  @override
+  String get overduePaymentsSubtitle => 'Просрочено';
+
+  @override
+  String get vacantUnitsSubtitle => 'Доступно для аренды';
+
+  @override
+  String get portfolioRateSubtitle => 'Показатель портфеля';
+
+  @override
+  String get rentedStatusTag => 'Сдано';
+
+  @override
+  String get invitedStatusTag => 'Приглашение отправлено';
+
+  @override
+  String get settlementCredit => 'Зачетный остаток';
+
+  @override
+  String get noDebtLabel => 'Нет долга';
 }

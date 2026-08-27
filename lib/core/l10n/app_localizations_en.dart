@@ -2697,4 +2697,74 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get invalidAgencyReferralCode =>
       'Invalid or not found agency referral code.';
+
+  @override
+  String get occupancyRate => 'Occupancy';
+
+  @override
+  String get allPropertiesUpToDate =>
+      'All properties and payments are up to date. No pending approvals.';
+
+  @override
+  String overduePaymentsAlert(int count) {
+    return 'There are $count overdue payment(s). Check the property list for details.';
+  }
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterRented => 'Rented';
+
+  @override
+  String get filterVacant => 'Vacant';
+
+  @override
+  String get noPropertiesForFilter => 'No properties found for this filter.';
+
+  @override
+  String get attentionTag => 'ATTENTION';
+
+  @override
+  String get reviewAction => 'Review';
+
+  @override
+  String get detailsAction => 'Details';
+
+  @override
+  String get noActiveContractTapToInvite =>
+      'No active contract. Tap to invite tenant.';
+
+  @override
+  String get activeTenantsCount => 'Active Tenants';
+
+  @override
+  String get totalPropertiesCount => 'Total Properties';
+
+  @override
+  String get collectedRentSubtitle => 'Collected Rent';
+
+  @override
+  String get awaitingApprovalSubtitle => 'Receipt Approval';
+
+  @override
+  String get overduePaymentsSubtitle => 'Overdue';
+
+  @override
+  String get vacantUnitsSubtitle => 'Available for Rent';
+
+  @override
+  String get portfolioRateSubtitle => 'Portfolio Rate';
+
+  @override
+  String get rentedStatusTag => 'Rented';
+
+  @override
+  String get invitedStatusTag => 'Invited';
+
+  @override
+  String get settlementCredit => 'Settlement Credit';
+
+  @override
+  String get noDebtLabel => 'No Debt';
 }

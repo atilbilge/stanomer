@@ -445,9 +445,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   border: Border.all(color: const Color(0xFFE2E8F0)),
                                 ),
                                 child: Text(
-                                  loc.localeName == 'tr'
-                                      ? 'Bu filtreye uygun mülk bulunamadı.'
-                                      : 'No properties found for this filter.',
+                                  loc.noPropertiesForFilter,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: Color(0xFF64748B),
@@ -1208,7 +1206,7 @@ class _LandlordHero extends ConsumerWidget {
                         iconColor: const Color(0xFF60A5FA),
                         label: loc.units,
                         value: '$totalUnits',
-                        sublabel: loc.localeName == 'tr' ? 'Toplam Mülk' : 'Properties',
+                        sublabel: loc.totalPropertiesCount,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1218,7 +1216,7 @@ class _LandlordHero extends ConsumerWidget {
                         iconColor: const Color(0xFF34D399),
                         label: loc.tenantsLabel,
                         value: '$totalTenants',
-                        sublabel: loc.localeName == 'tr' ? 'Kiracı Aktif' : 'Active Tenants',
+                        sublabel: loc.activeTenantsCount,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1226,9 +1224,9 @@ class _LandlordHero extends ConsumerWidget {
                       child: _HeroStatDeckTile(
                         icon: LucideIcons.pieChart,
                         iconColor: const Color(0xFFFBBF24),
-                        label: loc.localeName == 'tr' ? 'Doluluk' : 'Occupancy',
+                        label: loc.occupancyRate,
                         value: '%$occupancyRate',
-                        sublabel: loc.localeName == 'tr' ? 'Portföy Oranı' : 'Portfolio Rate',
+                        sublabel: loc.portfolioRateSubtitle,
                       ),
                     ),
                   ],
@@ -1398,7 +1396,7 @@ class _KpiGrid extends StatelessWidget {
             icon: LucideIcons.banknote,
             value: rentCollectedFormatted.isEmpty ? '0 €' : rentCollectedFormatted,
             label: loc.rent,
-            sublabel: loc.localeName == 'tr' ? 'Toplanan Kira' : 'Collected Rent',
+            sublabel: loc.collectedRentSubtitle,
             accentColor: const Color(0xFF059669), // Emerald
             surfaceColor: const Color(0xFFECFDF5),
           ),
@@ -1406,7 +1404,7 @@ class _KpiGrid extends StatelessWidget {
             icon: LucideIcons.clock,
             value: '${stats.awaitingApprovalCount}',
             label: loc.awaitingApproval,
-            sublabel: loc.localeName == 'tr' ? 'Dekont Onayı' : 'Awaiting Approval',
+            sublabel: loc.awaitingApprovalSubtitle,
             accentColor: const Color(0xFFD97706), // Amber
             surfaceColor: const Color(0xFFFFFBEB),
             isAlert: hasAwaiting,
@@ -1415,7 +1413,7 @@ class _KpiGrid extends StatelessWidget {
             icon: LucideIcons.alertTriangle,
             value: '${stats.delaysCount}',
             label: loc.delays,
-            sublabel: loc.localeName == 'tr' ? 'Vadesi Geçmiş' : 'Overdue Payments',
+            sublabel: loc.overduePaymentsSubtitle,
             accentColor: const Color(0xFFE11D48), // Rose
             surfaceColor: const Color(0xFFFFF1F2),
             isAlert: hasDelays,
@@ -1424,7 +1422,7 @@ class _KpiGrid extends StatelessWidget {
             icon: LucideIcons.doorOpen,
             value: '${stats.vacantCount}',
             label: loc.vacant,
-            sublabel: loc.localeName == 'tr' ? 'Kiracıya Müsait' : 'Vacant Units',
+            sublabel: loc.vacantUnitsSubtitle,
             accentColor: const Color(0xFF4F46E5), // Indigo
             surfaceColor: const Color(0xFFEEF2FF),
             isAlert: false,
@@ -1522,7 +1520,7 @@ class _KpiCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    'DİKKAT',
+                    AppLocalizations.of(context)!.attentionTag,
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w800,
@@ -1608,9 +1606,7 @@ class _LandlordActionCenter extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    loc.localeName == 'tr'
-                        ? 'Tüm mülkler ve ödemeler güncel durumda. Bekleyen onay bulunmuyor.'
-                        : 'All properties and payments are up to date.',
+                    loc.allPropertiesUpToDate,
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
@@ -1704,7 +1700,7 @@ class _LandlordActionCenter extends StatelessWidget {
                       },
                       icon: const Icon(LucideIcons.arrowRight, size: 14, color: Colors.white),
                       label: Text(
-                        loc.localeName == 'tr' ? 'İncele' : 'Review',
+                        loc.reviewAction,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -1745,7 +1741,7 @@ class _LandlordActionCenter extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '${stats.delaysCount} ${loc.delays.toLowerCase()} bulunuyor. Detayları mülk listesinden kontrol edebilirsiniz.',
+                        loc.overduePaymentsAlert(stats.delaysCount),
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
@@ -1790,14 +1786,14 @@ class _LandlordPropertyFilterBar extends StatelessWidget {
       child: Row(
         children: [
           _FilterChipItem(
-            label: loc.localeName == 'tr' ? 'Tümü' : 'All',
+            label: loc.filterAll,
             count: totalCount,
             isSelected: currentFilter == 'all',
             onTap: () => onFilterChanged('all'),
           ),
           const SizedBox(width: 8),
           _FilterChipItem(
-            label: loc.localeName == 'tr' ? 'Kirada' : 'Rented',
+            label: loc.filterRented,
             count: rentedCount,
             isSelected: currentFilter == 'rented',
             onTap: () => onFilterChanged('rented'),
@@ -1805,7 +1801,7 @@ class _LandlordPropertyFilterBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           _FilterChipItem(
-            label: loc.vacant,
+            label: loc.filterVacant,
             count: vacantCount,
             isSelected: currentFilter == 'vacant',
             onTap: () => onFilterChanged('vacant'),
@@ -1966,13 +1962,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final agencyColors = ref.watch(agencyColorSchemeProvider);
 
-    final viewDetailsLabel = loc.localeName == 'tr'
-        ? 'Detaylar'
-        : loc.localeName.startsWith('sr')
-            ? 'Detalji'
-            : loc.localeName == 'ru'
-                ? 'Детали'
-                : 'Details';
+    final viewDetailsLabel = loc.detailsAction;
 
     String formatDate(DateTime? date) {
       if (date == null) return '-';
@@ -2087,7 +2077,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                loc.localeName == 'tr' ? 'Davet Bekleniyor' : 'Invited',
+                                loc.invitedStatusTag,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -2121,7 +2111,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                              isVacant ? loc.vacant : (loc.localeName == 'tr' ? 'Kiracı Var' : 'Rented'),
+                              isVacant ? loc.vacant : loc.rentedStatusTag,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -2159,9 +2149,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            loc.localeName == 'tr'
-                                ? 'Aktif kontrat yok. Kiracı davet etmek için tıklayın.'
-                                : 'No active contract. Tap to invite tenant.',
+                            loc.noActiveContractTapToInvite,
                             style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                           ),
                         ),
@@ -2897,7 +2885,7 @@ class _TenantHero extends ConsumerWidget {
     if (hasDebt) {
       heroLabel = loc.totalDebt.toUpperCase();
     } else if (hasCredit) {
-      heroLabel = (loc.localeName == 'tr' ? 'MAHSUP ALACAĞI' : 'SETTLEMENT CREDIT').toUpperCase();
+      heroLabel = loc.settlementCredit.toUpperCase();
     } else if (hasAwaiting) {
       heroLabel = loc.awaitingHeader.toUpperCase();
     } else {
@@ -2918,7 +2906,7 @@ class _TenantHero extends ConsumerWidget {
     } else if (hasCredit) {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.arrowDownLeft,
-        label: loc.localeName == 'tr' ? 'Mahsup Alacağı' : 'Credit',
+        label: loc.settlementCredit,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
@@ -2932,7 +2920,7 @@ class _TenantHero extends ConsumerWidget {
     } else {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.circleCheck,
-        label: loc.localeName == 'tr' ? 'Borç Yok' : 'No Debt',
+        label: loc.noDebtLabel,
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );

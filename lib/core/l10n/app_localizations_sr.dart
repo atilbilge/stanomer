@@ -2695,6 +2695,76 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get invalidAgencyReferralCode =>
       'Nevažeći ili nepronađeni agencijski referral kod.';
+
+  @override
+  String get occupancyRate => 'Popunjenost';
+
+  @override
+  String get allPropertiesUpToDate =>
+      'Sve nekretnine i uplate su ažurne. Nema odobrenja na čekanju.';
+
+  @override
+  String overduePaymentsAlert(int count) {
+    return 'Ima $count zakasnelih uplata. Proverite listu nekretnina za detalje.';
+  }
+
+  @override
+  String get filterAll => 'Sve';
+
+  @override
+  String get filterRented => 'Izdato';
+
+  @override
+  String get filterVacant => 'Slobodno';
+
+  @override
+  String get noPropertiesForFilter => 'Nema nekretnina za ovaj filter.';
+
+  @override
+  String get attentionTag => 'PAŽNJA';
+
+  @override
+  String get reviewAction => 'Pregledaj';
+
+  @override
+  String get detailsAction => 'Detalji';
+
+  @override
+  String get noActiveContractTapToInvite =>
+      'Nema aktivnog ugovora. Dodirnite da pozovete stanara.';
+
+  @override
+  String get activeTenantsCount => 'Aktivni stanari';
+
+  @override
+  String get totalPropertiesCount => 'Ukupno nekretnina';
+
+  @override
+  String get collectedRentSubtitle => 'Naplaćena kirija';
+
+  @override
+  String get awaitingApprovalSubtitle => 'Odobrenje uplatnice';
+
+  @override
+  String get overduePaymentsSubtitle => 'Zakasnelo';
+
+  @override
+  String get vacantUnitsSubtitle => 'Dostupno za izdavanje';
+
+  @override
+  String get portfolioRateSubtitle => 'Stopa portfolija';
+
+  @override
+  String get rentedStatusTag => 'Izdato';
+
+  @override
+  String get invitedStatusTag => 'Poziv na čekanju';
+
+  @override
+  String get settlementCredit => 'Prebijanje potraživanja';
+
+  @override
+  String get noDebtLabel => 'Nema duga';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -5311,4 +5381,74 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   @override
   String get invalidAgencyReferralCode =>
       'Неважећи или непронађени агенцијски реферрал код.';
+
+  @override
+  String get occupancyRate => 'Попуњеност';
+
+  @override
+  String get allPropertiesUpToDate =>
+      'Све некретнине и уплате су ажурне. Нема одобрења на чекању.';
+
+  @override
+  String overduePaymentsAlert(int count) {
+    return 'Има $count закаснелих уплата. Проверите листу некретнина за детаље.';
+  }
+
+  @override
+  String get filterAll => 'Све';
+
+  @override
+  String get filterRented => 'Издато';
+
+  @override
+  String get filterVacant => 'Слободно';
+
+  @override
+  String get noPropertiesForFilter => 'Нема некретнина за овај филтер.';
+
+  @override
+  String get attentionTag => 'ПАЖЊА';
+
+  @override
+  String get reviewAction => 'Прегледај';
+
+  @override
+  String get detailsAction => 'Детаљи';
+
+  @override
+  String get noActiveContractTapToInvite =>
+      'Нема активног уговора. Додирните да позовете станара.';
+
+  @override
+  String get activeTenantsCount => 'Активни станари';
+
+  @override
+  String get totalPropertiesCount => 'Укупно некретнина';
+
+  @override
+  String get collectedRentSubtitle => 'Наплаћена кирија';
+
+  @override
+  String get awaitingApprovalSubtitle => 'Одобрење уплатнице';
+
+  @override
+  String get overduePaymentsSubtitle => 'Закаснело';
+
+  @override
+  String get vacantUnitsSubtitle => 'Доступно за издавање';
+
+  @override
+  String get portfolioRateSubtitle => 'Стопа портфолија';
+
+  @override
+  String get rentedStatusTag => 'Издато';
+
+  @override
+  String get invitedStatusTag => 'Позив на чекању';
+
+  @override
+  String get settlementCredit => 'Пребијање потраживања';
+
+  @override
+  String get noDebtLabel => 'Нема дуга';
 }

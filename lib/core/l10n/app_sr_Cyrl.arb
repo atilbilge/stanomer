@@ -1294,5 +1294,34 @@
       }
     }
   },
-  "invalidAgencyReferralCode": "Неважећи или непронађени агенцијски реферрал код."
+  "invalidAgencyReferralCode": "Неважећи или непронађени агенцијски реферрал код.",
+  "occupancyRate": "Попуњеност",
+  "allPropertiesUpToDate": "Све некретнине и уплате су ажурне. Нема одобрења на чекању.",
+  "overduePaymentsAlert": "Има {count} закаснелих уплата. Проверите листу некретнина за детаље.",
+  "@overduePaymentsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Све",
+  "filterRented": "Издато",
+  "filterVacant": "Слободно",
+  "noPropertiesForFilter": "Нема некретнина за овај филтер.",
+  "attentionTag": "ПАЖЊА",
+  "reviewAction": "Прегледај",
+  "detailsAction": "Детаљи",
+  "noActiveContractTapToInvite": "Нема активног уговора. Додирните да позовете станара.",
+  "activeTenantsCount": "Активни станари",
+  "totalPropertiesCount": "Укупно некретнина",
+  "collectedRentSubtitle": "Наплаћена кирија",
+  "awaitingApprovalSubtitle": "Одобрење уплатнице",
+  "overduePaymentsSubtitle": "Закаснело",
+  "vacantUnitsSubtitle": "Доступно за издавање",
+  "portfolioRateSubtitle": "Стопа портфолија",
+  "rentedStatusTag": "Издато",
+  "invitedStatusTag": "Позив на чекању",
+  "settlementCredit": "Пребијање потраживања",
+  "noDebtLabel": "Нема дуга"
 }

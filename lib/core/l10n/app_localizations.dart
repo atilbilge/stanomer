@@ -4953,6 +4953,138 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Nevažeći ili nepronađeni agencijski referral kod.'**
   String get invalidAgencyReferralCode;
+
+  /// No description provided for @occupancyRate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Popunjenost'**
+  String get occupancyRate;
+
+  /// No description provided for @allPropertiesUpToDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve nekretnine i uplate su ažurne. Nema odobrenja na čekanju.'**
+  String get allPropertiesUpToDate;
+
+  /// No description provided for @overduePaymentsAlert.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ima {count} zakasnelih uplata. Proverite listu nekretnina za detalje.'**
+  String overduePaymentsAlert(int count);
+
+  /// No description provided for @filterAll.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve'**
+  String get filterAll;
+
+  /// No description provided for @filterRented.
+  ///
+  /// In sr, this message translates to:
+  /// **'Izdato'**
+  String get filterRented;
+
+  /// No description provided for @filterVacant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Slobodno'**
+  String get filterVacant;
+
+  /// No description provided for @noPropertiesForFilter.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema nekretnina za ovaj filter.'**
+  String get noPropertiesForFilter;
+
+  /// No description provided for @attentionTag.
+  ///
+  /// In sr, this message translates to:
+  /// **'PAŽNJA'**
+  String get attentionTag;
+
+  /// No description provided for @reviewAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pregledaj'**
+  String get reviewAction;
+
+  /// No description provided for @detailsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Detalji'**
+  String get detailsAction;
+
+  /// No description provided for @noActiveContractTapToInvite.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema aktivnog ugovora. Dodirnite da pozovete stanara.'**
+  String get noActiveContractTapToInvite;
+
+  /// No description provided for @activeTenantsCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Aktivni stanari'**
+  String get activeTenantsCount;
+
+  /// No description provided for @totalPropertiesCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ukupno nekretnina'**
+  String get totalPropertiesCount;
+
+  /// No description provided for @collectedRentSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Naplaćena kirija'**
+  String get collectedRentSubtitle;
+
+  /// No description provided for @awaitingApprovalSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje uplatnice'**
+  String get awaitingApprovalSubtitle;
+
+  /// No description provided for @overduePaymentsSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zakasnelo'**
+  String get overduePaymentsSubtitle;
+
+  /// No description provided for @vacantUnitsSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dostupno za izdavanje'**
+  String get vacantUnitsSubtitle;
+
+  /// No description provided for @portfolioRateSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stopa portfolija'**
+  String get portfolioRateSubtitle;
+
+  /// No description provided for @rentedStatusTag.
+  ///
+  /// In sr, this message translates to:
+  /// **'Izdato'**
+  String get rentedStatusTag;
+
+  /// No description provided for @invitedStatusTag.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poziv na čekanju'**
+  String get invitedStatusTag;
+
+  /// No description provided for @settlementCredit.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prebijanje potraživanja'**
+  String get settlementCredit;
+
+  /// No description provided for @noDebtLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema duga'**
+  String get noDebtLabel;
 }
 
 class _AppLocalizationsDelegate

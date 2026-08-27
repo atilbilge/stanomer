@@ -1245,5 +1245,34 @@
       }
     }
   },
-  "invalidAgencyReferralCode": "Invalid or not found agency referral code."
+  "invalidAgencyReferralCode": "Invalid or not found agency referral code.",
+  "occupancyRate": "Occupancy",
+  "allPropertiesUpToDate": "All properties and payments are up to date. No pending approvals.",
+  "overduePaymentsAlert": "There are {count} overdue payment(s). Check the property list for details.",
+  "@overduePaymentsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "All",
+  "filterRented": "Rented",
+  "filterVacant": "Vacant",
+  "noPropertiesForFilter": "No properties found for this filter.",
+  "attentionTag": "ATTENTION",
+  "reviewAction": "Review",
+  "detailsAction": "Details",
+  "noActiveContractTapToInvite": "No active contract. Tap to invite tenant.",
+  "activeTenantsCount": "Active Tenants",
+  "totalPropertiesCount": "Total Properties",
+  "collectedRentSubtitle": "Collected Rent",
+  "awaitingApprovalSubtitle": "Receipt Approval",
+  "overduePaymentsSubtitle": "Overdue",
+  "vacantUnitsSubtitle": "Available for Rent",
+  "portfolioRateSubtitle": "Portfolio Rate",
+  "rentedStatusTag": "Rented",
+  "invitedStatusTag": "Invited",
+  "settlementCredit": "Settlement Credit",
+  "noDebtLabel": "No Debt"
 }

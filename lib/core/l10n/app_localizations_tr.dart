@@ -2697,4 +2697,74 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get invalidAgencyReferralCode =>
       'Geçersiz veya bulunamayan acente referans kodu.';
+
+  @override
+  String get occupancyRate => 'Doluluk';
+
+  @override
+  String get allPropertiesUpToDate =>
+      'Tüm mülkler ve ödemeler güncel durumda. Bekleyen onay bulunmuyor.';
+
+  @override
+  String overduePaymentsAlert(int count) {
+    return '$count adet gecikmiş ödeme bulunuyor. Detayları mülk listesinden kontrol edebilirsiniz.';
+  }
+
+  @override
+  String get filterAll => 'Tümü';
+
+  @override
+  String get filterRented => 'Kirada';
+
+  @override
+  String get filterVacant => 'Boş Daire';
+
+  @override
+  String get noPropertiesForFilter => 'Bu filtreye uygun mülk bulunamadı.';
+
+  @override
+  String get attentionTag => 'DİKKAT';
+
+  @override
+  String get reviewAction => 'İncele';
+
+  @override
+  String get detailsAction => 'Detaylar';
+
+  @override
+  String get noActiveContractTapToInvite =>
+      'Aktif kontrat yok. Kiracı davet etmek için tıklayın.';
+
+  @override
+  String get activeTenantsCount => 'Kiracı Aktif';
+
+  @override
+  String get totalPropertiesCount => 'Toplam Mülk';
+
+  @override
+  String get collectedRentSubtitle => 'Toplanan Kira';
+
+  @override
+  String get awaitingApprovalSubtitle => 'Dekont Onayı';
+
+  @override
+  String get overduePaymentsSubtitle => 'Vadesi Geçmiş';
+
+  @override
+  String get vacantUnitsSubtitle => 'Kiracıya Müsait';
+
+  @override
+  String get portfolioRateSubtitle => 'Portföy Oranı';
+
+  @override
+  String get rentedStatusTag => 'Kiracı Var';
+
+  @override
+  String get invitedStatusTag => 'Davet Bekleniyor';
+
+  @override
+  String get settlementCredit => 'Mahsup Alacağı';
+
+  @override
+  String get noDebtLabel => 'Borç Yok';
 }

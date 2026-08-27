@@ -1344,5 +1344,34 @@
       }
     }
   },
-  "invalidAgencyReferralCode": "Nevažeći ili nepronađeni agencijski referral kod."
+  "invalidAgencyReferralCode": "Nevažeći ili nepronađeni agencijski referral kod.",
+  "occupancyRate": "Popunjenost",
+  "allPropertiesUpToDate": "Sve nekretnine i uplate su ažurne. Nema odobrenja na čekanju.",
+  "overduePaymentsAlert": "Ima {count} zakasnelih uplata. Proverite listu nekretnina za detalje.",
+  "@overduePaymentsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Sve",
+  "filterRented": "Izdato",
+  "filterVacant": "Slobodno",
+  "noPropertiesForFilter": "Nema nekretnina za ovaj filter.",
+  "attentionTag": "PAŽNJA",
+  "reviewAction": "Pregledaj",
+  "detailsAction": "Detalji",
+  "noActiveContractTapToInvite": "Nema aktivnog ugovora. Dodirnite da pozovete stanara.",
+  "activeTenantsCount": "Aktivni stanari",
+  "totalPropertiesCount": "Ukupno nekretnina",
+  "collectedRentSubtitle": "Naplaćena kirija",
+  "awaitingApprovalSubtitle": "Odobrenje uplatnice",
+  "overduePaymentsSubtitle": "Zakasnelo",
+  "vacantUnitsSubtitle": "Dostupno za izdavanje",
+  "portfolioRateSubtitle": "Stopa portfolija",
+  "rentedStatusTag": "Izdato",
+  "invitedStatusTag": "Poziv na čekanju",
+  "settlementCredit": "Prebijanje potraživanja",
+  "noDebtLabel": "Nema duga"
 }

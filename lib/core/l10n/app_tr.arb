@@ -1344,5 +1344,34 @@
       }
     }
   },
-  "invalidAgencyReferralCode": "Geçersiz veya bulunamayan acente referans kodu."
+  "invalidAgencyReferralCode": "Geçersiz veya bulunamayan acente referans kodu.",
+  "occupancyRate": "Doluluk",
+  "allPropertiesUpToDate": "Tüm mülkler ve ödemeler güncel durumda. Bekleyen onay bulunmuyor.",
+  "overduePaymentsAlert": "{count} adet gecikmiş ödeme bulunuyor. Detayları mülk listesinden kontrol edebilirsiniz.",
+  "@overduePaymentsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Tümü",
+  "filterRented": "Kirada",
+  "filterVacant": "Boş Daire",
+  "noPropertiesForFilter": "Bu filtreye uygun mülk bulunamadı.",
+  "attentionTag": "DİKKAT",
+  "reviewAction": "İncele",
+  "detailsAction": "Detaylar",
+  "noActiveContractTapToInvite": "Aktif kontrat yok. Kiracı davet etmek için tıklayın.",
+  "activeTenantsCount": "Kiracı Aktif",
+  "totalPropertiesCount": "Toplam Mülk",
+  "collectedRentSubtitle": "Toplanan Kira",
+  "awaitingApprovalSubtitle": "Dekont Onayı",
+  "overduePaymentsSubtitle": "Vadesi Geçmiş",
+  "vacantUnitsSubtitle": "Kiracıya Müsait",
+  "portfolioRateSubtitle": "Portföy Oranı",
+  "rentedStatusTag": "Kiracı Var",
+  "invitedStatusTag": "Davet Bekleniyor",
+  "settlementCredit": "Mahsup Alacağı",
+  "noDebtLabel": "Borç Yok"
 }

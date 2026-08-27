@@ -1296,5 +1296,34 @@
       }
     }
   },
-  "invalidAgencyReferralCode": "Недействительный или не найденный реферальный код агентства."
+  "invalidAgencyReferralCode": "Недействительный или не найденный реферальный код агентства.",
+  "occupancyRate": "Заполняемость",
+  "allPropertiesUpToDate": "Все объекты и платежи в актуальном состоянии. Нет ожидающих подтверждений.",
+  "overduePaymentsAlert": "Имеется {count} просроченных платежей. Проверьте список объектов для подробностей.",
+  "@overduePaymentsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Все",
+  "filterRented": "Сдано",
+  "filterVacant": "Свободно",
+  "noPropertiesForFilter": "Не найдено объектов для этого фильтра.",
+  "attentionTag": "ВНИМАНИЕ",
+  "reviewAction": "Проверить",
+  "detailsAction": "Детали",
+  "noActiveContractTapToInvite": "Нет активного договора. Нажмите, чтобы пригласить жильца.",
+  "activeTenantsCount": "Активные жильцы",
+  "totalPropertiesCount": "Всего объектов",
+  "collectedRentSubtitle": "Собранная аренда",
+  "awaitingApprovalSubtitle": "Подтверждение квитанций",
+  "overduePaymentsSubtitle": "Просрочено",
+  "vacantUnitsSubtitle": "Доступно для аренды",
+  "portfolioRateSubtitle": "Показатель портфеля",
+  "rentedStatusTag": "Сдано",
+  "invitedStatusTag": "Приглашение отправлено",
+  "settlementCredit": "Зачетный остаток",
+  "noDebtLabel": "Нет долга"
 }
