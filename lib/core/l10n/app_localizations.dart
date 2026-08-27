@@ -4837,13 +4837,13 @@ abstract class AppLocalizations {
   /// No description provided for @optionOffsetFromRent.
   ///
   /// In sr, this message translates to:
-  /// **'Odbij od kirije / računa'**
+  /// **'Prebij sa dugom'**
   String get optionOffsetFromRent;
 
   /// No description provided for @optionOffsetFromRentDesc.
   ///
   /// In sr, this message translates to:
-  /// **'Automatski umanji ovaj iznos sa predstojeće kirije ili računa u istoj valuti'**
+  /// **'Automatski umanji ovaj iznos sa predstojeće kirije, računa ili troškova održavanja u istoj valuti'**
   String get optionOffsetFromRentDesc;
 
   /// No description provided for @optionBankTransfer.
@@ -4879,7 +4879,7 @@ abstract class AppLocalizations {
   /// No description provided for @noEligiblePendingPayments.
   ///
   /// In sr, this message translates to:
-  /// **'Nema odgovarajućih neplaćenih kirija ili računa u valuti {currency}.'**
+  /// **'Nema odgovarajućih dugovanja kirije, računa ili održavanja za prebijanje ({currency}).'**
   String noEligiblePendingPayments(String currency);
 
   /// No description provided for @offsetAppliedSuccess.

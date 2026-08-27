@@ -1172,14 +1172,14 @@
   },
   "settleExpenseTitle": "Maintenance Expense Settlement",
   "settleExpenseSub": "Choose payment or deduction method",
-  "optionOffsetFromRent": "Deduct from Rent / Bill",
-  "optionOffsetFromRentDesc": "Automatically deduct this amount from a pending rent or bill in the same currency",
+  "optionOffsetFromRent": "Deduct / Offset from Debt",
+  "optionOffsetFromRentDesc": "Automatically deduct this amount from pending rent, bills, or maintenance debts in the same currency",
   "optionBankTransfer": "Pay via Bank Transfer",
   "optionBankTransferDesc": "Upload payment receipt and send for confirmation",
   "optionCashPayment": "Pay in Cash",
   "optionCashPaymentDesc": "Declare as handed over in cash",
   "selectRentToOffset": "Select Item to Offset",
-  "noEligiblePendingPayments": "No eligible pending rent or bill found in {currency}.",
+  "noEligiblePendingPayments": "No eligible pending rent, bills, or maintenance debts found to offset ({currency}).",
   "@noEligiblePendingPayments": {
     "placeholders": {
       "currency": {

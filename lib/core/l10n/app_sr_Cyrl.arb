@@ -1219,14 +1219,14 @@
   },
   "settleExpenseTitle": "Поравнање трошкова одржавања",
   "settleExpenseSub": "Изаберите начин плаћања или пребијања",
-  "optionOffsetFromRent": "Одбиј од кирије / рачуна",
-  "optionOffsetFromRentDesc": "Аутоматски умањи овај износ са предстојеће кирије или рачуна у истој валути",
+  "optionOffsetFromRent": "Пребиј са дугом",
+  "optionOffsetFromRentDesc": "Аутоматски умањи овај износ са предстојеће кирије, рачуна или трошкова одржавања у истој валути",
   "optionBankTransfer": "Плати банкарским трансфером",
   "optionBankTransferDesc": "Приложите уплатницу и пошаљите на потврду",
   "optionCashPayment": "Плати у готовини",
   "optionCashPaymentDesc": "Пријавите да је плаћено у готовини",
   "selectRentToOffset": "Изаберите ставку за пребијање",
-  "noEligiblePendingPayments": "Нема одговарајућих неплаћених кирија или рачуна у валути {currency}.",
+  "noEligiblePendingPayments": "Нема одговарајућих дуговања кирије, рачуна или одржавања за пребијање ({currency}).",
   "@noEligiblePendingPayments": {
     "placeholders": {
       "currency": {

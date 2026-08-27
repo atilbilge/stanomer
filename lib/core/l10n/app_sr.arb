@@ -1271,14 +1271,14 @@
   },
   "settleExpenseTitle": "Poravnanje troškova održavanja",
   "settleExpenseSub": "Izaberite način plaćanja ili prebijanja",
-  "optionOffsetFromRent": "Odbij od kirije / računa",
-  "optionOffsetFromRentDesc": "Automatski umanji ovaj iznos sa predstojeće kirije ili računa u istoj valuti",
+  "optionOffsetFromRent": "Prebij sa dugom",
+  "optionOffsetFromRentDesc": "Automatski umanji ovaj iznos sa predstojeće kirije, računa ili troškova održavanja u istoj valuti",
   "optionBankTransfer": "Plati bankarskim transferom",
   "optionBankTransferDesc": "Priložite uplatnicu i pošaljite na potvrdu",
   "optionCashPayment": "Plati u gotovini",
   "optionCashPaymentDesc": "Prijavite da je plaćeno u gotovini",
   "selectRentToOffset": "Izaberite stavku za prebijanje",
-  "noEligiblePendingPayments": "Nema odgovarajućih neplaćenih kirija ili računa u valuti {currency}.",
+  "noEligiblePendingPayments": "Nema odgovarajućih dugovanja kirije, računa ili održavanja za prebijanje ({currency}).",
   "@noEligiblePendingPayments": {
     "placeholders": {
       "currency": {

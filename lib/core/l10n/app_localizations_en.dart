@@ -2623,11 +2623,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settleExpenseSub => 'Choose payment or deduction method';
 
   @override
-  String get optionOffsetFromRent => 'Deduct from Rent / Bill';
+  String get optionOffsetFromRent => 'Deduct / Offset from Debt';
 
   @override
   String get optionOffsetFromRentDesc =>
-      'Automatically deduct this amount from a pending rent or bill in the same currency';
+      'Automatically deduct this amount from pending rent, bills, or maintenance debts in the same currency';
 
   @override
   String get optionBankTransfer => 'Pay via Bank Transfer';
@@ -2647,7 +2647,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String noEligiblePendingPayments(String currency) {
-    return 'No eligible pending rent or bill found in $currency.';
+    return 'No eligible pending rent, bills, or maintenance debts found to offset ($currency).';
   }
 
   @override

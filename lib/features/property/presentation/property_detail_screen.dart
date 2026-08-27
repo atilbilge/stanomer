@@ -3465,6 +3465,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     BuildContext context,
     MaintenanceRequest req,
     List<RentPayment> allPayments,
+    List<MaintenanceRequest> allMaintenanceRequests,
     String formattedCost,
     String currency,
     AppLocalizations loc,
@@ -3505,15 +3506,15 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 ),
                 const SizedBox(height: 20),
 
-                // Option 1: Kiradan / Faturadan Mahsup Et
+                // Option 1: Borçlardan Mahsup Et (Kira, Fatura veya Bakım Borçları)
                 _SettlementOptionTile(
-                  icon: LucideIcons.home,
+                  icon: LucideIcons.layers,
                   iconColor: const Color(0xFF2563EB),
                   title: loc.optionOffsetFromRent,
                   subtitle: loc.optionOffsetFromRentDesc,
                   onTap: () {
                     Navigator.pop(ctx);
-                    _showRentOffsetDialog(context, req, allPayments, formattedCost, currency, loc);
+                    _showOffsetDialog(context, req, allPayments, allMaintenanceRequests, formattedCost, currency, loc);
                   },
                 ),
                 const SizedBox(height: 10),
@@ -3627,10 +3628,11 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     );
   }
 
-  void _showRentOffsetDialog(
+  void _showOffsetDialog(
     BuildContext context,
     MaintenanceRequest req,
     List<RentPayment> allPayments,
+    List<MaintenanceRequest> allMaintenanceRequests,
     String formattedCost,
     String currency,
     AppLocalizations loc,
@@ -3642,7 +3644,15 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       p.currency.toUpperCase() == reqCurrency
     ).toList();
 
-    if (eligiblePayments.isEmpty) {
+    final eligibleMaintenanceDebts = allMaintenanceRequests.where((m) =>
+      m.id != req.id &&
+      m.paidBy == 'tenant' &&
+      m.paymentStatus == 'pending_payment' &&
+      (m.costAmount ?? 0) > 0 &&
+      (m.currency ?? widget.property.currency).toUpperCase() == reqCurrency
+    ).toList();
+
+    if (eligiblePayments.isEmpty && eligibleMaintenanceDebts.isEmpty) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -3679,86 +3689,191 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                 ),
                 const SizedBox(height: 16),
-                ...eligiblePayments.map((p) {
-                  final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(p.dueDate);
-                  final costAmt = req.costAmount ?? 0;
-                  final offsetAmt = costAmt < p.amount ? costAmt : p.amount;
-                  final remainingCredit = (costAmt - offsetAmt).clamp(0.0, double.infinity);
-                  final paymentNewAmount = (p.amount - offsetAmt).clamp(0.0, double.infinity);
 
-                  final beforeStr = CurrencyUtils.formatAmount(p.amount, p.currency);
-                  final afterStr = paymentNewAmount > 0
-                      ? CurrencyUtils.formatAmount(paymentNewAmount, p.currency)
-                      : (loc.localeName == 'tr' ? '0 ${p.currency} (Ödendi)' : '0 ${p.currency} (Paid)');
-                  final offsetStr = CurrencyUtils.formatAmount(offsetAmt, p.currency);
-
-                  final subtitleText = remainingCredit > 0
-                      ? (loc.localeName == 'tr'
-                          ? '$offsetStr mahsup edilecek • Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}'
-                          : '$offsetStr offset • Remaining credit: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}')
-                      : (loc.localeName == 'tr'
-                          ? '$offsetStr mahsup edilecek • Alacağın tamamı kullanılıyor'
-                          : '$offsetStr offset • Credit fully used');
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: Material(
-                      color: const Color(0xFFF8FAFC),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(LucideIcons.home, color: Color(0xFF2563EB), size: 18),
-                        ),
-                        title: Text('${p.title} ($monthStr)', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
-                                  const SizedBox(width: 6),
-                                  const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
-                                  const SizedBox(width: 6),
-                                  Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                subtitleText,
-                                style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        ),
-                        trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
-                        onTap: () async {
-                          Navigator.pop(ctx);
-                          await _applyRentOffset(
-                            req,
-                            p,
-                            paymentNewAmount,
-                            offsetAmt,
-                            remainingCredit,
-                            offsetStr,
-                            loc,
-                          );
-                        },
+                // 1. Rent & Utility Payments
+                if (eligiblePayments.isNotEmpty) ...[
+                  if (eligibleMaintenanceDebts.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        loc.localeName == 'tr' ? 'KİRA VE FATURALAR' : 'RENT & BILLS',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF64748B), letterSpacing: 0.5),
                       ),
                     ),
-                  );
-                }),
+                  ],
+                  ...eligiblePayments.map((p) {
+                    final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(p.dueDate);
+                    final costAmt = req.costAmount ?? 0;
+                    final offsetAmt = costAmt < p.amount ? costAmt : p.amount;
+                    final remainingCredit = (costAmt - offsetAmt).clamp(0.0, double.infinity);
+                    final paymentNewAmount = (p.amount - offsetAmt).clamp(0.0, double.infinity);
+
+                    final beforeStr = CurrencyUtils.formatAmount(p.amount, p.currency);
+                    final afterStr = paymentNewAmount > 0
+                        ? CurrencyUtils.formatAmount(paymentNewAmount, p.currency)
+                        : (loc.localeName == 'tr' ? '0 ${p.currency} (Ödendi)' : '0 ${p.currency} (Paid)');
+                    final offsetStr = CurrencyUtils.formatAmount(offsetAmt, p.currency);
+
+                    final subtitleText = remainingCredit > 0
+                        ? (loc.localeName == 'tr'
+                            ? '$offsetStr mahsup edilecek • Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}'
+                            : '$offsetStr offset • Remaining credit: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}')
+                        : (loc.localeName == 'tr'
+                            ? '$offsetStr mahsup edilecek • Alacağın tamamı kullanılıyor'
+                            : '$offsetStr offset • Credit fully used');
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: Material(
+                        color: const Color(0xFFF8FAFC),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(LucideIcons.home, color: Color(0xFF2563EB), size: 18),
+                          ),
+                          title: Text('${p.title} ($monthStr)', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                                    const SizedBox(width: 6),
+                                    const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
+                                    const SizedBox(width: 6),
+                                    Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  subtitleText,
+                                  style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
+                          trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
+                          onTap: () async {
+                            Navigator.pop(ctx);
+                            await _applyRentOffset(
+                              req,
+                              p,
+                              paymentNewAmount,
+                              offsetAmt,
+                              remainingCredit,
+                              offsetStr,
+                              loc,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+
+                // 2. Tenant Maintenance Debts
+                if (eligibleMaintenanceDebts.isNotEmpty) ...[
+                  Padding(
+                    padding: EdgeInsets.only(top: eligiblePayments.isNotEmpty ? 10 : 0, bottom: 8),
+                    child: Text(
+                      loc.localeName == 'tr' ? 'KİRACI BAKIM & HASAR BORÇLARI' : 'TENANT MAINTENANCE DEBTS',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF64748B), letterSpacing: 0.5),
+                    ),
+                  ),
+                  ...eligibleMaintenanceDebts.map((m) {
+                    final costAmt = req.costAmount ?? 0;
+                    final debtAmt = m.costAmount ?? 0;
+                    final mCurrency = m.currency ?? reqCurrency;
+                    final offsetAmt = costAmt < debtAmt ? costAmt : debtAmt;
+                    final remainingCredit = (costAmt - offsetAmt).clamp(0.0, double.infinity);
+                    final debtNewAmount = (debtAmt - offsetAmt).clamp(0.0, double.infinity);
+
+                    final beforeStr = CurrencyUtils.formatAmount(debtAmt, mCurrency);
+                    final afterStr = debtNewAmount > 0
+                        ? CurrencyUtils.formatAmount(debtNewAmount, mCurrency)
+                        : (loc.localeName == 'tr' ? '0 $mCurrency (Ödendi)' : '0 $mCurrency (Paid)');
+                    final offsetStr = CurrencyUtils.formatAmount(offsetAmt, mCurrency);
+
+                    final subtitleText = remainingCredit > 0
+                        ? (loc.localeName == 'tr'
+                            ? '$offsetStr mahsup edilecek • Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, mCurrency)}'
+                            : '$offsetStr offset • Remaining credit: ${CurrencyUtils.formatAmount(remainingCredit, mCurrency)}')
+                        : (loc.localeName == 'tr'
+                            ? '$offsetStr mahsup edilecek • Alacağın tamamı kullanılıyor'
+                            : '$offsetStr offset • Credit fully used');
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: Material(
+                        color: const Color(0xFFF8FAFC),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD97706).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(LucideIcons.wrench, color: Color(0xFFD97706), size: 18),
+                          ),
+                          title: Text('${m.title} (${loc.localeName == 'tr' ? 'Bakım Borcu' : 'Maintenance Debt'})', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                                    const SizedBox(width: 6),
+                                    const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
+                                    const SizedBox(width: 6),
+                                    Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  subtitleText,
+                                  style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
+                          trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
+                          onTap: () async {
+                            Navigator.pop(ctx);
+                            await _applyMaintenanceDebtOffset(
+                              req,
+                              m,
+                              debtNewAmount,
+                              offsetAmt,
+                              remainingCredit,
+                              offsetStr,
+                              loc,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ],
               ],
             ),
           ),
@@ -3861,6 +3976,103 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.offsetAppliedSuccess(formattedOffsetAmount, targetTitle)),
+            backgroundColor: const Color(0xFF059669),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.errorWithDetails(e.toString())),
+            backgroundColor: StanomerColors.alertPrimary,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _applyMaintenanceDebtOffset(
+    MaintenanceRequest creditReq,
+    MaintenanceRequest debtReq,
+    double debtNewAmount,
+    double offsetAmount,
+    double remainingCredit,
+    String formattedOffsetAmount,
+    AppLocalizations loc,
+  ) async {
+    try {
+      final currency = creditReq.currency ?? (widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR');
+
+      // 1. Update target debt maintenance request
+      final isDebtFullySettled = debtNewAmount <= 0;
+      await ref.read(maintenanceRepositoryProvider).updateFinancialDetails(
+        requestId: debtReq.id,
+        propertyId: widget.property.id,
+        costAmount: isDebtFullySettled ? debtReq.costAmount : debtNewAmount,
+        currency: debtReq.currency,
+        paidBy: debtReq.paidBy,
+        paymentDate: DateTime.now(),
+        paymentStatus: isDebtFullySettled ? 'paid' : 'pending_payment',
+        invoicePdfUrl: debtReq.invoicePdfUrl,
+      );
+
+      // Post in debtReq discussion
+      try {
+        final debtRemainingMsg = debtNewAmount > 0
+            ? ' (Kalan borç: ${CurrencyUtils.formatAmount(debtNewAmount, currency)})'
+            : ' (Borç tamamen kapatıldı)';
+        await ref.read(maintenanceRepositoryProvider).addMessage(
+          debtReq.id,
+          widget.property.id,
+          '🏠 $formattedOffsetAmount tutarındaki borç, "${creditReq.title}" bakım alacağından mahsup edildi.$debtRemainingMsg',
+          photoUrl: creditReq.invoicePdfUrl,
+        );
+      } catch (_) {}
+
+      // 2. Update credit maintenance request
+      final isCreditFullySettled = remainingCredit <= 0;
+      await ref.read(maintenanceRepositoryProvider).updateFinancialDetails(
+        requestId: creditReq.id,
+        propertyId: widget.property.id,
+        costAmount: isCreditFullySettled ? creditReq.costAmount : remainingCredit,
+        currency: creditReq.currency,
+        paidBy: creditReq.paidBy,
+        paymentDate: DateTime.now(),
+        paymentStatus: isCreditFullySettled ? 'paid' : 'pending_payment',
+        invoicePdfUrl: creditReq.invoicePdfUrl,
+      );
+
+      // Post in creditReq discussion
+      try {
+        final creditRemainingMsg = remainingCredit > 0
+            ? ' (Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, currency)})'
+            : ' (Mahsuplaşma tamamlandı)';
+        await ref.read(maintenanceRepositoryProvider).addMessage(
+          creditReq.id,
+          widget.property.id,
+          '🏠 $formattedOffsetAmount tutarındaki alacak, "${debtReq.title}" bakım borcundan mahsup edildi.$creditRemainingMsg',
+          photoUrl: creditReq.invoicePdfUrl,
+        );
+      } catch (_) {}
+
+      ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(maintenanceMessagesProvider(creditReq.id));
+      ref.invalidate(maintenanceMessagesProvider(debtReq.id));
+      ref.invalidate(rentPaymentsProvider(widget.property.id));
+      ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.localeName == 'tr'
+                  ? '$formattedOffsetAmount tutar "${debtReq.title}" bakım borcundan mahsup edildi.'
+                  : '$formattedOffsetAmount was offset from "${debtReq.title}" maintenance debt.',
+            ),
             backgroundColor: const Color(0xFF059669),
           ),
         );
@@ -4074,6 +4286,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 context: context,
                 request: req,
                 allPayments: allPayments,
+                allMaintenanceRequests: maintenanceSettlements,
                 property: property,
                 isLandlord: isLandlord,
                 isTenant: isTenant,
@@ -4091,6 +4304,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     required BuildContext context,
     required MaintenanceRequest request,
     required List<RentPayment> allPayments,
+    required List<MaintenanceRequest> allMaintenanceRequests,
     required Property property,
     required bool isLandlord,
     required bool isTenant,
@@ -4342,7 +4556,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => _showLandlordSettlementSheet(context, request, allPayments, formattedAmount, currency, loc),
+                      onPressed: () => _showLandlordSettlementSheet(context, request, allPayments, allMaintenanceRequests, formattedAmount, currency, loc),
                       icon: const Icon(LucideIcons.arrowDownLeft, size: 14),
                       label: Text(loc.settleExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
                       style: ElevatedButton.styleFrom(

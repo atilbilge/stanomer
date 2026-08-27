@@ -2642,11 +2642,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settleExpenseSub => 'Выберите способ оплаты или взаимозачета';
 
   @override
-  String get optionOffsetFromRent => 'Зачесть в счет аренды / счетов';
+  String get optionOffsetFromRent => 'Зачесть из задолженности';
 
   @override
   String get optionOffsetFromRentDesc =>
-      'Автоматически вычесть эту сумму из ожидающего платежа аренды или счета в той же валюте';
+      'Автоматически вычесть эту сумму из ожидающего платежа аренды, счета или ремонта в той же валюте';
 
   @override
   String get optionBankTransfer => 'Оплатить банковским переводом';
@@ -2662,11 +2662,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get optionCashPaymentDesc => 'Подтвердить передачу наличными';
 
   @override
-  String get selectRentToOffset => 'Выберите платеж для зачета';
+  String get selectRentToOffset => 'Выберите задолженность для зачета';
 
   @override
   String noEligiblePendingPayments(String currency) {
-    return 'Не найдено подходящих неоплаченных счетов или аренды в валюте $currency.';
+    return 'Не найдено подходящих задолженностей по аренде, счетам или ремонту для зачета ($currency).';
   }
 
   @override

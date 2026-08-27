@@ -1271,14 +1271,14 @@
   },
   "settleExpenseTitle": "Bakım Masrafı Kapatma & Mahsuplaşma",
   "settleExpenseSub": "Ödeme veya mahsuplaşma yöntemini seçiniz",
-  "optionOffsetFromRent": "Kiradan / Faturadan Mahsup Et",
-  "optionOffsetFromRentDesc": "Aynı para birimindeki bekleyen bir kira veya faturadan bu tutarı otomatik düş",
+  "optionOffsetFromRent": "Borçlardan Mahsup Et",
+  "optionOffsetFromRentDesc": "Aynı para birimindeki bekleyen kira, fatura veya bakım borçlarından bu tutarı otomatik düş",
   "optionBankTransfer": "Banka Transferi ile İade Et / Öde",
   "optionBankTransferDesc": "Ödeme dekontu yükleyerek karşı tarafın onayına gönder",
   "optionCashPayment": "Elden / Nakit Olarak Öde",
   "optionCashPaymentDesc": "Nakit olarak elden teslim edildiğini beyan et",
   "selectRentToOffset": "Mahsup Edilecek Kalemi Seçin",
-  "noEligiblePendingPayments": "Mahsup edilebilecek uygun bekleyen kira veya fatura bulunamadı ({currency}).",
+  "noEligiblePendingPayments": "Mahsup edilebilecek uygun bekleyen kira, fatura veya bakım borcu bulunamadı ({currency}).",
   "@noEligiblePendingPayments": {
     "placeholders": {
       "currency": {

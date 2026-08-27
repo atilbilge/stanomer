@@ -2623,11 +2623,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settleExpenseSub => 'Ödeme veya mahsuplaşma yöntemini seçiniz';
 
   @override
-  String get optionOffsetFromRent => 'Kiradan / Faturadan Mahsup Et';
+  String get optionOffsetFromRent => 'Borçlardan Mahsup Et';
 
   @override
   String get optionOffsetFromRentDesc =>
-      'Aynı para birimindeki bekleyen bir kira veya faturadan bu tutarı otomatik düş';
+      'Aynı para birimindeki bekleyen kira, fatura veya bakım borçlarından bu tutarı otomatik düş';
 
   @override
   String get optionBankTransfer => 'Banka Transferi ile İade Et / Öde';
@@ -2648,7 +2648,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String noEligiblePendingPayments(String currency) {
-    return 'Mahsup edilebilecek uygun bekleyen kira veya fatura bulunamadı ($currency).';
+    return 'Mahsup edilebilecek uygun bekleyen kira, fatura veya bakım borcu bulunamadı ($currency).';
   }
 
   @override

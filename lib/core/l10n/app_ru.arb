@@ -1221,14 +1221,14 @@
   },
   "settleExpenseTitle": "Урегулирование расходов на ремонт",
   "settleExpenseSub": "Выберите способ оплаты или взаимозачета",
-  "optionOffsetFromRent": "Зачесть в счет аренды / счетов",
-  "optionOffsetFromRentDesc": "Автоматически вычесть эту сумму из ожидающего платежа аренды или счета в той же валюте",
+  "optionOffsetFromRent": "Зачесть из задолженности",
+  "optionOffsetFromRentDesc": "Автоматически вычесть эту сумму из ожидающего платежа аренды, счета или ремонта в той же валюте",
   "optionBankTransfer": "Оплатить банковским переводом",
   "optionBankTransferDesc": "Загрузить квитанцию об оплате и отправить на подтверждение",
   "optionCashPayment": "Оплатить наличными",
   "optionCashPaymentDesc": "Подтвердить передачу наличными",
-  "selectRentToOffset": "Выберите платеж для зачета",
-  "noEligiblePendingPayments": "Не найдено подходящих неоплаченных счетов или аренды в валюте {currency}.",
+  "selectRentToOffset": "Выберите задолженность для зачета",
+  "noEligiblePendingPayments": "Не найдено подходящих задолженностей по аренде, счетам или ремонту для зачета ({currency}).",
   "@noEligiblePendingPayments": {
     "placeholders": {
       "currency": {

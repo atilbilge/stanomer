@@ -2622,11 +2622,11 @@ class AppLocalizationsSr extends AppLocalizations {
   String get settleExpenseSub => 'Izaberite način plaćanja ili prebijanja';
 
   @override
-  String get optionOffsetFromRent => 'Odbij od kirije / računa';
+  String get optionOffsetFromRent => 'Prebij sa dugom';
 
   @override
   String get optionOffsetFromRentDesc =>
-      'Automatski umanji ovaj iznos sa predstojeće kirije ili računa u istoj valuti';
+      'Automatski umanji ovaj iznos sa predstojeće kirije, računa ili troškova održavanja u istoj valuti';
 
   @override
   String get optionBankTransfer => 'Plati bankarskim transferom';
@@ -2646,7 +2646,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String noEligiblePendingPayments(String currency) {
-    return 'Nema odgovarajućih neplaćenih kirija ili računa u valuti $currency.';
+    return 'Nema odgovarajućih dugovanja kirije, računa ili održavanja za prebijanje ($currency).';
   }
 
   @override
@@ -5232,11 +5232,11 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get settleExpenseSub => 'Изаберите начин плаћања или пребијања';
 
   @override
-  String get optionOffsetFromRent => 'Одбиј од кирије / рачуна';
+  String get optionOffsetFromRent => 'Пребиј са дугом';
 
   @override
   String get optionOffsetFromRentDesc =>
-      'Аутоматски умањи овај износ са предстојеће кирије или рачуна у истој валути';
+      'Аутоматски умањи овај износ са предстојеће кирије, рачуна или трошкова одржавања у истој валути';
 
   @override
   String get optionBankTransfer => 'Плати банкарским трансфером';
@@ -5256,7 +5256,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String noEligiblePendingPayments(String currency) {
-    return 'Нема одговарајућих неплаћених кирија или рачуна у валути $currency.';
+    return 'Нема одговарајућих дуговања кирије, рачуна или одржавања за пребијање ($currency).';
   }
 
   @override
