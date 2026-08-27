@@ -1800,13 +1800,32 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       approverRoleName = loc.payerTenant;
     }
 
-    String targetPaidBy;
+    String targetPaidBy = request.paidBy ?? (isPayerTenant ? 'tenant' : 'landlord');
     String targetPaymentStatus;
     String detailMsg;
 
-    if (isLastDeclaredByTenant) {
+    if (isAgencyApproving) {
+      // Agency approving an expense:
+      if (targetPaidBy == 'landlord' || isPayerLandlord) {
+        // Landlord covers / tenant gets reimbursed or deducted from rent
+        targetPaidBy = 'landlord';
+        targetPaymentStatus = 'pending_payment';
+        detailMsg = '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})';
+      } else {
+        // Tenant responsibility
+        if (isLastDeclaredByTenant) {
+          targetPaidBy = 'tenant';
+          targetPaymentStatus = 'paid';
+          detailMsg = '${loc.coveredByTenant} (${loc.financialStatusPaid})';
+        } else {
+          targetPaidBy = 'tenant';
+          targetPaymentStatus = 'pending_payment';
+          detailMsg = '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
+        }
+      }
+    } else if (isLastDeclaredByTenant) {
       // Tenant declared the expense
-      if (isPayerLandlord) {
+      if (isPayerLandlord || targetPaidBy == 'landlord') {
         // Tenant requested landlord reimbursement (demirbaş / rent deduction)
         targetPaidBy = 'landlord';
         targetPaymentStatus = 'pending_payment';
@@ -1819,7 +1838,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       }
     } else {
       // Landlord declared the expense
-      if (isPayerLandlord) {
+      if (isPayerLandlord || targetPaidBy == 'landlord') {
         // Landlord covered demirbaş (closed)
         targetPaidBy = 'landlord';
         targetPaymentStatus = 'paid';
@@ -1853,6 +1872,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(maintenanceMessagesProvider(request.id));
+      ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(rentPaymentsProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1956,6 +1980,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(maintenanceMessagesProvider(request.id));
+      ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(rentPaymentsProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2643,6 +2672,11 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(maintenanceMessagesProvider(widget.request.id));
+      ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(rentPaymentsProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
 
       if (mounted) {
         Navigator.pop(context);

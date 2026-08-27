@@ -4079,6 +4079,26 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     bool canTenantPay = isTenant && isAddToRent && isPendingPayment;
     bool canTenantConfirm = isTenant && isDeductFromRent && isPendingReview;
 
+    final String amountDisplay;
+    final String settlementRoleLabel;
+
+    if (isPendingPayment) {
+      if (isDeductFromRent) {
+        amountDisplay = (isTenant ? '- ' : '') + formattedAmount;
+        settlementRoleLabel = isTenant
+            ? (loc.localeName == 'tr' ? 'Kiracı Alacağı (Kiradan Düşülecek)' : 'Tenant Credit (Deduct from rent)')
+            : (loc.localeName == 'tr' ? 'Ev Sahibi Borcu (Kiracıya Ödenecek / Mahsup)' : 'Landlord Debt (Reimburse to tenant)');
+      } else {
+        amountDisplay = (isTenant ? '+ ' : '') + formattedAmount;
+        settlementRoleLabel = isTenant
+            ? (loc.localeName == 'tr' ? 'Kiracı Borcu (Kiraya Eklenecek)' : 'Tenant Debt (Add to rent)')
+            : (loc.localeName == 'tr' ? 'Ev Sahibi Alacağı (Kiracıdan Tahsil)' : 'Landlord Credit (To collect from tenant)');
+      }
+    } else {
+      amountDisplay = formattedAmount;
+      settlementRoleLabel = '';
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: cardBgColor,
@@ -4119,7 +4139,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        (isDeductFromRent && isPendingPayment ? '- ' : (isAddToRent && isPendingPayment ? '+ ' : '')) + formattedAmount,
+                        amountDisplay,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
@@ -4133,7 +4153,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         children: [
                           Flexible(
                             child: Text(
-                              request.title,
+                              request.title + (settlementRoleLabel.isNotEmpty ? ' • $settlementRoleLabel' : ''),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
