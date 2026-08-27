@@ -2475,13 +2475,21 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
   String? _existingInvoiceUrl;
   PlatformFile? _selectedInvoiceFile;
   bool _isSaving = false;
+  String? _validationError;
 
   bool get _isDeclaration => widget.isTenantDeclaration || widget.isLandlordDeclaration;
+
+  void _clearValidationError() {
+    if (_validationError != null) {
+      setState(() => _validationError = null);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _noteController = TextEditingController();
+    _noteController.addListener(_clearValidationError);
     final isRejected = widget.request.paymentStatus == 'rejected';
     final isDifferentPayer = (widget.isLandlordDeclaration && widget.request.paidBy == 'tenant') ||
         (widget.isTenantDeclaration && widget.request.paidBy == 'landlord') ||
@@ -2496,6 +2504,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
       );
       _existingInvoiceUrl = widget.request.invoicePdfUrl;
     }
+    _costController.addListener(_clearValidationError);
 
     final initialCur = widget.request.currency ??
         (widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR');
@@ -2520,12 +2529,15 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
   @override
   void dispose() {
+    _costController.removeListener(_clearValidationError);
+    _noteController.removeListener(_clearValidationError);
     _costController.dispose();
     _noteController.dispose();
     super.dispose();
   }
 
   Future<void> _pickInvoicePdf() async {
+    _clearValidationError();
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
@@ -2540,10 +2552,12 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
   }
 
   void _removeSelectedInvoice() {
+    _clearValidationError();
     setState(() => _selectedInvoiceFile = null);
   }
 
   void _removeExistingInvoice() {
+    _clearValidationError();
     setState(() => _existingInvoiceUrl = null);
   }
 
@@ -2570,37 +2584,20 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
     if (_isDeclaration) {
       if (costAmount == null || costAmount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.pleaseEnterValidCost),
-            backgroundColor: StanomerColors.alertPrimary,
-          ),
-        );
+        setState(() => _validationError = loc.pleaseEnterValidCost);
         return;
       }
       if (_declarationIntent == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.pleaseSelectDeclarationIntent),
-            backgroundColor: StanomerColors.alertPrimary,
-          ),
-        );
+        setState(() => _validationError = loc.pleaseSelectDeclarationIntent);
         return;
       }
       if (_selectedInvoiceFile == null && (_existingInvoiceUrl == null || _existingInvoiceUrl!.isEmpty)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.pleaseUploadReceipt),
-            backgroundColor: StanomerColors.alertPrimary,
-          ),
-        );
+        setState(() => _validationError = loc.pleaseUploadReceipt);
         return;
       }
     } else {
       if (costText.isNotEmpty && (costAmount == null || costAmount < 0)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorWithDetails('Invalid cost amount')), backgroundColor: StanomerColors.alertPrimary),
-        );
+        setState(() => _validationError = loc.errorWithDetails('Invalid cost amount'));
         return;
       }
     }
@@ -2613,16 +2610,14 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
     final String finalPaymentStatus = _isDeclaration ? 'pending_review' : _paymentStatus;
 
     if (!_isDeclaration && (finalPaymentStatus == 'pending_payment' || finalPaymentStatus == 'paid') && costAmount != null && finalPaidBy == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.pleaseSelectCostPayer),
-          backgroundColor: StanomerColors.alertPrimary,
-        ),
-      );
+      setState(() => _validationError = loc.pleaseSelectCostPayer);
       return;
     }
 
-    setState(() => _isSaving = true);
+    setState(() {
+      _validationError = null;
+      _isSaving = true;
+    });
     try {
       String? invoicePdfUrl = _existingInvoiceUrl;
       if (_selectedInvoiceFile != null) {
@@ -2701,9 +2696,10 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorWithDetails(e.toString())), backgroundColor: StanomerColors.alertPrimary),
-        );
+        setState(() {
+          _isSaving = false;
+          _validationError = loc.errorWithDetails(e.toString());
+        });
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -3138,6 +3134,38 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
+
+            if (_validationError != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.alertCircle, color: Color(0xFFDC2626), size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _validationError!,
+                        style: const TextStyle(
+                          color: Color(0xFF991B1B),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _validationError = null),
+                      child: const Icon(LucideIcons.x, color: Color(0xFF991B1B), size: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             const SizedBox(height: 24),
             ElevatedButton(
