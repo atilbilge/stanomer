@@ -2753,7 +2753,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                         widget.isLandlordDeclaration
                             ? (widget.request.paymentStatus == 'rejected'
                                 ? (loc.localeName == 'tr' ? 'Yeni Masraf Tutarı Gir' : (loc.localeName == 'ru' ? 'Ввести новую сумму' : (loc.localeName.startsWith('sr') ? 'Unesi novi iznos troška' : 'Enter New Expense Amount')))
-                                : loc.enterExpenseAmount)
+                                : (loc.localeName == 'tr' ? 'Masraf Tutarı Belirle' : loc.editFinancialDetails))
                             : (_isDeclaration
                                 ? loc.iPaidSubmitReceipt
                                 : loc.editFinancialDetails),
