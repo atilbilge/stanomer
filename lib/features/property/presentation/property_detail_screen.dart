@@ -3681,9 +3681,23 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 ...eligiblePayments.map((p) {
                   final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(p.dueDate);
                   final costAmt = req.costAmount ?? 0;
-                  final newAmount = (p.amount - costAmt).clamp(0.0, double.infinity);
+                  final offsetAmt = costAmt < p.amount ? costAmt : p.amount;
+                  final remainingCredit = (costAmt - offsetAmt).clamp(0.0, double.infinity);
+                  final paymentNewAmount = (p.amount - offsetAmt).clamp(0.0, double.infinity);
+
                   final beforeStr = CurrencyUtils.formatAmount(p.amount, p.currency);
-                  final afterStr = CurrencyUtils.formatAmount(newAmount, p.currency);
+                  final afterStr = paymentNewAmount > 0
+                      ? CurrencyUtils.formatAmount(paymentNewAmount, p.currency)
+                      : (loc.localeName == 'tr' ? '0 ${p.currency} (Ödendi)' : '0 ${p.currency} (Paid)');
+                  final offsetStr = CurrencyUtils.formatAmount(offsetAmt, p.currency);
+
+                  final subtitleText = remainingCredit > 0
+                      ? (loc.localeName == 'tr'
+                          ? '$offsetStr mahsup edilecek • Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}'
+                          : '$offsetStr offset • Remaining credit: ${CurrencyUtils.formatAmount(remainingCredit, p.currency)}')
+                      : (loc.localeName == 'tr'
+                          ? '$offsetStr mahsup edilecek • Alacağın tamamı kullanılıyor'
+                          : '$offsetStr offset • Credit fully used');
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
@@ -3705,20 +3719,38 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       title: Text('${p.title} ($monthStr)', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
-                            const SizedBox(width: 6),
-                            const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
-                            const SizedBox(width: 6),
-                            Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                            Row(
+                              children: [
+                                Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                                const SizedBox(width: 6),
+                                const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
+                                const SizedBox(width: 6),
+                                Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitleText,
+                              style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
+                            ),
                           ],
                         ),
                       ),
                       trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
                       onTap: () async {
                         Navigator.pop(ctx);
-                        await _applyRentOffset(req, p, newAmount, formattedCost, loc);
+                        await _applyRentOffset(
+                          req,
+                          p,
+                          paymentNewAmount,
+                          offsetAmt,
+                          remainingCredit,
+                          offsetStr,
+                          loc,
+                        );
                       },
                     ),
                   );
@@ -3734,8 +3766,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   Future<void> _applyRentOffset(
     MaintenanceRequest req,
     RentPayment payment,
-    double newAmount,
-    String formattedCost,
+    double paymentNewAmount,
+    double offsetAmount,
+    double remainingCredit,
+    String formattedOffsetAmount,
     AppLocalizations loc,
   ) async {
     try {
@@ -3750,37 +3784,64 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
       final targetTitle = '${payment.title} ($monthStr)';
 
-      // 1. Update rent payment amount
-      await ref.read(propertyRepositoryProvider).setPaymentInvoice(
-        payment.id,
-        widget.property.id,
-        monthStr,
-        payment.dueDate,
-        newAmount,
-        payment.invoiceUrl,
-        currency: payment.currency,
-        ownerNote: '${CurrencyUtils.formatAmount(req.costAmount ?? 0, payment.currency)} ${loc.maintenanceSettlementsHeader} (${req.title})',
-        title: payment.title,
-      );
+      // 1. Update rent payment
+      final note = '${CurrencyUtils.formatAmount(offsetAmount, payment.currency)} ${loc.maintenanceSettlementsHeader} (${req.title}) mahsubu';
+      if (paymentNewAmount <= 0) {
+        // Fully paid via offset: keep original payment.amount so it's not treated as unentered 0, mark as paid
+        await ref.read(propertyRepositoryProvider).setPaymentInvoice(
+          payment.id,
+          widget.property.id,
+          monthStr,
+          payment.dueDate,
+          payment.amount,
+          payment.invoiceUrl,
+          currency: payment.currency,
+          ownerNote: note,
+          title: payment.title,
+        );
+        await ref.read(propertyRepositoryProvider).approveRentPayment(
+          payment.id,
+          widget.property.id,
+          monthStr,
+          payment.dueDate,
+        );
+      } else {
+        // Partially paid: remaining debt on payment row is paymentNewAmount
+        await ref.read(propertyRepositoryProvider).setPaymentInvoice(
+          payment.id,
+          widget.property.id,
+          monthStr,
+          payment.dueDate,
+          paymentNewAmount,
+          payment.invoiceUrl,
+          currency: payment.currency,
+          ownerNote: note,
+          title: payment.title,
+        );
+      }
 
-      // 2. Mark maintenance request as paid
+      // 2. Update maintenance request
+      final isFullySettled = remainingCredit <= 0;
       await ref.read(maintenanceRepositoryProvider).updateFinancialDetails(
         requestId: req.id,
         propertyId: widget.property.id,
-        costAmount: req.costAmount,
+        costAmount: isFullySettled ? req.costAmount : remainingCredit,
         currency: req.currency,
         paidBy: req.paidBy,
         paymentDate: DateTime.now(),
-        paymentStatus: 'paid',
+        paymentStatus: isFullySettled ? 'paid' : 'pending_payment',
         invoicePdfUrl: req.invoicePdfUrl,
       );
 
-      // 3. Post chat message
+      // 3. Post chat message in maintenance discussion
       try {
+        final remainingMsg = remainingCredit > 0
+            ? ' (Kalan alacak: ${CurrencyUtils.formatAmount(remainingCredit, req.currency ?? payment.currency)})'
+            : ' (Mahsuplaşma tamamlandı)';
         await ref.read(maintenanceRepositoryProvider).addMessage(
           req.id,
           widget.property.id,
-          loc.maintenanceOffsetActivityMsg(formattedCost, targetTitle),
+          loc.maintenanceOffsetActivityMsg(formattedOffsetAmount, targetTitle) + remainingMsg,
           photoUrl: req.invoicePdfUrl,
         );
       } catch (_) {}
@@ -3788,11 +3849,14 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(rentPaymentsProvider(widget.property.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(loc.offsetAppliedSuccess(formattedCost, targetTitle)),
+            content: Text(loc.offsetAppliedSuccess(formattedOffsetAmount, targetTitle)),
             backgroundColor: const Color(0xFF059669),
           ),
         );
