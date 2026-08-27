@@ -28,6 +28,7 @@ import '../../maintenance/domain/maintenance_request.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 import '../domain/rent_payment.dart';
 import '../domain/activity_log.dart';
+import '../../agency/presentation/agency_dashboard_screen.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
@@ -3701,57 +3702,61 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
+                    child: Material(
                       color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(LucideIcons.home, color: Color(0xFF2563EB), size: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
-                      title: Text('${p.title} ($monthStr)', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
-                                const SizedBox(width: 6),
-                                const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
-                                const SizedBox(width: 6),
-                                Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              subtitleText,
-                              style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
-                            ),
-                          ],
+                      clipBehavior: Clip.antiAlias,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(LucideIcons.home, color: Color(0xFF2563EB), size: 18),
                         ),
+                        title: Text('${p.title} ($monthStr)', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(beforeStr, style: const TextStyle(fontSize: 12, decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                                  const SizedBox(width: 6),
+                                  const Icon(LucideIcons.arrowRight, size: 12, color: Color(0xFF059669)),
+                                  const SizedBox(width: 6),
+                                  Text(afterStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                subtitleText,
+                                style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                        trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          await _applyRentOffset(
+                            req,
+                            p,
+                            paymentNewAmount,
+                            offsetAmt,
+                            remainingCredit,
+                            offsetStr,
+                            loc,
+                          );
+                        },
                       ),
-                      trailing: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
-                      onTap: () async {
-                        Navigator.pop(ctx);
-                        await _applyRentOffset(
-                          req,
-                          p,
-                          paymentNewAmount,
-                          offsetAmt,
-                          remainingCredit,
-                          offsetStr,
-                          loc,
-                        );
-                      },
                     ),
                   );
                 }),
