@@ -3704,7 +3704,6 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Material(
                       color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: const BorderSide(color: Color(0xFFE2E8F0)),
