@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../domain/maintenance_message.dart';
 import '../../../core/utils/stream_utils.dart';
@@ -91,13 +90,75 @@ class MaintenanceRepository {
     final contentType = extension == 'pdf' ? 'application/pdf' : 'image/$extension';
     final path = '${user.id}/${requestId}_${DateTime.now().millisecondsSinceEpoch}.$extension';
 
-    await _client.storage.from('maintenance').uploadBinary(
-          path,
-          bytes,
-          fileOptions: FileOptions(contentType: contentType),
-        );
+    // 1. Try 'maintenance-photos' bucket
+    try {
+      await _client.storage.from('maintenance-photos').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          );
+      return _client.storage.from('maintenance-photos').getPublicUrl(path);
+    } catch (e) {
+      // 2. Fallback to 'maintenance' bucket
+      try {
+        await _client.storage.from('maintenance').uploadBinary(
+              path,
+              bytes,
+              fileOptions: FileOptions(contentType: contentType),
+            );
+        return _client.storage.from('maintenance').getPublicUrl(path);
+      } catch (_) {
+        // 3. Fallback to 'property-photos' bucket
+        await _client.storage.from('property-photos').uploadBinary(
+              path,
+              bytes,
+              fileOptions: FileOptions(contentType: contentType),
+            );
+        return _client.storage.from('property-photos').getPublicUrl(path);
+      }
+    }
+  }
 
-    return _client.storage.from('maintenance').getPublicUrl(path);
+  Future<String> uploadMaintenanceInvoice({
+    required String propertyId,
+    required String requestId,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final extension = fileName.split('.').last.toLowerCase();
+    final contentType = extension == 'pdf' ? 'application/pdf' : 'image/$extension';
+    final path = '${user.id}/${propertyId}_${requestId}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+    // 1. Try 'invoices' bucket with user folder prefix
+    try {
+      await _client.storage.from('invoices').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          );
+      return _client.storage.from('invoices').getPublicUrl(path);
+    } catch (e) {
+      // 2. Fallback to 'maintenance' bucket
+      try {
+        await _client.storage.from('maintenance').uploadBinary(
+              path,
+              bytes,
+              fileOptions: FileOptions(contentType: contentType),
+            );
+        return _client.storage.from('maintenance').getPublicUrl(path);
+      } catch (_) {
+        // 3. Fallback to 'maintenance-photos' bucket
+        await _client.storage.from('maintenance-photos').uploadBinary(
+              path,
+              bytes,
+              fileOptions: FileOptions(contentType: contentType),
+            );
+        return _client.storage.from('maintenance-photos').getPublicUrl(path);
+      }
+    }
   }
 
   Future<void> createRequest({
@@ -108,6 +169,12 @@ class MaintenanceRepository {
     String? description,
     String? contractId,
     List<String>? photosUrls,
+    double? costAmount,
+    String? currency,
+    String? paidBy,
+    DateTime? paymentDate,
+    String? paymentStatus,
+    String? invoicePdfUrl,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
@@ -126,6 +193,24 @@ class MaintenanceRepository {
     if (photosUrls != null && photosUrls.isNotEmpty) {
       insertPayload['photos_urls'] = photosUrls;
       insertPayload['photo_urls'] = photosUrls;
+    }
+    if (costAmount != null) {
+      insertPayload['cost_amount'] = costAmount;
+    }
+    if (currency != null && currency.isNotEmpty) {
+      insertPayload['currency'] = currency;
+    }
+    if (paidBy != null && paidBy.isNotEmpty) {
+      insertPayload['paid_by'] = paidBy;
+    }
+    if (paymentDate != null) {
+      insertPayload['payment_date'] = paymentDate.toIso8601String();
+    }
+    if (paymentStatus != null && paymentStatus.isNotEmpty) {
+      insertPayload['payment_status'] = paymentStatus;
+    }
+    if (invoicePdfUrl != null && invoicePdfUrl.isNotEmpty) {
+      insertPayload['invoice_pdf_url'] = invoicePdfUrl;
     }
 
     Map<String, dynamic> data;
@@ -193,6 +278,45 @@ class MaintenanceRepository {
       } catch (e) {
         print('Error creating notification: $e');
       }
+    }
+  }
+
+  Future<void> updateFinancialDetails({
+    required String requestId,
+    required String propertyId,
+    double? costAmount,
+    String? currency,
+    String? paidBy,
+    DateTime? paymentDate,
+    String? paymentStatus,
+    String? invoicePdfUrl,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (costAmount != null) payload['cost_amount'] = costAmount;
+    if (currency != null) payload['currency'] = currency;
+    if (paidBy != null) payload['paid_by'] = paidBy;
+    if (paymentDate != null) payload['payment_date'] = paymentDate.toIso8601String();
+    if (paymentStatus != null) payload['payment_status'] = paymentStatus;
+    if (invoicePdfUrl != null) payload['invoice_pdf_url'] = invoicePdfUrl;
+
+    if (payload.isEmpty) return;
+
+    await _client
+        .from('maintenance_requests')
+        .update(payload)
+        .eq('id', requestId);
+
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_financials_updated',
+        metadata: {
+          'request_id': requestId,
+          ...payload,
+        },
+      );
+    } catch (e) {
+      print('Error logging activity: $e');
     }
   }
 

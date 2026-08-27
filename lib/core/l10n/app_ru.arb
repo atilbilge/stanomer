@@ -525,7 +525,7 @@
   "expenseDistribution": "Распределение расходов",
   "yourNote": "Ваш комментарий:",
   "backToDashboard": "На главную",
-  "propertyDetailsHeader": "ДЕТАЛИ ОБЪЕКТА",
+  "propertyDetailsHeader": "ИНФОРМАЦИЯ ОБ ОБЪЕКТЕ",
   "defaultLeaseTermsHeader": "УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ",
   "proposeRevision": "Предложить изменения",
   "revisionTermsQuestion": "Какие условия вы хотите изменить? (Аренда, день оплаты, счета...)",
@@ -872,5 +872,416 @@
   "noReferringAgency": "Нет Рекомендующего Агентства",
   "noReferringAgencyDesc": "Если вас рекомендовало агентство недвижимости, отсканируйте QR-код агентства для привязки аккаунта.",
   "scanAgencyReferralQrBtn": "Сканировать Referral QR-код Агентства",
-  "referralCodeLabel": "Реферальный Код"
+  "referralCodeLabel": "Реферальный Код",
+  "detailedEntry": "Расширенная информация",
+  "detailedEntrySubtitle": "Все характеристики объекта, структурные метрики и детали.",
+  "propertyAndLocationInfo": "Информация об объекте и локации",
+  "propertyTypeLabel": "Тип объекта",
+  "propertyTypeApartment": "Квартира",
+  "propertyTypeHouse": "Частный дом",
+  "propertyTypeCommercial": "Коммерческая",
+  "propertyTypeGarage": "Гараж",
+  "unitNumberLabel": "Номер квартиры / помещения",
+  "unitNumberHint": "Напр: 4 или 12B",
+  "addressDetailedHint": "Введите город, район или улицу...",
+  "structuralAndFinancialMetrics": "Структурные и финансовые метрики",
+  "roomCountLabel": "Количество комнат",
+  "areaSqmLabel": "Площадь (м²)",
+  "floorLevelLabel": "Этаж",
+  "totalFloorsLabel": "Всего этажей в здании",
+  "equipmentAndHeatingStandards": "Стандарты оснащения и отопления",
+  "furnishingLabel": "Меблировка",
+  "furnishingFurnished": "С мебелью",
+  "furnishingFurnishedDesc": "Полностью меблирована и укомплектована техникой",
+  "furnishingSemi": "Частично с мебелью",
+  "furnishingSemiDesc": "Только кухня и ванная комната",
+  "furnishingUnfurnished": "Без мебели",
+  "furnishingUnfurnishedDesc": "Пустая квартира",
+  "heatingTypeLabel": "Тип отопления",
+  "heatingCg": "Центральное отопление (CG)",
+  "heatingEg": "Индивидуальное электроотопление (EG)",
+  "heatingGas": "Газовое отопление / Котел",
+  "heatingUnderfloor": "Теплый пол",
+  "heatingTa": "Кондиционер / ТА печь / Другое",
+  "featuredAmenitiesLabel": "Дополнительные удобства",
+  "amenityPets": "Разрешены домашние животные",
+  "amenityElevator": "Лифт",
+  "amenityBalcony": "Терраса / Балкон / Лоджия",
+  "amenityParking": "Гараж / Парковочное место",
+  "amenityStorage": "Подвал / Кладовая",
+  "extendedDescriptionLabel": "Описание объекта и примечания",
+  "extendedDescriptionHint": "Укажите информацию о транспорте, здании, планировке и условиях...",
+  "clearFormBtn": "Очистить форму",
+  "floorSuteren": "Цокольный этаж",
+  "floorPrizemlje": "Первый этаж",
+  "floorVisokoPrizemlje": "Высокий 1-й этаж",
+  "floorNth": "{floor}-й этаж",
+  "@floorNth": {
+    "placeholders": {
+      "floor": {
+        "type": "String"
+      }
+    }
+  },
+  "floorPotkrovlje": "Мансарда",
+  "floorOther": "Другой этаж",
+  "statusOpen": "Открыто",
+  "statusInProgress": "Мастер отправлен",
+  "statusClosed": "Закрыто",
+  "statusPending": "В ожидании",
+  "statusCancelled": "Отменено",
+  "financialDetails": "Финансовые детали",
+  "financialStatusPendingReview": "На проверке",
+  "financialStatusPendingPayment": "Ожидает оплаты",
+  "financialStatusPaid": "Оплачено",
+  "financialStatusRejected": "Отклонено",
+  "payerTenant": "Арендатор",
+  "payerLandlord": "Владелец",
+  "payerTenantPaidOrWillPay": "Арендатор оплатил / оплатит",
+  "payerLandlordWillCover": "Владелец покроет",
+  "unassigned": "Не указано",
+  "noFinancialRecordTitle": "Нет финансовых записей",
+  "noFinancialRecordDesc": "По этой заявке на ремонт еще не добавлены расходы или чеки.",
+  "iPaidSubmitReceipt": "Я оплатил (Прикрепить чек)",
+  "resubmitExpenseIPaid": "Повторно заявить расход (Я оплатил)",
+  "addCostInvoice": "Добавить расход / счет",
+  "costPayerLabel": "Ответственный за оплату",
+  "receiptInvoiceDocument": "Чек / Счет",
+  "clickToViewDocument": "Нажмите для просмотра",
+  "agencyExpenseApproval": "Одобрение агентства",
+  "landlordExpenseApproval": "Одобрение владельца",
+  "tenantExpenseApproval": "Одобрение арендатора",
+  "expenseApprovedSuccess": "Расход успешно подтвержден.",
+  "expenseRejectedSuccess": "Заявка на расход отклонена.",
+  "rejectExpenseTitle": "Отклонить расход",
+  "rejectExpenseConfirm": "Вы уверены, что хотите отклонить эту заявку на расход?",
+  "rejectionReasonOptional": "Причина отказа (необязательно)",
+  "quickActions": "Быстрые действия",
+  "descriptionOrNoteOptional": "Описание / Примечание (необязательно)",
+  "enterExpenseNoteHint": "напр. Заменен смеситель, включая работу мастера",
+  "editFinancialDetails": "Редактировать финансовые данные",
+  "propertyInfo": "Информация об объекте",
+  "coveredByLandlord": "Покрыто владельцем",
+  "coveredByTenant": "Покрыто арендатором",
+  "landlordReimbursement": "Возмещение от владельца",
+  "tenantToPay": "Оплата арендатором",
+  "landlordReimburseDesc": "Арендатор оплатил заранее. Владелец возместит или вычтет из следующей аренды.",
+  "tenantToPayDesc": "Расход закреплен за арендатором. Сумма будет включена в следующую аренду.",
+  "coveredByLandlordClosedDesc": "Покрыто как основные расходы на имущество и закрыто.",
+  "coveredByTenantClosedDesc": "Покрыто как эксплуатационный расход арендатора и закрыто.",
+  "reEditFinancials": "Редактировать расходы",
+  "expenseRejectedDesc": "Ранее поданная заявка на расход была отклонена. Вы можете отправить повторно с исправленной суммой и чеком.",
+  "agencyManager": "Менеджер агентства",
+  "actorStatusInvestigating": "🔍 {actor} взял заявку на рассмотрение.",
+  "@actorStatusInvestigating": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusInProgress": "🔧 {actor} направил мастера, работы ведутся.",
+  "@actorStatusInProgress": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusResolved": "✅ {actor} отметил проблему как решенную.",
+  "@actorStatusResolved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusClosed": "🔒 {actor} закрыл заявку.",
+  "@actorStatusClosed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusReopened": "🔄 {actor} повторно открыл заявку. Проблема сохраняется.",
+  "@actorStatusReopened": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorMarkedActive": "📋 {actor} перевел заявку в статус активной.",
+  "@actorMarkedActive": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorUpdatedStatus": "📌 {actor} обновил статус: {status}",
+  "@actorUpdatedStatus": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "submitExpenseReview": "Отправить расход (На проверку)",
+  "saveChanges": "Сохранить изменения",
+  "pleaseEnterValidCost": "Пожалуйста, укажите корректную сумму оплаты.",
+  "pleaseUploadReceipt": "Пожалуйста, прикрепите чек или счет.",
+  "pleaseSelectCostPayer": "Пожалуйста, выберите ответственного за оплату.",
+  "noteLabel": "Примечание",
+  "amountPaid": "Сумма оплаты",
+  "costAmount": "Сумма расхода",
+  "costResponsibility": "Ответственный за расход",
+  "paymentInvoiceStatus": "Статус оплаты и счета",
+  "paymentDueDate": "Дата оплаты / срок",
+  "noDate": "Дата не выбрана",
+  "uploadReceiptInvoice": "Загрузить чек / счет (PDF, Изображение)",
+  "uploadInvoiceDoc": "Загрузить счет",
+  "existingDocument": "Сохраненный документ",
+  "change": "Изменить",
+  "enterAmountAttachReceipt": "Укажите сумму и прикрепите чек.",
+  "declaredAmountTitle": "Заявленная сумма: {amount} • Выберите ответственного за оплату:",
+  "@declaredAmountTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseApprovalResponsibility": "Одобрение расхода и ответственность",
+  "landlordCoveredPaidTitle": "Покрыто владельцем (Отметить как оплачено)",
+  "landlordCoveredPaidSub": "Расход относится к владельцу (основные расходы). Возмещение не требуется, закрыто как оплачено.",
+  "landlordCoveredPaidBadge": "Оплачено • Владелец",
+  "tenantWillPayTitle": "Оплачивает арендатор (Добавить к аренде)",
+  "tenantWillPaySub": "Расход возник по вине/использованию арендатора. Добавляется к аренде.",
+  "tenantWillPayBadge": "Ожидает оплаты • Долг арендатора",
+  "tenantPaidMarkAsPaidTitle": "Арендатор оплатил (Отметить как оплачено)",
+  "tenantPaidMarkAsPaidSub": "Поломка возникла при использовании арендатором. Закрыто как оплачено без возмещения.",
+  "tenantPaidMarkAsPaidBadge": "Оплачено • Использование арендатора",
+  "landlordReimbursesTitle": "Владелец возмещает (Вычесть из аренды)",
+  "landlordReimbursesSub": "Расход на имущество, оплаченный арендатором. Владелец возмещает или вычитает из аренды.",
+  "landlordReimbursesBadge": "Ожидает оплаты • Вычет из аренды",
+  "propertyManagedByAgencyNotice": "Объект находится под управлением агентства. Только агентство может редактировать финансовые данные.",
+  "agencyExpenseApprovedMsg": "✅ Расход подтвержден: {amount} (Подтвердил {actor} • {details})",
+  "@agencyExpenseApprovedMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "agencyExpenseRejectedMsg": "❌ Заявка на расход отклонена {actor}",
+  "@agencyExpenseRejectedMsg": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonLabel": "Причина: {reason}",
+  "@reasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "roleYou": "Вы",
+  "roleUser": "Пользователь",
+  "landlordDeclaredExpenseSubtitle": "Владелец заявил расход в размере {amount}. Вы можете одобрить или отклонить расход.",
+  "@landlordDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantDeclaredExpenseSubtitle": "Арендатор заявил расход в размере {amount}. Вы можете одобрить или отклонить расход.",
+  "@tenantDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseSubmittedForLandlordReview": "Заявленный расход отправлен на проверку владельцу.",
+  "expenseSubmittedForTenantReview": "Заявленный расход отправлен на проверку арендатору.",
+  "tblRequestProperty": "Заявка и объект",
+  "tblPriority": "Приоритет",
+  "tblIssueStatus": "Статус проблемы",
+  "tblCostPayer": "Расход и плательщик",
+  "tblFinancialStatus": "Финансовый статус",
+  "tblDate": "Дата",
+  "dueDatePrefix": "Срок",
+  "edit": "Редактировать",
+  "update": "Обновить",
+  "paymentDate": "Дата оплаты",
+  "profileUpdated": "Успешно сохранено.",
+  "agencyPropertyTakeoverTitle": "Принять объект, добавленный агентством",
+  "agencyPropertyTakeoverDesc": "Добавьте объект, введенный агентством, в свой аккаунт, отсканировав QR-код или введя код приглашения.",
+  "scanQrOrEnterInviteCodeBtn": "Сканировать QR-код / Ввести код",
+  "settlementIntentTitle": "Цель оплаты и взаиморасчет",
+  "intentTenantSelfTitle": "Оплатил за личное пользование (Поломка при эксплуатации)",
+  "intentTenantSelfSub": "Сумма остается на мне. Возмещение не требуется, закрыть как оплачено.",
+  "intentTenantSelfBadge": "Оплачено • Личный расход",
+  "intentTenantReimburseTitle": "Оплатил за имущество/ремонт (От имени владельца)",
+  "intentTenantReimburseSub": "Оплатил авансом за основные фонды. Прошу вычесть из аренды или возместить.",
+  "intentTenantReimburseBadge": "Вычесть из аренды",
+  "intentLandlordSelfTitle": "Покрыл за имущество/ремонт (Расход владельца)",
+  "intentLandlordSelfSub": "Расходы владельца. С арендатора не удерживается, закрыть как оплачено.",
+  "intentLandlordSelfBadge": "Оплачено • Владелец",
+  "intentLandlordTenantDueTitle": "Оплатил за поломку по вине арендатора",
+  "intentLandlordTenantDueSub": "Поломка возникла при использовании арендатором. Прошу добавить к следующей аренде.",
+  "intentLandlordTenantDueBadge": "Добавить к аренде",
+  "pleaseSelectDeclarationIntent": "Пожалуйста, выберите цель оплаты и вариант взаиморасчета.",
+  "confirmTenantReimburseApprovalTitle": "Подтверждение вычета из аренды",
+  "confirmTenantReimburseApprovalMsg": "Вы подтверждаете, что расход арендатора на сумму {amount} относится к имуществу и будет вычтен из следующей аренды?",
+  "@confirmTenantReimburseApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmTenantSelfApprovalTitle": "Подтверждение личного расхода",
+  "confirmTenantSelfApprovalMsg": "Вы подтверждаете, что арендатор оплатил расход на сумму {amount} самостоятельно и заявка закрывается как оплаченная?",
+  "@confirmTenantSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordSelfApprovalTitle": "Подтверждение расхода владельца",
+  "confirmLandlordSelfApprovalMsg": "Вы подтверждаете, что владелец покрыл расход на сумму {amount} и заявка закрывается как оплаченная?",
+  "@confirmLandlordSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordTenantDueApprovalTitle": "Подтверждение добавления к аренде",
+  "confirmLandlordTenantDueApprovalMsg": "Вы подтверждаете, что заявленный расход на сумму {amount} возник при вашем использовании и будет добавлен к вашей следующей аренде?",
+  "@confirmLandlordTenantDueApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "declaredIntentLabel": "Запрос взаиморасчета: {intent}",
+  "@declaredIntentLabel": {
+    "placeholders": {
+      "intent": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceSettlementsHeader": "Взаиморасчеты по ремонту и расходам",
+  "maintenanceSettlementsSub": "Утвержденные расходы на ремонт к вычету или добавлению к аренде",
+  "deductFromRentBadge": "К вычету из аренды",
+  "addToRentBadge": "К оплате с арендой",
+  "markAsSettledBtn": "Отметить как зачтено / оплачено",
+  "confirmSettlementTitle": "Закрыть взаиморасчет",
+  "confirmSettlementMsg": "Подтверждаете, что расход на ремонт на сумму {amount} зачтен/оплачен и расчет закрыт?",
+  "@confirmSettlementMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementRecordedSuccess": "Взаиморасчет по ремонту успешно закрыт.",
+  "goToMaintenanceRequest": "Открыть заявку",
+  "maintenanceSettlementActivityMsg": "💰 Расход на ремонт ({amount}) отмечен как зачтенный/оплаченный ({role}).",
+  "@maintenanceSettlementActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "settleExpenseTitle": "Урегулирование расходов на ремонт",
+  "settleExpenseSub": "Выберите способ оплаты или взаимозачета",
+  "optionOffsetFromRent": "Зачесть в счет аренды / счетов",
+  "optionOffsetFromRentDesc": "Автоматически вычесть эту сумму из ожидающего платежа аренды или счета в той же валюте",
+  "optionBankTransfer": "Оплатить банковским переводом",
+  "optionBankTransferDesc": "Загрузить квитанцию об оплате и отправить на подтверждение",
+  "optionCashPayment": "Оплатить наличными",
+  "optionCashPaymentDesc": "Подтвердить передачу наличными",
+  "selectRentToOffset": "Выберите платеж для зачета",
+  "noEligiblePendingPayments": "Не найдено подходящих неоплаченных счетов или аренды в валюте {currency}.",
+  "@noEligiblePendingPayments": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "offsetAppliedSuccess": "Сумма {amount} успешно зачтена из платежа {paymentTitle}.",
+  "@offsetAppliedSuccess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmReceiptBtn": "Оплату получил / Подтвердить",
+  "waitingForRecipientApproval": "Ожидается подтверждение второй стороны",
+  "iPaidBtn": "Оплачено / Загрузить чек",
+  "iPaidCashBtn": "Оплачено наличными",
+  "maintenanceCashPaidActivityMsg": "💵 {role} заявил об оплате расходов на ремонт ({amount}) наличными. Ожидается подтверждение.",
+  "@maintenanceCashPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceBankPaidActivityMsg": "📄 {role} заявил об оплате расходов на ремонт ({amount}) банковским переводом (Квитанция приложена). Ожидается подтверждение.",
+  "@maintenanceBankPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceOffsetActivityMsg": "🏠 Расход на ремонт ({amount}) зачтен из платежа {paymentTitle}.",
+  "@maintenanceOffsetActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  }
 }

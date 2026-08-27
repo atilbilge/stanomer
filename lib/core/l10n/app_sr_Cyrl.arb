@@ -523,7 +523,7 @@
   "expenseDistribution": "Расподела трошкова",
   "yourNote": "Ваша белешка:",
   "backToDashboard": "Назад на контролну таблу",
-  "propertyDetailsHeader": "ДЕТАЉИ НЕКРЕТНИНЕ",
+  "propertyDetailsHeader": "ИНФОРМАЦИЈЕ О НЕКРЕТНИНИ",
   "defaultLeaseTermsHeader": "ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА",
   "proposeRevision": "Предложите измене",
   "revisionTermsQuestion": "Које одредбе уговора желите да измените? (Кирију, дан плаћања, рачуне...)",
@@ -870,5 +870,416 @@
   "noReferringAgency": "Немате Препоручену Агенцију",
   "noReferringAgencyDesc": "Ако вас је препоручила агенција за некретнине, скенирајте КР код ваше агенције да повежете налог.",
   "scanAgencyReferralQrBtn": "Скенирај Реферрал КР Код Агенције",
-  "referralCodeLabel": "Реферрал Код"
+  "referralCodeLabel": "Реферрал Код",
+  "detailedEntry": "Напредне информације",
+  "detailedEntrySubtitle": "Сви детаљи о некретнини, структурне метрике и параметри огласа.",
+  "propertyAndLocationInfo": "Информације о Некретнини и Локацији",
+  "propertyTypeLabel": "Тип Некретнине",
+  "propertyTypeApartment": "Стан",
+  "propertyTypeHouse": "Кућа",
+  "propertyTypeCommercial": "Пословни Простор",
+  "propertyTypeGarage": "Гаража",
+  "unitNumberLabel": "Број Стана / Јединице",
+  "unitNumberHint": "Нпр: 4 или 12Б",
+  "addressDetailedHint": "Унесите град, општину, насеље или улицу...",
+  "structuralAndFinancialMetrics": "Структурне и Финансијске Метрике",
+  "roomCountLabel": "Структура (Број Соба)",
+  "areaSqmLabel": "Површина",
+  "floorLevelLabel": "Спрат",
+  "totalFloorsLabel": "Укупно Спратова у Згради",
+  "equipmentAndHeatingStandards": "Стандарди Опреме и Грејања",
+  "furnishingLabel": "Намештеност",
+  "furnishingFurnished": "Намештен",
+  "furnishingFurnishedDesc": "Комплетно Намештен",
+  "furnishingSemi": "Полунамештен",
+  "furnishingSemiDesc": "Само Кухиња и Купатило",
+  "furnishingUnfurnished": "Ненамештен",
+  "furnishingUnfurnishedDesc": "Празан / Без Намештаја",
+  "heatingTypeLabel": "Тип Грејања",
+  "heatingCg": "ЦГ (Централно грејање)",
+  "heatingEg": "ЕГ (Етажно грејање - струја)",
+  "heatingGas": "Гас (Гасно грејање)",
+  "heatingUnderfloor": "Подно грејање",
+  "heatingTa": "ТА Пећ / Клима / Мермерни радијатори",
+  "featuredAmenitiesLabel": "Додатне Погодности (Додатно)",
+  "amenityPets": "Дозвољени кућни љубимци",
+  "amenityElevator": "Лифт",
+  "amenityBalcony": "Тераса / Балкон / Лођа",
+  "amenityParking": "Гаража / Паркинг место",
+  "amenityStorage": "Подрум / Остава",
+  "extendedDescriptionLabel": "Опис Некретнине (Детаљи)",
+  "extendedDescriptionHint": "Унесите детаље о превозу, згради, оријентацији и условима...",
+  "clearFormBtn": "Обриши Форму",
+  "floorSuteren": "Сутерен (СУТ)",
+  "floorPrizemlje": "Приземље (ПР)",
+  "floorVisokoPrizemlje": "Високо приземље (ВПР)",
+  "floorNth": "{floor}. спрат",
+  "@floorNth": {
+    "placeholders": {
+      "floor": {
+        "type": "String"
+      }
+    }
+  },
+  "floorPotkrovlje": "Поткровље (ПК)",
+  "floorOther": "Остали спратови",
+  "statusOpen": "Отворено",
+  "statusInProgress": "Послат мајстор",
+  "statusClosed": "Затворено",
+  "statusPending": "На чекању",
+  "statusCancelled": "Отказано",
+  "financialDetails": "Финансијски Детаљи",
+  "financialStatusPendingReview": "Чека преглед",
+  "financialStatusPendingPayment": "Чека уплату",
+  "financialStatusPaid": "Плаћено",
+  "financialStatusRejected": "Одбијено",
+  "payerTenant": "Станар",
+  "payerLandlord": "Власник",
+  "payerTenantPaidOrWillPay": "Станар сноси / платио",
+  "payerLandlordWillCover": "Власник ће покрити",
+  "unassigned": "Није додељено",
+  "noFinancialRecordTitle": "Нема финансијског записа",
+  "noFinancialRecordDesc": "За овај захтев за одржавање још увек није унет трошак или рачун.",
+  "iPaidSubmitReceipt": "Ја сам платио (Приложи рачун)",
+  "resubmitExpenseIPaid": "Поново пријави трошак (Ја сам платио)",
+  "addCostInvoice": "Додај трошак / рачун",
+  "costPayerLabel": "Одговоран за трошак",
+  "receiptInvoiceDocument": "Рачун / Фискални рачун",
+  "clickToViewDocument": "Кликните за преглед документа",
+  "agencyExpenseApproval": "Одобрење трошка од агенције",
+  "landlordExpenseApproval": "Одобрење трошка од власника",
+  "tenantExpenseApproval": "Одобрење трошка од станара",
+  "expenseApprovedSuccess": "Трошак је успешно одобрен.",
+  "expenseRejectedSuccess": "Пријава трошка је одбијена.",
+  "rejectExpenseTitle": "Одбиј трошак",
+  "rejectExpenseConfirm": "Да ли сте сигурни да желите да одбијете пријављени трошак?",
+  "rejectionReasonOptional": "Разлог одбијања (опционо)",
+  "quickActions": "Брзе Радње",
+  "descriptionOrNoteOptional": "Опис / Напомена (Опционо)",
+  "enterExpenseNoteHint": "нпр. Замењен вентил у кухињи, укључујући рад мајстора",
+  "editFinancialDetails": "Измени финансијске детаље",
+  "propertyInfo": "Информације о Некретнини",
+  "coveredByLandlord": "Власник је покрио",
+  "coveredByTenant": "Станар је покрио",
+  "landlordReimbursement": "Рефундација од власника",
+  "tenantToPay": "Станар плаћа",
+  "landlordReimburseDesc": "Станар је платио унапред. Власник ће рефундирати или умањити следећу кирију.",
+  "tenantToPayDesc": "Трошак сноси станар. Износ ће бити додат на следећу кирију.",
+  "coveredByLandlordClosedDesc": "Покривено као инвестиционо одржавање и затворено.",
+  "coveredByTenantClosedDesc": "Покривено као текуће одржавање станара и затворено.",
+  "reEditFinancials": "Поново измени финансије",
+  "expenseRejectedDesc": "Претходно пријављени трошак није одобрен. Можете поново послати са тачним износом и рачуном.",
+  "agencyManager": "Менаџер агенције",
+  "actorStatusInvestigating": "🔍 {actor} је преузео захтев на преглед.",
+  "@actorStatusInvestigating": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusInProgress": "🔧 {actor} је послао мајстора, радови су у току.",
+  "@actorStatusInProgress": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusResolved": "✅ {actor} је означио захтев као решен.",
+  "@actorStatusResolved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusClosed": "🔒 {actor} је затворио захтев.",
+  "@actorStatusClosed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusReopened": "🔄 {actor} је поново отворио захтев. Problem i dalje postoji.",
+  "@actorStatusReopened": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorMarkedActive": "📋 {actor} је поставио захтев у активан статус.",
+  "@actorMarkedActive": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorUpdatedStatus": "📌 {actor} је ажурирао статус: {status}",
+  "@actorUpdatedStatus": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "submitExpenseReview": "Пријави трошак (Пошаљи на преглед)",
+  "saveChanges": "Сачувај измене",
+  "pleaseEnterValidCost": "Молимо унесите важећи плаћени износ.",
+  "pleaseUploadReceipt": "Молимо приложите рачун или уплатницу.",
+  "pleaseSelectCostPayer": "Молимо изаберите ко сноси трошак.",
+  "noteLabel": "Напомена",
+  "amountPaid": "Плаћени износ",
+  "costAmount": "Износ трошка",
+  "costResponsibility": "Одговоран за трошак",
+  "paymentInvoiceStatus": "Статус уплате и рачуна",
+  "paymentDueDate": "Датум уплате / доспелости",
+  "noDate": "Нема датума",
+  "uploadReceiptInvoice": "Приложи рачун / уплатницу (PDF, Слика)",
+  "uploadInvoiceDoc": "Приложи фактуру",
+  "existingDocument": "Постојећи документ",
+  "change": "Промени",
+  "enterAmountAttachReceipt": "Унесите плаћени износ и приложите рачун.",
+  "declaredAmountTitle": "Пријављени износ: {amount} • Изаберите коначну одговорност за трошак:",
+  "@declaredAmountTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseApprovalResponsibility": "Одобрење трошка и одговорност",
+  "landlordCoveredPaidTitle": "Власник је покрио (Означи као плаћено)",
+  "landlordCoveredPaidSub": "Трошак је на власнику (инвестиционо одржавање). Нема рефундације, затвара се као плаћено.",
+  "landlordCoveredPaidBadge": "Плаћено • Власник",
+  "tenantWillPayTitle": "Станар плаћа (Додати на кирију)",
+  "tenantWillPaySub": "Трошак је настао употребом станара. Износ се додаје на кирију.",
+  "tenantWillPayBadge": "Чека уплату • Дуг станара",
+  "tenantPaidMarkAsPaidTitle": "Станар је платио (Означи као плаћено)",
+  "tenantPaidMarkAsPaidSub": "Квар је настао употребом станара. Износ остаје на станару, затворено као плаћено.",
+  "tenantPaidMarkAsPaidBadge": "Плаћено • Употреба станара",
+  "landlordReimbursesTitle": "Власник рефундира (Одбити од кирије)",
+  "landlordReimbursesSub": "Трошак инвестиционог одржавања који је платио станар. Власник рефундира или умањује кирију.",
+  "landlordReimbursesBadge": "Чека уплату • Одбитак од кирије",
+  "propertyManagedByAgencyNotice": "Некретнином управља агенција. Само агенција може мењати финансијске податке.",
+  "agencyExpenseApprovedMsg": "✅ Трошак одобрен: {amount} (Одобрио {actor} • {details})",
+  "@agencyExpenseApprovedMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "agencyExpenseRejectedMsg": "❌ Пријаву трошка је одбио {actor}",
+  "@agencyExpenseRejectedMsg": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonLabel": "Разлог: {reason}",
+  "@reasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "roleYou": "Ви",
+  "roleUser": "Корисник",
+  "landlordDeclaredExpenseSubtitle": "Власник је пријавио трошак од {amount}. Можете одобрити или одбити трошак.",
+  "@landlordDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantDeclaredExpenseSubtitle": "Станар је пријавио трошак од {amount}. Можете одобрити или одбити трошак.",
+  "@tenantDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseSubmittedForLandlordReview": "Пријављени трошак је послат власнику на преглед.",
+  "expenseSubmittedForTenantReview": "Пријављени трошак је послат станару на преглед.",
+  "tblRequestProperty": "Захтев & Некретнина",
+  "tblPriority": "Приоритет",
+  "tblIssueStatus": "Статус квара",
+  "tblCostPayer": "Трошак & Платилац",
+  "tblFinancialStatus": "Финансијски статус",
+  "tblDate": "Датум",
+  "dueDatePrefix": "Рок",
+  "edit": "Уреди",
+  "update": "Ажурирај",
+  "paymentDate": "Датум уплате",
+  "profileUpdated": "Успешно сачувано.",
+  "agencyPropertyTakeoverTitle": "Преузми некретнину додату од агенције",
+  "agencyPropertyTakeoverDesc": "Додајте некретнину коју је унела агенција на свој налог скенирањем QR кода или уносом позивног кода.",
+  "scanQrOrEnterInviteCodeBtn": "Скенирај QR код / Унеси код позивнице",
+  "settlementIntentTitle": "Сврха плаћања и обрачун",
+  "intentTenantSelfTitle": "Платио сам за сопствену употребу (Квар услед коришћења)",
+  "intentTenantSelfSub": "Трошак остаје на мени. Не тражим рефундацију, затвара се као плаћено.",
+  "intentTenantSelfBadge": "Плаћено • Лични трошак",
+  "intentTenantReimburseTitle": "Платио сам за инвестиционо одржавање (У име власника)",
+  "intentTenantReimburseSub": "Предујмио сам трошак демирбаша. Молим одбитак од следеће кирије или рефундацију.",
+  "intentTenantReimburseBadge": "Одбитак од кирије",
+  "intentLandlordSelfTitle": "Покрио сам за инвестиционо одржавање (Демирбаш)",
+  "intentLandlordSelfSub": "Трошак је на власнику. Не потражује се од станара, затвара се као плаћено.",
+  "intentLandlordSelfBadge": "Плаћено • Власник",
+  "intentLandlordTenantDueTitle": "Платио сам за квар услед употребе станара",
+  "intentLandlordTenantDueSub": "Квар је настао употребом станара. Износ се додаје на следећу кирију станара.",
+  "intentLandlordTenantDueBadge": "Дуг станара",
+  "pleaseSelectDeclarationIntent": "Молимо изаберите сврху плаћања и предлог обрачуна.",
+  "confirmTenantReimburseApprovalTitle": "Одобрење одбитка од кирије",
+  "confirmTenantReimburseApprovalMsg": "Потврђујете ли да станар има право на рефундацију од {amount} за инвестиционо одржавање и да се износ одбије од следеће кирије?",
+  "@confirmTenantReimburseApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmTenantSelfApprovalTitle": "Потврда личног трошка станара",
+  "confirmTenantSelfApprovalMsg": "Потврђујете ли да је станар платио трошак употребе од {amount} и да се захтев затвори као плаћен без рефундације?",
+  "@confirmTenantSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordSelfApprovalTitle": "Потврда трошка власника",
+  "confirmLandlordSelfApprovalMsg": "Потврђујете ли да је власник покрио инвестициони трошак од {amount} и да се захтев затвори као плаћен?",
+  "@confirmLandlordSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordTenantDueApprovalTitle": "Одобрење трошка задужења",
+  "confirmLandlordTenantDueApprovalMsg": "Потврђујете ли да је трошак од {amount} настао вашом употребом и да се дода на вашу следећу кирију?",
+  "@confirmLandlordTenantDueApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "declaredIntentLabel": "Предлог обрачуна: {intent}",
+  "@declaredIntentLabel": {
+    "placeholders": {
+      "intent": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceSettlementsHeader": "Обрачун одржавања и кварова",
+  "maintenanceSettlementsSub": "Одобрени трошкови одржавања који се одбијају или додају на кирију",
+  "deductFromRentBadge": "Одбија се од кирије",
+  "addToRentBadge": "Додаје се на кирију",
+  "markAsSettledBtn": "Означи као поравнато / плаћено",
+  "confirmSettlementTitle": "Затвори обрачун",
+  "confirmSettlementMsg": "Да ли потврђујете да је трошак одржавања од {amount} поравнат/плаћен и да треба затворити ставку?",
+  "@confirmSettlementMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementRecordedSuccess": "Обрачун одржавања је успешно затворен.",
+  "goToMaintenanceRequest": "Отвори захтев",
+  "maintenanceSettlementActivityMsg": "💰 Трошак одржавања ({amount}) је означен као поравнат/плаћен од стране {role}.",
+  "@maintenanceSettlementActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "settleExpenseTitle": "Поравнање трошкова одржавања",
+  "settleExpenseSub": "Изаберите начин плаћања или пребијања",
+  "optionOffsetFromRent": "Одбиј од кирије / рачуна",
+  "optionOffsetFromRentDesc": "Аутоматски умањи овај износ са предстојеће кирије или рачуна у истој валути",
+  "optionBankTransfer": "Плати банкарским трансфером",
+  "optionBankTransferDesc": "Приложите уплатницу и пошаљите на потврду",
+  "optionCashPayment": "Плати у готовини",
+  "optionCashPaymentDesc": "Пријавите да је плаћено у готовини",
+  "selectRentToOffset": "Изаберите ставку за пребијање",
+  "noEligiblePendingPayments": "Нема одговарајућих неплаћених кирија или рачуна у валути {currency}.",
+  "@noEligiblePendingPayments": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "offsetAppliedSuccess": "Износ од {amount} је успешно пребијен са ставке {paymentTitle}.",
+  "@offsetAppliedSuccess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmReceiptBtn": "Примио сам уплату / Потврди",
+  "waitingForRecipientApproval": "Чека се потврда друге стране",
+  "iPaidBtn": "Платио сам / Приложи уплатницу",
+  "iPaidCashBtn": "Плаћено у готовини",
+  "maintenanceCashPaidActivityMsg": "💵 {role} је пријавио плаћање трошка одржавања од {amount} у готовини. Чека се потврда.",
+  "@maintenanceCashPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceBankPaidActivityMsg": "📄 {role} је пријавио плаћање трошка одржавања од {amount} преко банке (Уплатница приложена). Чека се потврда.",
+  "@maintenanceBankPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceOffsetActivityMsg": "🏠 Трошак одржавања од {amount} је пребијен са ставке {paymentTitle}.",
+  "@maintenanceOffsetActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  }
 }

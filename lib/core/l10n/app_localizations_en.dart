@@ -732,7 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusActive => 'Active';
 
   @override
-  String get statusPending => 'Pending Approval';
+  String get statusPending => 'Pending';
 
   @override
   String get statusDeclined => 'Declined';
@@ -1155,7 +1155,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToDashboard => 'Back to Dashboard';
 
   @override
-  String get propertyDetailsHeader => 'PROPERTY DETAILS';
+  String get propertyDetailsHeader => 'PROPERTY INFO';
 
   @override
   String get defaultLeaseTermsHeader => 'DEFAULT LEASE TERMS';
@@ -1983,4 +1983,703 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get referralCodeLabel => 'Referral Code';
+
+  @override
+  String get detailedEntry => 'Advanced Info';
+
+  @override
+  String get detailedEntrySubtitle =>
+      'All property specifications, structural metrics and details.';
+
+  @override
+  String get propertyAndLocationInfo => 'Property & Location Information';
+
+  @override
+  String get propertyTypeLabel => 'Property Type';
+
+  @override
+  String get propertyTypeApartment => 'Apartment';
+
+  @override
+  String get propertyTypeHouse => 'House';
+
+  @override
+  String get propertyTypeCommercial => 'Commercial';
+
+  @override
+  String get propertyTypeGarage => 'Garage';
+
+  @override
+  String get unitNumberLabel => 'Unit / Flat No';
+
+  @override
+  String get unitNumberHint => 'e.g. 4 or 12B';
+
+  @override
+  String get addressDetailedHint =>
+      'Enter city, district, neighborhood or street...';
+
+  @override
+  String get structuralAndFinancialMetrics => 'Structural & Financial Metrics';
+
+  @override
+  String get roomCountLabel => 'Room Count';
+
+  @override
+  String get areaSqmLabel => 'Area';
+
+  @override
+  String get floorLevelLabel => 'Floor Level';
+
+  @override
+  String get totalFloorsLabel => 'Total Building Floors';
+
+  @override
+  String get equipmentAndHeatingStandards => 'Equipment & Heating Standards';
+
+  @override
+  String get furnishingLabel => 'Furnishing Status';
+
+  @override
+  String get furnishingFurnished => 'Furnished';
+
+  @override
+  String get furnishingFurnishedDesc => 'Fully Furnished';
+
+  @override
+  String get furnishingSemi => 'Semi-Furnished';
+
+  @override
+  String get furnishingSemiDesc => 'Kitchen/Bathroom only';
+
+  @override
+  String get furnishingUnfurnished => 'Unfurnished';
+
+  @override
+  String get furnishingUnfurnishedDesc => 'Unfurnished';
+
+  @override
+  String get heatingTypeLabel => 'Heating Type';
+
+  @override
+  String get heatingCg => 'District / Central Heating';
+
+  @override
+  String get heatingEg => 'Individual Electric Heating';
+
+  @override
+  String get heatingGas => 'Natural Gas';
+
+  @override
+  String get heatingUnderfloor => 'Underfloor Heating';
+
+  @override
+  String get heatingTa => 'Storage Heater / AC / Other';
+
+  @override
+  String get featuredAmenitiesLabel => 'Featured Amenities';
+
+  @override
+  String get amenityPets => 'Pet Friendly';
+
+  @override
+  String get amenityElevator => 'Elevator';
+
+  @override
+  String get amenityBalcony => 'Balcony / Terrace';
+
+  @override
+  String get amenityParking => 'Garage / Parking Space';
+
+  @override
+  String get amenityStorage => 'Storage / Basement';
+
+  @override
+  String get extendedDescriptionLabel => 'Extended Description';
+
+  @override
+  String get extendedDescriptionHint =>
+      'Enter info on transport, building age, layout and special conditions...';
+
+  @override
+  String get clearFormBtn => 'Clear Form';
+
+  @override
+  String get floorSuteren => 'Semi-Basement';
+
+  @override
+  String get floorPrizemlje => 'Ground Floor';
+
+  @override
+  String get floorVisokoPrizemlje => 'Raised Ground Floor';
+
+  @override
+  String floorNth(String floor) {
+    return 'Floor $floor';
+  }
+
+  @override
+  String get floorPotkrovlje => 'Attic / Top Floor';
+
+  @override
+  String get floorOther => 'Other';
+
+  @override
+  String get statusOpen => 'Open';
+
+  @override
+  String get statusInProgress => 'Technician Sent';
+
+  @override
+  String get statusClosed => 'Closed';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
+  String get financialDetails => 'Financial Details';
+
+  @override
+  String get financialStatusPendingReview => 'Pending Review';
+
+  @override
+  String get financialStatusPendingPayment => 'Pending Payment';
+
+  @override
+  String get financialStatusPaid => 'Paid';
+
+  @override
+  String get financialStatusRejected => 'Rejected';
+
+  @override
+  String get payerTenant => 'Tenant';
+
+  @override
+  String get payerLandlord => 'Landlord';
+
+  @override
+  String get payerTenantPaidOrWillPay => 'Tenant Paid / To Pay';
+
+  @override
+  String get payerLandlordWillCover => 'Landlord to Cover';
+
+  @override
+  String get unassigned => 'Unassigned';
+
+  @override
+  String get noFinancialRecordTitle => 'No Financial Record';
+
+  @override
+  String get noFinancialRecordDesc =>
+      'No cost or receipt document has been entered for this maintenance request.';
+
+  @override
+  String get iPaidSubmitReceipt => 'I Paid (Submit Receipt)';
+
+  @override
+  String get resubmitExpenseIPaid => 'Resubmit Expense (I Paid)';
+
+  @override
+  String get addCostInvoice => 'Add Cost / Invoice';
+
+  @override
+  String get costPayerLabel => 'Cost Payer';
+
+  @override
+  String get receiptInvoiceDocument => 'Receipt / Invoice Document';
+
+  @override
+  String get clickToViewDocument => 'Click to view document';
+
+  @override
+  String get agencyExpenseApproval => 'Agency Approval';
+
+  @override
+  String get landlordExpenseApproval => 'Landlord Approval';
+
+  @override
+  String get tenantExpenseApproval => 'Tenant Approval';
+
+  @override
+  String get expenseApprovedSuccess => 'Expense approved successfully.';
+
+  @override
+  String get expenseRejectedSuccess => 'Expense declaration rejected.';
+
+  @override
+  String get rejectExpenseTitle => 'Reject Expense';
+
+  @override
+  String get rejectExpenseConfirm =>
+      'Are you sure you want to reject this expense declaration?';
+
+  @override
+  String get rejectionReasonOptional => 'Reason (optional)';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get descriptionOrNoteOptional => 'Description / Note (Optional)';
+
+  @override
+  String get enterExpenseNoteHint =>
+      'e.g. Replaced leaking valve, technician fee included';
+
+  @override
+  String get editFinancialDetails => 'Edit Financial Details';
+
+  @override
+  String get propertyInfo => 'Property Info';
+
+  @override
+  String get coveredByLandlord => 'Covered by Landlord';
+
+  @override
+  String get coveredByTenant => 'Covered by Tenant';
+
+  @override
+  String get landlordReimbursement => 'Landlord Reimbursement';
+
+  @override
+  String get tenantToPay => 'Tenant to Pay';
+
+  @override
+  String get landlordReimburseDesc =>
+      'Tenant paid in advance. Landlord will reimburse or deduct from next rent.';
+
+  @override
+  String get tenantToPayDesc =>
+      'Assigned to tenant. Amount will be collected with next rent.';
+
+  @override
+  String get coveredByLandlordClosedDesc =>
+      'Covered as property fixture and closed.';
+
+  @override
+  String get coveredByTenantClosedDesc =>
+      'Covered as usage expense and closed.';
+
+  @override
+  String get reEditFinancials => 'Re-edit Financials';
+
+  @override
+  String get expenseRejectedDesc =>
+      'Previously submitted expense was rejected. You can resubmit with corrected amount and receipt.';
+
+  @override
+  String get agencyManager => 'Agency Manager';
+
+  @override
+  String actorStatusInvestigating(String actor) {
+    return '🔍 $actor marked the request as under investigation.';
+  }
+
+  @override
+  String actorStatusInProgress(String actor) {
+    return '🔧 $actor dispatched a technician, work is in progress.';
+  }
+
+  @override
+  String actorStatusResolved(String actor) {
+    return '✅ $actor marked the issue as resolved.';
+  }
+
+  @override
+  String actorStatusClosed(String actor) {
+    return '🔒 $actor closed the request.';
+  }
+
+  @override
+  String actorStatusReopened(String actor) {
+    return '🔄 $actor reopened the request. Issue persists.';
+  }
+
+  @override
+  String actorMarkedActive(String actor) {
+    return '📋 $actor set the request status to active.';
+  }
+
+  @override
+  String actorUpdatedStatus(String actor, String status) {
+    return '📌 $actor updated the status: $status';
+  }
+
+  @override
+  String get submitExpenseReview => 'Submit Expense (Send for Review)';
+
+  @override
+  String get pleaseEnterValidCost => 'Please enter the valid amount paid.';
+
+  @override
+  String get pleaseUploadReceipt =>
+      'Please upload a receipt or invoice document.';
+
+  @override
+  String get pleaseSelectCostPayer => 'Please select who pays.';
+
+  @override
+  String get noteLabel => 'Note';
+
+  @override
+  String get amountPaid => 'Amount Paid';
+
+  @override
+  String get costAmount => 'Cost Amount';
+
+  @override
+  String get costResponsibility => 'Cost Responsibility';
+
+  @override
+  String get paymentInvoiceStatus => 'Payment & Invoice Status';
+
+  @override
+  String get paymentDueDate => 'Payment / Due Date';
+
+  @override
+  String get noDate => 'No date';
+
+  @override
+  String get uploadReceiptInvoice => 'Upload Receipt / Invoice (PDF, Image)';
+
+  @override
+  String get uploadInvoiceDoc => 'Upload Invoice Document';
+
+  @override
+  String get existingDocument => 'Existing Document';
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String get enterAmountAttachReceipt =>
+      'Enter amount paid and attach receipt.';
+
+  @override
+  String declaredAmountTitle(String amount) {
+    return 'Declared Amount: $amount • Please select final cost responsibility:';
+  }
+
+  @override
+  String get expenseApprovalResponsibility =>
+      'Expense Approval & Responsibility';
+
+  @override
+  String get landlordCoveredPaidTitle => 'Landlord Covered (Mark as Paid)';
+
+  @override
+  String get landlordCoveredPaidSub =>
+      'Expense belongs to landlord. No reimbursement needed, closed as paid.';
+
+  @override
+  String get landlordCoveredPaidBadge => 'Paid • Landlord';
+
+  @override
+  String get tenantWillPayTitle => 'Tenant Will Pay (Add to Rent)';
+
+  @override
+  String get tenantWillPaySub =>
+      'Damage/cost caused by tenant usage. Added to rent as due payment.';
+
+  @override
+  String get tenantWillPayBadge => 'Pending Payment • Tenant Due';
+
+  @override
+  String get tenantPaidMarkAsPaidTitle => 'Tenant Paid (Mark as Paid)';
+
+  @override
+  String get tenantPaidMarkAsPaidSub =>
+      'Expense caused by tenant usage. Marked as paid by tenant with no reimbursement.';
+
+  @override
+  String get tenantPaidMarkAsPaidBadge => 'Paid • Tenant Usage';
+
+  @override
+  String get landlordReimbursesTitle =>
+      'Landlord Reimburses (Deduct from Rent)';
+
+  @override
+  String get landlordReimbursesSub =>
+      'Demirbaş expense paid in advance by tenant. Landlord reimburses or deducts from rent.';
+
+  @override
+  String get landlordReimbursesBadge => 'Pending Payment • Rent Deduction';
+
+  @override
+  String get propertyManagedByAgencyNotice =>
+      'Property is managed by an agency. Only the agency can edit financial details.';
+
+  @override
+  String agencyExpenseApprovedMsg(String amount, String actor, String details) {
+    return '✅ Expense approved: $amount (Approved by $actor • $details)';
+  }
+
+  @override
+  String agencyExpenseRejectedMsg(String actor) {
+    return '❌ Expense declaration rejected by $actor';
+  }
+
+  @override
+  String reasonLabel(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get roleYou => 'You';
+
+  @override
+  String get roleUser => 'User';
+
+  @override
+  String landlordDeclaredExpenseSubtitle(String amount) {
+    return 'Landlord declared $amount expense. You can approve or reject.';
+  }
+
+  @override
+  String tenantDeclaredExpenseSubtitle(String amount) {
+    return 'Tenant declared $amount expense. You can approve or reject.';
+  }
+
+  @override
+  String get expenseSubmittedForLandlordReview =>
+      'Your submitted expense is waiting for landlord review.';
+
+  @override
+  String get expenseSubmittedForTenantReview =>
+      'Your submitted expense is waiting for tenant review.';
+
+  @override
+  String get tblRequestProperty => 'Request & Property';
+
+  @override
+  String get tblPriority => 'Priority';
+
+  @override
+  String get tblIssueStatus => 'Issue Status';
+
+  @override
+  String get tblCostPayer => 'Cost & Payer';
+
+  @override
+  String get tblFinancialStatus => 'Financial Status';
+
+  @override
+  String get tblDate => 'Date';
+
+  @override
+  String get dueDatePrefix => 'Due';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get paymentDate => 'Payment Date';
+
+  @override
+  String get profileUpdated => 'Saved successfully.';
+
+  @override
+  String get agencyPropertyTakeoverTitle =>
+      'Take Over Property Added by Agency';
+
+  @override
+  String get agencyPropertyTakeoverDesc =>
+      'Add the property entered by the agency to your account by scanning a QR code or entering an invite code.';
+
+  @override
+  String get scanQrOrEnterInviteCodeBtn => 'Scan QR Code / Enter Invite Code';
+
+  @override
+  String get settlementIntentTitle => 'Payment Purpose & Settlement Request';
+
+  @override
+  String get intentTenantSelfTitle =>
+      'I Paid for My Own Usage (Tenant Usage Damage)';
+
+  @override
+  String get intentTenantSelfSub =>
+      'Amount stays with me. No rent deduction requested, close as paid.';
+
+  @override
+  String get intentTenantSelfBadge => 'Paid • Tenant Cost';
+
+  @override
+  String get intentTenantReimburseTitle =>
+      'I Paid for Property Fixture (Demirbaş)';
+
+  @override
+  String get intentTenantReimburseSub =>
+      'I paid fixture repair in advance. Please deduct from next rent or reimburse.';
+
+  @override
+  String get intentTenantReimburseBadge => 'Deduct from Rent';
+
+  @override
+  String get intentLandlordSelfTitle =>
+      'I Covered for Property Fixture (Demirbaş)';
+
+  @override
+  String get intentLandlordSelfSub =>
+      'Fixture cost covered by landlord. No tenant reimbursement requested, close as paid.';
+
+  @override
+  String get intentLandlordSelfBadge => 'Paid • Landlord';
+
+  @override
+  String get intentLandlordTenantDueTitle => 'I Paid for Tenant Usage / Damage';
+
+  @override
+  String get intentLandlordTenantDueSub =>
+      'Damage caused by tenant usage. Please add amount to tenant\'s next rent.';
+
+  @override
+  String get intentLandlordTenantDueBadge => 'Add to Rent';
+
+  @override
+  String get pleaseSelectDeclarationIntent =>
+      'Please select the purpose of payment and settlement request.';
+
+  @override
+  String get confirmTenantReimburseApprovalTitle => 'Rent Deduction Approval';
+
+  @override
+  String confirmTenantReimburseApprovalMsg(String amount) {
+    return 'Do you confirm tenant\'s $amount fixture expense and that it will be deducted from next rent?';
+  }
+
+  @override
+  String get confirmTenantSelfApprovalTitle => 'Usage Expense Confirmation';
+
+  @override
+  String confirmTenantSelfApprovalMsg(String amount) {
+    return 'Do you confirm that the tenant covered their $amount usage expense and to close the request as paid without reimbursement?';
+  }
+
+  @override
+  String get confirmLandlordSelfApprovalTitle =>
+      'Landlord Fixture Confirmation';
+
+  @override
+  String confirmLandlordSelfApprovalMsg(String amount) {
+    return 'Do you confirm that the landlord directly covered the $amount fixture expense and to close the request as paid?';
+  }
+
+  @override
+  String get confirmLandlordTenantDueApprovalTitle => 'Add to Rent Approval';
+
+  @override
+  String confirmLandlordTenantDueApprovalMsg(String amount) {
+    return 'Do you confirm that the declared $amount expense was caused by your usage and will be added to your next rent?';
+  }
+
+  @override
+  String declaredIntentLabel(String intent) {
+    return 'Settlement Request: $intent';
+  }
+
+  @override
+  String get maintenanceSettlementsHeader => 'Maintenance & Repair Settlements';
+
+  @override
+  String get maintenanceSettlementsSub =>
+      'Approved maintenance expenses to be deducted from or added to rent';
+
+  @override
+  String get deductFromRentBadge => 'Deduct from Rent';
+
+  @override
+  String get addToRentBadge => 'Add to Rent';
+
+  @override
+  String get markAsSettledBtn => 'Mark as Settled / Paid';
+
+  @override
+  String get confirmSettlementTitle => 'Close Settlement';
+
+  @override
+  String confirmSettlementMsg(String amount) {
+    return 'Do you confirm that the maintenance expense of $amount has been settled/paid and should be closed?';
+  }
+
+  @override
+  String get settlementRecordedSuccess =>
+      'Maintenance settlement closed successfully.';
+
+  @override
+  String get goToMaintenanceRequest => 'View Request';
+
+  @override
+  String maintenanceSettlementActivityMsg(String amount, String role) {
+    return '💰 Maintenance expense ($amount) marked as settled/paid by $role.';
+  }
+
+  @override
+  String get settleExpenseTitle => 'Maintenance Expense Settlement';
+
+  @override
+  String get settleExpenseSub => 'Choose payment or deduction method';
+
+  @override
+  String get optionOffsetFromRent => 'Deduct from Rent / Bill';
+
+  @override
+  String get optionOffsetFromRentDesc =>
+      'Automatically deduct this amount from a pending rent or bill in the same currency';
+
+  @override
+  String get optionBankTransfer => 'Pay via Bank Transfer';
+
+  @override
+  String get optionBankTransferDesc =>
+      'Upload payment receipt and send for confirmation';
+
+  @override
+  String get optionCashPayment => 'Pay in Cash';
+
+  @override
+  String get optionCashPaymentDesc => 'Declare as handed over in cash';
+
+  @override
+  String get selectRentToOffset => 'Select Item to Offset';
+
+  @override
+  String noEligiblePendingPayments(String currency) {
+    return 'No eligible pending rent or bill found in $currency.';
+  }
+
+  @override
+  String offsetAppliedSuccess(String amount, String paymentTitle) {
+    return '$amount was successfully offset from $paymentTitle.';
+  }
+
+  @override
+  String get confirmReceiptBtn => 'I Received Payment / Confirm';
+
+  @override
+  String get waitingForRecipientApproval =>
+      'Waiting for recipient\'s confirmation';
+
+  @override
+  String get iPaidBtn => 'I Paid / Upload Receipt';
+
+  @override
+  String get iPaidCashBtn => 'I Paid in Cash';
+
+  @override
+  String maintenanceCashPaidActivityMsg(String role, String amount) {
+    return '💵 $role declared paying $amount maintenance expense in cash. Awaiting confirmation.';
+  }
+
+  @override
+  String maintenanceBankPaidActivityMsg(String role, String amount) {
+    return '📄 $role declared paying $amount maintenance expense via bank transfer (Receipt attached). Awaiting confirmation.';
+  }
+
+  @override
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
+    return '🏠 $amount maintenance expense was offset from $paymentTitle.';
+  }
 }

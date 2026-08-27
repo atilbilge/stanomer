@@ -121,7 +121,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get newPassword => 'Новый пароль';
 
   @override
-  String get saveChanges => 'Сохранить';
+  String get saveChanges => 'Сохранить изменения';
 
   @override
   String get passwordChangedSuccess => 'Пароль успешно обновлен';
@@ -741,7 +741,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusActive => 'Активно';
 
   @override
-  String get statusPending => 'На проверке';
+  String get statusPending => 'В ожидании';
 
   @override
   String get statusDeclined => 'Отклонено';
@@ -1167,7 +1167,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get backToDashboard => 'На главную';
 
   @override
-  String get propertyDetailsHeader => 'ДЕТАЛИ ОБЪЕКТА';
+  String get propertyDetailsHeader => 'ИНФОРМАЦИЯ ОБ ОБЪЕКТЕ';
 
   @override
   String get defaultLeaseTermsHeader => 'УСЛОВИЯ АРЕНДЫ ПО УМОЛЧАНИЮ';
@@ -1994,4 +1994,711 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get referralCodeLabel => 'Реферальный Код';
+
+  @override
+  String get detailedEntry => 'Расширенная информация';
+
+  @override
+  String get detailedEntrySubtitle =>
+      'Все характеристики объекта, структурные метрики и детали.';
+
+  @override
+  String get propertyAndLocationInfo => 'Информация об объекте и локации';
+
+  @override
+  String get propertyTypeLabel => 'Тип объекта';
+
+  @override
+  String get propertyTypeApartment => 'Квартира';
+
+  @override
+  String get propertyTypeHouse => 'Частный дом';
+
+  @override
+  String get propertyTypeCommercial => 'Коммерческая';
+
+  @override
+  String get propertyTypeGarage => 'Гараж';
+
+  @override
+  String get unitNumberLabel => 'Номер квартиры / помещения';
+
+  @override
+  String get unitNumberHint => 'Напр: 4 или 12B';
+
+  @override
+  String get addressDetailedHint => 'Введите город, район или улицу...';
+
+  @override
+  String get structuralAndFinancialMetrics =>
+      'Структурные и финансовые метрики';
+
+  @override
+  String get roomCountLabel => 'Количество комнат';
+
+  @override
+  String get areaSqmLabel => 'Площадь (м²)';
+
+  @override
+  String get floorLevelLabel => 'Этаж';
+
+  @override
+  String get totalFloorsLabel => 'Всего этажей в здании';
+
+  @override
+  String get equipmentAndHeatingStandards => 'Стандарты оснащения и отопления';
+
+  @override
+  String get furnishingLabel => 'Меблировка';
+
+  @override
+  String get furnishingFurnished => 'С мебелью';
+
+  @override
+  String get furnishingFurnishedDesc =>
+      'Полностью меблирована и укомплектована техникой';
+
+  @override
+  String get furnishingSemi => 'Частично с мебелью';
+
+  @override
+  String get furnishingSemiDesc => 'Только кухня и ванная комната';
+
+  @override
+  String get furnishingUnfurnished => 'Без мебели';
+
+  @override
+  String get furnishingUnfurnishedDesc => 'Пустая квартира';
+
+  @override
+  String get heatingTypeLabel => 'Тип отопления';
+
+  @override
+  String get heatingCg => 'Центральное отопление (CG)';
+
+  @override
+  String get heatingEg => 'Индивидуальное электроотопление (EG)';
+
+  @override
+  String get heatingGas => 'Газовое отопление / Котел';
+
+  @override
+  String get heatingUnderfloor => 'Теплый пол';
+
+  @override
+  String get heatingTa => 'Кондиционер / ТА печь / Другое';
+
+  @override
+  String get featuredAmenitiesLabel => 'Дополнительные удобства';
+
+  @override
+  String get amenityPets => 'Разрешены домашние животные';
+
+  @override
+  String get amenityElevator => 'Лифт';
+
+  @override
+  String get amenityBalcony => 'Терраса / Балкон / Лоджия';
+
+  @override
+  String get amenityParking => 'Гараж / Парковочное место';
+
+  @override
+  String get amenityStorage => 'Подвал / Кладовая';
+
+  @override
+  String get extendedDescriptionLabel => 'Описание объекта и примечания';
+
+  @override
+  String get extendedDescriptionHint =>
+      'Укажите информацию о транспорте, здании, планировке и условиях...';
+
+  @override
+  String get clearFormBtn => 'Очистить форму';
+
+  @override
+  String get floorSuteren => 'Цокольный этаж';
+
+  @override
+  String get floorPrizemlje => 'Первый этаж';
+
+  @override
+  String get floorVisokoPrizemlje => 'Высокий 1-й этаж';
+
+  @override
+  String floorNth(String floor) {
+    return '$floor-й этаж';
+  }
+
+  @override
+  String get floorPotkrovlje => 'Мансарда';
+
+  @override
+  String get floorOther => 'Другой этаж';
+
+  @override
+  String get statusOpen => 'Открыто';
+
+  @override
+  String get statusInProgress => 'Мастер отправлен';
+
+  @override
+  String get statusClosed => 'Закрыто';
+
+  @override
+  String get statusCancelled => 'Отменено';
+
+  @override
+  String get financialDetails => 'Финансовые детали';
+
+  @override
+  String get financialStatusPendingReview => 'На проверке';
+
+  @override
+  String get financialStatusPendingPayment => 'Ожидает оплаты';
+
+  @override
+  String get financialStatusPaid => 'Оплачено';
+
+  @override
+  String get financialStatusRejected => 'Отклонено';
+
+  @override
+  String get payerTenant => 'Арендатор';
+
+  @override
+  String get payerLandlord => 'Владелец';
+
+  @override
+  String get payerTenantPaidOrWillPay => 'Арендатор оплатил / оплатит';
+
+  @override
+  String get payerLandlordWillCover => 'Владелец покроет';
+
+  @override
+  String get unassigned => 'Не указано';
+
+  @override
+  String get noFinancialRecordTitle => 'Нет финансовых записей';
+
+  @override
+  String get noFinancialRecordDesc =>
+      'По этой заявке на ремонт еще не добавлены расходы или чеки.';
+
+  @override
+  String get iPaidSubmitReceipt => 'Я оплатил (Прикрепить чек)';
+
+  @override
+  String get resubmitExpenseIPaid => 'Повторно заявить расход (Я оплатил)';
+
+  @override
+  String get addCostInvoice => 'Добавить расход / счет';
+
+  @override
+  String get costPayerLabel => 'Ответственный за оплату';
+
+  @override
+  String get receiptInvoiceDocument => 'Чек / Счет';
+
+  @override
+  String get clickToViewDocument => 'Нажмите для просмотра';
+
+  @override
+  String get agencyExpenseApproval => 'Одобрение агентства';
+
+  @override
+  String get landlordExpenseApproval => 'Одобрение владельца';
+
+  @override
+  String get tenantExpenseApproval => 'Одобрение арендатора';
+
+  @override
+  String get expenseApprovedSuccess => 'Расход успешно подтвержден.';
+
+  @override
+  String get expenseRejectedSuccess => 'Заявка на расход отклонена.';
+
+  @override
+  String get rejectExpenseTitle => 'Отклонить расход';
+
+  @override
+  String get rejectExpenseConfirm =>
+      'Вы уверены, что хотите отклонить эту заявку на расход?';
+
+  @override
+  String get rejectionReasonOptional => 'Причина отказа (необязательно)';
+
+  @override
+  String get quickActions => 'Быстрые действия';
+
+  @override
+  String get descriptionOrNoteOptional =>
+      'Описание / Примечание (необязательно)';
+
+  @override
+  String get enterExpenseNoteHint =>
+      'напр. Заменен смеситель, включая работу мастера';
+
+  @override
+  String get editFinancialDetails => 'Редактировать финансовые данные';
+
+  @override
+  String get propertyInfo => 'Информация об объекте';
+
+  @override
+  String get coveredByLandlord => 'Покрыто владельцем';
+
+  @override
+  String get coveredByTenant => 'Покрыто арендатором';
+
+  @override
+  String get landlordReimbursement => 'Возмещение от владельца';
+
+  @override
+  String get tenantToPay => 'Оплата арендатором';
+
+  @override
+  String get landlordReimburseDesc =>
+      'Арендатор оплатил заранее. Владелец возместит или вычтет из следующей аренды.';
+
+  @override
+  String get tenantToPayDesc =>
+      'Расход закреплен за арендатором. Сумма будет включена в следующую аренду.';
+
+  @override
+  String get coveredByLandlordClosedDesc =>
+      'Покрыто как основные расходы на имущество и закрыто.';
+
+  @override
+  String get coveredByTenantClosedDesc =>
+      'Покрыто как эксплуатационный расход арендатора и закрыто.';
+
+  @override
+  String get reEditFinancials => 'Редактировать расходы';
+
+  @override
+  String get expenseRejectedDesc =>
+      'Ранее поданная заявка на расход была отклонена. Вы можете отправить повторно с исправленной суммой и чеком.';
+
+  @override
+  String get agencyManager => 'Менеджер агентства';
+
+  @override
+  String actorStatusInvestigating(String actor) {
+    return '🔍 $actor взял заявку на рассмотрение.';
+  }
+
+  @override
+  String actorStatusInProgress(String actor) {
+    return '🔧 $actor направил мастера, работы ведутся.';
+  }
+
+  @override
+  String actorStatusResolved(String actor) {
+    return '✅ $actor отметил проблему как решенную.';
+  }
+
+  @override
+  String actorStatusClosed(String actor) {
+    return '🔒 $actor закрыл заявку.';
+  }
+
+  @override
+  String actorStatusReopened(String actor) {
+    return '🔄 $actor повторно открыл заявку. Проблема сохраняется.';
+  }
+
+  @override
+  String actorMarkedActive(String actor) {
+    return '📋 $actor перевел заявку в статус активной.';
+  }
+
+  @override
+  String actorUpdatedStatus(String actor, String status) {
+    return '📌 $actor обновил статус: $status';
+  }
+
+  @override
+  String get submitExpenseReview => 'Отправить расход (На проверку)';
+
+  @override
+  String get pleaseEnterValidCost =>
+      'Пожалуйста, укажите корректную сумму оплаты.';
+
+  @override
+  String get pleaseUploadReceipt => 'Пожалуйста, прикрепите чек или счет.';
+
+  @override
+  String get pleaseSelectCostPayer =>
+      'Пожалуйста, выберите ответственного за оплату.';
+
+  @override
+  String get noteLabel => 'Примечание';
+
+  @override
+  String get amountPaid => 'Сумма оплаты';
+
+  @override
+  String get costAmount => 'Сумма расхода';
+
+  @override
+  String get costResponsibility => 'Ответственный за расход';
+
+  @override
+  String get paymentInvoiceStatus => 'Статус оплаты и счета';
+
+  @override
+  String get paymentDueDate => 'Дата оплаты / срок';
+
+  @override
+  String get noDate => 'Дата не выбрана';
+
+  @override
+  String get uploadReceiptInvoice => 'Загрузить чек / счет (PDF, Изображение)';
+
+  @override
+  String get uploadInvoiceDoc => 'Загрузить счет';
+
+  @override
+  String get existingDocument => 'Сохраненный документ';
+
+  @override
+  String get change => 'Изменить';
+
+  @override
+  String get enterAmountAttachReceipt => 'Укажите сумму и прикрепите чек.';
+
+  @override
+  String declaredAmountTitle(String amount) {
+    return 'Заявленная сумма: $amount • Выберите ответственного за оплату:';
+  }
+
+  @override
+  String get expenseApprovalResponsibility =>
+      'Одобрение расхода и ответственность';
+
+  @override
+  String get landlordCoveredPaidTitle =>
+      'Покрыто владельцем (Отметить как оплачено)';
+
+  @override
+  String get landlordCoveredPaidSub =>
+      'Расход относится к владельцу (основные расходы). Возмещение не требуется, закрыто как оплачено.';
+
+  @override
+  String get landlordCoveredPaidBadge => 'Оплачено • Владелец';
+
+  @override
+  String get tenantWillPayTitle => 'Оплачивает арендатор (Добавить к аренде)';
+
+  @override
+  String get tenantWillPaySub =>
+      'Расход возник по вине/использованию арендатора. Добавляется к аренде.';
+
+  @override
+  String get tenantWillPayBadge => 'Ожидает оплаты • Долг арендатора';
+
+  @override
+  String get tenantPaidMarkAsPaidTitle =>
+      'Арендатор оплатил (Отметить как оплачено)';
+
+  @override
+  String get tenantPaidMarkAsPaidSub =>
+      'Поломка возникла при использовании арендатором. Закрыто как оплачено без возмещения.';
+
+  @override
+  String get tenantPaidMarkAsPaidBadge => 'Оплачено • Использование арендатора';
+
+  @override
+  String get landlordReimbursesTitle =>
+      'Владелец возмещает (Вычесть из аренды)';
+
+  @override
+  String get landlordReimbursesSub =>
+      'Расход на имущество, оплаченный арендатором. Владелец возмещает или вычитает из аренды.';
+
+  @override
+  String get landlordReimbursesBadge => 'Ожидает оплаты • Вычет из аренды';
+
+  @override
+  String get propertyManagedByAgencyNotice =>
+      'Объект находится под управлением агентства. Только агентство может редактировать финансовые данные.';
+
+  @override
+  String agencyExpenseApprovedMsg(String amount, String actor, String details) {
+    return '✅ Расход подтвержден: $amount (Подтвердил $actor • $details)';
+  }
+
+  @override
+  String agencyExpenseRejectedMsg(String actor) {
+    return '❌ Заявка на расход отклонена $actor';
+  }
+
+  @override
+  String reasonLabel(String reason) {
+    return 'Причина: $reason';
+  }
+
+  @override
+  String get roleYou => 'Вы';
+
+  @override
+  String get roleUser => 'Пользователь';
+
+  @override
+  String landlordDeclaredExpenseSubtitle(String amount) {
+    return 'Владелец заявил расход в размере $amount. Вы можете одобрить или отклонить расход.';
+  }
+
+  @override
+  String tenantDeclaredExpenseSubtitle(String amount) {
+    return 'Арендатор заявил расход в размере $amount. Вы можете одобрить или отклонить расход.';
+  }
+
+  @override
+  String get expenseSubmittedForLandlordReview =>
+      'Заявленный расход отправлен на проверку владельцу.';
+
+  @override
+  String get expenseSubmittedForTenantReview =>
+      'Заявленный расход отправлен на проверку арендатору.';
+
+  @override
+  String get tblRequestProperty => 'Заявка и объект';
+
+  @override
+  String get tblPriority => 'Приоритет';
+
+  @override
+  String get tblIssueStatus => 'Статус проблемы';
+
+  @override
+  String get tblCostPayer => 'Расход и плательщик';
+
+  @override
+  String get tblFinancialStatus => 'Финансовый статус';
+
+  @override
+  String get tblDate => 'Дата';
+
+  @override
+  String get dueDatePrefix => 'Срок';
+
+  @override
+  String get edit => 'Редактировать';
+
+  @override
+  String get update => 'Обновить';
+
+  @override
+  String get paymentDate => 'Дата оплаты';
+
+  @override
+  String get profileUpdated => 'Успешно сохранено.';
+
+  @override
+  String get agencyPropertyTakeoverTitle =>
+      'Принять объект, добавленный агентством';
+
+  @override
+  String get agencyPropertyTakeoverDesc =>
+      'Добавьте объект, введенный агентством, в свой аккаунт, отсканировав QR-код или введя код приглашения.';
+
+  @override
+  String get scanQrOrEnterInviteCodeBtn => 'Сканировать QR-код / Ввести код';
+
+  @override
+  String get settlementIntentTitle => 'Цель оплаты и взаиморасчет';
+
+  @override
+  String get intentTenantSelfTitle =>
+      'Оплатил за личное пользование (Поломка при эксплуатации)';
+
+  @override
+  String get intentTenantSelfSub =>
+      'Сумма остается на мне. Возмещение не требуется, закрыть как оплачено.';
+
+  @override
+  String get intentTenantSelfBadge => 'Оплачено • Личный расход';
+
+  @override
+  String get intentTenantReimburseTitle =>
+      'Оплатил за имущество/ремонт (От имени владельца)';
+
+  @override
+  String get intentTenantReimburseSub =>
+      'Оплатил авансом за основные фонды. Прошу вычесть из аренды или возместить.';
+
+  @override
+  String get intentTenantReimburseBadge => 'Вычесть из аренды';
+
+  @override
+  String get intentLandlordSelfTitle =>
+      'Покрыл за имущество/ремонт (Расход владельца)';
+
+  @override
+  String get intentLandlordSelfSub =>
+      'Расходы владельца. С арендатора не удерживается, закрыть как оплачено.';
+
+  @override
+  String get intentLandlordSelfBadge => 'Оплачено • Владелец';
+
+  @override
+  String get intentLandlordTenantDueTitle =>
+      'Оплатил за поломку по вине арендатора';
+
+  @override
+  String get intentLandlordTenantDueSub =>
+      'Поломка возникла при использовании арендатором. Прошу добавить к следующей аренде.';
+
+  @override
+  String get intentLandlordTenantDueBadge => 'Добавить к аренде';
+
+  @override
+  String get pleaseSelectDeclarationIntent =>
+      'Пожалуйста, выберите цель оплаты и вариант взаиморасчета.';
+
+  @override
+  String get confirmTenantReimburseApprovalTitle =>
+      'Подтверждение вычета из аренды';
+
+  @override
+  String confirmTenantReimburseApprovalMsg(String amount) {
+    return 'Вы подтверждаете, что расход арендатора на сумму $amount относится к имуществу и будет вычтен из следующей аренды?';
+  }
+
+  @override
+  String get confirmTenantSelfApprovalTitle => 'Подтверждение личного расхода';
+
+  @override
+  String confirmTenantSelfApprovalMsg(String amount) {
+    return 'Вы подтверждаете, что арендатор оплатил расход на сумму $amount самостоятельно и заявка закрывается как оплаченная?';
+  }
+
+  @override
+  String get confirmLandlordSelfApprovalTitle =>
+      'Подтверждение расхода владельца';
+
+  @override
+  String confirmLandlordSelfApprovalMsg(String amount) {
+    return 'Вы подтверждаете, что владелец покрыл расход на сумму $amount и заявка закрывается как оплаченная?';
+  }
+
+  @override
+  String get confirmLandlordTenantDueApprovalTitle =>
+      'Подтверждение добавления к аренде';
+
+  @override
+  String confirmLandlordTenantDueApprovalMsg(String amount) {
+    return 'Вы подтверждаете, что заявленный расход на сумму $amount возник при вашем использовании и будет добавлен к вашей следующей аренде?';
+  }
+
+  @override
+  String declaredIntentLabel(String intent) {
+    return 'Запрос взаиморасчета: $intent';
+  }
+
+  @override
+  String get maintenanceSettlementsHeader =>
+      'Взаиморасчеты по ремонту и расходам';
+
+  @override
+  String get maintenanceSettlementsSub =>
+      'Утвержденные расходы на ремонт к вычету или добавлению к аренде';
+
+  @override
+  String get deductFromRentBadge => 'К вычету из аренды';
+
+  @override
+  String get addToRentBadge => 'К оплате с арендой';
+
+  @override
+  String get markAsSettledBtn => 'Отметить как зачтено / оплачено';
+
+  @override
+  String get confirmSettlementTitle => 'Закрыть взаиморасчет';
+
+  @override
+  String confirmSettlementMsg(String amount) {
+    return 'Подтверждаете, что расход на ремонт на сумму $amount зачтен/оплачен и расчет закрыт?';
+  }
+
+  @override
+  String get settlementRecordedSuccess =>
+      'Взаиморасчет по ремонту успешно закрыт.';
+
+  @override
+  String get goToMaintenanceRequest => 'Открыть заявку';
+
+  @override
+  String maintenanceSettlementActivityMsg(String amount, String role) {
+    return '💰 Расход на ремонт ($amount) отмечен как зачтенный/оплаченный ($role).';
+  }
+
+  @override
+  String get settleExpenseTitle => 'Урегулирование расходов на ремонт';
+
+  @override
+  String get settleExpenseSub => 'Выберите способ оплаты или взаимозачета';
+
+  @override
+  String get optionOffsetFromRent => 'Зачесть в счет аренды / счетов';
+
+  @override
+  String get optionOffsetFromRentDesc =>
+      'Автоматически вычесть эту сумму из ожидающего платежа аренды или счета в той же валюте';
+
+  @override
+  String get optionBankTransfer => 'Оплатить банковским переводом';
+
+  @override
+  String get optionBankTransferDesc =>
+      'Загрузить квитанцию об оплате и отправить на подтверждение';
+
+  @override
+  String get optionCashPayment => 'Оплатить наличными';
+
+  @override
+  String get optionCashPaymentDesc => 'Подтвердить передачу наличными';
+
+  @override
+  String get selectRentToOffset => 'Выберите платеж для зачета';
+
+  @override
+  String noEligiblePendingPayments(String currency) {
+    return 'Не найдено подходящих неоплаченных счетов или аренды в валюте $currency.';
+  }
+
+  @override
+  String offsetAppliedSuccess(String amount, String paymentTitle) {
+    return 'Сумма $amount успешно зачтена из платежа $paymentTitle.';
+  }
+
+  @override
+  String get confirmReceiptBtn => 'Оплату получил / Подтвердить';
+
+  @override
+  String get waitingForRecipientApproval =>
+      'Ожидается подтверждение второй стороны';
+
+  @override
+  String get iPaidBtn => 'Оплачено / Загрузить чек';
+
+  @override
+  String get iPaidCashBtn => 'Оплачено наличными';
+
+  @override
+  String maintenanceCashPaidActivityMsg(String role, String amount) {
+    return '💵 $role заявил об оплате расходов на ремонт ($amount) наличными. Ожидается подтверждение.';
+  }
+
+  @override
+  String maintenanceBankPaidActivityMsg(String role, String amount) {
+    return '📄 $role заявил об оплате расходов на ремонт ($amount) банковским переводом (Квитанция приложена). Ожидается подтверждение.';
+  }
+
+  @override
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
+    return '🏠 Расход на ремонт ($amount) зачтен из платежа $paymentTitle.';
+  }
 }

@@ -286,7 +286,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
           ),
           Expanded(
-            child: (isLandlord && (_landlordCurrentTab == 1 || _landlordCurrentTab == 2))
+            child: (isLandlord && (_landlordCurrentTab == 1 || _landlordCurrentTab == 2 || _landlordCurrentTab == 3))
                 ? RefreshIndicator(
                     onRefresh: () async {
                       ref.invalidate(propertiesStreamProvider);
@@ -294,13 +294,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ref.invalidate(agencyAllPaymentsProvider);
                       ref.invalidate(agencyPendingPaymentsProvider);
                       ref.invalidate(agencyPropertiesProvider);
+                      ref.invalidate(agencyMaintenanceRequestsProvider);
                     },
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1360),
                         child: _landlordCurrentTab == 1
                             ? AgencyPortfolioTab(colors: agencyColors)
-                            : AgencyFinanceTab(colors: agencyColors),
+                            : (_landlordCurrentTab == 2
+                                ? AgencyFinanceTab(colors: agencyColors)
+                                : AgencyMaintenanceTab(colors: agencyColors)),
                       ),
                     ),
                   )
@@ -2385,9 +2388,10 @@ class _TenantHero extends ConsumerWidget {
     final awaitingTotals = financialStatus?.awaitingTotals ?? {};
 
     final hasDebt = pendingTotals.values.any((v) => v > 0);
+    final hasCredit = !hasDebt && pendingTotals.values.any((v) => v < 0);
     final hasAwaiting = awaitingTotals.values.any((v) => v > 0) || (financialStatus?.awaitingCount ?? 0) > 0;
     final hasPendingBills = financialStatus?.billStatus == BillStatus.waitingForLandlord;
-    final isAllPaid = !hasDebt && !hasAwaiting && (financialStatus?.paidCount ?? 0) > 0;
+    final isAllPaid = !hasDebt && !hasCredit && !hasAwaiting && (financialStatus?.paidCount ?? 0) > 0;
     final isOverdue = rentStatus == RentStatus.debt ||
         financialStatus?.billStatus == BillStatus.debt;
 
@@ -2397,6 +2401,8 @@ class _TenantHero extends ConsumerWidget {
     final Color heroColor;
     if (isOverdue || hasDebt) {
       heroColor = const Color(0xFFC0392B); // Kırmızı (Borçlu)
+    } else if (hasCredit) {
+      heroColor = const Color(0xFF2563EB); // Mavi (Mahsup Alacağı)
     } else if (hasAwaiting) {
       heroColor = const Color(0xFFD97706); // Turuncu (Onay Bekliyor)
     } else if (isAllPaid) {
@@ -2406,10 +2412,11 @@ class _TenantHero extends ConsumerWidget {
     }
 
     // Hangi tutarları göster?
-    // Hangi tutarları göster?
     final String heroLabel;
     if (hasDebt) {
       heroLabel = loc.totalDebt.toUpperCase();
+    } else if (hasCredit) {
+      heroLabel = (loc.localeName == 'tr' ? 'MAHSUP ALACAĞI' : 'SETTLEMENT CREDIT').toUpperCase();
     } else if (hasAwaiting) {
       heroLabel = loc.awaitingHeader.toUpperCase();
     } else {
@@ -2424,6 +2431,13 @@ class _TenantHero extends ConsumerWidget {
       statusBadge = _HeroStatusBadge(
         icon: LucideIcons.alertTriangle,
         label: loc.debtLabel,
+        bgColor: Colors.white.withValues(alpha: 0.2),
+        textColor: Colors.white,
+      );
+    } else if (hasCredit) {
+      statusBadge = _HeroStatusBadge(
+        icon: LucideIcons.arrowDownLeft,
+        label: loc.localeName == 'tr' ? 'Mahsup Alacağı' : 'Credit',
         bgColor: Colors.white.withValues(alpha: 0.2),
         textColor: Colors.white,
       );
@@ -2507,7 +2521,7 @@ class _TenantHero extends ConsumerWidget {
                 // Multi-currency tutarları satır satır göster
                 ...() {
                   final Map<String, double> totals;
-                  if (hasDebt) {
+                  if (hasDebt || hasCredit) {
                     totals = pendingTotals;
                   } else if (hasAwaiting) {
                     totals = awaitingTotals;

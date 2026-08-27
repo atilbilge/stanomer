@@ -152,8 +152,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 : (rawProperty is Map<String, dynamic>
                     ? Property.fromJson(rawProperty)
                     : null);
-            existingContract = extras['contract'] as Contract?;
-            leaseTemplate = extras['leaseTemplate'] as Contract?;
+            final rawContract = extras['contract'];
+            existingContract = rawContract is Contract
+                ? rawContract
+                : (rawContract is Map<String, dynamic>
+                    ? Contract.fromJson(rawContract)
+                    : null);
+            final rawLeaseTemplate = extras['leaseTemplate'];
+            leaseTemplate = rawLeaseTemplate is Contract
+                ? rawLeaseTemplate
+                : (rawLeaseTemplate is Map<String, dynamic>
+                    ? Contract.fromJson(rawLeaseTemplate)
+                    : null);
           }
 
           if (property == null) return const DashboardScreen();
@@ -177,11 +187,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/maintenance',
         builder: (context, state) {
-          if (state.extra == null || state.extra is! Property) {
-            return const DashboardScreen();
+          if (state.extra == null) return const DashboardScreen();
+          Property? property;
+          if (state.extra is Property) {
+            property = state.extra as Property;
+          } else if (state.extra is Map<String, dynamic>) {
+            final rawProperty = (state.extra as Map<String, dynamic>)['property'] ?? state.extra;
+            property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
           }
+          if (property == null) return const DashboardScreen();
           return MaintenanceScreen(
-            property: state.extra! as Property,
+            property: property,
           );
         },
       ),
@@ -192,11 +212,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/maintenance/new',
         builder: (context, state) {
-          if (state.extra == null || state.extra is! Property) {
-            return const DashboardScreen();
+          if (state.extra == null) return const DashboardScreen();
+          Property? property;
+          if (state.extra is Property) {
+            property = state.extra as Property;
+          } else if (state.extra is Map<String, dynamic>) {
+            final rawProperty = (state.extra as Map<String, dynamic>)['property'] ?? state.extra;
+            property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
           }
+          if (property == null) return const DashboardScreen();
           return CreateMaintenanceRequestScreen(
-            property: state.extra! as Property,
+            property: property,
           );
         },
       ),
@@ -204,6 +234,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/property-settings',
         builder: (context, state) {
           if (state.extra == null) return const DashboardScreen();
+          if (state.extra is! Map<String, dynamic>) return const DashboardScreen();
           final extras = state.extra as Map<String, dynamic>;
           final rawProperty = extras['property'];
           final property = rawProperty is Property
@@ -222,6 +253,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/maintenance/detail',
         builder: (context, state) {
           if (state.extra == null) return const DashboardScreen();
+          if (state.extra is! Map<String, dynamic>) return const DashboardScreen();
           final extras = state.extra as Map<String, dynamic>;
           final rawProperty = extras['property'];
           final property = rawProperty is Property
@@ -229,7 +261,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               : (rawProperty is Map<String, dynamic>
                   ? Property.fromJson(rawProperty)
                   : null);
-          final request = extras['request'] as MaintenanceRequest?;
+          final rawRequest = extras['request'];
+          final request = rawRequest is MaintenanceRequest
+              ? rawRequest
+              : (rawRequest is Map<String, dynamic>
+                  ? MaintenanceRequest.fromJson(rawRequest)
+                  : null);
           if (property == null || request == null) return const DashboardScreen();
           return MaintenanceDetailScreen(
             property: property,

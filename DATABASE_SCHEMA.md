@@ -97,8 +97,17 @@ Ev sahiplerinin kaydettiği mülk (konut/daire) verilerini tutar.
 | `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi (`EUR`, `RSD`, `USD`, vb.) |
 | `default_due_day` | `INTEGER` | YES | `1` | `CHECK (due_day >= 1 AND due_day <= 31)` | Varsayılan aylık son ödeme günü |
 | `expenses_template` | `JSONB` | YES | `'[]'::jsonb` | - | Şablon yan gider kalemleri |
-| `owner_note` | `TEXT` | YES | `NULL` | - | Ev sahibine özel notlar |
-| `tax_type` | `tax_type` | YES | `'included'` | - | Vergi tipi şablonu |
+| `is_detailed` | `BOOLEAN` | YES | `FALSE` | - | **[YENİ]** Detaylı ilan/mülk girişi yapıldı mı |
+| `property_type` | `TEXT` | YES | `'apartment'` | - | **[YENİ]** Mülk tipi (`apartment`, `house`, `commercial`, `garage`) |
+| `unit_number` | `TEXT` | YES | `NULL` | - | **[YENİ]** Daire / Birim kapı numarası (ör. 4, 12B) |
+| `room_count` | `TEXT` | YES | `NULL` | - | **[YENİ]** Oda sayısı / Struktura (`studio`, `1.0`, `1.5`, `2.0`, `2.5`, `3.0`, `3.5`, `4.0`, `5.0+`) |
+| `area_sqm` | `NUMERIC` | YES | `NULL` | - | **[YENİ]** Alan m² (Površina) |
+| `floor` | `TEXT` | YES | `NULL` | - | **[YENİ]** Bulunduğu kat (`bodrum`, `suteren`, `prizemlje`, `1`, `2`, `3`, `4+` vb.) |
+| `total_floors` | `INTEGER` | YES | `NULL` | - | **[YENİ]** Binadaki toplam kat sayısı |
+| `furnishing` | `TEXT` | YES | `NULL` | - | **[YENİ]** Eşya durumu (`furnished`, `semi_furnished`, `unfurnished`) |
+| `heating_type` | `TEXT` | YES | `NULL` | - | **[YENİ]** Isınma tipi (`cg`, `eg`, `gas`, `underfloor`, `ta`, `other`) |
+| `amenities` | `JSONB` | YES | `'[]'::jsonb` | - | **[YENİ]** Öne çıkan olanaklar (`pets_allowed`, `elevator`, `balcony`, `parking`, `storage`) |
+| `description` | `TEXT` | YES | `NULL` | - | **[YENİ]** Detaylı mülk / ilan açıklaması |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Son güncelleme tarihi |
 
@@ -191,30 +200,35 @@ Aylık kira ve bina/fatura ödeme kalemlerini saklar.
 * `rent_payments_contract_due_date_title_key`: `UNIQUE NULLS NOT DISTINCT (contract_id, due_date, title)`
 
 #### RLS Politikaları (`public.rent_payments`)
-* **`landlord_select_rent_payments`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = rent_payments.property_id AND p.landlord_id = auth.uid()))`
-* **`tenant_select_rent_payments`**: `FOR SELECT TO authenticated USING (tenant_id = auth.uid())`
-* **`tenant_update_rent_payments`**: `FOR UPDATE TO authenticated USING (tenant_id = auth.uid()) WITH CHECK (tenant_id = auth.uid())`
-* **`landlord_update_rent_payments`**: `FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = property_id AND p.landlord_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM properties p WHERE p.id = property_id AND p.landlord_id = auth.uid()))`
+* **`Users can view rent payments`**: `FOR SELECT TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = rent_payments.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())))`
+* **`Landlords and tenants can update rent payments`**: `FOR UPDATE TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = rent_payments.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())))`
+* **`Landlords and agencies can insert rent payments`**: `FOR INSERT TO authenticated WITH CHECK (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = rent_payments.property_id AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid())))`
 
 ---
 
 ### 2.5 `maintenance_requests`
-Bakım ve arıza bildirimlerini saklar.
+Bakım ve arıza bildirimlerini ve finansal maliyet kayıtlarını saklar.
 
 #### Tablo Yapısı
 | Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Talep ID |
 | `property_id` | `UUID` | **NO** | - | **FK** `REFERENCES properties(id) ON DELETE CASCADE` | Mülk ID |
+| `contract_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES contracts(id) ON DELETE SET NULL` | İlgili sözleşme ID |
 | `reporter_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id)` | Bildiren kullanıcı ID |
 | `title` | `TEXT` | **NO** | - | - | Arıza başlığı |
-| `description` | `TEXT` | **NO** | - | - | Arıza detaylı açıklaması |
-| `status` | `TEXT` | **NO** | `'pending'` | `CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled'))` | Durumu |
-| `priority` | `TEXT` | **NO** | `'medium'` | `CHECK (priority IN ('low', 'medium', 'high', 'emergency'))` | Öncelik derecesi |
-| `payment_responsibility`| `TEXT` | **NO** | `'undecided'` | `CHECK (payment_responsibility IN ('landlord', 'tenant', 'shared', 'undecided'))` | Ödeme sorumlusu |
-| `estimated_cost` | `NUMERIC` | YES | `NULL` | - | Tahmini maliyet |
-| `actual_cost` | `NUMERIC` | YES | `NULL` | - | Gerçekleşen harcama |
-| `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi |
+| `description` | `TEXT` | YES | `NULL` | - | Arıza detaylı açıklaması |
+| `category` | `TEXT` | **NO** | `'other'` | - | Arıza kategorisi (`plumbing`, `electrical`, `heating`, vb.) |
+| `priority` | `TEXT` | **NO** | `'normal'` | `CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'))` | Öncelik derecesi |
+| `status` | `TEXT` | **NO** | `'open'` | `CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'))` | Durumu |
+| `photos_urls` | `TEXT[]` | **NO** | `'{}'` | - | Arıza fotoğrafları URL dizisi |
+| `cost_amount` | `NUMERIC(10,2)` | YES | `NULL` | - | Bakım/onarım harcama tutarı |
+| `currency` | `TEXT` | YES | `NULL` | - | Para birimi (örn: `'EUR'`, `'RSD'`) |
+| `paid_by` | `TEXT` | YES | `NULL` | `CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'))` | Ödemeyi yapan taraf |
+| `payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödeme yapılma tarihi |
+| `payment_status`| `TEXT`               | **NO**    | `'pending_review'`| `CHECK (payment_status IN ('pending_review', 'pending_payment', 'paid', 'rejected'))` | Fatura/Ödeme durumu (`pending_review`, `pending_payment`, `paid`, `rejected`) |
+| `invoice_pdf_url`| `TEXT` | YES | `NULL` | - | Fatura PDF/belge dosya URL'i |
+| `resolved_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Çözümlenme tarihi |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncelleme tarihi |
 
@@ -1154,11 +1168,17 @@ $$;
   * **Yükleme**: `bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text`
   * **Okuma**: `bucket_id = 'contracts'` (Herkese Açık)
 
-### 5.3 `maintenance` (Genel Okuma / Kimlik Doğrulamalı Yükleme)
+### 5.3 `maintenance` & `maintenance-photos` (Genel Okuma / Kimlik Doğrulamalı Yükleme)
 * **Public**: `true`
 * **Erişim Politikaları**:
-  * **Yükleme**: `bucket_id = 'maintenance' AND (storage.foldername(name))[1] = auth.uid()::text`
-  * **Okuma**: `bucket_id = 'maintenance'` (Herkese Açık)
+  * **Yükleme**: `(bucket_id = 'maintenance' OR bucket_id = 'maintenance-photos') AND auth.uid() IS NOT NULL`
+  * **Okuma**: `(bucket_id = 'maintenance' OR bucket_id = 'maintenance-photos')` (Herkese Açık)
+  * **Güncelleme & Silme**: `(bucket_id = 'maintenance' OR bucket_id = 'maintenance-photos') AND auth.uid() IS NOT NULL`
+
+### 5.4 `invoices` (Mülk Bazlı Güvenli Depolama)
+* **Public**: `true`
+* **Erişim Politikaları**:
+  * **Okuma & Yükleme & Silme**: İlgili mülkün ev sahibi, kiracısı veya yetkili acentesi (`is_agency_of_property`) ya da nesne sahibi (`auth.uid()`).
 
 ---
 

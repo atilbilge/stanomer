@@ -26,6 +26,18 @@ abstract class Property with _$Property {
     @Default(1) @JsonKey(name: 'default_due_day') int defaultDueDay,
     @Default(TaxType.included) @JsonKey(name: 'tax_type') TaxType taxType,
     @Default([]) @JsonKey(name: 'expenses_template') List<ExpenseItem> expensesTemplate,
+    // Detailed Property Fields
+    @Default(false) @JsonKey(name: 'is_detailed') bool isDetailed,
+    @JsonKey(name: 'property_type') String? propertyType,
+    @JsonKey(name: 'unit_number') String? unitNumber,
+    @JsonKey(name: 'room_count') String? roomCount,
+    @JsonKey(name: 'area_sqm') double? areaSqm,
+    @JsonKey(name: 'floor') String? floor,
+    @JsonKey(name: 'total_floors') int? totalFloors,
+    @JsonKey(name: 'furnishing') String? furnishing,
+    @JsonKey(name: 'heating_type') String? heatingType,
+    @Default([]) @JsonKey(name: 'amenities') List<String> amenities,
+    @JsonKey(name: 'description') String? description,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _Property;
 

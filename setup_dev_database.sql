@@ -106,11 +106,21 @@ ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS expenses_template JSONB D
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS owner_note TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tax_type public.tax_type DEFAULT 'included';
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_phone TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_email TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_name TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS is_detailed BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS unit_number TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS room_count TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS area_sqm NUMERIC(10,2);
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS floor TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS total_floors INT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS furnishing TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS heating_type TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS amenities JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS description TEXT;
 
 CREATE TABLE IF NOT EXISTS public.contracts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -239,8 +249,21 @@ ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS contract_id UUI
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_status_check;
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_status_check CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'));
 
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS cost_amount NUMERIC(10,2);
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS currency TEXT;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS paid_by TEXT;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_date TIMESTAMPTZ;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'pending_review';
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS invoice_pdf_url TEXT;
+
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_priority_check;
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_priority_check CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'));
+
+ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_paid_by_check;
+ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_paid_by_check CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'));
+
+ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_payment_status_check;
+ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_payment_status_check CHECK (payment_status IN ('pending_review', 'pending_payment', 'paid', 'rejected'));
 
 CREATE TABLE IF NOT EXISTS public.maintenance_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -352,13 +375,52 @@ DROP POLICY IF EXISTS "Users can insert invitations" ON public.invitations;
 CREATE POLICY "Users can insert invitations" ON public.invitations FOR INSERT TO authenticated WITH CHECK (inviter_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
 
 DROP POLICY IF EXISTS "Users can view rent payments" ON public.rent_payments;
-CREATE POLICY "Users can view rent payments" ON public.rent_payments FOR SELECT TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
+DROP POLICY IF EXISTS "rent_payments_select_policy" ON public.rent_payments;
+DROP POLICY IF EXISTS "landlord_select_rent_payments" ON public.rent_payments;
+DROP POLICY IF EXISTS "tenant_select_rent_payments" ON public.rent_payments;
+
+CREATE POLICY "Users can view rent payments" ON public.rent_payments 
+FOR SELECT TO authenticated 
+USING (
+    tenant_id = auth.uid() 
+    OR public.is_agency_of_property(property_id, auth.uid())
+    OR EXISTS (
+        SELECT 1 FROM public.properties p 
+        WHERE p.id = rent_payments.property_id 
+          AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())
+    )
+);
 
 DROP POLICY IF EXISTS "Landlords and tenants can update rent payments" ON public.rent_payments;
-CREATE POLICY "Landlords and tenants can update rent payments" ON public.rent_payments FOR UPDATE TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
+DROP POLICY IF EXISTS "rent_payments_update_policy" ON public.rent_payments;
+DROP POLICY IF EXISTS "landlord_update_rent_payments" ON public.rent_payments;
+DROP POLICY IF EXISTS "tenant_update_rent_payments" ON public.rent_payments;
+
+CREATE POLICY "Landlords and tenants can update rent payments" ON public.rent_payments 
+FOR UPDATE TO authenticated 
+USING (
+    tenant_id = auth.uid() 
+    OR public.is_agency_of_property(property_id, auth.uid())
+    OR EXISTS (
+        SELECT 1 FROM public.properties p 
+        WHERE p.id = rent_payments.property_id 
+          AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())
+    )
+);
 
 DROP POLICY IF EXISTS "Landlords and agencies can insert rent payments" ON public.rent_payments;
-CREATE POLICY "Landlords and agencies can insert rent payments" ON public.rent_payments FOR INSERT TO authenticated WITH CHECK (landlord_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
+DROP POLICY IF EXISTS "rent_payments_insert_policy" ON public.rent_payments;
+
+CREATE POLICY "Landlords and agencies can insert rent payments" ON public.rent_payments 
+FOR INSERT TO authenticated 
+WITH CHECK (
+    public.is_agency_of_property(property_id, auth.uid())
+    OR EXISTS (
+        SELECT 1 FROM public.properties p 
+        WHERE p.id = rent_payments.property_id 
+          AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid())
+    )
+);
 
 -- Maintenance RLS
 DROP POLICY IF EXISTS "maintenance_requests_select_policy" ON public.maintenance_requests;
@@ -632,9 +694,11 @@ ON CONFLICT (id) DO NOTHING;
 -- 7. STORAGE BUCKETS SETUP
 INSERT INTO storage.buckets (id, name, public) VALUES ('property-photos', 'property-photos', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('rent-receipts', 'rent-receipts', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('maintenance', 'maintenance', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('maintenance-photos', 'maintenance-photos', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('contract-documents', 'contract-documents', false) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('contracts', 'contracts', false) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('invoices', 'invoices', true) ON CONFLICT (id) DO NOTHING;
 
 -- 7b. STORAGE RLS POLICIES
 -- rent-receipts: landlord/agency/tenant can upload and view
@@ -726,6 +790,93 @@ DROP POLICY IF EXISTS "maintenance_photos_delete_policy"  ON storage.objects;
 CREATE POLICY "maintenance_photos_delete_policy"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'maintenance-photos' AND auth.uid() IS NOT NULL);
+
+-- invoices bucket
+DROP POLICY IF EXISTS "invoices_select_policy" ON storage.objects;
+CREATE POLICY "invoices_select_policy"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'invoices' AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM public.properties p
+        WHERE p.id::text = (storage.foldername(name))[1]
+          AND (
+            p.landlord_id = auth.uid() 
+            OR p.tenant_id = auth.uid() 
+            OR p.agency_id = auth.uid() 
+            OR public.is_agency_of_property(p.id, auth.uid())
+          )
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.contracts c
+        WHERE (c.property_id::text = (storage.foldername(name))[1] OR c.tenant_id = auth.uid())
+          AND (c.tenant_id = auth.uid() OR c.landlord_id = auth.uid())
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS "invoices_insert_policy" ON storage.objects;
+CREATE POLICY "invoices_insert_policy"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'invoices' AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM public.properties p
+        WHERE p.id::text = (storage.foldername(name))[1]
+          AND (
+            p.landlord_id = auth.uid() 
+            OR p.tenant_id = auth.uid() 
+            OR p.agency_id = auth.uid() 
+            OR public.is_agency_of_property(p.id, auth.uid())
+          )
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.contracts c
+        WHERE c.property_id::text = (storage.foldername(name))[1]
+          AND c.tenant_id = auth.uid()
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS "invoices_update_policy" ON storage.objects;
+CREATE POLICY "invoices_update_policy"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'invoices' AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM public.properties p
+        WHERE p.id::text = (storage.foldername(name))[1]
+          AND (
+            p.landlord_id = auth.uid() 
+            OR p.tenant_id = auth.uid() 
+            OR p.agency_id = auth.uid() 
+            OR public.is_agency_of_property(p.id, auth.uid())
+          )
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS "invoices_delete_policy" ON storage.objects;
+CREATE POLICY "invoices_delete_policy"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'invoices' AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM public.properties p
+        WHERE p.id::text = (storage.foldername(name))[1]
+          AND (
+            p.landlord_id = auth.uid() 
+            OR p.tenant_id = auth.uid() 
+            OR p.agency_id = auth.uid() 
+            OR public.is_agency_of_property(p.id, auth.uid())
+          )
+      )
+    )
+  );
 
 -- 8. VIEWS
 DROP VIEW IF EXISTS public.properties_with_names CASCADE;
@@ -996,10 +1147,16 @@ BEGIN
     ) INTO v_exists;
 
     IF NOT v_exists THEN
-      INSERT INTO public.rent_payments (property_id, tenant_id, amount, currency, due_date, status, title, receiver_type)
+      INSERT INTO public.rent_payments (
+        property_id, contract_id, landlord_id, tenant_id, agency_id,
+        amount, currency, due_date, status, title, receiver_type
+      )
       VALUES (
         p_property_id,
+        v_active_contract.id,
+        v_active_contract.landlord_id,
         v_active_contract.tenant_id,
+        v_active_contract.agency_id,
         v_active_contract.monthly_rent,
         v_active_contract.currency,
         v_current_date,
@@ -1025,10 +1182,16 @@ BEGIN
           ) INTO v_exists;
 
           IF NOT v_exists THEN
-            INSERT INTO public.rent_payments (property_id, tenant_id, amount, currency, due_date, status, title, receiver_type)
+            INSERT INTO public.rent_payments (
+              property_id, contract_id, landlord_id, tenant_id, agency_id,
+              amount, currency, due_date, status, title, receiver_type
+            )
             VALUES (
               p_property_id,
+              v_active_contract.id,
+              v_active_contract.landlord_id,
               v_active_contract.tenant_id,
+              v_active_contract.agency_id,
               COALESCE(v_exp_amount, 0),
               v_active_contract.currency,
               v_current_date,

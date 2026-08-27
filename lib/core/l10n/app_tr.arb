@@ -922,5 +922,416 @@
   "noReferringAgency": "Acente Referansınız Bulunmuyor",
   "noReferringAgencyDesc": "Bir emlak acentesi tarafından yönlendirildiyseniz, acentenizin QR kodunu taratarak hesabınızı eşleştirebilirsiniz.",
   "scanAgencyReferralQrBtn": "Acente Referral QR Kodunu Tara",
-  "referralCodeLabel": "Referans Kodu"
+  "referralCodeLabel": "Referans Kodu",
+  "detailedEntry": "Gelişmiş Bilgiler",
+  "detailedEntrySubtitle": "Mülke dair tüm detaylar, yapısal metrikler ve ilan parametreleri.",
+  "propertyAndLocationInfo": "Mülk ve Konum Bilgileri",
+  "propertyTypeLabel": "Mülk Tipi",
+  "propertyTypeApartment": "Daire",
+  "propertyTypeHouse": "Müstakil Ev",
+  "propertyTypeCommercial": "İş Yeri",
+  "propertyTypeGarage": "Garaj",
+  "unitNumberLabel": "Daire / Birim No",
+  "unitNumberHint": "Örn: 4 veya 12B",
+  "addressDetailedHint": "Şehir, ilçe, mahalle veya sokak adı girin...",
+  "structuralAndFinancialMetrics": "Yapısal ve Finansal Metrikler",
+  "roomCountLabel": "Oda Sayısı",
+  "areaSqmLabel": "Alan (m²)",
+  "floorLevelLabel": "Bulunduğu Kat",
+  "totalFloorsLabel": "Bina Toplam Kat",
+  "equipmentAndHeatingStandards": "Donanım ve Isınma Standartları",
+  "furnishingLabel": "Eşya Durumu",
+  "furnishingFurnished": "Tam Eşyalı",
+  "furnishingFurnishedDesc": "Tüm mobilya ve beyaz eşyalar dahil",
+  "furnishingSemi": "Yarı Eşyalı",
+  "furnishingSemiDesc": "Sadece mutfak ve banyo eşyalı",
+  "furnishingUnfurnished": "Eşyasız",
+  "furnishingUnfurnishedDesc": "Boş teslim",
+  "heatingTypeLabel": "Isınma Tipi",
+  "heatingCg": "Merkezi Isıtma (CG)",
+  "heatingEg": "Kat Kaloriferi / Elektrikli (EG)",
+  "heatingGas": "Doğalgaz / Kombi",
+  "heatingUnderfloor": "Yerden Isıtma",
+  "heatingTa": "Klima / Termosifon / Diğer",
+  "featuredAmenitiesLabel": "Öne Çıkan Olanaklar",
+  "amenityPets": "Evcil Hayvan Dostu",
+  "amenityElevator": "Asansör",
+  "amenityBalcony": "Balkon / Teras",
+  "amenityParking": "Otopark / Garaj",
+  "amenityStorage": "Depo / Kiler",
+  "extendedDescriptionLabel": "Ek Açıklama ve Detaylar",
+  "extendedDescriptionHint": "Ulaşım olanakları, bina yaşı, cephe ve ekstra şartlar hakkında bilgi girin...",
+  "clearFormBtn": "Formu Temizle",
+  "floorSuteren": "Yarı Bodrum (Suteren)",
+  "floorPrizemlje": "Zemin Kat (Giriş)",
+  "floorVisokoPrizemlje": "Yüksek Giriş",
+  "floorNth": "{floor}. Kat",
+  "@floorNth": {
+    "placeholders": {
+      "floor": {
+        "type": "String"
+      }
+    }
+  },
+  "floorPotkrovlje": "Çatı Katı",
+  "floorOther": "Diğer",
+  "statusOpen": "Açık",
+  "statusInProgress": "Usta Gönderildi",
+  "statusClosed": "Kapatıldı",
+  "statusPending": "Beklemede",
+  "statusCancelled": "İptal Edildi",
+  "financialDetails": "Finansal Detaylar",
+  "financialStatusPendingReview": "İnceleme Bekliyor",
+  "financialStatusPendingPayment": "Ödeme Bekliyor",
+  "financialStatusPaid": "Ödendi",
+  "financialStatusRejected": "Reddedildi",
+  "payerTenant": "Kiracı",
+  "payerLandlord": "Ev Sahibi",
+  "payerTenantPaidOrWillPay": "Kiracı Karşıladı / Ödeyecek",
+  "payerLandlordWillCover": "Ev Sahibi Karşılayacak",
+  "unassigned": "Belirtilmedi",
+  "noFinancialRecordTitle": "Finansal Kayıt Yok",
+  "noFinancialRecordDesc": "Bu bakım talebi için henüz maliyet veya fatura girilmemiştir.",
+  "iPaidSubmitReceipt": "Ben Ödedim (Masraf / Fatura Bildir)",
+  "resubmitExpenseIPaid": "Yeniden Masraf Bildir (Ben Ödedim)",
+  "addCostInvoice": "Masraf / Fatura Ekle",
+  "costPayerLabel": "Maliyet Sorumlusu",
+  "receiptInvoiceDocument": "Fiş / Fatura Belgesi",
+  "clickToViewDocument": "Görüntülemek için tıkla",
+  "agencyExpenseApproval": "Acente Masraf Onayı",
+  "landlordExpenseApproval": "Ev Sahibi Masraf Onayı",
+  "tenantExpenseApproval": "Kiracı Masraf Onayı",
+  "expenseApprovedSuccess": "Masraf onaylandı.",
+  "expenseRejectedSuccess": "Masraf bildirimi reddedildi.",
+  "rejectExpenseTitle": "Masrafı Reddet",
+  "rejectExpenseConfirm": "Girilen masraf bildirimini reddetmek istediğinize emin misiniz?",
+  "rejectionReasonOptional": "Ret sebebi (isteğe bağlı)",
+  "quickActions": "Hızlı İşlemler",
+  "descriptionOrNoteOptional": "Açıklama / Not (İsteğe Bağlı)",
+  "enterExpenseNoteHint": "örn. Mutfak bataryası değişti, servis ücreti dahil",
+  "editFinancialDetails": "Finansal Bilgileri Düzenle",
+  "propertyInfo": "Mülk Bilgisi",
+  "coveredByLandlord": "Ev Sahibi Karşıladı",
+  "coveredByTenant": "Kiracı Karşıladı",
+  "landlordReimbursement": "Ev Sahibi Karşılayacak",
+  "tenantToPay": "Kiracı Karşılayacak",
+  "landlordReimburseDesc": "Kiracı peşin ödemiştir. Ev sahibi kiracıya iade etmeli veya sonraki kiradan düşmelidir.",
+  "tenantToPayDesc": "Hasar kiracı kaynaklıdır. Tutar kiracının bir sonraki kirasına/borcuna eklenir.",
+  "coveredByLandlordClosedDesc": "Demirbaş harcaması olarak ev sahibi tarafından karşılandı ve ödendi.",
+  "coveredByTenantClosedDesc": "Kullanım bedeli olarak kiracı tarafından karşılandı ve ödendi.",
+  "reEditFinancials": "Masraf / Faturayı Yeniden Düzenle",
+  "expenseRejectedDesc": "Daha önce bildirilen masraf onaylanmadı. Doğru tutar ve güncel fatura/fiş belgenizle tekrar bildirim yapabilirsiniz.",
+  "agencyManager": "Acente Yöneticisi",
+  "actorStatusInvestigating": "🔍 {actor} talebi incelemeye aldı.",
+  "@actorStatusInvestigating": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusInProgress": "🔧 {actor} usta yönlendirdi, onarım süreci başlatıldı.",
+  "@actorStatusInProgress": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusResolved": "✅ {actor} arızanın giderildiğini ve talebin çözüldüğünü bildirdi.",
+  "@actorStatusResolved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusClosed": "🔒 {actor} talebi kapattı.",
+  "@actorStatusClosed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusReopened": "🔄 {actor} talebi yeniden açtı. Sorun devam ediyor.",
+  "@actorStatusReopened": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorMarkedActive": "📋 {actor} talebi aktif duruma getirdi.",
+  "@actorMarkedActive": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorUpdatedStatus": "📌 {actor} talep durumunu güncelledi: {status}",
+  "@actorUpdatedStatus": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "submitExpenseReview": "Masrafı Bildir (İncelemeye Gönder)",
+  "saveChanges": "Değişiklikleri Kaydet",
+  "pleaseEnterValidCost": "Lütfen ödediğiniz geçerli bir tutar giriniz.",
+  "pleaseUploadReceipt": "Lütfen fiş, fatura veya dekont belgesi yükleyiniz.",
+  "pleaseSelectCostPayer": "Lütfen maliyet sorumlusunu seçiniz.",
+  "noteLabel": "Not",
+  "amountPaid": "Ödenen Masraf Tutarı",
+  "costAmount": "Maliyet Tutarı",
+  "costResponsibility": "Maliyet Sorumlusu",
+  "paymentInvoiceStatus": "Ödeme & Fatura Durumu",
+  "paymentDueDate": "Ödeme / Vade Tarihi",
+  "noDate": "Tarih seçilmedi",
+  "uploadReceiptInvoice": "Fiş / Fatura / Dekont Yükle (PDF, Görsel)",
+  "uploadInvoiceDoc": "Fatura Belgesi Yükle",
+  "existingDocument": "Kayıtlı Fatura / Fiş Belgesi",
+  "change": "Değiştir",
+  "enterAmountAttachReceipt": "Ödediğiniz tutarı girip fiş/fatura belgesini yükleyin.",
+  "declaredAmountTitle": "Bildirilen Tutar: {amount} • Lütfen nihai maliyet sorumlusunu seçiniz:",
+  "@declaredAmountTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseApprovalResponsibility": "Masraf Onayı & Maliyet Sorumlusu",
+  "landlordCoveredPaidTitle": "Ev Sahibi Karşıladı (Ödendi Olarak Kapat)",
+  "landlordCoveredPaidSub": "Masraf ev sahibinin demirbaş sorumluluğundadır. Tutar ev sahibi üzerinde kalır, süreç ödendi olarak tamamlanır.",
+  "landlordCoveredPaidBadge": "Ödendi • Demirbaş",
+  "tenantWillPayTitle": "Kiracı Karşılayacak (Kirama Eklensin / Ödeyeceğim)",
+  "tenantWillPaySub": "Masraf kiracı kusuru/kullanımından doğmuştur. Tutar kiracıya borç olarak yansıtılır ve ödeme beklenir.",
+  "tenantWillPayBadge": "Ödeme Bekliyor • Kiracıya Borç",
+  "tenantPaidMarkAsPaidTitle": "Kiracı Karşıladı (Ödendi Olarak Kapat)",
+  "tenantPaidMarkAsPaidSub": "Arıza kiracının kullanımından doğmuştur. Tutar kiracı üzerinde kalır, süreç ödendi olarak kapatılır.",
+  "tenantPaidMarkAsPaidBadge": "Ödendi • Kiracı Kullanımı",
+  "landlordReimbursesTitle": "Ev Sahibi Karşılayacak (Kiracıya İade / Kiradan Düşülecek)",
+  "landlordReimbursesSub": "Kiracı peşin ödemiş olsa da masraf mülk demirbaşına aittir. Ev sahibi kiracıya iade etmeli veya sonraki kiradan düşülmelidir.",
+  "landlordReimbursesBadge": "Ödeme Bekliyor • Kiradan Düşülecek",
+  "propertyManagedByAgencyNotice": "Mülk acente yönetimindedir. Finansal bilgileri yalnızca acente düzenleyebilir.",
+  "agencyExpenseApprovedMsg": "✅ Masraf onaylandı: {amount} ({actor} tarafından onaylandı • {details})",
+  "@agencyExpenseApprovedMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "agencyExpenseRejectedMsg": "❌ Masraf bildirimi reddedildi ({actor} tarafından reddedildi)",
+  "@agencyExpenseRejectedMsg": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonLabel": "Sebep: {reason}",
+  "@reasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "roleYou": "Siz",
+  "roleUser": "Kullanıcı",
+  "landlordDeclaredExpenseSubtitle": "Ev sahibi {amount} tutarında masraf bildirdi. Masrafı onaylayabilir veya reddedebilirsiniz.",
+  "@landlordDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantDeclaredExpenseSubtitle": "Kiracı {amount} tutarında masraf bildirdi. Masrafı onaylayabilir veya reddedebilirsiniz.",
+  "@tenantDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseSubmittedForLandlordReview": "Bildirdiğiniz masraf ev sahibinin onayına sunuldu. İnceleme bekleniyor.",
+  "expenseSubmittedForTenantReview": "Bildirdiğiniz masraf kiracının onayına sunuldu. İnceleme bekleniyor.",
+  "tblRequestProperty": "Talep & Mülk",
+  "tblPriority": "Öncelik",
+  "tblIssueStatus": "Arıza Durumu",
+  "tblCostPayer": "Masraf & Sorumlu",
+  "tblFinancialStatus": "Finansal Onay",
+  "tblDate": "Tarih",
+  "dueDatePrefix": "Vade",
+  "edit": "Düzenle",
+  "update": "Güncelle",
+  "paymentDate": "Ödeme Tarihi",
+  "profileUpdated": "Başarıyla kaydedildi.",
+  "agencyPropertyTakeoverTitle": "Acentenin Eklediği Mülkü Devralın",
+  "agencyPropertyTakeoverDesc": "Acente tarafından girilen mülkü QR kod okutarak veya davet kodu ile hesabınıza ekleyin.",
+  "scanQrOrEnterInviteCodeBtn": "QR Kod Okut / Davet Kodu Gir",
+  "settlementIntentTitle": "Ödeme Amacı & Mahsuplaşma Talebi",
+  "intentTenantSelfTitle": "Kendi Kullanımım İçin Ödedim (Kullanım Hasarı)",
+  "intentTenantSelfSub": "Tutar kendi üzerimde kalır. Mahsuplaşma talep etmiyorum, ödendi olarak kapatılsın.",
+  "intentTenantSelfBadge": "Ödendi • Kendi Masrafım",
+  "intentTenantReimburseTitle": "Demirbaş / Mülk Adına Ödedim (Ev Sahibi Karşılasın)",
+  "intentTenantReimburseSub": "Mülk demirbaşı için peşin ödedim. Sonraki kiradan düşülmesini veya iade edilmesini talep ediyorum.",
+  "intentTenantReimburseBadge": "Kiradan Düşülsün",
+  "intentLandlordSelfTitle": "Mülk Demirbaşı İçin Karşıladım (Demirbaş Masrafı)",
+  "intentLandlordSelfSub": "Demirbaş harcamasını ben üstlendim. Kiracıdan talep edilmez, ödendi olarak kapatılsın.",
+  "intentLandlordSelfBadge": "Ödendi • Ev Sahibi",
+  "intentLandlordTenantDueTitle": "Kiracı Kullanımı / Kusuru İçin Ödedim",
+  "intentLandlordTenantDueSub": "Hasar kiracı kullanımından doğmuştur. Tutarın kiracının sonraki kirasına eklenmesini talep ediyorum.",
+  "intentLandlordTenantDueBadge": "Kiraya Eklensin",
+  "pleaseSelectDeclarationIntent": "Lütfen masrafın amacını ve mahsuplaşma talebinizi seçiniz.",
+  "confirmTenantReimburseApprovalTitle": "Kiradan Düşüm Onayı",
+  "confirmTenantReimburseApprovalMsg": "Kiracının {amount} tutarındaki demirbaş masrafını ve bu tutarın sonraki kiradan düşülmesini onaylıyor musunuz?",
+  "@confirmTenantReimburseApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmTenantSelfApprovalTitle": "Kullanım Masrafı Onayı",
+  "confirmTenantSelfApprovalMsg": "Kiracının {amount} tutarındaki kullanım masrafını kendi karşıladığını ve sürecin mahsuplaşmasız (Ödendi) kapatılmasını onaylıyor musunuz?",
+  "@confirmTenantSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordSelfApprovalTitle": "Demirbaş Masrafı Onayı",
+  "confirmLandlordSelfApprovalMsg": "Ev sahibinin {amount} tutarındaki demirbaş masrafını doğrudan karşıladığını ve sürecin 'Ödendi' olarak tamamlanmasını onaylıyor musunuz?",
+  "@confirmLandlordSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordTenantDueApprovalTitle": "Kiraya Ekleme Onayı",
+  "confirmLandlordTenantDueApprovalMsg": "Ev sahibinin bildirdiği {amount} masrafın kullanımınızdan kaynaklandığını ve sonraki kiranıza eklenmesini onaylıyor musunuz?",
+  "@confirmLandlordTenantDueApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "declaredIntentLabel": "Mahsuplaşma Talebi: {intent}",
+  "@declaredIntentLabel": {
+    "placeholders": {
+      "intent": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceSettlementsHeader": "Bakım & Demirbaş Mahsuplaşmaları",
+  "maintenanceSettlementsSub": "Kiradan düşülecek veya kiraya eklenecek onaylanmış bakım masrafları",
+  "deductFromRentBadge": "Kiradan Düşülecek",
+  "addToRentBadge": "Kiraya Eklenecek",
+  "markAsSettledBtn": "Mahsup Edildi / Ödendi",
+  "confirmSettlementTitle": "Mahsuplaşmayı Kapat",
+  "confirmSettlementMsg": "{amount} tutarındaki bakım masrafının mahsup edildiğini/ödendiğini onaylayıp kapatmak istiyor musunuz?",
+  "@confirmSettlementMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementRecordedSuccess": "Bakım mahsuplaşması başarıyla kapatıldı.",
+  "goToMaintenanceRequest": "Talebi Aç",
+  "maintenanceSettlementActivityMsg": "💰 Bakım masrafı ({amount}) {role} tarafından mahsup edildi / ödendi olarak işaretlendi.",
+  "@maintenanceSettlementActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "settleExpenseTitle": "Bakım Masrafı Kapatma & Mahsuplaşma",
+  "settleExpenseSub": "Ödeme veya mahsuplaşma yöntemini seçiniz",
+  "optionOffsetFromRent": "Kiradan / Faturadan Mahsup Et",
+  "optionOffsetFromRentDesc": "Aynı para birimindeki bekleyen bir kira veya faturadan bu tutarı otomatik düş",
+  "optionBankTransfer": "Banka Transferi ile İade Et / Öde",
+  "optionBankTransferDesc": "Ödeme dekontu yükleyerek karşı tarafın onayına gönder",
+  "optionCashPayment": "Elden / Nakit Olarak Öde",
+  "optionCashPaymentDesc": "Nakit olarak elden teslim edildiğini beyan et",
+  "selectRentToOffset": "Mahsup Edilecek Kalemi Seçin",
+  "noEligiblePendingPayments": "Mahsup edilebilecek uygun bekleyen kira veya fatura bulunamadı ({currency}).",
+  "@noEligiblePendingPayments": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "offsetAppliedSuccess": "{amount} tutarı {paymentTitle} kaleminden başarıyla mahsup edildi.",
+  "@offsetAppliedSuccess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmReceiptBtn": "Ödemeyi Aldım / Onayla",
+  "waitingForRecipientApproval": "Karşı tarafın onayı bekleniyor",
+  "iPaidBtn": "Ödedim / Dekont Yükle",
+  "iPaidCashBtn": "Elden Ödedim",
+  "maintenanceCashPaidActivityMsg": "💵 {role}, {amount} bakım masrafını elden ödediğini beyan etti. Onay bekleniyor.",
+  "@maintenanceCashPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceBankPaidActivityMsg": "📄 {role}, {amount} bakım masrafını banka havalesiyle ödediğini beyan etti (Dekont yüklendi). Onay bekleniyor.",
+  "@maintenanceBankPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceOffsetActivityMsg": "🏠 {amount} bakım masrafı {paymentTitle} kaleminden mahsup edildi.",
+  "@maintenanceOffsetActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  }
 }

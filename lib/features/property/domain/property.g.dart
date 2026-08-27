@@ -28,9 +28,22 @@ _Property _$PropertyFromJson(Map<String, dynamic> json) => _Property(
       TaxType.included,
   expensesTemplate:
       (json['expenses_template'] as List<dynamic>?)
-          ?.map((e) => e is ExpenseItem ? e : ExpenseItem.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => ExpenseItem.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  isDetailed: json['is_detailed'] as bool? ?? false,
+  propertyType: json['property_type'] as String?,
+  unitNumber: json['unit_number'] as String?,
+  roomCount: json['room_count'] as String?,
+  areaSqm: (json['area_sqm'] as num?)?.toDouble(),
+  floor: json['floor'] as String?,
+  totalFloors: (json['total_floors'] as num?)?.toInt(),
+  furnishing: json['furnishing'] as String?,
+  heatingType: json['heating_type'] as String?,
+  amenities:
+      (json['amenities'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  description: json['description'] as String?,
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
@@ -55,6 +68,17 @@ Map<String, dynamic> _$PropertyToJson(_Property instance) => <String, dynamic>{
   'default_due_day': instance.defaultDueDay,
   'tax_type': _$TaxTypeEnumMap[instance.taxType]!,
   'expenses_template': instance.expensesTemplate,
+  'is_detailed': instance.isDetailed,
+  'property_type': instance.propertyType,
+  'unit_number': instance.unitNumber,
+  'room_count': instance.roomCount,
+  'area_sqm': instance.areaSqm,
+  'floor': instance.floor,
+  'total_floors': instance.totalFloors,
+  'furnishing': instance.furnishing,
+  'heating_type': instance.heatingType,
+  'amenities': instance.amenities,
+  'description': instance.description,
   'created_at': instance.createdAt?.toIso8601String(),
 };
 

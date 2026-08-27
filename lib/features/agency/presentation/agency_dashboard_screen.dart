@@ -16,6 +16,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/utils/expense_utils.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -526,7 +527,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             ),
 
             // ── Tab 3: Bakım / Talepler (Arıza & Bakım Talepleri) ─────────
-            _AgencyMaintenanceTab(colors: colors),
+            AgencyMaintenanceTab(colors: colors),
           ],
         ),
       ),
@@ -660,7 +661,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
       }
       if (_filterBy == 'has_debt' && !debtPropertyIds.contains(p.id)) return false;
       if (_filterBy == 'occupied' && p.tenantId == null) return false;
-      if (_filterBy == 'vacant' && (p.tenantId != null || p.landlordId == null)) return false;
+      if (_filterBy == 'vacant' && p.tenantId != null) return false;
 
       final query = _searchQuery.trim().toLowerCase();
       if (query.isEmpty) return true;
@@ -784,7 +785,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
   ) {
     final debtCount = allProps.where((p) => debtPropertyIds.contains(p.id)).length;
     final occupiedCount = allProps.where((p) => p.tenantId != null).length;
-    final vacantCount = allProps.where((p) => p.tenantId == null && p.landlordId != null).length;
+    final vacantCount = allProps.where((p) => p.tenantId == null).length;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -2269,17 +2270,59 @@ class _FinanceTableView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const colProperty = 260.0;
-    const colLandlord = 200.0;
-    const colDueDate = 120.0;
-    const colAmount = 130.0;
-    const colStatus = 120.0;
-    const colAction = 140.0;
-    const tableWidth = colProperty + colLandlord + colDueDate + colAmount + colStatus + colAction;
-
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double width = constraints.maxWidth > tableWidth ? constraints.maxWidth : tableWidth;
+        final screenWidth = constraints.maxWidth;
+        final isDesktop = screenWidth >= 768;
+
+        if (!isDesktop) {
+          // Mobile / Small Screen: Compact List View
+          return Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.025),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: payments.length,
+                separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (ctx, i) {
+                  final payment = payments[i];
+                  return _FinanceCompactRow(
+                    payment: payment,
+                    propertiesMap: propertiesMap,
+                    colors: colors,
+                    loc: loc,
+                    segment: segment,
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        // Desktop High-Density Proportional Table View
+        final tableWidth = screenWidth > 980 ? screenWidth : 980.0;
+        const colAction = 140.0;
+        const horizontalPadding = 32.0; // 16 left + 16 right
+        final usableWidth = tableWidth - horizontalPadding - colAction;
+        final colProperty = usableWidth * 0.28;
+        final colLandlord = usableWidth * 0.24;
+        final colDueDate = usableWidth * 0.16;
+        final colAmount = usableWidth * 0.16;
+        final colStatus = usableWidth * 0.16;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -2300,7 +2343,7 @@ class _FinanceTableView extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             physics: const ClampingScrollPhysics(),
             child: SizedBox(
-              width: width,
+              width: tableWidth,
               child: Column(
                 children: [
                   // Table Header
@@ -2418,6 +2461,200 @@ class _FinanceTableView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _FinanceCompactRow extends ConsumerWidget {
+  final Map<String, dynamic> payment;
+  final Map<String, Property> propertiesMap;
+  final AgencyColorScheme colors;
+  final AppLocalizations loc;
+  final int segment;
+
+  const _FinanceCompactRow({
+    required this.payment,
+    required this.propertiesMap,
+    required this.colors,
+    required this.loc,
+    required this.segment,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = payment['id'] as String;
+    final propertyId = payment['property_id'] as String? ?? '';
+    final pObj = propertiesMap[propertyId];
+
+    final amount = (payment['amount'] as num?)?.toDouble() ??
+        (payment['total_amount'] as num?)?.toDouble() ??
+        (payment['rent_amount'] as num?)?.toDouble() ??
+        0.0;
+    final currency = payment['currency'] as String? ?? pObj?.currency ?? 'EUR';
+
+    final rawTitle = payment['title'] as String? ?? 'Kira';
+    final localizedTitle = ExpenseUtils.getLocalizedExpenseName(rawTitle, loc);
+
+    final dueDateStr = payment['due_date'] as String?;
+    final dueDate = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+    final dueDateFormatted = dueDate != null ? DateFormat('dd MMM yyyy', loc.localeName).format(dueDate) : null;
+
+    final rawMonth = payment['month'] as String?;
+    String periodText = '';
+    if (rawMonth != null && rawMonth.trim().isNotEmpty && rawMonth != localizedTitle && rawMonth != rawTitle) {
+      periodText = rawMonth;
+    } else if (dueDate != null) {
+      periodText = DateFormat('MMMM yyyy', loc.localeName).format(dueDate);
+    }
+    final isCash = payment['is_cash'] == true;
+    final status = payment['status'] as String? ?? 'pending';
+
+    final propertyData = payment['property'] as Map<String, dynamic>?;
+    final propertyName = propertyData?['name'] as String? ?? pObj?.name ?? loc.managedProperties;
+
+    final targetProperty = pObj ?? (propertyData != null && propertyData['id'] != null ? Property.fromJson(propertyData) : null);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final isOverdue = (status == 'overdue') || (status == 'pending' && dueDate != null && dueDate.isBefore(today) && amount > 0);
+
+    return InkWell(
+      onTap: () {
+        if (targetProperty != null) {
+          context.push(
+            '/property-detail',
+            extra: {
+              'property': targetProperty,
+              'initialTabIndex': 1,
+              'initialExpandedPaymentId': id,
+            },
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(LucideIcons.building2, size: 17, color: Color(0xFF2563EB)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    propertyName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            localizedTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        dueDateFormatted ?? (periodText.isNotEmpty ? periodText : '—'),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isOverdue ? const Color(0xFFE11D48) : const Color(0xFF94A3B8),
+                          fontWeight: isOverdue ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      amount > 0 ? '${amount.toStringAsFixed(0)} $currency' : '—',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    if (isCash) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          loc.cashBadge,
+                          style: const TextStyle(fontSize: 8.5, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: status == 'paid'
+                        ? const Color(0xFFECFDF5)
+                        : (isOverdue ? const Color(0xFFFFF1F2) : const Color(0xFFFFFBEB)),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    status == 'paid' ? loc.filterActiveLabel : (isOverdue ? loc.statusOverdue : loc.statusPending),
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      color: status == 'paid'
+                          ? const Color(0xFF065F46)
+                          : (isOverdue ? const Color(0xFFE11D48) : const Color(0xFFB45309)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            const Icon(LucideIcons.chevronRight, size: 16, color: Color(0xFF94A3B8)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -2580,28 +2817,34 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  localizedTitle,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF475569),
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    localizedTitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF475569),
+                                    ),
                                   ),
                                 ),
                               ),
                               if (cityName.isNotEmpty) ...[
                                 const SizedBox(width: 4),
-                                Text(
-                                  '· $cityName',
-                                  style: const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8)),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                Flexible(
+                                  child: Text(
+                                    '· $cityName',
+                                    style: const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8)),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ],
@@ -3555,16 +3798,16 @@ class _FinancePaymentItemCard extends ConsumerWidget {
   }
 }
 
-class _AgencyMaintenanceTab extends ConsumerStatefulWidget {
+class AgencyMaintenanceTab extends ConsumerStatefulWidget {
   final AgencyColorScheme colors;
 
-  const _AgencyMaintenanceTab({required this.colors});
+  const AgencyMaintenanceTab({super.key, required this.colors});
 
   @override
-  ConsumerState<_AgencyMaintenanceTab> createState() => _AgencyMaintenanceTabState();
+  ConsumerState<AgencyMaintenanceTab> createState() => _AgencyMaintenanceTabState();
 }
 
-class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
+class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _groupBy = 'none'; // 'none', 'status', 'priority', 'category', 'property'
@@ -3669,7 +3912,10 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'managed_unit': 'Yönetilen Daire',
           'view_detail': 'Detayı Gör',
           'col_priority': 'Öncelik',
+          'col_issue_status': 'Arıza Durumu',
+          'col_payment_status': 'Ödeme / Masraf',
           'col_date': 'Tarih',
+          'no_financials': 'Masraf Belirtilmedi',
         };
       case 'sr':
         return {
@@ -3722,7 +3968,10 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'managed_unit': 'Upravljani Stan',
           'view_detail': 'Pogledaj Detalje',
           'col_priority': 'Prioritet',
+          'col_issue_status': 'Status Kvara',
+          'col_payment_status': 'Plaćanje / Trošak',
           'col_date': 'Datum',
+          'no_financials': 'Nema troška',
         };
       case 'ru':
         return {
@@ -3775,7 +4024,10 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'managed_unit': 'Управляемый Объект',
           'view_detail': 'Подробнее',
           'col_priority': 'Приоритет',
+          'col_issue_status': 'Статус Заявки',
+          'col_payment_status': 'Оплата / Расход',
           'col_date': 'Дата',
+          'no_financials': 'Без расходов',
         };
       case 'en':
       default:
@@ -3829,7 +4081,10 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
           'managed_unit': 'Managed Property',
           'view_detail': 'View Details',
           'col_priority': 'Priority',
+          'col_issue_status': 'Issue Status',
+          'col_payment_status': 'Payment & Cost',
           'col_date': 'Date',
+          'no_financials': 'No cost assigned',
         };
     }
   }
@@ -3853,39 +4108,50 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Header (Bento Style)
+          // Section Header (Luxury Bento Style)
           Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF9333EA).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: const Color(0xFF9333EA).withValues(alpha: 0.2)),
+                  color: widget.colors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: widget.colors.primary.withValues(alpha: 0.25)),
                 ),
-                child: const Icon(LucideIcons.wrench, size: 18, color: Color(0xFF9333EA)),
+                child: Icon(LucideIcons.wrench, size: 19, color: widget.colors.primary),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  loc.maintenanceRequestsHeader,
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width < 768 ? 17 : 20,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
-                    letterSpacing: -0.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loc.maintenanceRequestsHeader,
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width < 768 ? 18 : 22,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.6,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           requestsAsync.when(
-            data: (allRequests) {
+            data: (rawRequests) {
+              // Ensure only requests belonging to the user's properties are included
+              final userPropertyIds = properties.map((p) => p.id).toSet();
+              final allRequests = properties.isNotEmpty
+                  ? rawRequests.where((r) => userPropertyIds.contains(r.propertyId)).toList()
+                  : rawRequests;
+
               // 1. KPI Calculation
               final urgentCount = allRequests.where((r) => r.priority == MaintenancePriority.urgent || r.priority == MaintenancePriority.high).length;
               final activeCount = allRequests.where((r) => r.status == MaintenanceStatus.open || r.status == MaintenanceStatus.investigating || r.status == MaintenanceStatus.inProgress).length;
@@ -4403,82 +4669,89 @@ class _AgencyMaintenanceTabState extends ConsumerState<_AgencyMaintenanceTab> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         width: width,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color.withValues(alpha: 0.8) : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.8 : 1.2,
+            color: isSelected ? color : const Color(0xFFE2E8F0),
+            width: isSelected ? 2.0 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? color.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.025),
-              blurRadius: isSelected ? 16 : 8,
-              offset: Offset(0, isSelected ? 4 : 2),
+              color: isSelected ? color.withValues(alpha: 0.16) : Colors.black.withValues(alpha: 0.03),
+              blurRadius: isSelected ? 20 : 10,
+              offset: Offset(0, isSelected ? 6 : 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
-                  ),
-                  child: Icon(icon, size: 16, color: color),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: color.withValues(alpha: 0.25)),
+                    border: Border.all(color: color.withValues(alpha: 0.2)),
+                  ),
+                  child: Icon(icon, size: 18, color: color),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: isSelected ? color : bgColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: isSelected ? color : color.withValues(alpha: 0.25)),
                   ),
                   child: Text(
                     badgeStr,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w800,
-                      color: color,
+                      color: isSelected ? Colors.white : color,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
-                letterSpacing: -0.1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              mainValue,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.4,
-              ),
+            const SizedBox(height: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF64748B),
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  mainValue,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -4687,42 +4960,50 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
     // Status mapping (Soft Tinted)
     Color statusBg = const Color(0xFFF1F5F9);
     Color statusColor = const Color(0xFF475569);
+    Color statusDotColor = const Color(0xFF94A3B8);
     String statusText = 'Bilinmiyor';
 
     switch (req.status) {
       case MaintenanceStatus.open:
         statusBg = const Color(0xFFFFFBEB);
         statusColor = const Color(0xFFB45309);
+        statusDotColor = const Color(0xFFD97706);
         statusText = loc.statusActive;
         break;
       case MaintenanceStatus.investigating:
         statusBg = const Color(0xFFEFF6FF);
         statusColor = const Color(0xFF1D4ED8);
+        statusDotColor = const Color(0xFF2563EB);
         statusText = loc.statusInvestigating;
         break;
       case MaintenanceStatus.inProgress:
         statusBg = const Color(0xFFFFF7ED);
         statusColor = const Color(0xFFC2410C);
+        statusDotColor = const Color(0xFFEA580C);
         statusText = txt['status_technician_sent']!;
         break;
       case MaintenanceStatus.resolved:
         statusBg = const Color(0xFFECFDF5);
         statusColor = const Color(0xFF065F46);
+        statusDotColor = const Color(0xFF10B981);
         statusText = loc.statusResolved;
         break;
       case MaintenanceStatus.closed:
         statusBg = const Color(0xFFF1F5F9);
         statusColor = const Color(0xFF64748B);
+        statusDotColor = const Color(0xFF94A3B8);
         statusText = txt['status_closed']!;
         break;
       case MaintenanceStatus.pending:
         statusBg = const Color(0xFFFFFBEB);
         statusColor = const Color(0xFFD97706);
+        statusDotColor = const Color(0xFFF59E0B);
         statusText = txt['status_pending']!;
         break;
       case MaintenanceStatus.cancelled:
         statusBg = const Color(0xFFFEF2F2);
         statusColor = const Color(0xFFDC2626);
+        statusDotColor = const Color(0xFFEF4444);
         statusText = txt['status_cancelled']!;
         break;
     }
@@ -4859,7 +5140,7 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
                         const SizedBox(width: 6),
                       ],
 
-                      // Status Badge
+                      // Status Badge with Dot Indicator
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                         decoration: BoxDecoration(
@@ -4867,13 +5148,27 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                         ),
-                        child: Text(
-                          statusText,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: statusColor,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5.5,
+                              height: 5.5,
+                              decoration: BoxDecoration(
+                                color: statusDotColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4.5),
+                            Text(
+                              statusText,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: statusColor,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -4903,6 +5198,7 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                  _buildFinancialRow(req, context, loc, txt),
                   const SizedBox(height: 14),
 
                   // Footer Divider & Meta info
@@ -4965,10 +5261,284 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
       ),
     );
   }
+
+  Widget _buildFinancialRow(MaintenanceRequest req, BuildContext context, AppLocalizations loc, Map<String, String> txt) {
+    if (req.costAmount == null && req.invoicePdfUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    final lang = Localizations.localeOf(context).languageCode.toLowerCase();
+
+    String tenantLabel;
+    String landlordLabel;
+    String pendingReviewLabel;
+    String pendingPaymentLabel;
+    String paidLabel;
+    String rejectedLabel;
+
+    switch (lang) {
+      case 'tr':
+        tenantLabel = 'Kiracı';
+        landlordLabel = 'Ev Sahibi';
+        pendingReviewLabel = 'İnceleme Bekliyor';
+        pendingPaymentLabel = 'Ödeme Bekliyor';
+        paidLabel = 'Ödendi';
+        rejectedLabel = 'Reddedildi';
+        break;
+      case 'sr':
+        tenantLabel = 'Stanar';
+        landlordLabel = 'Vlasnik';
+        pendingReviewLabel = 'Čeka proveru';
+        pendingPaymentLabel = 'Čeka plaćanje';
+        paidLabel = 'Plaćeno';
+        rejectedLabel = 'Odbijeno';
+        break;
+      case 'ru':
+        tenantLabel = 'Арендатор';
+        landlordLabel = 'Владелец';
+        pendingReviewLabel = 'На проверке';
+        pendingPaymentLabel = 'Ожидает оплаты';
+        paidLabel = 'Оплачено';
+        rejectedLabel = 'Отклонено';
+        break;
+      default:
+        tenantLabel = 'Tenant';
+        landlordLabel = 'Landlord';
+        pendingReviewLabel = 'Pending Review';
+        pendingPaymentLabel = 'Pending Payment';
+        paidLabel = 'Paid';
+        rejectedLabel = 'Rejected';
+        break;
+    }
+
+    Color finStatusColor;
+    Color finStatusBg;
+    IconData finStatusIcon;
+    String finStatusLabel;
+
+    switch (req.financialStatus) {
+      case MaintenancePaymentStatus.pendingReview:
+        finStatusColor = const Color(0xFF1A5EB8);
+        finStatusBg = const Color(0xFFEBF3FC);
+        finStatusIcon = LucideIcons.fileSearch;
+        finStatusLabel = pendingReviewLabel;
+        break;
+      case MaintenancePaymentStatus.pendingPayment:
+        finStatusColor = const Color(0xFFB06C10);
+        finStatusBg = const Color(0xFFFEF6E8);
+        finStatusIcon = LucideIcons.clock;
+        finStatusLabel = pendingPaymentLabel;
+        break;
+      case MaintenancePaymentStatus.paid:
+        finStatusColor = const Color(0xFF2DB87A);
+        finStatusBg = const Color(0xFFE6F7F0);
+        finStatusIcon = LucideIcons.checkCircle2;
+        finStatusLabel = paidLabel;
+        break;
+      case MaintenancePaymentStatus.rejected:
+        finStatusColor = const Color(0xFFC8503A);
+        finStatusBg = const Color(0xFFFDF0EE);
+        finStatusIcon = LucideIcons.xCircle;
+        finStatusLabel = rejectedLabel;
+        break;
+    }
+
+    final currency = req.currency ?? (widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR');
+
+    String dateLabel = '';
+    IconData dateIcon = LucideIcons.calendar;
+    Color dateColor = const Color(0xFF64748B);
+    Color dateBg = const Color(0xFFF1F5F9);
+
+    if (req.financialStatus == MaintenancePaymentStatus.paid) {
+      final pDate = req.paymentDate ?? req.updatedAt ?? req.createdAt;
+      final dateStr = pDate != null ? DateFormat('dd.MM.yyyy').format(pDate) : '-';
+      dateLabel = '${loc.paymentDate}: $dateStr';
+      dateIcon = LucideIcons.checkCircle2;
+      dateColor = const Color(0xFF065F46);
+      dateBg = const Color(0xFFECFDF5);
+    } else if (req.paymentDate != null) {
+      final dateStr = DateFormat('dd.MM.yyyy').format(req.paymentDate!);
+      dateLabel = '${loc.dueDatePrefix}: $dateStr';
+      dateIcon = LucideIcons.clock;
+      dateColor = const Color(0xFFB45309);
+      dateBg = const Color(0xFFFFFBEB);
+    } else if (req.createdAt != null) {
+      final dateStr = DateFormat('dd.MM.yyyy').format(req.createdAt!);
+      dateLabel = '${loc.tblDate}: $dateStr';
+      dateIcon = LucideIcons.calendar;
+      dateColor = const Color(0xFF475569);
+      dateBg = const Color(0xFFF1F5F9);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Row 1: Amount + Payer + Status Badge
+          Row(
+            children: [
+              // Cost Amount
+              if (req.costAmount != null) ...[
+                Text(
+                  '${req.costAmount!.toStringAsFixed(2)} $currency',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+
+              // Payer badge
+              if (req.paidBy != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: (req.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        req.paidBy == 'tenant' ? LucideIcons.user : LucideIcons.home,
+                        size: 10,
+                        color: req.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        req.paidBy == 'tenant' ? tenantLabel : landlordLabel,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: req.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const Spacer(),
+
+              // Payment Status Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: finStatusBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: finStatusColor.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(finStatusIcon, size: 11, color: finStatusColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      finStatusLabel,
+                      style: TextStyle(
+                        color: finStatusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Row 2: Date Info + Clickable Invoice Link
+          Row(
+            children: [
+              // Date Badge (Due Date or Payment Date)
+              if (dateLabel.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: dateBg,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(dateIcon, size: 11, color: dateColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        dateLabel,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: dateColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const Spacer(),
+
+              // Clickable Invoice Link
+              if (req.invoicePdfUrl != null && req.invoicePdfUrl!.isNotEmpty) ...[
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      final uri = Uri.parse(req.invoicePdfUrl!);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(LucideIcons.fileText, size: 11, color: Colors.red),
+                          const SizedBox(width: 4),
+                          Text(
+                            loc.viewReceipt,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
-// High Density Dense Maintenance Table View & Rows
+// B2B SaaS (Linear + Stripe + Ramp) Precision Data Table & Rows
 // ---------------------------------------------------------------------------
 
 class _MaintenanceTableView extends StatelessWidget {
@@ -4989,80 +5559,25 @@ class _MaintenanceTableView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final propertiesMap = {for (var p in properties) p.id: p};
+    final lang = Localizations.localeOf(context).languageCode.toLowerCase();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
-        final isDesktop = screenWidth >= 768;
-
-        if (!isDesktop) {
-          // Mobile / Small Screen: Compact List View
-          return Container(
-            margin: const EdgeInsets.only(bottom: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.025),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: requests.length,
-                separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (ctx, i) {
-                  final req = requests[i];
-                  final prop = propertiesMap[req.propertyId] ??
-                      Property(
-                        id: req.propertyId,
-                        landlordId: '',
-                        name: txt['property_detail']!,
-                        address: txt['managed_unit']!,
-                        defaultMonthlyRent: 0,
-                      );
-                  return _MaintenanceCompactRow(
-                    req: req,
-                    property: prop,
-                    loc: loc,
-                    txt: txt,
-                    colors: colors,
-                  );
-                },
-              ),
-            ),
-          );
-        }
-
-        // Desktop High-Density Proportional Table View
-        final tableWidth = screenWidth > 880 ? screenWidth : 880.0;
-        const colAction = 50.0;
-        const horizontalPadding = 32.0; // 16 left + 16 right
-        final usableWidth = tableWidth - horizontalPadding - colAction;
-        final colTitle = usableWidth * 0.32;
-        final colProperty = usableWidth * 0.24;
-        final colPriority = usableWidth * 0.14;
-        final colStatus = usableWidth * 0.16;
-        final colDate = usableWidth * 0.14;
+        // Comfortable minimum table width so columns never crunch
+        final tableWidth = screenWidth > 1150 ? screenWidth : 1150.0;
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.025),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -5074,9 +5589,9 @@ class _MaintenanceTableView extends StatelessWidget {
               width: tableWidth,
               child: Column(
                 children: [
-                  // Table Header
+                  // SaaS Table Header Bar
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                     decoration: const BoxDecoration(
                       color: Color(0xFFF8FAFC),
                       border: Border(
@@ -5085,10 +5600,24 @@ class _MaintenanceTableView extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        SizedBox(
-                          width: colTitle,
+                        const SizedBox(
+                          width: 48,
                           child: Text(
-                            loc.tabRequests.toUpperCase(),
+                            'ID',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 28,
+                          child: Text(
+                            loc.tblRequestProperty.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -5097,10 +5626,12 @@ class _MaintenanceTableView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: colProperty,
+                        Expanded(
+                          flex: 12,
                           child: Text(
-                            loc.propertyDetailsHeader.toUpperCase(),
+                            loc.tblPriority.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -5109,10 +5640,12 @@ class _MaintenanceTableView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: colPriority,
+                        Expanded(
+                          flex: 14,
                           child: Text(
-                            txt['col_priority']!.toUpperCase(),
+                            loc.tblIssueStatus.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -5121,10 +5654,12 @@ class _MaintenanceTableView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: colStatus,
+                        Expanded(
+                          flex: 15,
                           child: Text(
-                            loc.statusLabel.toUpperCase(),
+                            loc.tblCostPayer.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -5133,10 +5668,12 @@ class _MaintenanceTableView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: colDate,
+                        Expanded(
+                          flex: 20,
                           child: Text(
-                            txt['col_date']!.toUpperCase(),
+                            loc.tblFinancialStatus.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -5145,13 +5682,27 @@ class _MaintenanceTableView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: colAction,
+                        Expanded(
+                          flex: 11,
+                          child: Text(
+                            loc.tblDate.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 40,
                           child: Align(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              loc.colAction.toUpperCase(),
-                              style: const TextStyle(
+                              'İŞLEM',
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF64748B),
@@ -5164,7 +5715,7 @@ class _MaintenanceTableView extends StatelessWidget {
                     ),
                   ),
 
-                  // Rows
+                  // SaaS Table Rows
                   ...requests.asMap().entries.map((entry) {
                     final index = entry.key;
                     final req = entry.value;
@@ -5178,19 +5729,14 @@ class _MaintenanceTableView extends StatelessWidget {
                           defaultMonthlyRent: 0,
                         );
 
-                    return _MaintenanceTableRow(
+                    return _MaintenanceSaasRow(
+                      index: index + 1,
                       req: req,
                       property: prop,
                       loc: loc,
                       txt: txt,
                       colors: colors,
                       isLast: isLast,
-                      colTitle: colTitle,
-                      colProperty: colProperty,
-                      colPriority: colPriority,
-                      colStatus: colStatus,
-                      colDate: colDate,
-                      colAction: colAction,
                     );
                   }),
                 ],
@@ -5203,40 +5749,30 @@ class _MaintenanceTableView extends StatelessWidget {
   }
 }
 
-class _MaintenanceTableRow extends StatefulWidget {
+class _MaintenanceSaasRow extends StatefulWidget {
+  final int index;
   final MaintenanceRequest req;
   final Property property;
   final AppLocalizations loc;
   final Map<String, String> txt;
   final AgencyColorScheme colors;
   final bool isLast;
-  final double colTitle;
-  final double colProperty;
-  final double colPriority;
-  final double colStatus;
-  final double colDate;
-  final double colAction;
 
-  const _MaintenanceTableRow({
+  const _MaintenanceSaasRow({
+    required this.index,
     required this.req,
     required this.property,
     required this.loc,
     required this.txt,
     required this.colors,
     required this.isLast,
-    required this.colTitle,
-    required this.colProperty,
-    required this.colPriority,
-    required this.colStatus,
-    required this.colDate,
-    required this.colAction,
   });
 
   @override
-  State<_MaintenanceTableRow> createState() => _MaintenanceTableRowState();
+  State<_MaintenanceSaasRow> createState() => _MaintenanceSaasRowState();
 }
 
-class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
+class _MaintenanceSaasRowState extends State<_MaintenanceSaasRow> {
   bool _isHovered = false;
 
   IconData _getCategoryIcon(MaintenanceCategory cat) {
@@ -5269,7 +5805,7 @@ class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
       case MaintenanceCategory.appliance:
       case MaintenanceCategory.structural:
       case MaintenanceCategory.other:
-        return const Color(0xFF9333EA);
+        return const Color(0xFF7C3AED);
     }
   }
 
@@ -5279,89 +5815,154 @@ class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
     final property = widget.property;
     final loc = widget.loc;
     final txt = widget.txt;
+    final lang = Localizations.localeOf(context).languageCode.toLowerCase();
 
-    // Status mapping
+    // 1. Issue Status (Linear Style Dot + Pill)
     Color statusBg = const Color(0xFFF1F5F9);
     Color statusColor = const Color(0xFF475569);
+    Color statusDotColor = const Color(0xFF94A3B8);
     String statusText = 'Bilinmiyor';
 
     switch (req.status) {
       case MaintenanceStatus.open:
         statusBg = const Color(0xFFFFFBEB);
         statusColor = const Color(0xFFB45309);
+        statusDotColor = const Color(0xFFD97706);
         statusText = loc.statusActive;
         break;
       case MaintenanceStatus.investigating:
         statusBg = const Color(0xFFEFF6FF);
         statusColor = const Color(0xFF1D4ED8);
+        statusDotColor = const Color(0xFF2563EB);
         statusText = loc.statusInvestigating;
         break;
       case MaintenanceStatus.inProgress:
         statusBg = const Color(0xFFFFF7ED);
         statusColor = const Color(0xFFC2410C);
+        statusDotColor = const Color(0xFFEA580C);
         statusText = txt['status_technician_sent']!;
         break;
       case MaintenanceStatus.resolved:
         statusBg = const Color(0xFFECFDF5);
         statusColor = const Color(0xFF065F46);
+        statusDotColor = const Color(0xFF10B981);
         statusText = loc.statusResolved;
         break;
       case MaintenanceStatus.closed:
         statusBg = const Color(0xFFF1F5F9);
         statusColor = const Color(0xFF64748B);
+        statusDotColor = const Color(0xFF94A3B8);
         statusText = txt['status_closed']!;
         break;
       case MaintenanceStatus.pending:
         statusBg = const Color(0xFFFFFBEB);
         statusColor = const Color(0xFFD97706);
+        statusDotColor = const Color(0xFFF59E0B);
         statusText = txt['status_pending']!;
         break;
       case MaintenanceStatus.cancelled:
         statusBg = const Color(0xFFFEF2F2);
         statusColor = const Color(0xFFDC2626);
+        statusDotColor = const Color(0xFFEF4444);
         statusText = txt['status_cancelled']!;
         break;
     }
 
-    // Priority mapping
-    Color priorityBg = const Color(0xFFF1F5F9);
+    // 2. Priority (Linear Minimal Tag)
+    Color priorityBg = const Color(0xFFF8FAFC);
     Color priorityColor = const Color(0xFF64748B);
+    IconData priorityIcon = LucideIcons.minus;
     String priorityText = txt['normal_badge']!;
 
     switch (req.priority) {
       case MaintenancePriority.urgent:
         priorityBg = const Color(0xFFFFF1F2);
         priorityColor = const Color(0xFFE11D48);
+        priorityIcon = LucideIcons.alertTriangle;
         priorityText = txt['urgent_badge']!;
         break;
       case MaintenancePriority.high:
-        priorityBg = const Color(0xFFFFFBEB);
-        priorityColor = const Color(0xFFD97706);
+        priorityBg = const Color(0xFFFFF7ED);
+        priorityColor = const Color(0xFFEA580C);
+        priorityIcon = LucideIcons.arrowUp;
         priorityText = txt['high_badge']!;
         break;
       case MaintenancePriority.medium:
         priorityBg = const Color(0xFFEFF6FF);
         priorityColor = const Color(0xFF2563EB);
+        priorityIcon = LucideIcons.arrowRight;
         priorityText = txt['medium_badge']!;
         break;
       case MaintenancePriority.normal:
         priorityBg = const Color(0xFFF8FAFC);
         priorityColor = const Color(0xFF475569);
+        priorityIcon = LucideIcons.minus;
         priorityText = txt['normal_badge']!;
         break;
       case MaintenancePriority.low:
         priorityBg = const Color(0xFFF1F5F9);
         priorityColor = const Color(0xFF94A3B8);
+        priorityIcon = LucideIcons.arrowDown;
         priorityText = txt['low_badge']!;
         break;
     }
 
+    // 3. Category
     final categoryColor = _getCategoryColor(req.category);
     final categoryIcon = _getCategoryIcon(req.category);
 
+    // 4. Financials (Stripe / Ramp Structure)
+    final currency = req.currency ?? (property.currency.isNotEmpty ? property.currency : 'EUR');
+
+    String payerLabel = '';
+    if (req.paidBy != null) {
+      if (req.paidBy == 'tenant') {
+        payerLabel = loc.payerTenant;
+      } else {
+        payerLabel = loc.payerLandlord;
+      }
+    }
+
+    String finStatusLabel = '';
+    Color finStatusColor = const Color(0xFF64748B);
+    Color finStatusBg = const Color(0xFFF1F5F9);
+    IconData finStatusIcon = LucideIcons.clock;
+
+    switch (req.financialStatus) {
+      case MaintenancePaymentStatus.pendingReview:
+        finStatusLabel = loc.financialStatusPendingReview;
+        finStatusColor = const Color(0xFF1D4ED8);
+        finStatusBg = const Color(0xFFEFF6FF);
+        finStatusIcon = LucideIcons.fileSearch;
+        break;
+      case MaintenancePaymentStatus.pendingPayment:
+        finStatusLabel = loc.financialStatusPendingPayment;
+        finStatusColor = const Color(0xFFB45309);
+        finStatusBg = const Color(0xFFFFFBEB);
+        finStatusIcon = LucideIcons.clock;
+        break;
+      case MaintenancePaymentStatus.paid:
+        finStatusLabel = loc.financialStatusPaid;
+        finStatusColor = const Color(0xFF059669);
+        finStatusBg = const Color(0xFFECFDF5);
+        finStatusIcon = LucideIcons.checkCircle2;
+        break;
+      case MaintenancePaymentStatus.rejected:
+        finStatusLabel = loc.financialStatusRejected;
+        finStatusColor = const Color(0xFFDC2626);
+        finStatusBg = const Color(0xFFFEF2F2);
+        finStatusIcon = LucideIcons.xCircle;
+        break;
+    }
+
     String dateStr = '-';
     if (req.createdAt != null) {
-      dateStr = '${req.createdAt!.day.toString().padLeft(2, '0')}.${req.createdAt!.month.toString().padLeft(2, '0')}.${req.createdAt!.year}';
+      dateStr = DateFormat('dd.MM.yyyy').format(req.createdAt!);
+    }
+
+    String dueDateStr = '';
+    if (req.paymentDate != null) {
+      dueDateStr = DateFormat('dd.MM.yyyy').format(req.paymentDate!);
     }
 
     return MouseRegion(
@@ -5378,184 +5979,335 @@ class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
             },
           );
         },
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: _isHovered ? const Color(0xFFF8FAFC) : Colors.white,
-            border: widget.isLast
-                ? null
-                : const Border(
-                    bottom: BorderSide(color: Color(0xFFF1F5F9)),
-                  ),
+            border: Border(
+              bottom: widget.isLast
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFF1F5F9), width: 1),
+            ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 1. Title & Category
+              // 1. Monospace ID (48px)
               SizedBox(
-                width: widget.colTitle,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                width: 48,
+                child: Text(
+                  '#${widget.index.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _isHovered ? const Color(0xFF5E6AD2) : const Color(0xFF94A3B8),
+                  ),
+                ),
+              ),
+
+              // 2. Request Title & Property (flex: 28)
+              Expanded(
+                flex: 28,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: categoryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                        ),
+                        child: Icon(categoryIcon, size: 15, color: categoryColor),
                       ),
-                      child: Icon(categoryIcon, size: 15, color: categoryColor),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              req.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              property.name.isNotEmpty
+                                  ? '${property.name}${property.address.isNotEmpty ? ' • ${property.address}' : ''}'
+                                  : (property.address.isNotEmpty ? property.address : txt['property_detail']!),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 3. Priority (flex: 12)
+              Expanded(
+                flex: 12,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: priorityBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: priorityColor.withValues(alpha: 0.2)),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(priorityIcon, size: 10, color: priorityColor),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            priorityText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: priorityColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 4. Issue Status (flex: 14)
+              Expanded(
+                flex: 14,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.18)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 5.5,
+                          height: 5.5,
+                          decoration: BoxDecoration(
+                            color: statusDotColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4.5),
+                        Flexible(
+                          child: Text(
+                            statusText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: statusColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. Cost & Payer (flex: 15)
+              Expanded(
+                flex: 15,
+                child: req.costAmount != null
+                    ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            req.title,
+                            '${req.costAmount!.toStringAsFixed(2)} $currency',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w800,
                               color: Color(0xFF0F172A),
+                              letterSpacing: -0.2,
                             ),
                           ),
-                          if (req.description != null && req.description!.isNotEmpty) ...[
+                          if (payerLabel.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
-                              req.description!,
+                              payerLabel,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
                                 color: Color(0xFF64748B),
                               ),
                             ),
                           ],
                         ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 2. Property
-              SizedBox(
-                width: widget.colProperty,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      property.name.isNotEmpty ? property.name : txt['property_detail']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    if (property.address.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        property.address,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
+                      )
+                    : const Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: 12,
                           color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ],
-                  ],
-                ),
               ),
 
-              // 3. Priority
-              SizedBox(
-                width: widget.colPriority,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: priorityBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: priorityColor.withValues(alpha: 0.2)),
-                    ),
-                    child: Text(
-                      priorityText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: priorityColor,
-                        letterSpacing: 0.3,
+              // 6. Financial Approval & Invoice PDF Link (flex: 20)
+              Expanded(
+                flex: 20,
+                child: (req.costAmount != null || req.invoicePdfUrl != null)
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 2,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: finStatusBg,
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(color: finStatusColor.withValues(alpha: 0.2)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(finStatusIcon, size: 9, color: finStatusColor),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      finStatusLabel,
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: finStatusColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (req.invoicePdfUrl != null && req.invoicePdfUrl!.isNotEmpty)
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      final uri = Uri.parse(req.invoicePdfUrl!);
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFDC2626).withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.2)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(LucideIcons.fileText, size: 9, color: Color(0xFFDC2626)),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'PDF',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFFDC2626),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (dueDateStr.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              '${loc.dueDatePrefix}: $dueDateStr',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF94A3B8),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      )
+                    : const Text(
+                        '-',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                       ),
-                    ),
-                  ),
-                ),
               ),
 
-              // 4. Status
-              SizedBox(
-                width: widget.colStatus,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: statusBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-                    ),
-                    child: Text(
-                      statusText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 5. Date
-              SizedBox(
-                width: widget.colDate,
+              // 7. Created Date (flex: 11)
+              Expanded(
+                flex: 11,
                 child: Text(
                   dateStr,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF475569),
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ),
 
-              // 6. Action
+              // 8. Action Arrow (40px)
               SizedBox(
-                width: widget.colAction,
+                width: 40,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: widget.colors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
+                      color: _isHovered ? const Color(0xFF5E6AD2).withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
-                      LucideIcons.arrowRight,
+                      LucideIcons.chevronRight,
                       size: 14,
-                      color: widget.colors.primary,
+                      color: _isHovered ? const Color(0xFF5E6AD2) : const Color(0xFF94A3B8),
                     ),
                   ),
                 ),
@@ -5568,214 +6320,6 @@ class _MaintenanceTableRowState extends State<_MaintenanceTableRow> {
   }
 }
 
-class _MaintenanceCompactRow extends StatelessWidget {
-  final MaintenanceRequest req;
-  final Property property;
-  final AppLocalizations loc;
-  final Map<String, String> txt;
-  final AgencyColorScheme colors;
-
-  const _MaintenanceCompactRow({
-    required this.req,
-    required this.property,
-    required this.loc,
-    required this.txt,
-    required this.colors,
-  });
-
-  IconData _getCategoryIcon(MaintenanceCategory cat) {
-    switch (cat) {
-      case MaintenanceCategory.plumbing:
-        return LucideIcons.droplets;
-      case MaintenanceCategory.electrical:
-        return LucideIcons.zap;
-      case MaintenanceCategory.heating:
-        return LucideIcons.flame;
-      case MaintenanceCategory.internet:
-        return LucideIcons.wifi;
-      case MaintenanceCategory.appliance:
-      case MaintenanceCategory.structural:
-      case MaintenanceCategory.other:
-        return LucideIcons.wrench;
-    }
-  }
-
-  Color _getCategoryColor(MaintenanceCategory cat) {
-    switch (cat) {
-      case MaintenanceCategory.plumbing:
-        return const Color(0xFF0284C7);
-      case MaintenanceCategory.electrical:
-        return const Color(0xFFD97706);
-      case MaintenanceCategory.heating:
-        return const Color(0xFFEA580C);
-      case MaintenanceCategory.internet:
-        return const Color(0xFF2563EB);
-      case MaintenanceCategory.appliance:
-      case MaintenanceCategory.structural:
-      case MaintenanceCategory.other:
-        return const Color(0xFF9333EA);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Status mapping
-    Color statusBg = const Color(0xFFF1F5F9);
-    Color statusColor = const Color(0xFF475569);
-    String statusText = 'Bilinmiyor';
-
-    switch (req.status) {
-      case MaintenanceStatus.open:
-        statusBg = const Color(0xFFFFFBEB);
-        statusColor = const Color(0xFFB45309);
-        statusText = loc.statusActive;
-        break;
-      case MaintenanceStatus.investigating:
-        statusBg = const Color(0xFFEFF6FF);
-        statusColor = const Color(0xFF1D4ED8);
-        statusText = loc.statusInvestigating;
-        break;
-      case MaintenanceStatus.inProgress:
-        statusBg = const Color(0xFFFFF7ED);
-        statusColor = const Color(0xFFC2410C);
-        statusText = txt['status_technician_sent']!;
-        break;
-      case MaintenanceStatus.resolved:
-        statusBg = const Color(0xFFECFDF5);
-        statusColor = const Color(0xFF065F46);
-        statusText = loc.statusResolved;
-        break;
-      case MaintenanceStatus.closed:
-        statusBg = const Color(0xFFF1F5F9);
-        statusColor = const Color(0xFF64748B);
-        statusText = txt['status_closed']!;
-        break;
-      case MaintenanceStatus.pending:
-        statusBg = const Color(0xFFFFFBEB);
-        statusColor = const Color(0xFFD97706);
-        statusText = txt['status_pending']!;
-        break;
-      case MaintenanceStatus.cancelled:
-        statusBg = const Color(0xFFFEF2F2);
-        statusColor = const Color(0xFFDC2626);
-        statusText = txt['status_cancelled']!;
-        break;
-    }
-
-    final categoryColor = _getCategoryColor(req.category);
-    final categoryIcon = _getCategoryIcon(req.category);
-
-    String dateStr = '-';
-    if (req.createdAt != null) {
-      dateStr = '${req.createdAt!.day.toString().padLeft(2, '0')}.${req.createdAt!.month.toString().padLeft(2, '0')}.${req.createdAt!.year}';
-    }
-
-    return InkWell(
-      onTap: () {
-        context.push(
-          '/maintenance/detail',
-          extra: {
-            'property': property,
-            'request': req,
-          },
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            // Category Icon
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: categoryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
-              ),
-              child: Icon(categoryIcon, size: 17, color: categoryColor),
-            ),
-            const SizedBox(width: 12),
-
-            // Info column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    req.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          property.name.isNotEmpty ? property.name : txt['property_detail']!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text('•', style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
-                      const SizedBox(width: 6),
-                      Text(
-                        dateStr,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // Status Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(
-                color: statusBg,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-              ),
-              child: Text(
-                statusText,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: statusColor,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Arrow Action
-            Icon(
-              LucideIcons.chevronRight,
-              size: 16,
-              color: const Color(0xFF94A3B8),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Apple-Styled Ajans Kokpiti & Actionable Insights Components

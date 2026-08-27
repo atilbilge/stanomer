@@ -121,7 +121,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get newPassword => 'Yeni Şifre';
 
   @override
-  String get saveChanges => 'Kaydet';
+  String get saveChanges => 'Değişiklikleri Kaydet';
 
   @override
   String get passwordChangedSuccess => 'Şifre başarıyla değiştirildi';
@@ -734,7 +734,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusActive => 'Aktif';
 
   @override
-  String get statusPending => 'Onay Bekliyor';
+  String get statusPending => 'Beklemede';
 
   @override
   String get statusDeclined => 'Reddedildi';
@@ -1979,4 +1979,707 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get referralCodeLabel => 'Referans Kodu';
+
+  @override
+  String get detailedEntry => 'Gelişmiş Bilgiler';
+
+  @override
+  String get detailedEntrySubtitle =>
+      'Mülke dair tüm detaylar, yapısal metrikler ve ilan parametreleri.';
+
+  @override
+  String get propertyAndLocationInfo => 'Mülk ve Konum Bilgileri';
+
+  @override
+  String get propertyTypeLabel => 'Mülk Tipi';
+
+  @override
+  String get propertyTypeApartment => 'Daire';
+
+  @override
+  String get propertyTypeHouse => 'Müstakil Ev';
+
+  @override
+  String get propertyTypeCommercial => 'İş Yeri';
+
+  @override
+  String get propertyTypeGarage => 'Garaj';
+
+  @override
+  String get unitNumberLabel => 'Daire / Birim No';
+
+  @override
+  String get unitNumberHint => 'Örn: 4 veya 12B';
+
+  @override
+  String get addressDetailedHint =>
+      'Şehir, ilçe, mahalle veya sokak adı girin...';
+
+  @override
+  String get structuralAndFinancialMetrics => 'Yapısal ve Finansal Metrikler';
+
+  @override
+  String get roomCountLabel => 'Oda Sayısı';
+
+  @override
+  String get areaSqmLabel => 'Alan (m²)';
+
+  @override
+  String get floorLevelLabel => 'Bulunduğu Kat';
+
+  @override
+  String get totalFloorsLabel => 'Bina Toplam Kat';
+
+  @override
+  String get equipmentAndHeatingStandards => 'Donanım ve Isınma Standartları';
+
+  @override
+  String get furnishingLabel => 'Eşya Durumu';
+
+  @override
+  String get furnishingFurnished => 'Tam Eşyalı';
+
+  @override
+  String get furnishingFurnishedDesc => 'Tüm mobilya ve beyaz eşyalar dahil';
+
+  @override
+  String get furnishingSemi => 'Yarı Eşyalı';
+
+  @override
+  String get furnishingSemiDesc => 'Sadece mutfak ve banyo eşyalı';
+
+  @override
+  String get furnishingUnfurnished => 'Eşyasız';
+
+  @override
+  String get furnishingUnfurnishedDesc => 'Boş teslim';
+
+  @override
+  String get heatingTypeLabel => 'Isınma Tipi';
+
+  @override
+  String get heatingCg => 'Merkezi Isıtma (CG)';
+
+  @override
+  String get heatingEg => 'Kat Kaloriferi / Elektrikli (EG)';
+
+  @override
+  String get heatingGas => 'Doğalgaz / Kombi';
+
+  @override
+  String get heatingUnderfloor => 'Yerden Isıtma';
+
+  @override
+  String get heatingTa => 'Klima / Termosifon / Diğer';
+
+  @override
+  String get featuredAmenitiesLabel => 'Öne Çıkan Olanaklar';
+
+  @override
+  String get amenityPets => 'Evcil Hayvan Dostu';
+
+  @override
+  String get amenityElevator => 'Asansör';
+
+  @override
+  String get amenityBalcony => 'Balkon / Teras';
+
+  @override
+  String get amenityParking => 'Otopark / Garaj';
+
+  @override
+  String get amenityStorage => 'Depo / Kiler';
+
+  @override
+  String get extendedDescriptionLabel => 'Ek Açıklama ve Detaylar';
+
+  @override
+  String get extendedDescriptionHint =>
+      'Ulaşım olanakları, bina yaşı, cephe ve ekstra şartlar hakkında bilgi girin...';
+
+  @override
+  String get clearFormBtn => 'Formu Temizle';
+
+  @override
+  String get floorSuteren => 'Yarı Bodrum (Suteren)';
+
+  @override
+  String get floorPrizemlje => 'Zemin Kat (Giriş)';
+
+  @override
+  String get floorVisokoPrizemlje => 'Yüksek Giriş';
+
+  @override
+  String floorNth(String floor) {
+    return '$floor. Kat';
+  }
+
+  @override
+  String get floorPotkrovlje => 'Çatı Katı';
+
+  @override
+  String get floorOther => 'Diğer';
+
+  @override
+  String get statusOpen => 'Açık';
+
+  @override
+  String get statusInProgress => 'Usta Gönderildi';
+
+  @override
+  String get statusClosed => 'Kapatıldı';
+
+  @override
+  String get statusCancelled => 'İptal Edildi';
+
+  @override
+  String get financialDetails => 'Finansal Detaylar';
+
+  @override
+  String get financialStatusPendingReview => 'İnceleme Bekliyor';
+
+  @override
+  String get financialStatusPendingPayment => 'Ödeme Bekliyor';
+
+  @override
+  String get financialStatusPaid => 'Ödendi';
+
+  @override
+  String get financialStatusRejected => 'Reddedildi';
+
+  @override
+  String get payerTenant => 'Kiracı';
+
+  @override
+  String get payerLandlord => 'Ev Sahibi';
+
+  @override
+  String get payerTenantPaidOrWillPay => 'Kiracı Karşıladı / Ödeyecek';
+
+  @override
+  String get payerLandlordWillCover => 'Ev Sahibi Karşılayacak';
+
+  @override
+  String get unassigned => 'Belirtilmedi';
+
+  @override
+  String get noFinancialRecordTitle => 'Finansal Kayıt Yok';
+
+  @override
+  String get noFinancialRecordDesc =>
+      'Bu bakım talebi için henüz maliyet veya fatura girilmemiştir.';
+
+  @override
+  String get iPaidSubmitReceipt => 'Ben Ödedim (Masraf / Fatura Bildir)';
+
+  @override
+  String get resubmitExpenseIPaid => 'Yeniden Masraf Bildir (Ben Ödedim)';
+
+  @override
+  String get addCostInvoice => 'Masraf / Fatura Ekle';
+
+  @override
+  String get costPayerLabel => 'Maliyet Sorumlusu';
+
+  @override
+  String get receiptInvoiceDocument => 'Fiş / Fatura Belgesi';
+
+  @override
+  String get clickToViewDocument => 'Görüntülemek için tıkla';
+
+  @override
+  String get agencyExpenseApproval => 'Acente Masraf Onayı';
+
+  @override
+  String get landlordExpenseApproval => 'Ev Sahibi Masraf Onayı';
+
+  @override
+  String get tenantExpenseApproval => 'Kiracı Masraf Onayı';
+
+  @override
+  String get expenseApprovedSuccess => 'Masraf onaylandı.';
+
+  @override
+  String get expenseRejectedSuccess => 'Masraf bildirimi reddedildi.';
+
+  @override
+  String get rejectExpenseTitle => 'Masrafı Reddet';
+
+  @override
+  String get rejectExpenseConfirm =>
+      'Girilen masraf bildirimini reddetmek istediğinize emin misiniz?';
+
+  @override
+  String get rejectionReasonOptional => 'Ret sebebi (isteğe bağlı)';
+
+  @override
+  String get quickActions => 'Hızlı İşlemler';
+
+  @override
+  String get descriptionOrNoteOptional => 'Açıklama / Not (İsteğe Bağlı)';
+
+  @override
+  String get enterExpenseNoteHint =>
+      'örn. Mutfak bataryası değişti, servis ücreti dahil';
+
+  @override
+  String get editFinancialDetails => 'Finansal Bilgileri Düzenle';
+
+  @override
+  String get propertyInfo => 'Mülk Bilgisi';
+
+  @override
+  String get coveredByLandlord => 'Ev Sahibi Karşıladı';
+
+  @override
+  String get coveredByTenant => 'Kiracı Karşıladı';
+
+  @override
+  String get landlordReimbursement => 'Ev Sahibi Karşılayacak';
+
+  @override
+  String get tenantToPay => 'Kiracı Karşılayacak';
+
+  @override
+  String get landlordReimburseDesc =>
+      'Kiracı peşin ödemiştir. Ev sahibi kiracıya iade etmeli veya sonraki kiradan düşmelidir.';
+
+  @override
+  String get tenantToPayDesc =>
+      'Hasar kiracı kaynaklıdır. Tutar kiracının bir sonraki kirasına/borcuna eklenir.';
+
+  @override
+  String get coveredByLandlordClosedDesc =>
+      'Demirbaş harcaması olarak ev sahibi tarafından karşılandı ve ödendi.';
+
+  @override
+  String get coveredByTenantClosedDesc =>
+      'Kullanım bedeli olarak kiracı tarafından karşılandı ve ödendi.';
+
+  @override
+  String get reEditFinancials => 'Masraf / Faturayı Yeniden Düzenle';
+
+  @override
+  String get expenseRejectedDesc =>
+      'Daha önce bildirilen masraf onaylanmadı. Doğru tutar ve güncel fatura/fiş belgenizle tekrar bildirim yapabilirsiniz.';
+
+  @override
+  String get agencyManager => 'Acente Yöneticisi';
+
+  @override
+  String actorStatusInvestigating(String actor) {
+    return '🔍 $actor talebi incelemeye aldı.';
+  }
+
+  @override
+  String actorStatusInProgress(String actor) {
+    return '🔧 $actor usta yönlendirdi, onarım süreci başlatıldı.';
+  }
+
+  @override
+  String actorStatusResolved(String actor) {
+    return '✅ $actor arızanın giderildiğini ve talebin çözüldüğünü bildirdi.';
+  }
+
+  @override
+  String actorStatusClosed(String actor) {
+    return '🔒 $actor talebi kapattı.';
+  }
+
+  @override
+  String actorStatusReopened(String actor) {
+    return '🔄 $actor talebi yeniden açtı. Sorun devam ediyor.';
+  }
+
+  @override
+  String actorMarkedActive(String actor) {
+    return '📋 $actor talebi aktif duruma getirdi.';
+  }
+
+  @override
+  String actorUpdatedStatus(String actor, String status) {
+    return '📌 $actor talep durumunu güncelledi: $status';
+  }
+
+  @override
+  String get submitExpenseReview => 'Masrafı Bildir (İncelemeye Gönder)';
+
+  @override
+  String get pleaseEnterValidCost =>
+      'Lütfen ödediğiniz geçerli bir tutar giriniz.';
+
+  @override
+  String get pleaseUploadReceipt =>
+      'Lütfen fiş, fatura veya dekont belgesi yükleyiniz.';
+
+  @override
+  String get pleaseSelectCostPayer => 'Lütfen maliyet sorumlusunu seçiniz.';
+
+  @override
+  String get noteLabel => 'Not';
+
+  @override
+  String get amountPaid => 'Ödenen Masraf Tutarı';
+
+  @override
+  String get costAmount => 'Maliyet Tutarı';
+
+  @override
+  String get costResponsibility => 'Maliyet Sorumlusu';
+
+  @override
+  String get paymentInvoiceStatus => 'Ödeme & Fatura Durumu';
+
+  @override
+  String get paymentDueDate => 'Ödeme / Vade Tarihi';
+
+  @override
+  String get noDate => 'Tarih seçilmedi';
+
+  @override
+  String get uploadReceiptInvoice =>
+      'Fiş / Fatura / Dekont Yükle (PDF, Görsel)';
+
+  @override
+  String get uploadInvoiceDoc => 'Fatura Belgesi Yükle';
+
+  @override
+  String get existingDocument => 'Kayıtlı Fatura / Fiş Belgesi';
+
+  @override
+  String get change => 'Değiştir';
+
+  @override
+  String get enterAmountAttachReceipt =>
+      'Ödediğiniz tutarı girip fiş/fatura belgesini yükleyin.';
+
+  @override
+  String declaredAmountTitle(String amount) {
+    return 'Bildirilen Tutar: $amount • Lütfen nihai maliyet sorumlusunu seçiniz:';
+  }
+
+  @override
+  String get expenseApprovalResponsibility =>
+      'Masraf Onayı & Maliyet Sorumlusu';
+
+  @override
+  String get landlordCoveredPaidTitle =>
+      'Ev Sahibi Karşıladı (Ödendi Olarak Kapat)';
+
+  @override
+  String get landlordCoveredPaidSub =>
+      'Masraf ev sahibinin demirbaş sorumluluğundadır. Tutar ev sahibi üzerinde kalır, süreç ödendi olarak tamamlanır.';
+
+  @override
+  String get landlordCoveredPaidBadge => 'Ödendi • Demirbaş';
+
+  @override
+  String get tenantWillPayTitle =>
+      'Kiracı Karşılayacak (Kirama Eklensin / Ödeyeceğim)';
+
+  @override
+  String get tenantWillPaySub =>
+      'Masraf kiracı kusuru/kullanımından doğmuştur. Tutar kiracıya borç olarak yansıtılır ve ödeme beklenir.';
+
+  @override
+  String get tenantWillPayBadge => 'Ödeme Bekliyor • Kiracıya Borç';
+
+  @override
+  String get tenantPaidMarkAsPaidTitle =>
+      'Kiracı Karşıladı (Ödendi Olarak Kapat)';
+
+  @override
+  String get tenantPaidMarkAsPaidSub =>
+      'Arıza kiracının kullanımından doğmuştur. Tutar kiracı üzerinde kalır, süreç ödendi olarak kapatılır.';
+
+  @override
+  String get tenantPaidMarkAsPaidBadge => 'Ödendi • Kiracı Kullanımı';
+
+  @override
+  String get landlordReimbursesTitle =>
+      'Ev Sahibi Karşılayacak (Kiracıya İade / Kiradan Düşülecek)';
+
+  @override
+  String get landlordReimbursesSub =>
+      'Kiracı peşin ödemiş olsa da masraf mülk demirbaşına aittir. Ev sahibi kiracıya iade etmeli veya sonraki kiradan düşülmelidir.';
+
+  @override
+  String get landlordReimbursesBadge => 'Ödeme Bekliyor • Kiradan Düşülecek';
+
+  @override
+  String get propertyManagedByAgencyNotice =>
+      'Mülk acente yönetimindedir. Finansal bilgileri yalnızca acente düzenleyebilir.';
+
+  @override
+  String agencyExpenseApprovedMsg(String amount, String actor, String details) {
+    return '✅ Masraf onaylandı: $amount ($actor tarafından onaylandı • $details)';
+  }
+
+  @override
+  String agencyExpenseRejectedMsg(String actor) {
+    return '❌ Masraf bildirimi reddedildi ($actor tarafından reddedildi)';
+  }
+
+  @override
+  String reasonLabel(String reason) {
+    return 'Sebep: $reason';
+  }
+
+  @override
+  String get roleYou => 'Siz';
+
+  @override
+  String get roleUser => 'Kullanıcı';
+
+  @override
+  String landlordDeclaredExpenseSubtitle(String amount) {
+    return 'Ev sahibi $amount tutarında masraf bildirdi. Masrafı onaylayabilir veya reddedebilirsiniz.';
+  }
+
+  @override
+  String tenantDeclaredExpenseSubtitle(String amount) {
+    return 'Kiracı $amount tutarında masraf bildirdi. Masrafı onaylayabilir veya reddedebilirsiniz.';
+  }
+
+  @override
+  String get expenseSubmittedForLandlordReview =>
+      'Bildirdiğiniz masraf ev sahibinin onayına sunuldu. İnceleme bekleniyor.';
+
+  @override
+  String get expenseSubmittedForTenantReview =>
+      'Bildirdiğiniz masraf kiracının onayına sunuldu. İnceleme bekleniyor.';
+
+  @override
+  String get tblRequestProperty => 'Talep & Mülk';
+
+  @override
+  String get tblPriority => 'Öncelik';
+
+  @override
+  String get tblIssueStatus => 'Arıza Durumu';
+
+  @override
+  String get tblCostPayer => 'Masraf & Sorumlu';
+
+  @override
+  String get tblFinancialStatus => 'Finansal Onay';
+
+  @override
+  String get tblDate => 'Tarih';
+
+  @override
+  String get dueDatePrefix => 'Vade';
+
+  @override
+  String get edit => 'Düzenle';
+
+  @override
+  String get update => 'Güncelle';
+
+  @override
+  String get paymentDate => 'Ödeme Tarihi';
+
+  @override
+  String get profileUpdated => 'Başarıyla kaydedildi.';
+
+  @override
+  String get agencyPropertyTakeoverTitle => 'Acentenin Eklediği Mülkü Devralın';
+
+  @override
+  String get agencyPropertyTakeoverDesc =>
+      'Acente tarafından girilen mülkü QR kod okutarak veya davet kodu ile hesabınıza ekleyin.';
+
+  @override
+  String get scanQrOrEnterInviteCodeBtn => 'QR Kod Okut / Davet Kodu Gir';
+
+  @override
+  String get settlementIntentTitle => 'Ödeme Amacı & Mahsuplaşma Talebi';
+
+  @override
+  String get intentTenantSelfTitle =>
+      'Kendi Kullanımım İçin Ödedim (Kullanım Hasarı)';
+
+  @override
+  String get intentTenantSelfSub =>
+      'Tutar kendi üzerimde kalır. Mahsuplaşma talep etmiyorum, ödendi olarak kapatılsın.';
+
+  @override
+  String get intentTenantSelfBadge => 'Ödendi • Kendi Masrafım';
+
+  @override
+  String get intentTenantReimburseTitle =>
+      'Demirbaş / Mülk Adına Ödedim (Ev Sahibi Karşılasın)';
+
+  @override
+  String get intentTenantReimburseSub =>
+      'Mülk demirbaşı için peşin ödedim. Sonraki kiradan düşülmesini veya iade edilmesini talep ediyorum.';
+
+  @override
+  String get intentTenantReimburseBadge => 'Kiradan Düşülsün';
+
+  @override
+  String get intentLandlordSelfTitle =>
+      'Mülk Demirbaşı İçin Karşıladım (Demirbaş Masrafı)';
+
+  @override
+  String get intentLandlordSelfSub =>
+      'Demirbaş harcamasını ben üstlendim. Kiracıdan talep edilmez, ödendi olarak kapatılsın.';
+
+  @override
+  String get intentLandlordSelfBadge => 'Ödendi • Ev Sahibi';
+
+  @override
+  String get intentLandlordTenantDueTitle =>
+      'Kiracı Kullanımı / Kusuru İçin Ödedim';
+
+  @override
+  String get intentLandlordTenantDueSub =>
+      'Hasar kiracı kullanımından doğmuştur. Tutarın kiracının sonraki kirasına eklenmesini talep ediyorum.';
+
+  @override
+  String get intentLandlordTenantDueBadge => 'Kiraya Eklensin';
+
+  @override
+  String get pleaseSelectDeclarationIntent =>
+      'Lütfen masrafın amacını ve mahsuplaşma talebinizi seçiniz.';
+
+  @override
+  String get confirmTenantReimburseApprovalTitle => 'Kiradan Düşüm Onayı';
+
+  @override
+  String confirmTenantReimburseApprovalMsg(String amount) {
+    return 'Kiracının $amount tutarındaki demirbaş masrafını ve bu tutarın sonraki kiradan düşülmesini onaylıyor musunuz?';
+  }
+
+  @override
+  String get confirmTenantSelfApprovalTitle => 'Kullanım Masrafı Onayı';
+
+  @override
+  String confirmTenantSelfApprovalMsg(String amount) {
+    return 'Kiracının $amount tutarındaki kullanım masrafını kendi karşıladığını ve sürecin mahsuplaşmasız (Ödendi) kapatılmasını onaylıyor musunuz?';
+  }
+
+  @override
+  String get confirmLandlordSelfApprovalTitle => 'Demirbaş Masrafı Onayı';
+
+  @override
+  String confirmLandlordSelfApprovalMsg(String amount) {
+    return 'Ev sahibinin $amount tutarındaki demirbaş masrafını doğrudan karşıladığını ve sürecin \'Ödendi\' olarak tamamlanmasını onaylıyor musunuz?';
+  }
+
+  @override
+  String get confirmLandlordTenantDueApprovalTitle => 'Kiraya Ekleme Onayı';
+
+  @override
+  String confirmLandlordTenantDueApprovalMsg(String amount) {
+    return 'Ev sahibinin bildirdiği $amount masrafın kullanımınızdan kaynaklandığını ve sonraki kiranıza eklenmesini onaylıyor musunuz?';
+  }
+
+  @override
+  String declaredIntentLabel(String intent) {
+    return 'Mahsuplaşma Talebi: $intent';
+  }
+
+  @override
+  String get maintenanceSettlementsHeader => 'Bakım & Demirbaş Mahsuplaşmaları';
+
+  @override
+  String get maintenanceSettlementsSub =>
+      'Kiradan düşülecek veya kiraya eklenecek onaylanmış bakım masrafları';
+
+  @override
+  String get deductFromRentBadge => 'Kiradan Düşülecek';
+
+  @override
+  String get addToRentBadge => 'Kiraya Eklenecek';
+
+  @override
+  String get markAsSettledBtn => 'Mahsup Edildi / Ödendi';
+
+  @override
+  String get confirmSettlementTitle => 'Mahsuplaşmayı Kapat';
+
+  @override
+  String confirmSettlementMsg(String amount) {
+    return '$amount tutarındaki bakım masrafının mahsup edildiğini/ödendiğini onaylayıp kapatmak istiyor musunuz?';
+  }
+
+  @override
+  String get settlementRecordedSuccess =>
+      'Bakım mahsuplaşması başarıyla kapatıldı.';
+
+  @override
+  String get goToMaintenanceRequest => 'Talebi Aç';
+
+  @override
+  String maintenanceSettlementActivityMsg(String amount, String role) {
+    return '💰 Bakım masrafı ($amount) $role tarafından mahsup edildi / ödendi olarak işaretlendi.';
+  }
+
+  @override
+  String get settleExpenseTitle => 'Bakım Masrafı Kapatma & Mahsuplaşma';
+
+  @override
+  String get settleExpenseSub => 'Ödeme veya mahsuplaşma yöntemini seçiniz';
+
+  @override
+  String get optionOffsetFromRent => 'Kiradan / Faturadan Mahsup Et';
+
+  @override
+  String get optionOffsetFromRentDesc =>
+      'Aynı para birimindeki bekleyen bir kira veya faturadan bu tutarı otomatik düş';
+
+  @override
+  String get optionBankTransfer => 'Banka Transferi ile İade Et / Öde';
+
+  @override
+  String get optionBankTransferDesc =>
+      'Ödeme dekontu yükleyerek karşı tarafın onayına gönder';
+
+  @override
+  String get optionCashPayment => 'Elden / Nakit Olarak Öde';
+
+  @override
+  String get optionCashPaymentDesc =>
+      'Nakit olarak elden teslim edildiğini beyan et';
+
+  @override
+  String get selectRentToOffset => 'Mahsup Edilecek Kalemi Seçin';
+
+  @override
+  String noEligiblePendingPayments(String currency) {
+    return 'Mahsup edilebilecek uygun bekleyen kira veya fatura bulunamadı ($currency).';
+  }
+
+  @override
+  String offsetAppliedSuccess(String amount, String paymentTitle) {
+    return '$amount tutarı $paymentTitle kaleminden başarıyla mahsup edildi.';
+  }
+
+  @override
+  String get confirmReceiptBtn => 'Ödemeyi Aldım / Onayla';
+
+  @override
+  String get waitingForRecipientApproval => 'Karşı tarafın onayı bekleniyor';
+
+  @override
+  String get iPaidBtn => 'Ödedim / Dekont Yükle';
+
+  @override
+  String get iPaidCashBtn => 'Elden Ödedim';
+
+  @override
+  String maintenanceCashPaidActivityMsg(String role, String amount) {
+    return '💵 $role, $amount bakım masrafını elden ödediğini beyan etti. Onay bekleniyor.';
+  }
+
+  @override
+  String maintenanceBankPaidActivityMsg(String role, String amount) {
+    return '📄 $role, $amount bakım masrafını banka havalesiyle ödediğini beyan etti (Dekont yüklendi). Onay bekleniyor.';
+  }
+
+  @override
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
+    return '🏠 $amount bakım masrafı $paymentTitle kaleminden mahsup edildi.';
+  }
 }

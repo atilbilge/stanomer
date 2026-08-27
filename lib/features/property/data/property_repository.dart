@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/data/auth_providers.dart';
+import '../../maintenance/data/maintenance_repository.dart';
+import '../../maintenance/domain/maintenance_request.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
 import '../domain/rent_payment.dart';
@@ -129,12 +131,14 @@ final contractProposalProvider = StreamProvider.autoDispose.family<Map<String, d
 
 final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<PropertyFinancialState, String>((ref, propertyId) {
   final repo = ref.watch(propertyRepositoryProvider);
+  final maintenanceRepo = ref.watch(maintenanceRepositoryProvider);
   
-  // Combine contract and payments streams
-  return Rx.combineLatest2(
+  // Combine contract, payments, and maintenance requests streams
+  return Rx.combineLatest3(
     repo.getActiveContractStream(propertyId),
     repo.getRentPaymentsStream(propertyId),
-    (Contract? contract, List<RentPayment> payments) {
+    maintenanceRepo.getMaintenanceRequestsStream(propertyId),
+    (Contract? contract, List<RentPayment> payments, List<MaintenanceRequest> maintenanceRequests) {
       // Initialize counters
       final paidTotals = <String, double>{};
       final pendingTotals = <String, double>{};
@@ -157,6 +161,30 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
         } else if (p.status == 'pending' && p.amount > 0 && !p.dueDate.isAfter(endOfCurrentMonth)) {
           pendingTotals[cur] = (pendingTotals[cur] ?? 0) + p.amount;
           pendingC++;
+        }
+      }
+
+      // Factor in active Maintenance Settlements
+      for (var m in maintenanceRequests) {
+        final cost = m.costAmount;
+        if (cost == null || cost <= 0) continue;
+        final cur = m.currency ?? contract?.currency ?? (payments.isNotEmpty ? payments.first.currency : 'EUR');
+
+        if (m.paymentStatus == 'pending_payment') {
+          if (m.paidBy == 'landlord') {
+            // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent
+            pendingTotals[cur] = (pendingTotals[cur] ?? 0) - cost;
+          } else if (m.paidBy == 'tenant') {
+            // Landlord paid upfront for tenant fault -> Tenant owes / Add to rent
+            pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
+          }
+          pendingC++;
+        } else if (m.paymentStatus == 'pending_review') {
+          awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + cost;
+          awaitingC++;
+        } else if (m.paymentStatus == 'paid') {
+          paidTotals[cur] = (paidTotals[cur] ?? 0) + cost;
+          paidC++;
         }
       }
 
@@ -527,6 +555,18 @@ class PropertyRepository {
     String? landlordName,
     String? landlordPhone,
     String? landlordEmail,
+    // Detailed Property Parameters
+    bool isDetailed = false,
+    String? propertyType,
+    String? unitNumber,
+    String? roomCount,
+    double? areaSqm,
+    String? floor,
+    int? totalFloors,
+    String? furnishing,
+    String? heatingType,
+    List<String> amenities = const [],
+    String? description,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
@@ -548,6 +588,17 @@ class PropertyRepository {
       'default_due_day': defaultDueDay,
       'tax_type': taxType.name,
       'expenses_template': expensesTemplate.map((e) => e.toJson()).toList(),
+      'is_detailed': isDetailed,
+      'property_type': propertyType,
+      'unit_number': unitNumber,
+      'room_count': roomCount,
+      'area_sqm': areaSqm,
+      'floor': floor,
+      'total_floors': totalFloors,
+      'furnishing': furnishing,
+      'heating_type': heatingType,
+      'amenities': amenities,
+      'description': description,
     };
 
     if (isAgency) {
@@ -721,6 +772,7 @@ class PropertyRepository {
       'title': property.name,
       'name': property.name,
       'address': property.address,
+      'city': property.city,
       'default_monthly_rent': property.defaultMonthlyRent,
       'default_deposit_amount': property.defaultDepositAmount,
       'currency': property.currency,
@@ -728,6 +780,20 @@ class PropertyRepository {
       'default_due_day': property.defaultDueDay,
       'tax_type': property.taxType.name,
       'expenses_template': property.expensesTemplate.map((e) => e.toJson()).toList(),
+      'is_detailed': property.isDetailed,
+      'property_type': property.propertyType,
+      'unit_number': property.unitNumber,
+      'room_count': property.roomCount,
+      'area_sqm': property.areaSqm,
+      'floor': property.floor,
+      'total_floors': property.totalFloors,
+      'furnishing': property.furnishing,
+      'heating_type': property.heatingType,
+      'amenities': property.amenities,
+      'description': property.description,
+      'landlord_name': property.landlordName,
+      'landlord_phone': property.landlordPhone,
+      'landlord_email': property.landlordEmail,
     }).eq('id', property.id);
   }
 

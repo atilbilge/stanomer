@@ -322,7 +322,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveChanges.
   ///
   /// In sr, this message translates to:
-  /// **'Sačuvaj'**
+  /// **'Sačuvaj izmene'**
   String get saveChanges;
 
   /// No description provided for @passwordChangedSuccess.
@@ -2224,7 +2224,7 @@ abstract class AppLocalizations {
   /// No description provided for @propertyDetailsHeader.
   ///
   /// In sr, this message translates to:
-  /// **'DETALJI NEKRETNINE'**
+  /// **'INFORMACIJE O NEKRETNINI'**
   String get propertyDetailsHeader;
 
   /// No description provided for @defaultLeaseTermsHeader.
@@ -3711,6 +3711,1224 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Referral Kod'**
   String get referralCodeLabel;
+
+  /// No description provided for @detailedEntry.
+  ///
+  /// In sr, this message translates to:
+  /// **'Napredne informacije'**
+  String get detailedEntry;
+
+  /// No description provided for @detailedEntrySubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Svi detalji o nekretnini, strukturne metrike i parametri oglasa.'**
+  String get detailedEntrySubtitle;
+
+  /// No description provided for @propertyAndLocationInfo.
+  ///
+  /// In sr, this message translates to:
+  /// **'Informacije o Nekretnini i Lokaciji'**
+  String get propertyAndLocationInfo;
+
+  /// No description provided for @propertyTypeLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Tip Nekretnine'**
+  String get propertyTypeLabel;
+
+  /// No description provided for @propertyTypeApartment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stan'**
+  String get propertyTypeApartment;
+
+  /// No description provided for @propertyTypeHouse.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kuća'**
+  String get propertyTypeHouse;
+
+  /// No description provided for @propertyTypeCommercial.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poslovni Prostor'**
+  String get propertyTypeCommercial;
+
+  /// No description provided for @propertyTypeGarage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Garaža'**
+  String get propertyTypeGarage;
+
+  /// No description provided for @unitNumberLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Broj Stana / Jedinice'**
+  String get unitNumberLabel;
+
+  /// No description provided for @unitNumberHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Npr: 4 ili 12B'**
+  String get unitNumberHint;
+
+  /// No description provided for @addressDetailedHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite grad, opštinu, naselje ili ulicu...'**
+  String get addressDetailedHint;
+
+  /// No description provided for @structuralAndFinancialMetrics.
+  ///
+  /// In sr, this message translates to:
+  /// **'Strukturne i Finansijske Metrike'**
+  String get structuralAndFinancialMetrics;
+
+  /// No description provided for @roomCountLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Struktura (Broj Soba)'**
+  String get roomCountLabel;
+
+  /// No description provided for @areaSqmLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Površina'**
+  String get areaSqmLabel;
+
+  /// No description provided for @floorLevelLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sprat'**
+  String get floorLevelLabel;
+
+  /// No description provided for @totalFloorsLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ukupno Spratova u Zgradi'**
+  String get totalFloorsLabel;
+
+  /// No description provided for @equipmentAndHeatingStandards.
+  ///
+  /// In sr, this message translates to:
+  /// **'Standardi Opreme i Grejanja'**
+  String get equipmentAndHeatingStandards;
+
+  /// No description provided for @furnishingLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nameštenost'**
+  String get furnishingLabel;
+
+  /// No description provided for @furnishingFurnished.
+  ///
+  /// In sr, this message translates to:
+  /// **'Namešten'**
+  String get furnishingFurnished;
+
+  /// No description provided for @furnishingFurnishedDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kompletno Namešten'**
+  String get furnishingFurnishedDesc;
+
+  /// No description provided for @furnishingSemi.
+  ///
+  /// In sr, this message translates to:
+  /// **'Polunamešten'**
+  String get furnishingSemi;
+
+  /// No description provided for @furnishingSemiDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Samo Kuhinja i Kupatilo'**
+  String get furnishingSemiDesc;
+
+  /// No description provided for @furnishingUnfurnished.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nenamešten'**
+  String get furnishingUnfurnished;
+
+  /// No description provided for @furnishingUnfurnishedDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prazan / Bez Nameštaja'**
+  String get furnishingUnfurnishedDesc;
+
+  /// No description provided for @heatingTypeLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Tip Grejanja'**
+  String get heatingTypeLabel;
+
+  /// No description provided for @heatingCg.
+  ///
+  /// In sr, this message translates to:
+  /// **'CG (Centralno grejanje)'**
+  String get heatingCg;
+
+  /// No description provided for @heatingEg.
+  ///
+  /// In sr, this message translates to:
+  /// **'EG (Etažno grejanje - struja)'**
+  String get heatingEg;
+
+  /// No description provided for @heatingGas.
+  ///
+  /// In sr, this message translates to:
+  /// **'Gas (Gasno grejanje)'**
+  String get heatingGas;
+
+  /// No description provided for @heatingUnderfloor.
+  ///
+  /// In sr, this message translates to:
+  /// **'Podno grejanje'**
+  String get heatingUnderfloor;
+
+  /// No description provided for @heatingTa.
+  ///
+  /// In sr, this message translates to:
+  /// **'TA Peć / Klima / Mermerni radijatori'**
+  String get heatingTa;
+
+  /// No description provided for @featuredAmenitiesLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodatne Pogodnosti (Dodatno)'**
+  String get featuredAmenitiesLabel;
+
+  /// No description provided for @amenityPets.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dozvoljeni kućni ljubimci'**
+  String get amenityPets;
+
+  /// No description provided for @amenityElevator.
+  ///
+  /// In sr, this message translates to:
+  /// **'Lift'**
+  String get amenityElevator;
+
+  /// No description provided for @amenityBalcony.
+  ///
+  /// In sr, this message translates to:
+  /// **'Terasa / Balkon / Lođa'**
+  String get amenityBalcony;
+
+  /// No description provided for @amenityParking.
+  ///
+  /// In sr, this message translates to:
+  /// **'Garaža / Parking mesto'**
+  String get amenityParking;
+
+  /// No description provided for @amenityStorage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Podrum / Ostava'**
+  String get amenityStorage;
+
+  /// No description provided for @extendedDescriptionLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Opis Nekretnine (Detalji)'**
+  String get extendedDescriptionLabel;
+
+  /// No description provided for @extendedDescriptionHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite detalje o prevozu, zgradi, orijentaciji i uslovima...'**
+  String get extendedDescriptionHint;
+
+  /// No description provided for @clearFormBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obriši Formu'**
+  String get clearFormBtn;
+
+  /// No description provided for @floorSuteren.
+  ///
+  /// In sr, this message translates to:
+  /// **'Suteren (SUT)'**
+  String get floorSuteren;
+
+  /// No description provided for @floorPrizemlje.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prizemlje (PR)'**
+  String get floorPrizemlje;
+
+  /// No description provided for @floorVisokoPrizemlje.
+  ///
+  /// In sr, this message translates to:
+  /// **'Visoko prizemlje (VPR)'**
+  String get floorVisokoPrizemlje;
+
+  /// No description provided for @floorNth.
+  ///
+  /// In sr, this message translates to:
+  /// **'{floor}. sprat'**
+  String floorNth(String floor);
+
+  /// No description provided for @floorPotkrovlje.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potkrovlje (PK)'**
+  String get floorPotkrovlje;
+
+  /// No description provided for @floorOther.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ostali spratovi'**
+  String get floorOther;
+
+  /// No description provided for @statusOpen.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otvoreno'**
+  String get statusOpen;
+
+  /// No description provided for @statusInProgress.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poslat majstor'**
+  String get statusInProgress;
+
+  /// No description provided for @statusClosed.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zatvoreno'**
+  String get statusClosed;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otkazano'**
+  String get statusCancelled;
+
+  /// No description provided for @financialDetails.
+  ///
+  /// In sr, this message translates to:
+  /// **'Finansijski Detalji'**
+  String get financialDetails;
+
+  /// No description provided for @financialStatusPendingReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka pregled'**
+  String get financialStatusPendingReview;
+
+  /// No description provided for @financialStatusPendingPayment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka uplatu'**
+  String get financialStatusPendingPayment;
+
+  /// No description provided for @financialStatusPaid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno'**
+  String get financialStatusPaid;
+
+  /// No description provided for @financialStatusRejected.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbijeno'**
+  String get financialStatusRejected;
+
+  /// No description provided for @payerTenant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar'**
+  String get payerTenant;
+
+  /// No description provided for @payerLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik'**
+  String get payerLandlord;
+
+  /// No description provided for @payerTenantPaidOrWillPay.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar snosi / platio'**
+  String get payerTenantPaidOrWillPay;
+
+  /// No description provided for @payerLandlordWillCover.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik će pokriti'**
+  String get payerLandlordWillCover;
+
+  /// No description provided for @unassigned.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nije dodeljeno'**
+  String get unassigned;
+
+  /// No description provided for @noFinancialRecordTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema finansijskog zapisa'**
+  String get noFinancialRecordTitle;
+
+  /// No description provided for @noFinancialRecordDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Za ovaj zahtev za održavanje još uvek nije unet trošak ili račun.'**
+  String get noFinancialRecordDesc;
+
+  /// No description provided for @iPaidSubmitReceipt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ja sam platio (Priloži račun)'**
+  String get iPaidSubmitReceipt;
+
+  /// No description provided for @resubmitExpenseIPaid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ponovo prijavi trošak (Ja sam platio)'**
+  String get resubmitExpenseIPaid;
+
+  /// No description provided for @addCostInvoice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaj trošak / račun'**
+  String get addCostInvoice;
+
+  /// No description provided for @costPayerLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odgovoran za trošak'**
+  String get costPayerLabel;
+
+  /// No description provided for @receiptInvoiceDocument.
+  ///
+  /// In sr, this message translates to:
+  /// **'Račun / Fiskalni račun'**
+  String get receiptInvoiceDocument;
+
+  /// No description provided for @clickToViewDocument.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kliknite za pregled dokumenta'**
+  String get clickToViewDocument;
+
+  /// No description provided for @agencyExpenseApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje troška od agencije'**
+  String get agencyExpenseApproval;
+
+  /// No description provided for @landlordExpenseApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje troška od vlasnika'**
+  String get landlordExpenseApproval;
+
+  /// No description provided for @tenantExpenseApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje troška od stanara'**
+  String get tenantExpenseApproval;
+
+  /// No description provided for @expenseApprovedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak je uspešno odobren.'**
+  String get expenseApprovedSuccess;
+
+  /// No description provided for @expenseRejectedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijava troška je odbijena.'**
+  String get expenseRejectedSuccess;
+
+  /// No description provided for @rejectExpenseTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbij trošak'**
+  String get rejectExpenseTitle;
+
+  /// No description provided for @rejectExpenseConfirm.
+  ///
+  /// In sr, this message translates to:
+  /// **'Da li ste sigurni da želite da odbijete prijavljeni trošak?'**
+  String get rejectExpenseConfirm;
+
+  /// No description provided for @rejectionReasonOptional.
+  ///
+  /// In sr, this message translates to:
+  /// **'Razlog odbijanja (opciono)'**
+  String get rejectionReasonOptional;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In sr, this message translates to:
+  /// **'Brze Radnje'**
+  String get quickActions;
+
+  /// No description provided for @descriptionOrNoteOptional.
+  ///
+  /// In sr, this message translates to:
+  /// **'Opis / Napomena (Opciono)'**
+  String get descriptionOrNoteOptional;
+
+  /// No description provided for @enterExpenseNoteHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'npr. Zamenjen ventil u kuhinji, uključujući rad majstora'**
+  String get enterExpenseNoteHint;
+
+  /// No description provided for @editFinancialDetails.
+  ///
+  /// In sr, this message translates to:
+  /// **'Izmeni finansijske detalje'**
+  String get editFinancialDetails;
+
+  /// No description provided for @propertyInfo.
+  ///
+  /// In sr, this message translates to:
+  /// **'Informacije o Nekretnini'**
+  String get propertyInfo;
+
+  /// No description provided for @coveredByLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik je pokrio'**
+  String get coveredByLandlord;
+
+  /// No description provided for @coveredByTenant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar je pokrio'**
+  String get coveredByTenant;
+
+  /// No description provided for @landlordReimbursement.
+  ///
+  /// In sr, this message translates to:
+  /// **'Refundacija od vlasnika'**
+  String get landlordReimbursement;
+
+  /// No description provided for @tenantToPay.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar plaća'**
+  String get tenantToPay;
+
+  /// No description provided for @landlordReimburseDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar je platio unapred. Vlasnik će refundirati ili umanjiti sledeću kiriju.'**
+  String get landlordReimburseDesc;
+
+  /// No description provided for @tenantToPayDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak snosi stanar. Iznos će biti dodat na sledeću kiriju.'**
+  String get tenantToPayDesc;
+
+  /// No description provided for @coveredByLandlordClosedDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pokriveno kao investiciono održavanje i zatvoreno.'**
+  String get coveredByLandlordClosedDesc;
+
+  /// No description provided for @coveredByTenantClosedDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pokriveno kao tekuće održavanje stanara i zatvoreno.'**
+  String get coveredByTenantClosedDesc;
+
+  /// No description provided for @reEditFinancials.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ponovo izmeni finansije'**
+  String get reEditFinancials;
+
+  /// No description provided for @expenseRejectedDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prethodno prijavljeni trošak nije odobren. Možete ponovo poslati sa tačnim iznosom i računom.'**
+  String get expenseRejectedDesc;
+
+  /// No description provided for @agencyManager.
+  ///
+  /// In sr, this message translates to:
+  /// **'Menadžer agencije'**
+  String get agencyManager;
+
+  /// No description provided for @actorStatusInvestigating.
+  ///
+  /// In sr, this message translates to:
+  /// **'🔍 {actor} je preuzeo zahtev na pregled.'**
+  String actorStatusInvestigating(String actor);
+
+  /// No description provided for @actorStatusInProgress.
+  ///
+  /// In sr, this message translates to:
+  /// **'🔧 {actor} je poslao majstora, radovi su u toku.'**
+  String actorStatusInProgress(String actor);
+
+  /// No description provided for @actorStatusResolved.
+  ///
+  /// In sr, this message translates to:
+  /// **'✅ {actor} je označio zahtev kao rešen.'**
+  String actorStatusResolved(String actor);
+
+  /// No description provided for @actorStatusClosed.
+  ///
+  /// In sr, this message translates to:
+  /// **'🔒 {actor} je zatvorio zahtev.'**
+  String actorStatusClosed(String actor);
+
+  /// No description provided for @actorStatusReopened.
+  ///
+  /// In sr, this message translates to:
+  /// **'🔄 {actor} je ponovo otvorio zahtev. Problem i dalje postoji.'**
+  String actorStatusReopened(String actor);
+
+  /// No description provided for @actorMarkedActive.
+  ///
+  /// In sr, this message translates to:
+  /// **'📋 {actor} je postavio zahtev u aktivan status.'**
+  String actorMarkedActive(String actor);
+
+  /// No description provided for @actorUpdatedStatus.
+  ///
+  /// In sr, this message translates to:
+  /// **'📌 {actor} je ažurirao status: {status}'**
+  String actorUpdatedStatus(String actor, String status);
+
+  /// No description provided for @submitExpenseReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavi trošak (Pošalji na pregled)'**
+  String get submitExpenseReview;
+
+  /// No description provided for @pleaseEnterValidCost.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo unesite važeći plaćeni iznos.'**
+  String get pleaseEnterValidCost;
+
+  /// No description provided for @pleaseUploadReceipt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo priložite račun ili uplatnicu.'**
+  String get pleaseUploadReceipt;
+
+  /// No description provided for @pleaseSelectCostPayer.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo izaberite ko snosi trošak.'**
+  String get pleaseSelectCostPayer;
+
+  /// No description provided for @noteLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Napomena'**
+  String get noteLabel;
+
+  /// No description provided for @amountPaid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeni iznos'**
+  String get amountPaid;
+
+  /// No description provided for @costAmount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznos troška'**
+  String get costAmount;
+
+  /// No description provided for @costResponsibility.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odgovoran za trošak'**
+  String get costResponsibility;
+
+  /// No description provided for @paymentInvoiceStatus.
+  ///
+  /// In sr, this message translates to:
+  /// **'Status uplate i računa'**
+  String get paymentInvoiceStatus;
+
+  /// No description provided for @paymentDueDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Datum uplate / dospelosti'**
+  String get paymentDueDate;
+
+  /// No description provided for @noDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema datuma'**
+  String get noDate;
+
+  /// No description provided for @uploadReceiptInvoice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Priloži račun / uplatnicu (PDF, Slika)'**
+  String get uploadReceiptInvoice;
+
+  /// No description provided for @uploadInvoiceDoc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Priloži fakturu'**
+  String get uploadInvoiceDoc;
+
+  /// No description provided for @existingDocument.
+  ///
+  /// In sr, this message translates to:
+  /// **'Postojeći dokument'**
+  String get existingDocument;
+
+  /// No description provided for @change.
+  ///
+  /// In sr, this message translates to:
+  /// **'Promeni'**
+  String get change;
+
+  /// No description provided for @enterAmountAttachReceipt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite plaćeni iznos i priložite račun.'**
+  String get enterAmountAttachReceipt;
+
+  /// No description provided for @declaredAmountTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavljeni iznos: {amount} • Izaberite konačnu odgovornost za trošak:'**
+  String declaredAmountTitle(String amount);
+
+  /// No description provided for @expenseApprovalResponsibility.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje troška i odgovornost'**
+  String get expenseApprovalResponsibility;
+
+  /// No description provided for @landlordCoveredPaidTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik je pokrio (Označi kao plaćeno)'**
+  String get landlordCoveredPaidTitle;
+
+  /// No description provided for @landlordCoveredPaidSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak je na vlasniku (investiciono održavanje). Nema refundacije, zatvara se kao plaćeno.'**
+  String get landlordCoveredPaidSub;
+
+  /// No description provided for @landlordCoveredPaidBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno • Vlasnik'**
+  String get landlordCoveredPaidBadge;
+
+  /// No description provided for @tenantWillPayTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar plaća (Dodati na kiriju)'**
+  String get tenantWillPayTitle;
+
+  /// No description provided for @tenantWillPaySub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak je nastao upotrebom stanara. Iznos se dodaje na kiriju.'**
+  String get tenantWillPaySub;
+
+  /// No description provided for @tenantWillPayBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka uplatu • Dug stanara'**
+  String get tenantWillPayBadge;
+
+  /// No description provided for @tenantPaidMarkAsPaidTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar je platio (Označi kao plaćeno)'**
+  String get tenantPaidMarkAsPaidTitle;
+
+  /// No description provided for @tenantPaidMarkAsPaidSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kvar je nastao upotrebom stanara. Iznos ostaje na stanaru, zatvoreno kao plaćeno.'**
+  String get tenantPaidMarkAsPaidSub;
+
+  /// No description provided for @tenantPaidMarkAsPaidBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno • Upotreba stanara'**
+  String get tenantPaidMarkAsPaidBadge;
+
+  /// No description provided for @landlordReimbursesTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik refundira (Odbiti od kirije)'**
+  String get landlordReimbursesTitle;
+
+  /// No description provided for @landlordReimbursesSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak investicionog održavanja koji je platio stanar. Vlasnik refundira ili umanjuje kiriju.'**
+  String get landlordReimbursesSub;
+
+  /// No description provided for @landlordReimbursesBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka uplatu • Odbitak od kirije'**
+  String get landlordReimbursesBadge;
+
+  /// No description provided for @propertyManagedByAgencyNotice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nekretninom upravlja agencija. Samo agencija može menjati finansijske podatke.'**
+  String get propertyManagedByAgencyNotice;
+
+  /// No description provided for @agencyExpenseApprovedMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'✅ Trošak odobren: {amount} (Odobrio {actor} • {details})'**
+  String agencyExpenseApprovedMsg(String amount, String actor, String details);
+
+  /// No description provided for @agencyExpenseRejectedMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'❌ Prijavu troška je odbio {actor}'**
+  String agencyExpenseRejectedMsg(String actor);
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Razlog: {reason}'**
+  String reasonLabel(String reason);
+
+  /// No description provided for @roleYou.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vi'**
+  String get roleYou;
+
+  /// No description provided for @roleUser.
+  ///
+  /// In sr, this message translates to:
+  /// **'Korisnik'**
+  String get roleUser;
+
+  /// No description provided for @landlordDeclaredExpenseSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik je prijavio trošak od {amount}. Možete odobriti ili odbiti trošak.'**
+  String landlordDeclaredExpenseSubtitle(String amount);
+
+  /// No description provided for @tenantDeclaredExpenseSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar je prijavio trošak od {amount}. Možete odobriti ili odbiti trošak.'**
+  String tenantDeclaredExpenseSubtitle(String amount);
+
+  /// No description provided for @expenseSubmittedForLandlordReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavljeni trošak je poslat vlasniku na pregled.'**
+  String get expenseSubmittedForLandlordReview;
+
+  /// No description provided for @expenseSubmittedForTenantReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavljeni trošak je poslat stanaru na pregled.'**
+  String get expenseSubmittedForTenantReview;
+
+  /// No description provided for @tblRequestProperty.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zahtev & Nekretnina'**
+  String get tblRequestProperty;
+
+  /// No description provided for @tblPriority.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prioritet'**
+  String get tblPriority;
+
+  /// No description provided for @tblIssueStatus.
+  ///
+  /// In sr, this message translates to:
+  /// **'Status kvara'**
+  String get tblIssueStatus;
+
+  /// No description provided for @tblCostPayer.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak & Platilac'**
+  String get tblCostPayer;
+
+  /// No description provided for @tblFinancialStatus.
+  ///
+  /// In sr, this message translates to:
+  /// **'Finansijski status'**
+  String get tblFinancialStatus;
+
+  /// No description provided for @tblDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Datum'**
+  String get tblDate;
+
+  /// No description provided for @dueDatePrefix.
+  ///
+  /// In sr, this message translates to:
+  /// **'Rok'**
+  String get dueDatePrefix;
+
+  /// No description provided for @edit.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uredi'**
+  String get edit;
+
+  /// No description provided for @update.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ažuriraj'**
+  String get update;
+
+  /// No description provided for @paymentDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Datum uplate'**
+  String get paymentDate;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uspešno sačuvano.'**
+  String get profileUpdated;
+
+  /// No description provided for @agencyPropertyTakeoverTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Preuzmi nekretninu dodatu od agencije'**
+  String get agencyPropertyTakeoverTitle;
+
+  /// No description provided for @agencyPropertyTakeoverDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodajte nekretninu koju je unela agencija na svoj nalog skeniranjem QR koda ili unosom pozivnog koda.'**
+  String get agencyPropertyTakeoverDesc;
+
+  /// No description provided for @scanQrOrEnterInviteCodeBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Skeniraj QR kod / Unesi kod pozivnice'**
+  String get scanQrOrEnterInviteCodeBtn;
+
+  /// No description provided for @settlementIntentTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Svrha plaćanja i obračun'**
+  String get settlementIntentTitle;
+
+  /// No description provided for @intentTenantSelfTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio sam za sopstvenu upotrebu (Kvar usled korišćenja)'**
+  String get intentTenantSelfTitle;
+
+  /// No description provided for @intentTenantSelfSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak ostaje na meni. Ne tražim refundaciju, zatvara se kao plaćeno.'**
+  String get intentTenantSelfSub;
+
+  /// No description provided for @intentTenantSelfBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno • Lični trošak'**
+  String get intentTenantSelfBadge;
+
+  /// No description provided for @intentTenantReimburseTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio sam za investiciono održavanje (U ime vlasnika)'**
+  String get intentTenantReimburseTitle;
+
+  /// No description provided for @intentTenantReimburseSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Predujmio sam trošak demirbaša. Molim odbitak od sledeće kirije ili refundaciju.'**
+  String get intentTenantReimburseSub;
+
+  /// No description provided for @intentTenantReimburseBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbitak od kirije'**
+  String get intentTenantReimburseBadge;
+
+  /// No description provided for @intentLandlordSelfTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pokrio sam za investiciono održavanje (Demirbaš)'**
+  String get intentLandlordSelfTitle;
+
+  /// No description provided for @intentLandlordSelfSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak je na vlasniku. Ne potražuje se od stanara, zatvara se kao plaćeno.'**
+  String get intentLandlordSelfSub;
+
+  /// No description provided for @intentLandlordSelfBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno • Vlasnik'**
+  String get intentLandlordSelfBadge;
+
+  /// No description provided for @intentLandlordTenantDueTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio sam za kvar usled upotrebe stanara'**
+  String get intentLandlordTenantDueTitle;
+
+  /// No description provided for @intentLandlordTenantDueSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kvar je nastao upotrebom stanara. Iznos se dodaje na sledeću kiriju stanara.'**
+  String get intentLandlordTenantDueSub;
+
+  /// No description provided for @intentLandlordTenantDueBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dug stanara'**
+  String get intentLandlordTenantDueBadge;
+
+  /// No description provided for @pleaseSelectDeclarationIntent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo izaberite svrhu plaćanja i predlog obračuna.'**
+  String get pleaseSelectDeclarationIntent;
+
+  /// No description provided for @confirmTenantReimburseApprovalTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje odbitka od kirije'**
+  String get confirmTenantReimburseApprovalTitle;
+
+  /// No description provided for @confirmTenantReimburseApprovalMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrđujete li da stanar ima pravo na refundaciju od {amount} za investiciono održavanje i da se iznos odbije od sledeće kirije?'**
+  String confirmTenantReimburseApprovalMsg(String amount);
+
+  /// No description provided for @confirmTenantSelfApprovalTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrda ličnog troška stanara'**
+  String get confirmTenantSelfApprovalTitle;
+
+  /// No description provided for @confirmTenantSelfApprovalMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrđujete li da je stanar platio trošak upotrebe od {amount} i da se zahtev zatvori kao plaćen bez refundacije?'**
+  String confirmTenantSelfApprovalMsg(String amount);
+
+  /// No description provided for @confirmLandlordSelfApprovalTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrda troška vlasnika'**
+  String get confirmLandlordSelfApprovalTitle;
+
+  /// No description provided for @confirmLandlordSelfApprovalMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrđujete li da je vlasnik pokrio investicioni trošak od {amount} i da se zahtev zatvori kao plaćen?'**
+  String confirmLandlordSelfApprovalMsg(String amount);
+
+  /// No description provided for @confirmLandlordTenantDueApprovalTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobrenje troška zaduženja'**
+  String get confirmLandlordTenantDueApprovalTitle;
+
+  /// No description provided for @confirmLandlordTenantDueApprovalMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Potvrđujete li da je trošak od {amount} nastao vašom upotrebom i da se doda na vašu sledeću kiriju?'**
+  String confirmLandlordTenantDueApprovalMsg(String amount);
+
+  /// No description provided for @declaredIntentLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Predlog obračuna: {intent}'**
+  String declaredIntentLabel(String intent);
+
+  /// No description provided for @maintenanceSettlementsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obračun održavanja i kvarova'**
+  String get maintenanceSettlementsHeader;
+
+  /// No description provided for @maintenanceSettlementsSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobreni troškovi održavanja koji se odbijaju ili dodaju na kiriju'**
+  String get maintenanceSettlementsSub;
+
+  /// No description provided for @deductFromRentBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbija se od kirije'**
+  String get deductFromRentBadge;
+
+  /// No description provided for @addToRentBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaje se na kiriju'**
+  String get addToRentBadge;
+
+  /// No description provided for @markAsSettledBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Označi kao poravnato / plaćeno'**
+  String get markAsSettledBtn;
+
+  /// No description provided for @confirmSettlementTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zatvori obračun'**
+  String get confirmSettlementTitle;
+
+  /// No description provided for @confirmSettlementMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Da li potvrđujete da je trošak održavanja od {amount} poravnat/plaćen i da treba zatvoriti stavku?'**
+  String confirmSettlementMsg(String amount);
+
+  /// No description provided for @settlementRecordedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obračun održavanja je uspešno zatvoren.'**
+  String get settlementRecordedSuccess;
+
+  /// No description provided for @goToMaintenanceRequest.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otvori zahtev'**
+  String get goToMaintenanceRequest;
+
+  /// No description provided for @maintenanceSettlementActivityMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'💰 Trošak održavanja ({amount}) je označen kao poravnat/plaćen od strane {role}.'**
+  String maintenanceSettlementActivityMsg(String amount, String role);
+
+  /// No description provided for @settleExpenseTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poravnanje troškova održavanja'**
+  String get settleExpenseTitle;
+
+  /// No description provided for @settleExpenseSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'Izaberite način plaćanja ili prebijanja'**
+  String get settleExpenseSub;
+
+  /// No description provided for @optionOffsetFromRent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbij od kirije / računa'**
+  String get optionOffsetFromRent;
+
+  /// No description provided for @optionOffsetFromRentDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Automatski umanji ovaj iznos sa predstojeće kirije ili računa u istoj valuti'**
+  String get optionOffsetFromRentDesc;
+
+  /// No description provided for @optionBankTransfer.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plati bankarskim transferom'**
+  String get optionBankTransfer;
+
+  /// No description provided for @optionBankTransferDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Priložite uplatnicu i pošaljite na potvrdu'**
+  String get optionBankTransferDesc;
+
+  /// No description provided for @optionCashPayment.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plati u gotovini'**
+  String get optionCashPayment;
+
+  /// No description provided for @optionCashPaymentDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavite da je plaćeno u gotovini'**
+  String get optionCashPaymentDesc;
+
+  /// No description provided for @selectRentToOffset.
+  ///
+  /// In sr, this message translates to:
+  /// **'Izaberite stavku za prebijanje'**
+  String get selectRentToOffset;
+
+  /// No description provided for @noEligiblePendingPayments.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema odgovarajućih neplaćenih kirija ili računa u valuti {currency}.'**
+  String noEligiblePendingPayments(String currency);
+
+  /// No description provided for @offsetAppliedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznos od {amount} je uspešno prebijen sa stavke {paymentTitle}.'**
+  String offsetAppliedSuccess(String amount, String paymentTitle);
+
+  /// No description provided for @confirmReceiptBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Primio sam uplatu / Potvrdi'**
+  String get confirmReceiptBtn;
+
+  /// No description provided for @waitingForRecipientApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka se potvrda druge strane'**
+  String get waitingForRecipientApproval;
+
+  /// No description provided for @iPaidBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio sam / Priloži uplatnicu'**
+  String get iPaidBtn;
+
+  /// No description provided for @iPaidCashBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćeno u gotovini'**
+  String get iPaidCashBtn;
+
+  /// No description provided for @maintenanceCashPaidActivityMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'💵 {role} je prijavio plaćanje troška održavanja od {amount} u gotovini. Čeka se potvrda.'**
+  String maintenanceCashPaidActivityMsg(String role, String amount);
+
+  /// No description provided for @maintenanceBankPaidActivityMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'📄 {role} je prijavio plaćanje troška održavanja od {amount} preko banke (Uplatnica priložena). Čeka se potvrda.'**
+  String maintenanceBankPaidActivityMsg(String role, String amount);
+
+  /// No description provided for @maintenanceOffsetActivityMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'🏠 Trošak održavanja od {amount} je prebijen sa stavke {paymentTitle}.'**
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle);
 }
 
 class _AppLocalizationsDelegate

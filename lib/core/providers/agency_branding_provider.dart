@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/agency/domain/agency_profile.dart';
 import '../../features/agency/data/agency_repository.dart';
 import '../../features/property/domain/property.dart';
+import '../../features/auth/data/auth_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Repository Provider
@@ -155,7 +156,9 @@ final appTitleProvider = Provider<String>((ref) {
   return ref.watch(agencyBrandingProvider).appTitle;
 });
 
-/// Whether the current session is agency-branded
+/// Whether the current session is agency-branded (or user is an Agency)
 final hasAgencyBrandingProvider = Provider<bool>((ref) {
+  final role = ref.watch(userRoleProvider);
+  if (role == 'agency') return true;
   return ref.watch(agencyBrandingProvider).hasAgencyBranding;
 });

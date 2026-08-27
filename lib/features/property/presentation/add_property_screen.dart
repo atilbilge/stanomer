@@ -15,6 +15,7 @@ import '../domain/property.dart';
 import '../domain/contract.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:stanomer/core/utils/expense_utils.dart';
+import '../../../core/providers/agency_branding_provider.dart';
 import '../../auth/data/auth_providers.dart';
 import 'widgets/ownership_share_sheet.dart';
 import 'join_property_sheet.dart';
@@ -38,6 +39,20 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final _landlordNameController = TextEditingController();
   final _landlordPhoneController = TextEditingController();
   final _landlordEmailController = TextEditingController();
+
+  // --- Detailed Property Fields Controllers & State ---
+  bool _isDetailed = false;
+  String? _propertyType; // 'apartment', 'house', 'commercial', 'garage'
+  final _unitNumberController = TextEditingController();
+  String? _roomCount; // 'studio', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '5.0+'
+  final _areaController = TextEditingController();
+  String? _floor; // 'suteren', 'prizemlje', 'visoko_prizemlje', '1', '2', '3', '4+'...
+  final _totalFloorsController = TextEditingController();
+  String? _furnishing; // 'furnished', 'semi_furnished', 'unfurnished'
+  String? _heatingType; // 'cg', 'eg', 'gas', 'underfloor', 'ta'
+  Set<String> _selectedAmenities = <String>{};
+  final _descriptionController = TextEditingController();
+
   String _selectedCurrency = 'EUR';
   String _depositCurrency = 'EUR';
   bool _isLoading = false;
@@ -67,11 +82,33 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       _landlordNameController.text = p.landlordName ?? '';
       _landlordPhoneController.text = p.landlordPhone ?? '';
       _landlordEmailController.text = p.landlordEmail ?? '';
+      
+      // Detailed fields
+      _isDetailed = p.isDetailed;
+      _propertyType = p.propertyType;
+      _unitNumberController.text = p.unitNumber ?? '';
+      _roomCount = p.roomCount;
+      _areaController.text = p.areaSqm != null 
+          ? (p.areaSqm! % 1 == 0 ? p.areaSqm!.toInt().toString() : p.areaSqm!.toString())
+          : '';
+      _floor = p.floor == 'bodrum' ? 'suteren' : p.floor;
+      _totalFloorsController.text = p.totalFloors?.toString() ?? '';
+      _furnishing = p.furnishing;
+      _heatingType = p.heatingType;
+      _selectedAmenities = Set.from(p.amenities);
+      _descriptionController.text = p.description ?? '';
+
       if (p.expensesTemplate.isNotEmpty) {
         _expenses = List.from(p.expensesTemplate.where((e) => e.name != 'Porez (Tax)'));
       }
+    } else {
+      final hasAgencyBranding = ref.read(hasAgencyBrandingProvider);
+      if (hasAgencyBranding) {
+        _isDetailed = true;
+      }
     }
     _addressController.addListener(_onAddressChanged);
+    _descriptionController.addListener(() => setState(() {}));
   }
 
   @override
@@ -86,6 +123,10 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     _landlordNameController.dispose();
     _landlordPhoneController.dispose();
     _landlordEmailController.dispose();
+    _unitNumberController.dispose();
+    _areaController.dispose();
+    _totalFloorsController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -98,6 +139,33 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     }
   }
 
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    final hasAgencyBranding = ref.read(hasAgencyBrandingProvider);
+    setState(() {
+      _nameController.clear();
+      _addressController.clear();
+      _cityController.clear();
+      _rentController.clear();
+      _depositController.clear();
+      _dueDayController.text = '1';
+      _landlordNameController.clear();
+      _landlordPhoneController.clear();
+      _landlordEmailController.clear();
+      _unitNumberController.clear();
+      _areaController.clear();
+      _totalFloorsController.clear();
+      _descriptionController.clear();
+      _propertyType = null;
+      _roomCount = null;
+      _floor = null;
+      _furnishing = null;
+      _heatingType = null;
+      _selectedAmenities = <String>{};
+      _isDetailed = hasAgencyBranding;
+      _nameManuallyEdited = false;
+    });
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -111,6 +179,14 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       Property? createdProp;
       final cityText = _cityController.text.trim();
       final cityVal = cityText.isEmpty ? null : cityText;
+
+      final unitNumberVal = _unitNumberController.text.trim().isEmpty ? null : _unitNumberController.text.trim();
+      final areaVal = double.tryParse(_areaController.text.trim());
+      final totalFloorsVal = int.tryParse(_totalFloorsController.text.trim());
+      final descriptionVal = _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim();
+
+      final hasAgencyBranding = ref.read(hasAgencyBrandingProvider);
+      final isDetailedFinal = hasAgencyBranding || _isDetailed;
 
       if (isEdit) {
         await repo.updateProperty(widget.property!.copyWith(
@@ -129,6 +205,17 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           landlordName: _landlordNameController.text.trim(),
           landlordPhone: _landlordPhoneController.text.trim(),
           landlordEmail: _landlordEmailController.text.trim(),
+          isDetailed: isDetailedFinal,
+          propertyType: _propertyType,
+          unitNumber: unitNumberVal,
+          roomCount: _roomCount,
+          areaSqm: areaVal,
+          floor: _floor,
+          totalFloors: totalFloorsVal,
+          furnishing: _furnishing,
+          heatingType: _heatingType,
+          amenities: _selectedAmenities.toList(),
+          description: descriptionVal,
         ));
       } else {
         createdProp = await repo.createProperty(
@@ -147,6 +234,17 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           landlordName: _landlordNameController.text.trim(),
           landlordPhone: _landlordPhoneController.text.trim(),
           landlordEmail: _landlordEmailController.text.trim(),
+          isDetailed: isDetailedFinal,
+          propertyType: _propertyType,
+          unitNumber: unitNumberVal,
+          roomCount: _roomCount,
+          areaSqm: areaVal,
+          floor: _floor,
+          totalFloors: totalFloorsVal,
+          furnishing: _furnishing,
+          heatingType: _heatingType,
+          amenities: _selectedAmenities.toList(),
+          description: descriptionVal,
         );
       }
       
@@ -191,7 +289,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     final loc = AppLocalizations.of(context)!;
     final isEdit = widget.property != null;
     final userRole = ref.watch(userRoleProvider);
-    final isAgency = userRole == 'agency';
+    final hasAgencyBranding = ref.watch(hasAgencyBrandingProvider);
+    final isAgency = userRole == 'agency' || hasAgencyBranding;
+    final isDetailedActive = hasAgencyBranding || _isDetailed;
 
     return Scaffold(
       appBar: AppBar(
@@ -226,18 +326,18 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                             child: const Icon(LucideIcons.qrCode, color: Colors.white, size: 20),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Acentenin Eklediği Mülkü Devralın',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: StanomerColors.textPrimary),
+                                  loc.agencyPropertyTakeoverTitle,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: StanomerColors.textPrimary),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Acente tarafından girilen mülkü QR kod okutarak veya davet kodu ile hesabınıza ekleyin.',
-                                  style: TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                                  loc.agencyPropertyTakeoverDesc,
+                                  style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                                 ),
                               ],
                             ),
@@ -253,7 +353,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                             JoinPropertySheet.show(context);
                           },
                           icon: const Icon(LucideIcons.scanLine, size: 18),
-                          label: const Text('QR Kod Okut / Davet Kodu Gir', style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: Text(loc.scanQrOrEnterInviteCodeBtn, style: const TextStyle(fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: StanomerColors.brandPrimary,
                             foregroundColor: Colors.white,
@@ -266,44 +366,133 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
               ],
 
-              // --- SECTION: PROPERTY DETAILS ---
-              _buildSectionHeader(
-                loc.propertyDetailsHeader,
-                LucideIcons.home,
-              ),
+              // Main section header "PROPERTY INFO" with Detailed Entry Toggle right next to it
+              _buildPropertyInfoHeaderWithToggle(loc),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                  labelText: loc.address,
-                  prefixIcon: const Icon(LucideIcons.mapPin, size: 20),
+
+              if (!isDetailedActive) ...[
+                // ==========================================
+                // 1. STANDARD ENTRY MODE (3 BASIC FIELDS)
+                // ==========================================
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: loc.address,
+                    prefixIcon: const Icon(LucideIcons.mapPin, size: 20),
+                  ),
+                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
+                  maxLines: 2,
                 ),
-                validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _cityController,
-                decoration: InputDecoration(
-                  labelText: loc.localeName == 'tr' ? 'Şehir (İl / Şehir)' : 'City',
-                  hintText: loc.localeName == 'tr' ? 'Örn: İstanbul, Belgrad' : 'e.g. Istanbul, Belgrade',
-                  prefixIcon: const Icon(LucideIcons.building, size: 20),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _cityController,
+                  decoration: InputDecoration(
+                    labelText: loc.localeName == 'tr' ? 'Şehir (İl / Şehir)' : 'City',
+                    hintText: loc.localeName == 'tr' ? 'Örn: İstanbul, Belgrad' : 'e.g. Istanbul, Belgrade',
+                    prefixIcon: const Icon(LucideIcons.building, size: 20),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: loc.propertyName,
-                  hintText: loc.propertyNameHint,
-                  prefixIcon: const Icon(LucideIcons.tag, size: 20),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: loc.propertyName,
+                    hintText: loc.propertyNameHint,
+                    prefixIcon: const Icon(LucideIcons.tag, size: 20),
+                  ),
+                  onChanged: (val) => _nameManuallyEdited = true,
+                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
                 ),
-                onChanged: (val) => _nameManuallyEdited = true,
-                validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
-              ),
+              ] else ...[
+                // ==========================================
+                // 2. DETAILED ENTRY MODE (RICH SECTIONS)
+                // ==========================================
+                
+                // Section 1: Property and Location
+                _buildStepHeader(1, loc.propertyAndLocationInfo),
+                const SizedBox(height: 16),
+                _buildPropertyTypeSegmented(loc),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: loc.address,
+                    hintText: loc.addressDetailedHint,
+                    prefixIcon: const Icon(LucideIcons.mapPin, size: 20),
+                  ),
+                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: _cityController,
+                        decoration: InputDecoration(
+                          labelText: loc.localeName == 'tr' ? 'Şehir' : 'City',
+                          hintText: loc.localeName == 'tr' ? 'Örn: Belgrad, İstanbul' : 'e.g. Belgrade',
+                          prefixIcon: const Icon(LucideIcons.building, size: 20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: _unitNumberController,
+                        decoration: InputDecoration(
+                          labelText: loc.unitNumberLabel,
+                          hintText: loc.unitNumberHint,
+                          prefixIcon: const Icon(LucideIcons.doorOpen, size: 20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: loc.propertyName,
+                    hintText: loc.propertyNameHint,
+                    prefixIcon: const Icon(LucideIcons.tag, size: 20),
+                  ),
+                  onChanged: (val) => _nameManuallyEdited = true,
+                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
+                ),
+
+                const SizedBox(height: 32),
+
+                // Section 2: Structural and Financial Metrics
+                _buildStepHeader(2, loc.structuralAndFinancialMetrics),
+                const SizedBox(height: 16),
+                _buildRoomCountPills(loc),
+                const SizedBox(height: 16),
+                _buildMetricsRow(loc),
+
+                const SizedBox(height: 32),
+
+                // Section 3: Equipment and Heating Standards
+                _buildStepHeader(3, loc.equipmentAndHeatingStandards),
+                const SizedBox(height: 16),
+                _buildFurnishingCards(loc),
+                const SizedBox(height: 16),
+                _buildHeatingTypeDropdown(loc),
+
+                const SizedBox(height: 32),
+
+                // Section 4: Amenities and Extended Details
+                _buildStepHeader(4, loc.featuredAmenitiesLabel),
+                const SizedBox(height: 16),
+                _buildAmenitiesGrid(loc),
+                const SizedBox(height: 16),
+                _buildDescriptionField(loc),
+              ],
 
               if (isAgency) ...[
                 const SizedBox(height: 32),
@@ -386,14 +575,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       onChanged: (val) {
                         setState(() {
                           _selectedCurrency = val!;
-                          _depositCurrency = val; // Default deposit to match rent
+                          _depositCurrency = val;
                         });
                       },
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,33 +622,591 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
               _buildDueDayField(loc),
               const SizedBox(height: 24),
               _buildExpensesSection(loc),
-              const SizedBox(height: 24),
-              
               const SizedBox(height: 48),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    if (_expenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
-                      );
-                      return;
-                    }
-                    _submit();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(isEdit ? loc.saveChanges : loc.addProperty),
+
+              // Action Buttons
+              Row(
+                children: [
+                  if (isDetailedActive) ...[
+                    Expanded(
+                      flex: 1,
+                      child: OutlinedButton(
+                        onPressed: _resetForm,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                        child: Text(loc.clearFormBtn, style: const TextStyle(color: Color(0xFF475569))),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          if (_expenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
+                            );
+                            return;
+                          }
+                          _submit();
+                        }
+                      },
+                      icon: _isLoading ? const SizedBox.shrink() : const Icon(LucideIcons.check, size: 18),
+                      label: _isLoading 
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : Text(isEdit ? loc.saveChanges : loc.addProperty, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: StanomerColors.brandPrimary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // --- COMPONENT BUILDERS ---
+
+  Widget _buildPropertyInfoHeaderWithToggle(AppLocalizations loc) {
+    final hasAgencyBranding = ref.watch(hasAgencyBrandingProvider);
+    final isLocked = hasAgencyBranding;
+    final isDetailedActive = isLocked ? true : _isDetailed;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.home, size: 18, color: StanomerColors.brandPrimary),
+                const SizedBox(width: 8),
+                Text(
+                  loc.propertyDetailsHeader,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: StanomerColors.brandPrimary,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
+            InkWell(
+              onTap: isLocked ? null : () => setState(() => _isDetailed = !_isDetailed),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDetailedActive ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDetailedActive ? const Color(0xFF93C5FD) : const Color(0xFFCBD5E1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isLocked ? LucideIcons.lock : LucideIcons.sparkles,
+                      size: 13,
+                      color: isDetailedActive ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      loc.detailedEntry,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: isDetailedActive ? FontWeight.w700 : FontWeight.w600,
+                        color: isDetailedActive ? const Color(0xFF1D4ED8) : const Color(0xFF475569),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    SizedBox(
+                      height: 20,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: Switch.adaptive(
+                          value: isDetailedActive,
+                          activeColor: const Color(0xFF2563EB),
+                          onChanged: isLocked ? null : (val) => setState(() => _isDetailed = val),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Divider(),
+      ],
+    );
+  }
+
+  Widget _buildStepHeader(int step, String title) {
+    return Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFBFDBFE)),
+          ),
+          child: Center(
+            child: Text(
+              '$step',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF2563EB),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+              letterSpacing: -0.2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPropertyTypeSegmented(AppLocalizations loc) {
+    final types = [
+      {'id': 'apartment', 'label': loc.propertyTypeApartment, 'icon': LucideIcons.building},
+      {'id': 'house', 'label': loc.propertyTypeHouse, 'icon': LucideIcons.home},
+      {'id': 'commercial', 'label': loc.propertyTypeCommercial, 'icon': LucideIcons.briefcase},
+      {'id': 'garage', 'label': loc.propertyTypeGarage, 'icon': LucideIcons.warehouse},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.propertyTypeLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: types.map((t) {
+              final isSelected = _propertyType == t['id'];
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _propertyType = t['id'] as String),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          t['icon'] as IconData,
+                          size: 15,
+                          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            t['label'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoomCountPills(AppLocalizations loc) {
+    final rooms = ['studio', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '5.0+'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.roomCountLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: rooms.map((r) {
+            final isSelected = _roomCount == r;
+            final label = r == 'studio' ? (loc.localeName == 'tr' ? 'Stüdyo' : 'Studio') : r;
+            return ChoiceChip(
+              label: Text(label),
+              selected: isSelected,
+              onSelected: (_) => setState(() => _roomCount = r),
+              selectedColor: const Color(0xFFEFF6FF),
+              backgroundColor: Colors.white,
+              labelStyle: TextStyle(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                  width: isSelected ? 1.5 : 1.0,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricsRow(AppLocalizations loc) {
+    final floorDropdown = DropdownButtonFormField<String>(
+      value: _floor,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: loc.floorLevelLabel,
+        prefixIcon: const Icon(LucideIcons.layers, size: 20),
+      ),
+      items: [
+        DropdownMenuItem(value: 'suteren', child: Text(loc.floorSuteren, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'prizemlje', child: Text(loc.floorPrizemlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'visoko_prizemlje', child: Text(loc.floorVisokoPrizemlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '1', child: Text(loc.floorNth('1'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '2', child: Text(loc.floorNth('2'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '3', child: Text(loc.floorNth('3'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '4', child: Text(loc.floorNth('4'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '5', child: Text(loc.floorNth('5'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '6', child: Text(loc.floorNth('6'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '7', child: Text(loc.floorNth('7'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '8', child: Text(loc.floorNth('8'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '9', child: Text(loc.floorNth('9'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '10+', child: Text(loc.floorNth('10+'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'potkrovlje', child: Text(loc.floorPotkrovlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'other', child: Text(loc.floorOther, overflow: TextOverflow.ellipsis)),
+      ],
+      onChanged: (val) => setState(() => _floor = val),
+    );
+
+    final areaField = TextFormField(
+      controller: _areaController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: loc.areaSqmLabel,
+        hintText: '85',
+        suffixText: 'm²',
+        prefixIcon: const Icon(LucideIcons.maximize2, size: 20),
+      ),
+    );
+
+    final totalFloorsField = TextFormField(
+      controller: _totalFloorsController,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: loc.totalFloorsLabel,
+        hintText: '6',
+        prefixIcon: const Icon(LucideIcons.building2, size: 20),
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: areaField),
+                  const SizedBox(width: 12),
+                  Expanded(child: totalFloorsField),
+                ],
+              ),
+              const SizedBox(height: 16),
+              floorDropdown,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 2, child: areaField),
+            const SizedBox(width: 12),
+            Expanded(flex: 3, child: floorDropdown),
+            const SizedBox(width: 12),
+            Expanded(flex: 2, child: totalFloorsField),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFurnishingCards(AppLocalizations loc) {
+    final options = [
+      {
+        'id': 'furnished',
+        'title': loc.furnishingFurnished,
+        'desc': loc.furnishingFurnishedDesc,
+        'icon': LucideIcons.armchair,
+      },
+      {
+        'id': 'semi_furnished',
+        'title': loc.furnishingSemi,
+        'desc': loc.furnishingSemiDesc,
+        'icon': LucideIcons.utensils,
+      },
+      {
+        'id': 'unfurnished',
+        'title': loc.furnishingUnfurnished,
+        'desc': loc.furnishingUnfurnishedDesc,
+        'icon': LucideIcons.box,
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.furnishingLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          children: options.map((opt) {
+            final isSelected = _furnishing == opt['id'];
+            return GestureDetector(
+              onTap: () => setState(() => _furnishing = opt['id'] as String),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                    width: isSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
+                      size: 18,
+                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(
+                      opt['icon'] as IconData,
+                      size: 16,
+                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            opt['title'] as String,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            opt['desc'] as String,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeatingTypeDropdown(AppLocalizations loc) {
+    return DropdownButtonFormField<String>(
+      value: _heatingType,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: loc.heatingTypeLabel,
+        prefixIcon: const Icon(LucideIcons.flame, size: 20),
+      ),
+      items: [
+        DropdownMenuItem(value: 'cg', child: Text(loc.heatingCg, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'eg', child: Text(loc.heatingEg, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'gas', child: Text(loc.heatingGas, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'underfloor', child: Text(loc.heatingUnderfloor, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'ta', child: Text(loc.heatingTa, overflow: TextOverflow.ellipsis)),
+      ],
+      onChanged: (val) => setState(() => _heatingType = val),
+    );
+  }
+
+  Widget _buildAmenitiesGrid(AppLocalizations loc) {
+    final amenities = [
+      {'id': 'pets_allowed', 'label': loc.amenityPets, 'icon': LucideIcons.pawPrint},
+      {'id': 'elevator', 'label': loc.amenityElevator, 'icon': LucideIcons.arrowUpCircle},
+      {'id': 'balcony', 'label': loc.amenityBalcony, 'icon': LucideIcons.sunMedium},
+      {'id': 'parking', 'label': loc.amenityParking, 'icon': LucideIcons.car},
+      {'id': 'storage', 'label': loc.amenityStorage, 'icon': LucideIcons.package},
+    ];
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: amenities.map((a) {
+        final id = a['id'] as String;
+        final isChecked = _selectedAmenities.contains(id);
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isChecked) {
+                _selectedAmenities.remove(id);
+              } else {
+                _selectedAmenities.add(id);
+              }
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isChecked ? const Color(0xFFEFF6FF) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isChecked ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                width: isChecked ? 1.5 : 1.0,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isChecked ? LucideIcons.checkSquare : LucideIcons.square,
+                  size: 16,
+                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  a['icon'] as IconData,
+                  size: 15,
+                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  a['label'] as String,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
+                    color: isChecked ? const Color(0xFF1E3A8A) : const Color(0xFF334155),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDescriptionField(AppLocalizations loc) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              loc.extendedDescriptionLabel,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+            ),
+            Text(
+              '${_descriptionController.text.length} / 2000',
+              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _descriptionController,
+          maxLength: 2000,
+          maxLines: 4,
+          buildCounter: (ctx, {required currentLength, required isFocused, maxLength}) => null,
+          decoration: InputDecoration(
+            hintText: loc.extendedDescriptionHint,
+            alignLabelWithHint: true,
+          ),
+        ),
+      ],
     );
   }
 

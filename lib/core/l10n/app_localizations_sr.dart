@@ -120,7 +120,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get newPassword => 'Nova lozinka';
 
   @override
-  String get saveChanges => 'Sačuvaj';
+  String get saveChanges => 'Sačuvaj izmene';
 
   @override
   String get passwordChangedSuccess => 'Lozinka je uspešno promenjena';
@@ -1153,7 +1153,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get backToDashboard => 'Nazad na kontrolnu tablu';
 
   @override
-  String get propertyDetailsHeader => 'DETALJI NEKRETNINE';
+  String get propertyDetailsHeader => 'INFORMACIJE O NEKRETNINI';
 
   @override
   String get defaultLeaseTermsHeader => 'PODRAZUMEVANI USLOVI ZAKUPA';
@@ -1979,6 +1979,707 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get referralCodeLabel => 'Referral Kod';
+
+  @override
+  String get detailedEntry => 'Napredne informacije';
+
+  @override
+  String get detailedEntrySubtitle =>
+      'Svi detalji o nekretnini, strukturne metrike i parametri oglasa.';
+
+  @override
+  String get propertyAndLocationInfo => 'Informacije o Nekretnini i Lokaciji';
+
+  @override
+  String get propertyTypeLabel => 'Tip Nekretnine';
+
+  @override
+  String get propertyTypeApartment => 'Stan';
+
+  @override
+  String get propertyTypeHouse => 'Kuća';
+
+  @override
+  String get propertyTypeCommercial => 'Poslovni Prostor';
+
+  @override
+  String get propertyTypeGarage => 'Garaža';
+
+  @override
+  String get unitNumberLabel => 'Broj Stana / Jedinice';
+
+  @override
+  String get unitNumberHint => 'Npr: 4 ili 12B';
+
+  @override
+  String get addressDetailedHint =>
+      'Unesite grad, opštinu, naselje ili ulicu...';
+
+  @override
+  String get structuralAndFinancialMetrics =>
+      'Strukturne i Finansijske Metrike';
+
+  @override
+  String get roomCountLabel => 'Struktura (Broj Soba)';
+
+  @override
+  String get areaSqmLabel => 'Površina';
+
+  @override
+  String get floorLevelLabel => 'Sprat';
+
+  @override
+  String get totalFloorsLabel => 'Ukupno Spratova u Zgradi';
+
+  @override
+  String get equipmentAndHeatingStandards => 'Standardi Opreme i Grejanja';
+
+  @override
+  String get furnishingLabel => 'Nameštenost';
+
+  @override
+  String get furnishingFurnished => 'Namešten';
+
+  @override
+  String get furnishingFurnishedDesc => 'Kompletno Namešten';
+
+  @override
+  String get furnishingSemi => 'Polunamešten';
+
+  @override
+  String get furnishingSemiDesc => 'Samo Kuhinja i Kupatilo';
+
+  @override
+  String get furnishingUnfurnished => 'Nenamešten';
+
+  @override
+  String get furnishingUnfurnishedDesc => 'Prazan / Bez Nameštaja';
+
+  @override
+  String get heatingTypeLabel => 'Tip Grejanja';
+
+  @override
+  String get heatingCg => 'CG (Centralno grejanje)';
+
+  @override
+  String get heatingEg => 'EG (Etažno grejanje - struja)';
+
+  @override
+  String get heatingGas => 'Gas (Gasno grejanje)';
+
+  @override
+  String get heatingUnderfloor => 'Podno grejanje';
+
+  @override
+  String get heatingTa => 'TA Peć / Klima / Mermerni radijatori';
+
+  @override
+  String get featuredAmenitiesLabel => 'Dodatne Pogodnosti (Dodatno)';
+
+  @override
+  String get amenityPets => 'Dozvoljeni kućni ljubimci';
+
+  @override
+  String get amenityElevator => 'Lift';
+
+  @override
+  String get amenityBalcony => 'Terasa / Balkon / Lođa';
+
+  @override
+  String get amenityParking => 'Garaža / Parking mesto';
+
+  @override
+  String get amenityStorage => 'Podrum / Ostava';
+
+  @override
+  String get extendedDescriptionLabel => 'Opis Nekretnine (Detalji)';
+
+  @override
+  String get extendedDescriptionHint =>
+      'Unesite detalje o prevozu, zgradi, orijentaciji i uslovima...';
+
+  @override
+  String get clearFormBtn => 'Obriši Formu';
+
+  @override
+  String get floorSuteren => 'Suteren (SUT)';
+
+  @override
+  String get floorPrizemlje => 'Prizemlje (PR)';
+
+  @override
+  String get floorVisokoPrizemlje => 'Visoko prizemlje (VPR)';
+
+  @override
+  String floorNth(String floor) {
+    return '$floor. sprat';
+  }
+
+  @override
+  String get floorPotkrovlje => 'Potkrovlje (PK)';
+
+  @override
+  String get floorOther => 'Ostali spratovi';
+
+  @override
+  String get statusOpen => 'Otvoreno';
+
+  @override
+  String get statusInProgress => 'Poslat majstor';
+
+  @override
+  String get statusClosed => 'Zatvoreno';
+
+  @override
+  String get statusCancelled => 'Otkazano';
+
+  @override
+  String get financialDetails => 'Finansijski Detalji';
+
+  @override
+  String get financialStatusPendingReview => 'Čeka pregled';
+
+  @override
+  String get financialStatusPendingPayment => 'Čeka uplatu';
+
+  @override
+  String get financialStatusPaid => 'Plaćeno';
+
+  @override
+  String get financialStatusRejected => 'Odbijeno';
+
+  @override
+  String get payerTenant => 'Stanar';
+
+  @override
+  String get payerLandlord => 'Vlasnik';
+
+  @override
+  String get payerTenantPaidOrWillPay => 'Stanar snosi / platio';
+
+  @override
+  String get payerLandlordWillCover => 'Vlasnik će pokriti';
+
+  @override
+  String get unassigned => 'Nije dodeljeno';
+
+  @override
+  String get noFinancialRecordTitle => 'Nema finansijskog zapisa';
+
+  @override
+  String get noFinancialRecordDesc =>
+      'Za ovaj zahtev za održavanje još uvek nije unet trošak ili račun.';
+
+  @override
+  String get iPaidSubmitReceipt => 'Ja sam platio (Priloži račun)';
+
+  @override
+  String get resubmitExpenseIPaid => 'Ponovo prijavi trošak (Ja sam platio)';
+
+  @override
+  String get addCostInvoice => 'Dodaj trošak / račun';
+
+  @override
+  String get costPayerLabel => 'Odgovoran za trošak';
+
+  @override
+  String get receiptInvoiceDocument => 'Račun / Fiskalni račun';
+
+  @override
+  String get clickToViewDocument => 'Kliknite za pregled dokumenta';
+
+  @override
+  String get agencyExpenseApproval => 'Odobrenje troška od agencije';
+
+  @override
+  String get landlordExpenseApproval => 'Odobrenje troška od vlasnika';
+
+  @override
+  String get tenantExpenseApproval => 'Odobrenje troška od stanara';
+
+  @override
+  String get expenseApprovedSuccess => 'Trošak je uspešno odobren.';
+
+  @override
+  String get expenseRejectedSuccess => 'Prijava troška je odbijena.';
+
+  @override
+  String get rejectExpenseTitle => 'Odbij trošak';
+
+  @override
+  String get rejectExpenseConfirm =>
+      'Da li ste sigurni da želite da odbijete prijavljeni trošak?';
+
+  @override
+  String get rejectionReasonOptional => 'Razlog odbijanja (opciono)';
+
+  @override
+  String get quickActions => 'Brze Radnje';
+
+  @override
+  String get descriptionOrNoteOptional => 'Opis / Napomena (Opciono)';
+
+  @override
+  String get enterExpenseNoteHint =>
+      'npr. Zamenjen ventil u kuhinji, uključujući rad majstora';
+
+  @override
+  String get editFinancialDetails => 'Izmeni finansijske detalje';
+
+  @override
+  String get propertyInfo => 'Informacije o Nekretnini';
+
+  @override
+  String get coveredByLandlord => 'Vlasnik je pokrio';
+
+  @override
+  String get coveredByTenant => 'Stanar je pokrio';
+
+  @override
+  String get landlordReimbursement => 'Refundacija od vlasnika';
+
+  @override
+  String get tenantToPay => 'Stanar plaća';
+
+  @override
+  String get landlordReimburseDesc =>
+      'Stanar je platio unapred. Vlasnik će refundirati ili umanjiti sledeću kiriju.';
+
+  @override
+  String get tenantToPayDesc =>
+      'Trošak snosi stanar. Iznos će biti dodat na sledeću kiriju.';
+
+  @override
+  String get coveredByLandlordClosedDesc =>
+      'Pokriveno kao investiciono održavanje i zatvoreno.';
+
+  @override
+  String get coveredByTenantClosedDesc =>
+      'Pokriveno kao tekuće održavanje stanara i zatvoreno.';
+
+  @override
+  String get reEditFinancials => 'Ponovo izmeni finansije';
+
+  @override
+  String get expenseRejectedDesc =>
+      'Prethodno prijavljeni trošak nije odobren. Možete ponovo poslati sa tačnim iznosom i računom.';
+
+  @override
+  String get agencyManager => 'Menadžer agencije';
+
+  @override
+  String actorStatusInvestigating(String actor) {
+    return '🔍 $actor je preuzeo zahtev na pregled.';
+  }
+
+  @override
+  String actorStatusInProgress(String actor) {
+    return '🔧 $actor je poslao majstora, radovi su u toku.';
+  }
+
+  @override
+  String actorStatusResolved(String actor) {
+    return '✅ $actor je označio zahtev kao rešen.';
+  }
+
+  @override
+  String actorStatusClosed(String actor) {
+    return '🔒 $actor je zatvorio zahtev.';
+  }
+
+  @override
+  String actorStatusReopened(String actor) {
+    return '🔄 $actor je ponovo otvorio zahtev. Problem i dalje postoji.';
+  }
+
+  @override
+  String actorMarkedActive(String actor) {
+    return '📋 $actor je postavio zahtev u aktivan status.';
+  }
+
+  @override
+  String actorUpdatedStatus(String actor, String status) {
+    return '📌 $actor je ažurirao status: $status';
+  }
+
+  @override
+  String get submitExpenseReview => 'Prijavi trošak (Pošalji na pregled)';
+
+  @override
+  String get pleaseEnterValidCost => 'Molimo unesite važeći plaćeni iznos.';
+
+  @override
+  String get pleaseUploadReceipt => 'Molimo priložite račun ili uplatnicu.';
+
+  @override
+  String get pleaseSelectCostPayer => 'Molimo izaberite ko snosi trošak.';
+
+  @override
+  String get noteLabel => 'Napomena';
+
+  @override
+  String get amountPaid => 'Plaćeni iznos';
+
+  @override
+  String get costAmount => 'Iznos troška';
+
+  @override
+  String get costResponsibility => 'Odgovoran za trošak';
+
+  @override
+  String get paymentInvoiceStatus => 'Status uplate i računa';
+
+  @override
+  String get paymentDueDate => 'Datum uplate / dospelosti';
+
+  @override
+  String get noDate => 'Nema datuma';
+
+  @override
+  String get uploadReceiptInvoice => 'Priloži račun / uplatnicu (PDF, Slika)';
+
+  @override
+  String get uploadInvoiceDoc => 'Priloži fakturu';
+
+  @override
+  String get existingDocument => 'Postojeći dokument';
+
+  @override
+  String get change => 'Promeni';
+
+  @override
+  String get enterAmountAttachReceipt =>
+      'Unesite plaćeni iznos i priložite račun.';
+
+  @override
+  String declaredAmountTitle(String amount) {
+    return 'Prijavljeni iznos: $amount • Izaberite konačnu odgovornost za trošak:';
+  }
+
+  @override
+  String get expenseApprovalResponsibility => 'Odobrenje troška i odgovornost';
+
+  @override
+  String get landlordCoveredPaidTitle =>
+      'Vlasnik je pokrio (Označi kao plaćeno)';
+
+  @override
+  String get landlordCoveredPaidSub =>
+      'Trošak je na vlasniku (investiciono održavanje). Nema refundacije, zatvara se kao plaćeno.';
+
+  @override
+  String get landlordCoveredPaidBadge => 'Plaćeno • Vlasnik';
+
+  @override
+  String get tenantWillPayTitle => 'Stanar plaća (Dodati na kiriju)';
+
+  @override
+  String get tenantWillPaySub =>
+      'Trošak je nastao upotrebom stanara. Iznos se dodaje na kiriju.';
+
+  @override
+  String get tenantWillPayBadge => 'Čeka uplatu • Dug stanara';
+
+  @override
+  String get tenantPaidMarkAsPaidTitle =>
+      'Stanar je platio (Označi kao plaćeno)';
+
+  @override
+  String get tenantPaidMarkAsPaidSub =>
+      'Kvar je nastao upotrebom stanara. Iznos ostaje na stanaru, zatvoreno kao plaćeno.';
+
+  @override
+  String get tenantPaidMarkAsPaidBadge => 'Plaćeno • Upotreba stanara';
+
+  @override
+  String get landlordReimbursesTitle => 'Vlasnik refundira (Odbiti od kirije)';
+
+  @override
+  String get landlordReimbursesSub =>
+      'Trošak investicionog održavanja koji je platio stanar. Vlasnik refundira ili umanjuje kiriju.';
+
+  @override
+  String get landlordReimbursesBadge => 'Čeka uplatu • Odbitak od kirije';
+
+  @override
+  String get propertyManagedByAgencyNotice =>
+      'Nekretninom upravlja agencija. Samo agencija može menjati finansijske podatke.';
+
+  @override
+  String agencyExpenseApprovedMsg(String amount, String actor, String details) {
+    return '✅ Trošak odobren: $amount (Odobrio $actor • $details)';
+  }
+
+  @override
+  String agencyExpenseRejectedMsg(String actor) {
+    return '❌ Prijavu troška je odbio $actor';
+  }
+
+  @override
+  String reasonLabel(String reason) {
+    return 'Razlog: $reason';
+  }
+
+  @override
+  String get roleYou => 'Vi';
+
+  @override
+  String get roleUser => 'Korisnik';
+
+  @override
+  String landlordDeclaredExpenseSubtitle(String amount) {
+    return 'Vlasnik je prijavio trošak od $amount. Možete odobriti ili odbiti trošak.';
+  }
+
+  @override
+  String tenantDeclaredExpenseSubtitle(String amount) {
+    return 'Stanar je prijavio trošak od $amount. Možete odobriti ili odbiti trošak.';
+  }
+
+  @override
+  String get expenseSubmittedForLandlordReview =>
+      'Prijavljeni trošak je poslat vlasniku na pregled.';
+
+  @override
+  String get expenseSubmittedForTenantReview =>
+      'Prijavljeni trošak je poslat stanaru na pregled.';
+
+  @override
+  String get tblRequestProperty => 'Zahtev & Nekretnina';
+
+  @override
+  String get tblPriority => 'Prioritet';
+
+  @override
+  String get tblIssueStatus => 'Status kvara';
+
+  @override
+  String get tblCostPayer => 'Trošak & Platilac';
+
+  @override
+  String get tblFinancialStatus => 'Finansijski status';
+
+  @override
+  String get tblDate => 'Datum';
+
+  @override
+  String get dueDatePrefix => 'Rok';
+
+  @override
+  String get edit => 'Uredi';
+
+  @override
+  String get update => 'Ažuriraj';
+
+  @override
+  String get paymentDate => 'Datum uplate';
+
+  @override
+  String get profileUpdated => 'Uspešno sačuvano.';
+
+  @override
+  String get agencyPropertyTakeoverTitle =>
+      'Preuzmi nekretninu dodatu od agencije';
+
+  @override
+  String get agencyPropertyTakeoverDesc =>
+      'Dodajte nekretninu koju je unela agencija na svoj nalog skeniranjem QR koda ili unosom pozivnog koda.';
+
+  @override
+  String get scanQrOrEnterInviteCodeBtn =>
+      'Skeniraj QR kod / Unesi kod pozivnice';
+
+  @override
+  String get settlementIntentTitle => 'Svrha plaćanja i obračun';
+
+  @override
+  String get intentTenantSelfTitle =>
+      'Platio sam za sopstvenu upotrebu (Kvar usled korišćenja)';
+
+  @override
+  String get intentTenantSelfSub =>
+      'Trošak ostaje na meni. Ne tražim refundaciju, zatvara se kao plaćeno.';
+
+  @override
+  String get intentTenantSelfBadge => 'Plaćeno • Lični trošak';
+
+  @override
+  String get intentTenantReimburseTitle =>
+      'Platio sam za investiciono održavanje (U ime vlasnika)';
+
+  @override
+  String get intentTenantReimburseSub =>
+      'Predujmio sam trošak demirbaša. Molim odbitak od sledeće kirije ili refundaciju.';
+
+  @override
+  String get intentTenantReimburseBadge => 'Odbitak od kirije';
+
+  @override
+  String get intentLandlordSelfTitle =>
+      'Pokrio sam za investiciono održavanje (Demirbaš)';
+
+  @override
+  String get intentLandlordSelfSub =>
+      'Trošak je na vlasniku. Ne potražuje se od stanara, zatvara se kao plaćeno.';
+
+  @override
+  String get intentLandlordSelfBadge => 'Plaćeno • Vlasnik';
+
+  @override
+  String get intentLandlordTenantDueTitle =>
+      'Platio sam za kvar usled upotrebe stanara';
+
+  @override
+  String get intentLandlordTenantDueSub =>
+      'Kvar je nastao upotrebom stanara. Iznos se dodaje na sledeću kiriju stanara.';
+
+  @override
+  String get intentLandlordTenantDueBadge => 'Dug stanara';
+
+  @override
+  String get pleaseSelectDeclarationIntent =>
+      'Molimo izaberite svrhu plaćanja i predlog obračuna.';
+
+  @override
+  String get confirmTenantReimburseApprovalTitle =>
+      'Odobrenje odbitka od kirije';
+
+  @override
+  String confirmTenantReimburseApprovalMsg(String amount) {
+    return 'Potvrđujete li da stanar ima pravo na refundaciju od $amount za investiciono održavanje i da se iznos odbije od sledeće kirije?';
+  }
+
+  @override
+  String get confirmTenantSelfApprovalTitle => 'Potvrda ličnog troška stanara';
+
+  @override
+  String confirmTenantSelfApprovalMsg(String amount) {
+    return 'Potvrđujete li da je stanar platio trošak upotrebe od $amount i da se zahtev zatvori kao plaćen bez refundacije?';
+  }
+
+  @override
+  String get confirmLandlordSelfApprovalTitle => 'Potvrda troška vlasnika';
+
+  @override
+  String confirmLandlordSelfApprovalMsg(String amount) {
+    return 'Potvrđujete li da je vlasnik pokrio investicioni trošak od $amount i da se zahtev zatvori kao plaćen?';
+  }
+
+  @override
+  String get confirmLandlordTenantDueApprovalTitle =>
+      'Odobrenje troška zaduženja';
+
+  @override
+  String confirmLandlordTenantDueApprovalMsg(String amount) {
+    return 'Potvrđujete li da je trošak od $amount nastao vašom upotrebom i da se doda na vašu sledeću kiriju?';
+  }
+
+  @override
+  String declaredIntentLabel(String intent) {
+    return 'Predlog obračuna: $intent';
+  }
+
+  @override
+  String get maintenanceSettlementsHeader => 'Obračun održavanja i kvarova';
+
+  @override
+  String get maintenanceSettlementsSub =>
+      'Odobreni troškovi održavanja koji se odbijaju ili dodaju na kiriju';
+
+  @override
+  String get deductFromRentBadge => 'Odbija se od kirije';
+
+  @override
+  String get addToRentBadge => 'Dodaje se na kiriju';
+
+  @override
+  String get markAsSettledBtn => 'Označi kao poravnato / plaćeno';
+
+  @override
+  String get confirmSettlementTitle => 'Zatvori obračun';
+
+  @override
+  String confirmSettlementMsg(String amount) {
+    return 'Da li potvrđujete da je trošak održavanja od $amount poravnat/plaćen i da treba zatvoriti stavku?';
+  }
+
+  @override
+  String get settlementRecordedSuccess =>
+      'Obračun održavanja je uspešno zatvoren.';
+
+  @override
+  String get goToMaintenanceRequest => 'Otvori zahtev';
+
+  @override
+  String maintenanceSettlementActivityMsg(String amount, String role) {
+    return '💰 Trošak održavanja ($amount) je označen kao poravnat/plaćen od strane $role.';
+  }
+
+  @override
+  String get settleExpenseTitle => 'Poravnanje troškova održavanja';
+
+  @override
+  String get settleExpenseSub => 'Izaberite način plaćanja ili prebijanja';
+
+  @override
+  String get optionOffsetFromRent => 'Odbij od kirije / računa';
+
+  @override
+  String get optionOffsetFromRentDesc =>
+      'Automatski umanji ovaj iznos sa predstojeće kirije ili računa u istoj valuti';
+
+  @override
+  String get optionBankTransfer => 'Plati bankarskim transferom';
+
+  @override
+  String get optionBankTransferDesc =>
+      'Priložite uplatnicu i pošaljite na potvrdu';
+
+  @override
+  String get optionCashPayment => 'Plati u gotovini';
+
+  @override
+  String get optionCashPaymentDesc => 'Prijavite da je plaćeno u gotovini';
+
+  @override
+  String get selectRentToOffset => 'Izaberite stavku za prebijanje';
+
+  @override
+  String noEligiblePendingPayments(String currency) {
+    return 'Nema odgovarajućih neplaćenih kirija ili računa u valuti $currency.';
+  }
+
+  @override
+  String offsetAppliedSuccess(String amount, String paymentTitle) {
+    return 'Iznos od $amount je uspešno prebijen sa stavke $paymentTitle.';
+  }
+
+  @override
+  String get confirmReceiptBtn => 'Primio sam uplatu / Potvrdi';
+
+  @override
+  String get waitingForRecipientApproval => 'Čeka se potvrda druge strane';
+
+  @override
+  String get iPaidBtn => 'Platio sam / Priloži uplatnicu';
+
+  @override
+  String get iPaidCashBtn => 'Plaćeno u gotovini';
+
+  @override
+  String maintenanceCashPaidActivityMsg(String role, String amount) {
+    return '💵 $role je prijavio plaćanje troška održavanja od $amount u gotovini. Čeka se potvrda.';
+  }
+
+  @override
+  String maintenanceBankPaidActivityMsg(String role, String amount) {
+    return '📄 $role je prijavio plaćanje troška održavanja od $amount preko banke (Uplatnica priložena). Čeka se potvrda.';
+  }
+
+  @override
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
+    return '🏠 Trošak održavanja od $amount je prebijen sa stavke $paymentTitle.';
+  }
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -2098,7 +2799,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get newPassword => 'Нова лозинка';
 
   @override
-  String get saveChanges => 'Сачувај';
+  String get saveChanges => 'Сачувај измене';
 
   @override
   String get passwordChangedSuccess => 'Лозинка је успешно промењена';
@@ -3135,7 +3836,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get backToDashboard => 'Назад на контролну таблу';
 
   @override
-  String get propertyDetailsHeader => 'ДЕТАЉИ НЕКРЕТНИНЕ';
+  String get propertyDetailsHeader => 'ИНФОРМАЦИЈЕ О НЕКРЕТНИНИ';
 
   @override
   String get defaultLeaseTermsHeader => 'ПОДРАЗУМЕВАНИ УСЛОВИ ЗАКУПА';
@@ -3871,4 +4572,705 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get referralCodeLabel => 'Реферрал Код';
+
+  @override
+  String get detailedEntry => 'Напредне информације';
+
+  @override
+  String get detailedEntrySubtitle =>
+      'Сви детаљи о некретнини, структурне метрике и параметри огласа.';
+
+  @override
+  String get propertyAndLocationInfo => 'Информације о Некретнини и Локацији';
+
+  @override
+  String get propertyTypeLabel => 'Тип Некретнине';
+
+  @override
+  String get propertyTypeApartment => 'Стан';
+
+  @override
+  String get propertyTypeHouse => 'Кућа';
+
+  @override
+  String get propertyTypeCommercial => 'Пословни Простор';
+
+  @override
+  String get propertyTypeGarage => 'Гаража';
+
+  @override
+  String get unitNumberLabel => 'Број Стана / Јединице';
+
+  @override
+  String get unitNumberHint => 'Нпр: 4 или 12Б';
+
+  @override
+  String get addressDetailedHint =>
+      'Унесите град, општину, насеље или улицу...';
+
+  @override
+  String get structuralAndFinancialMetrics =>
+      'Структурне и Финансијске Метрике';
+
+  @override
+  String get roomCountLabel => 'Структура (Број Соба)';
+
+  @override
+  String get areaSqmLabel => 'Површина';
+
+  @override
+  String get floorLevelLabel => 'Спрат';
+
+  @override
+  String get totalFloorsLabel => 'Укупно Спратова у Згради';
+
+  @override
+  String get equipmentAndHeatingStandards => 'Стандарди Опреме и Грејања';
+
+  @override
+  String get furnishingLabel => 'Намештеност';
+
+  @override
+  String get furnishingFurnished => 'Намештен';
+
+  @override
+  String get furnishingFurnishedDesc => 'Комплетно Намештен';
+
+  @override
+  String get furnishingSemi => 'Полунамештен';
+
+  @override
+  String get furnishingSemiDesc => 'Само Кухиња и Купатило';
+
+  @override
+  String get furnishingUnfurnished => 'Ненамештен';
+
+  @override
+  String get furnishingUnfurnishedDesc => 'Празан / Без Намештаја';
+
+  @override
+  String get heatingTypeLabel => 'Тип Грејања';
+
+  @override
+  String get heatingCg => 'ЦГ (Централно грејање)';
+
+  @override
+  String get heatingEg => 'ЕГ (Етажно грејање - струја)';
+
+  @override
+  String get heatingGas => 'Гас (Гасно грејање)';
+
+  @override
+  String get heatingUnderfloor => 'Подно грејање';
+
+  @override
+  String get heatingTa => 'ТА Пећ / Клима / Мермерни радијатори';
+
+  @override
+  String get featuredAmenitiesLabel => 'Додатне Погодности (Додатно)';
+
+  @override
+  String get amenityPets => 'Дозвољени кућни љубимци';
+
+  @override
+  String get amenityElevator => 'Лифт';
+
+  @override
+  String get amenityBalcony => 'Тераса / Балкон / Лођа';
+
+  @override
+  String get amenityParking => 'Гаража / Паркинг место';
+
+  @override
+  String get amenityStorage => 'Подрум / Остава';
+
+  @override
+  String get extendedDescriptionLabel => 'Опис Некретнине (Детаљи)';
+
+  @override
+  String get extendedDescriptionHint =>
+      'Унесите детаље о превозу, згради, оријентацији и условима...';
+
+  @override
+  String get clearFormBtn => 'Обриши Форму';
+
+  @override
+  String get floorSuteren => 'Сутерен (СУТ)';
+
+  @override
+  String get floorPrizemlje => 'Приземље (ПР)';
+
+  @override
+  String get floorVisokoPrizemlje => 'Високо приземље (ВПР)';
+
+  @override
+  String floorNth(String floor) {
+    return '$floor. спрат';
+  }
+
+  @override
+  String get floorPotkrovlje => 'Поткровље (ПК)';
+
+  @override
+  String get floorOther => 'Остали спратови';
+
+  @override
+  String get statusOpen => 'Отворено';
+
+  @override
+  String get statusInProgress => 'Послат мајстор';
+
+  @override
+  String get statusClosed => 'Затворено';
+
+  @override
+  String get statusCancelled => 'Отказано';
+
+  @override
+  String get financialDetails => 'Финансијски Детаљи';
+
+  @override
+  String get financialStatusPendingReview => 'Чека преглед';
+
+  @override
+  String get financialStatusPendingPayment => 'Чека уплату';
+
+  @override
+  String get financialStatusPaid => 'Плаћено';
+
+  @override
+  String get financialStatusRejected => 'Одбијено';
+
+  @override
+  String get payerTenant => 'Станар';
+
+  @override
+  String get payerLandlord => 'Власник';
+
+  @override
+  String get payerTenantPaidOrWillPay => 'Станар сноси / платио';
+
+  @override
+  String get payerLandlordWillCover => 'Власник ће покрити';
+
+  @override
+  String get unassigned => 'Није додељено';
+
+  @override
+  String get noFinancialRecordTitle => 'Нема финансијског записа';
+
+  @override
+  String get noFinancialRecordDesc =>
+      'За овај захтев за одржавање још увек није унет трошак или рачун.';
+
+  @override
+  String get iPaidSubmitReceipt => 'Ја сам платио (Приложи рачун)';
+
+  @override
+  String get resubmitExpenseIPaid => 'Поново пријави трошак (Ја сам платио)';
+
+  @override
+  String get addCostInvoice => 'Додај трошак / рачун';
+
+  @override
+  String get costPayerLabel => 'Одговоран за трошак';
+
+  @override
+  String get receiptInvoiceDocument => 'Рачун / Фискални рачун';
+
+  @override
+  String get clickToViewDocument => 'Кликните за преглед документа';
+
+  @override
+  String get agencyExpenseApproval => 'Одобрење трошка од агенције';
+
+  @override
+  String get landlordExpenseApproval => 'Одобрење трошка од власника';
+
+  @override
+  String get tenantExpenseApproval => 'Одобрење трошка од станара';
+
+  @override
+  String get expenseApprovedSuccess => 'Трошак је успешно одобрен.';
+
+  @override
+  String get expenseRejectedSuccess => 'Пријава трошка је одбијена.';
+
+  @override
+  String get rejectExpenseTitle => 'Одбиј трошак';
+
+  @override
+  String get rejectExpenseConfirm =>
+      'Да ли сте сигурни да желите да одбијете пријављени трошак?';
+
+  @override
+  String get rejectionReasonOptional => 'Разлог одбијања (опционо)';
+
+  @override
+  String get quickActions => 'Брзе Радње';
+
+  @override
+  String get descriptionOrNoteOptional => 'Опис / Напомена (Опционо)';
+
+  @override
+  String get enterExpenseNoteHint =>
+      'нпр. Замењен вентил у кухињи, укључујући рад мајстора';
+
+  @override
+  String get editFinancialDetails => 'Измени финансијске детаље';
+
+  @override
+  String get propertyInfo => 'Информације о Некретнини';
+
+  @override
+  String get coveredByLandlord => 'Власник је покрио';
+
+  @override
+  String get coveredByTenant => 'Станар је покрио';
+
+  @override
+  String get landlordReimbursement => 'Рефундација од власника';
+
+  @override
+  String get tenantToPay => 'Станар плаћа';
+
+  @override
+  String get landlordReimburseDesc =>
+      'Станар је платио унапред. Власник ће рефундирати или умањити следећу кирију.';
+
+  @override
+  String get tenantToPayDesc =>
+      'Трошак сноси станар. Износ ће бити додат на следећу кирију.';
+
+  @override
+  String get coveredByLandlordClosedDesc =>
+      'Покривено као инвестиционо одржавање и затворено.';
+
+  @override
+  String get coveredByTenantClosedDesc =>
+      'Покривено као текуће одржавање станара и затворено.';
+
+  @override
+  String get reEditFinancials => 'Поново измени финансије';
+
+  @override
+  String get expenseRejectedDesc =>
+      'Претходно пријављени трошак није одобрен. Можете поново послати са тачним износом и рачуном.';
+
+  @override
+  String get agencyManager => 'Менаџер агенције';
+
+  @override
+  String actorStatusInvestigating(String actor) {
+    return '🔍 $actor је преузео захтев на преглед.';
+  }
+
+  @override
+  String actorStatusInProgress(String actor) {
+    return '🔧 $actor је послао мајстора, радови су у току.';
+  }
+
+  @override
+  String actorStatusResolved(String actor) {
+    return '✅ $actor је означио захтев као решен.';
+  }
+
+  @override
+  String actorStatusClosed(String actor) {
+    return '🔒 $actor је затворио захтев.';
+  }
+
+  @override
+  String actorStatusReopened(String actor) {
+    return '🔄 $actor је поново отворио захтев. Problem i dalje postoji.';
+  }
+
+  @override
+  String actorMarkedActive(String actor) {
+    return '📋 $actor је поставио захтев у активан статус.';
+  }
+
+  @override
+  String actorUpdatedStatus(String actor, String status) {
+    return '📌 $actor је ажурирао статус: $status';
+  }
+
+  @override
+  String get submitExpenseReview => 'Пријави трошак (Пошаљи на преглед)';
+
+  @override
+  String get pleaseEnterValidCost => 'Молимо унесите важећи плаћени износ.';
+
+  @override
+  String get pleaseUploadReceipt => 'Молимо приложите рачун или уплатницу.';
+
+  @override
+  String get pleaseSelectCostPayer => 'Молимо изаберите ко сноси трошак.';
+
+  @override
+  String get noteLabel => 'Напомена';
+
+  @override
+  String get amountPaid => 'Плаћени износ';
+
+  @override
+  String get costAmount => 'Износ трошка';
+
+  @override
+  String get costResponsibility => 'Одговоран за трошак';
+
+  @override
+  String get paymentInvoiceStatus => 'Статус уплате и рачуна';
+
+  @override
+  String get paymentDueDate => 'Датум уплате / доспелости';
+
+  @override
+  String get noDate => 'Нема датума';
+
+  @override
+  String get uploadReceiptInvoice => 'Приложи рачун / уплатницу (PDF, Слика)';
+
+  @override
+  String get uploadInvoiceDoc => 'Приложи фактуру';
+
+  @override
+  String get existingDocument => 'Постојећи документ';
+
+  @override
+  String get change => 'Промени';
+
+  @override
+  String get enterAmountAttachReceipt =>
+      'Унесите плаћени износ и приложите рачун.';
+
+  @override
+  String declaredAmountTitle(String amount) {
+    return 'Пријављени износ: $amount • Изаберите коначну одговорност за трошак:';
+  }
+
+  @override
+  String get expenseApprovalResponsibility => 'Одобрење трошка и одговорност';
+
+  @override
+  String get landlordCoveredPaidTitle =>
+      'Власник је покрио (Означи као плаћено)';
+
+  @override
+  String get landlordCoveredPaidSub =>
+      'Трошак је на власнику (инвестиционо одржавање). Нема рефундације, затвара се као плаћено.';
+
+  @override
+  String get landlordCoveredPaidBadge => 'Плаћено • Власник';
+
+  @override
+  String get tenantWillPayTitle => 'Станар плаћа (Додати на кирију)';
+
+  @override
+  String get tenantWillPaySub =>
+      'Трошак је настао употребом станара. Износ се додаје на кирију.';
+
+  @override
+  String get tenantWillPayBadge => 'Чека уплату • Дуг станара';
+
+  @override
+  String get tenantPaidMarkAsPaidTitle =>
+      'Станар је платио (Означи као плаћено)';
+
+  @override
+  String get tenantPaidMarkAsPaidSub =>
+      'Квар је настао употребом станара. Износ остаје на станару, затворено као плаћено.';
+
+  @override
+  String get tenantPaidMarkAsPaidBadge => 'Плаћено • Употреба станара';
+
+  @override
+  String get landlordReimbursesTitle => 'Власник рефундира (Одбити од кирије)';
+
+  @override
+  String get landlordReimbursesSub =>
+      'Трошак инвестиционог одржавања који је платио станар. Власник рефундира или умањује кирију.';
+
+  @override
+  String get landlordReimbursesBadge => 'Чека уплату • Одбитак од кирије';
+
+  @override
+  String get propertyManagedByAgencyNotice =>
+      'Некретнином управља агенција. Само агенција може мењати финансијске податке.';
+
+  @override
+  String agencyExpenseApprovedMsg(String amount, String actor, String details) {
+    return '✅ Трошак одобрен: $amount (Одобрио $actor • $details)';
+  }
+
+  @override
+  String agencyExpenseRejectedMsg(String actor) {
+    return '❌ Пријаву трошка је одбио $actor';
+  }
+
+  @override
+  String reasonLabel(String reason) {
+    return 'Разлог: $reason';
+  }
+
+  @override
+  String get roleYou => 'Ви';
+
+  @override
+  String get roleUser => 'Корисник';
+
+  @override
+  String landlordDeclaredExpenseSubtitle(String amount) {
+    return 'Власник је пријавио трошак од $amount. Можете одобрити или одбити трошак.';
+  }
+
+  @override
+  String tenantDeclaredExpenseSubtitle(String amount) {
+    return 'Станар је пријавио трошак од $amount. Можете одобрити или одбити трошак.';
+  }
+
+  @override
+  String get expenseSubmittedForLandlordReview =>
+      'Пријављени трошак је послат власнику на преглед.';
+
+  @override
+  String get expenseSubmittedForTenantReview =>
+      'Пријављени трошак је послат станару на преглед.';
+
+  @override
+  String get tblRequestProperty => 'Захтев & Некретнина';
+
+  @override
+  String get tblPriority => 'Приоритет';
+
+  @override
+  String get tblIssueStatus => 'Статус квара';
+
+  @override
+  String get tblCostPayer => 'Трошак & Платилац';
+
+  @override
+  String get tblFinancialStatus => 'Финансијски статус';
+
+  @override
+  String get tblDate => 'Датум';
+
+  @override
+  String get dueDatePrefix => 'Рок';
+
+  @override
+  String get edit => 'Уреди';
+
+  @override
+  String get update => 'Ажурирај';
+
+  @override
+  String get paymentDate => 'Датум уплате';
+
+  @override
+  String get profileUpdated => 'Успешно сачувано.';
+
+  @override
+  String get agencyPropertyTakeoverTitle =>
+      'Преузми некретнину додату од агенције';
+
+  @override
+  String get agencyPropertyTakeoverDesc =>
+      'Додајте некретнину коју је унела агенција на свој налог скенирањем QR кода или уносом позивног кода.';
+
+  @override
+  String get scanQrOrEnterInviteCodeBtn =>
+      'Скенирај QR код / Унеси код позивнице';
+
+  @override
+  String get settlementIntentTitle => 'Сврха плаћања и обрачун';
+
+  @override
+  String get intentTenantSelfTitle =>
+      'Платио сам за сопствену употребу (Квар услед коришћења)';
+
+  @override
+  String get intentTenantSelfSub =>
+      'Трошак остаје на мени. Не тражим рефундацију, затвара се као плаћено.';
+
+  @override
+  String get intentTenantSelfBadge => 'Плаћено • Лични трошак';
+
+  @override
+  String get intentTenantReimburseTitle =>
+      'Платио сам за инвестиционо одржавање (У име власника)';
+
+  @override
+  String get intentTenantReimburseSub =>
+      'Предујмио сам трошак демирбаша. Молим одбитак од следеће кирије или рефундацију.';
+
+  @override
+  String get intentTenantReimburseBadge => 'Одбитак од кирије';
+
+  @override
+  String get intentLandlordSelfTitle =>
+      'Покрио сам за инвестиционо одржавање (Демирбаш)';
+
+  @override
+  String get intentLandlordSelfSub =>
+      'Трошак је на власнику. Не потражује се од станара, затвара се као плаћено.';
+
+  @override
+  String get intentLandlordSelfBadge => 'Плаћено • Власник';
+
+  @override
+  String get intentLandlordTenantDueTitle =>
+      'Платио сам за квар услед употребе станара';
+
+  @override
+  String get intentLandlordTenantDueSub =>
+      'Квар је настао употребом станара. Износ се додаје на следећу кирију станара.';
+
+  @override
+  String get intentLandlordTenantDueBadge => 'Дуг станара';
+
+  @override
+  String get pleaseSelectDeclarationIntent =>
+      'Молимо изаберите сврху плаћања и предлог обрачуна.';
+
+  @override
+  String get confirmTenantReimburseApprovalTitle =>
+      'Одобрење одбитка од кирије';
+
+  @override
+  String confirmTenantReimburseApprovalMsg(String amount) {
+    return 'Потврђујете ли да станар има право на рефундацију од $amount за инвестиционо одржавање и да се износ одбије од следеће кирије?';
+  }
+
+  @override
+  String get confirmTenantSelfApprovalTitle => 'Потврда личног трошка станара';
+
+  @override
+  String confirmTenantSelfApprovalMsg(String amount) {
+    return 'Потврђујете ли да је станар платио трошак употребе од $amount и да се захтев затвори као плаћен без рефундације?';
+  }
+
+  @override
+  String get confirmLandlordSelfApprovalTitle => 'Потврда трошка власника';
+
+  @override
+  String confirmLandlordSelfApprovalMsg(String amount) {
+    return 'Потврђујете ли да је власник покрио инвестициони трошак од $amount и да се захтев затвори као плаћен?';
+  }
+
+  @override
+  String get confirmLandlordTenantDueApprovalTitle =>
+      'Одобрење трошка задужења';
+
+  @override
+  String confirmLandlordTenantDueApprovalMsg(String amount) {
+    return 'Потврђујете ли да је трошак од $amount настао вашом употребом и да се дода на вашу следећу кирију?';
+  }
+
+  @override
+  String declaredIntentLabel(String intent) {
+    return 'Предлог обрачуна: $intent';
+  }
+
+  @override
+  String get maintenanceSettlementsHeader => 'Обрачун одржавања и кварова';
+
+  @override
+  String get maintenanceSettlementsSub =>
+      'Одобрени трошкови одржавања који се одбијају или додају на кирију';
+
+  @override
+  String get deductFromRentBadge => 'Одбија се од кирије';
+
+  @override
+  String get addToRentBadge => 'Додаје се на кирију';
+
+  @override
+  String get markAsSettledBtn => 'Означи као поравнато / плаћено';
+
+  @override
+  String get confirmSettlementTitle => 'Затвори обрачун';
+
+  @override
+  String confirmSettlementMsg(String amount) {
+    return 'Да ли потврђујете да је трошак одржавања од $amount поравнат/плаћен и да треба затворити ставку?';
+  }
+
+  @override
+  String get settlementRecordedSuccess =>
+      'Обрачун одржавања је успешно затворен.';
+
+  @override
+  String get goToMaintenanceRequest => 'Отвори захтев';
+
+  @override
+  String maintenanceSettlementActivityMsg(String amount, String role) {
+    return '💰 Трошак одржавања ($amount) је означен као поравнат/плаћен од стране $role.';
+  }
+
+  @override
+  String get settleExpenseTitle => 'Поравнање трошкова одржавања';
+
+  @override
+  String get settleExpenseSub => 'Изаберите начин плаћања или пребијања';
+
+  @override
+  String get optionOffsetFromRent => 'Одбиј од кирије / рачуна';
+
+  @override
+  String get optionOffsetFromRentDesc =>
+      'Аутоматски умањи овај износ са предстојеће кирије или рачуна у истој валути';
+
+  @override
+  String get optionBankTransfer => 'Плати банкарским трансфером';
+
+  @override
+  String get optionBankTransferDesc =>
+      'Приложите уплатницу и пошаљите на потврду';
+
+  @override
+  String get optionCashPayment => 'Плати у готовини';
+
+  @override
+  String get optionCashPaymentDesc => 'Пријавите да је плаћено у готовини';
+
+  @override
+  String get selectRentToOffset => 'Изаберите ставку за пребијање';
+
+  @override
+  String noEligiblePendingPayments(String currency) {
+    return 'Нема одговарајућих неплаћених кирија или рачуна у валути $currency.';
+  }
+
+  @override
+  String offsetAppliedSuccess(String amount, String paymentTitle) {
+    return 'Износ од $amount је успешно пребијен са ставке $paymentTitle.';
+  }
+
+  @override
+  String get confirmReceiptBtn => 'Примио сам уплату / Потврди';
+
+  @override
+  String get waitingForRecipientApproval => 'Чека се потврда друге стране';
+
+  @override
+  String get iPaidBtn => 'Платио сам / Приложи уплатницу';
+
+  @override
+  String get iPaidCashBtn => 'Плаћено у готовини';
+
+  @override
+  String maintenanceCashPaidActivityMsg(String role, String amount) {
+    return '💵 $role је пријавио плаћање трошка одржавања од $amount у готовини. Чека се потврда.';
+  }
+
+  @override
+  String maintenanceBankPaidActivityMsg(String role, String amount) {
+    return '📄 $role је пријавио плаћање трошка одржавања од $amount преко банке (Уплатница приложена). Чека се потврда.';
+  }
+
+  @override
+  String maintenanceOffsetActivityMsg(String amount, String paymentTitle) {
+    return '🏠 Трошак одржавања од $amount је пребијен са ставке $paymentTitle.';
+  }
 }

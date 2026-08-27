@@ -443,7 +443,7 @@
   "expenseDistribution": "Expense Distribution",
   "yourNote": "Your Note:",
   "backToDashboard": "Back to Dashboard",
-  "propertyDetailsHeader": "PROPERTY DETAILS",
+  "propertyDetailsHeader": "PROPERTY INFO",
   "defaultLeaseTermsHeader": "DEFAULT LEASE TERMS",
   "defaultLeaseTermsSubtitle": "Target terms used as a template for new invitations.",
   "proposeRevision": "Propose Revision",
@@ -823,5 +823,416 @@
   "noReferringAgency": "No Referring Agency",
   "noReferringAgencyDesc": "If you were referred by a real estate agency, scan your agency's QR code to link your account.",
   "scanAgencyReferralQrBtn": "Scan Agency Referral QR Code",
-  "referralCodeLabel": "Referral Code"
+  "referralCodeLabel": "Referral Code",
+  "detailedEntry": "Advanced Info",
+  "detailedEntrySubtitle": "All property specifications, structural metrics and details.",
+  "propertyAndLocationInfo": "Property & Location Information",
+  "propertyTypeLabel": "Property Type",
+  "propertyTypeApartment": "Apartment",
+  "propertyTypeHouse": "House",
+  "propertyTypeCommercial": "Commercial",
+  "propertyTypeGarage": "Garage",
+  "unitNumberLabel": "Unit / Flat No",
+  "unitNumberHint": "e.g. 4 or 12B",
+  "addressDetailedHint": "Enter city, district, neighborhood or street...",
+  "structuralAndFinancialMetrics": "Structural & Financial Metrics",
+  "roomCountLabel": "Room Count",
+  "areaSqmLabel": "Area",
+  "floorLevelLabel": "Floor Level",
+  "totalFloorsLabel": "Total Building Floors",
+  "equipmentAndHeatingStandards": "Equipment & Heating Standards",
+  "furnishingLabel": "Furnishing Status",
+  "furnishingFurnished": "Furnished",
+  "furnishingFurnishedDesc": "Fully Furnished",
+  "furnishingSemi": "Semi-Furnished",
+  "furnishingSemiDesc": "Kitchen/Bathroom only",
+  "furnishingUnfurnished": "Unfurnished",
+  "furnishingUnfurnishedDesc": "Unfurnished",
+  "heatingTypeLabel": "Heating Type",
+  "heatingCg": "District / Central Heating",
+  "heatingEg": "Individual Electric Heating",
+  "heatingGas": "Natural Gas",
+  "heatingUnderfloor": "Underfloor Heating",
+  "heatingTa": "Storage Heater / AC / Other",
+  "featuredAmenitiesLabel": "Featured Amenities",
+  "amenityPets": "Pet Friendly",
+  "amenityElevator": "Elevator",
+  "amenityBalcony": "Balcony / Terrace",
+  "amenityParking": "Garage / Parking Space",
+  "amenityStorage": "Storage / Basement",
+  "extendedDescriptionLabel": "Extended Description",
+  "extendedDescriptionHint": "Enter info on transport, building age, layout and special conditions...",
+  "clearFormBtn": "Clear Form",
+  "floorSuteren": "Semi-Basement",
+  "floorPrizemlje": "Ground Floor",
+  "floorVisokoPrizemlje": "Raised Ground Floor",
+  "floorNth": "Floor {floor}",
+  "@floorNth": {
+    "placeholders": {
+      "floor": {
+        "type": "String"
+      }
+    }
+  },
+  "floorPotkrovlje": "Attic / Top Floor",
+  "floorOther": "Other",
+  "statusOpen": "Open",
+  "statusInProgress": "Technician Sent",
+  "statusClosed": "Closed",
+  "statusPending": "Pending",
+  "statusCancelled": "Cancelled",
+  "financialDetails": "Financial Details",
+  "financialStatusPendingReview": "Pending Review",
+  "financialStatusPendingPayment": "Pending Payment",
+  "financialStatusPaid": "Paid",
+  "financialStatusRejected": "Rejected",
+  "payerTenant": "Tenant",
+  "payerLandlord": "Landlord",
+  "payerTenantPaidOrWillPay": "Tenant Paid / To Pay",
+  "payerLandlordWillCover": "Landlord to Cover",
+  "unassigned": "Unassigned",
+  "noFinancialRecordTitle": "No Financial Record",
+  "noFinancialRecordDesc": "No cost or receipt document has been entered for this maintenance request.",
+  "iPaidSubmitReceipt": "I Paid (Submit Receipt)",
+  "resubmitExpenseIPaid": "Resubmit Expense (I Paid)",
+  "addCostInvoice": "Add Cost / Invoice",
+  "costPayerLabel": "Cost Payer",
+  "receiptInvoiceDocument": "Receipt / Invoice Document",
+  "clickToViewDocument": "Click to view document",
+  "agencyExpenseApproval": "Agency Approval",
+  "landlordExpenseApproval": "Landlord Approval",
+  "tenantExpenseApproval": "Tenant Approval",
+  "expenseApprovedSuccess": "Expense approved successfully.",
+  "expenseRejectedSuccess": "Expense declaration rejected.",
+  "rejectExpenseTitle": "Reject Expense",
+  "rejectExpenseConfirm": "Are you sure you want to reject this expense declaration?",
+  "rejectionReasonOptional": "Reason (optional)",
+  "quickActions": "Quick Actions",
+  "descriptionOrNoteOptional": "Description / Note (Optional)",
+  "enterExpenseNoteHint": "e.g. Replaced leaking valve, technician fee included",
+  "editFinancialDetails": "Edit Financial Details",
+  "propertyInfo": "Property Info",
+  "coveredByLandlord": "Covered by Landlord",
+  "coveredByTenant": "Covered by Tenant",
+  "landlordReimbursement": "Landlord Reimbursement",
+  "tenantToPay": "Tenant to Pay",
+  "landlordReimburseDesc": "Tenant paid in advance. Landlord will reimburse or deduct from next rent.",
+  "tenantToPayDesc": "Assigned to tenant. Amount will be collected with next rent.",
+  "coveredByLandlordClosedDesc": "Covered as property fixture and closed.",
+  "coveredByTenantClosedDesc": "Covered as usage expense and closed.",
+  "reEditFinancials": "Re-edit Financials",
+  "expenseRejectedDesc": "Previously submitted expense was rejected. You can resubmit with corrected amount and receipt.",
+  "agencyManager": "Agency Manager",
+  "actorStatusInvestigating": "🔍 {actor} marked the request as under investigation.",
+  "@actorStatusInvestigating": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusInProgress": "🔧 {actor} dispatched a technician, work is in progress.",
+  "@actorStatusInProgress": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusResolved": "✅ {actor} marked the issue as resolved.",
+  "@actorStatusResolved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusClosed": "🔒 {actor} closed the request.",
+  "@actorStatusClosed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorStatusReopened": "🔄 {actor} reopened the request. Issue persists.",
+  "@actorStatusReopened": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorMarkedActive": "📋 {actor} set the request status to active.",
+  "@actorMarkedActive": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "actorUpdatedStatus": "📌 {actor} updated the status: {status}",
+  "@actorUpdatedStatus": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "submitExpenseReview": "Submit Expense (Send for Review)",
+  "saveChanges": "Save Changes",
+  "pleaseEnterValidCost": "Please enter the valid amount paid.",
+  "pleaseUploadReceipt": "Please upload a receipt or invoice document.",
+  "pleaseSelectCostPayer": "Please select who pays.",
+  "noteLabel": "Note",
+  "amountPaid": "Amount Paid",
+  "costAmount": "Cost Amount",
+  "costResponsibility": "Cost Responsibility",
+  "paymentInvoiceStatus": "Payment & Invoice Status",
+  "paymentDueDate": "Payment / Due Date",
+  "noDate": "No date",
+  "uploadReceiptInvoice": "Upload Receipt / Invoice (PDF, Image)",
+  "uploadInvoiceDoc": "Upload Invoice Document",
+  "existingDocument": "Existing Document",
+  "change": "Change",
+  "enterAmountAttachReceipt": "Enter amount paid and attach receipt.",
+  "declaredAmountTitle": "Declared Amount: {amount} • Please select final cost responsibility:",
+  "@declaredAmountTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseApprovalResponsibility": "Expense Approval & Responsibility",
+  "landlordCoveredPaidTitle": "Landlord Covered (Mark as Paid)",
+  "landlordCoveredPaidSub": "Expense belongs to landlord. No reimbursement needed, closed as paid.",
+  "landlordCoveredPaidBadge": "Paid • Landlord",
+  "tenantWillPayTitle": "Tenant Will Pay (Add to Rent)",
+  "tenantWillPaySub": "Damage/cost caused by tenant usage. Added to rent as due payment.",
+  "tenantWillPayBadge": "Pending Payment • Tenant Due",
+  "tenantPaidMarkAsPaidTitle": "Tenant Paid (Mark as Paid)",
+  "tenantPaidMarkAsPaidSub": "Expense caused by tenant usage. Marked as paid by tenant with no reimbursement.",
+  "tenantPaidMarkAsPaidBadge": "Paid • Tenant Usage",
+  "landlordReimbursesTitle": "Landlord Reimburses (Deduct from Rent)",
+  "landlordReimbursesSub": "Demirbaş expense paid in advance by tenant. Landlord reimburses or deducts from rent.",
+  "landlordReimbursesBadge": "Pending Payment • Rent Deduction",
+  "propertyManagedByAgencyNotice": "Property is managed by an agency. Only the agency can edit financial details.",
+  "agencyExpenseApprovedMsg": "✅ Expense approved: {amount} (Approved by {actor} • {details})",
+  "@agencyExpenseApprovedMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "agencyExpenseRejectedMsg": "❌ Expense declaration rejected by {actor}",
+  "@agencyExpenseRejectedMsg": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonLabel": "Reason: {reason}",
+  "@reasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "roleYou": "You",
+  "roleUser": "User",
+  "landlordDeclaredExpenseSubtitle": "Landlord declared {amount} expense. You can approve or reject.",
+  "@landlordDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantDeclaredExpenseSubtitle": "Tenant declared {amount} expense. You can approve or reject.",
+  "@tenantDeclaredExpenseSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseSubmittedForLandlordReview": "Your submitted expense is waiting for landlord review.",
+  "expenseSubmittedForTenantReview": "Your submitted expense is waiting for tenant review.",
+  "tblRequestProperty": "Request & Property",
+  "tblPriority": "Priority",
+  "tblIssueStatus": "Issue Status",
+  "tblCostPayer": "Cost & Payer",
+  "tblFinancialStatus": "Financial Status",
+  "tblDate": "Date",
+  "dueDatePrefix": "Due",
+  "edit": "Edit",
+  "update": "Update",
+  "paymentDate": "Payment Date",
+  "profileUpdated": "Saved successfully.",
+  "agencyPropertyTakeoverTitle": "Take Over Property Added by Agency",
+  "agencyPropertyTakeoverDesc": "Add the property entered by the agency to your account by scanning a QR code or entering an invite code.",
+  "scanQrOrEnterInviteCodeBtn": "Scan QR Code / Enter Invite Code",
+  "settlementIntentTitle": "Payment Purpose & Settlement Request",
+  "intentTenantSelfTitle": "I Paid for My Own Usage (Tenant Usage Damage)",
+  "intentTenantSelfSub": "Amount stays with me. No rent deduction requested, close as paid.",
+  "intentTenantSelfBadge": "Paid • Tenant Cost",
+  "intentTenantReimburseTitle": "I Paid for Property Fixture (Demirbaş)",
+  "intentTenantReimburseSub": "I paid fixture repair in advance. Please deduct from next rent or reimburse.",
+  "intentTenantReimburseBadge": "Deduct from Rent",
+  "intentLandlordSelfTitle": "I Covered for Property Fixture (Demirbaş)",
+  "intentLandlordSelfSub": "Fixture cost covered by landlord. No tenant reimbursement requested, close as paid.",
+  "intentLandlordSelfBadge": "Paid • Landlord",
+  "intentLandlordTenantDueTitle": "I Paid for Tenant Usage / Damage",
+  "intentLandlordTenantDueSub": "Damage caused by tenant usage. Please add amount to tenant's next rent.",
+  "intentLandlordTenantDueBadge": "Add to Rent",
+  "pleaseSelectDeclarationIntent": "Please select the purpose of payment and settlement request.",
+  "confirmTenantReimburseApprovalTitle": "Rent Deduction Approval",
+  "confirmTenantReimburseApprovalMsg": "Do you confirm tenant's {amount} fixture expense and that it will be deducted from next rent?",
+  "@confirmTenantReimburseApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmTenantSelfApprovalTitle": "Usage Expense Confirmation",
+  "confirmTenantSelfApprovalMsg": "Do you confirm that the tenant covered their {amount} usage expense and to close the request as paid without reimbursement?",
+  "@confirmTenantSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordSelfApprovalTitle": "Landlord Fixture Confirmation",
+  "confirmLandlordSelfApprovalMsg": "Do you confirm that the landlord directly covered the {amount} fixture expense and to close the request as paid?",
+  "@confirmLandlordSelfApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmLandlordTenantDueApprovalTitle": "Add to Rent Approval",
+  "confirmLandlordTenantDueApprovalMsg": "Do you confirm that the declared {amount} expense was caused by your usage and will be added to your next rent?",
+  "@confirmLandlordTenantDueApprovalMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "declaredIntentLabel": "Settlement Request: {intent}",
+  "@declaredIntentLabel": {
+    "placeholders": {
+      "intent": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceSettlementsHeader": "Maintenance & Repair Settlements",
+  "maintenanceSettlementsSub": "Approved maintenance expenses to be deducted from or added to rent",
+  "deductFromRentBadge": "Deduct from Rent",
+  "addToRentBadge": "Add to Rent",
+  "markAsSettledBtn": "Mark as Settled / Paid",
+  "confirmSettlementTitle": "Close Settlement",
+  "confirmSettlementMsg": "Do you confirm that the maintenance expense of {amount} has been settled/paid and should be closed?",
+  "@confirmSettlementMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementRecordedSuccess": "Maintenance settlement closed successfully.",
+  "goToMaintenanceRequest": "View Request",
+  "maintenanceSettlementActivityMsg": "💰 Maintenance expense ({amount}) marked as settled/paid by {role}.",
+  "@maintenanceSettlementActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "settleExpenseTitle": "Maintenance Expense Settlement",
+  "settleExpenseSub": "Choose payment or deduction method",
+  "optionOffsetFromRent": "Deduct from Rent / Bill",
+  "optionOffsetFromRentDesc": "Automatically deduct this amount from a pending rent or bill in the same currency",
+  "optionBankTransfer": "Pay via Bank Transfer",
+  "optionBankTransferDesc": "Upload payment receipt and send for confirmation",
+  "optionCashPayment": "Pay in Cash",
+  "optionCashPaymentDesc": "Declare as handed over in cash",
+  "selectRentToOffset": "Select Item to Offset",
+  "noEligiblePendingPayments": "No eligible pending rent or bill found in {currency}.",
+  "@noEligiblePendingPayments": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "offsetAppliedSuccess": "{amount} was successfully offset from {paymentTitle}.",
+  "@offsetAppliedSuccess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmReceiptBtn": "I Received Payment / Confirm",
+  "waitingForRecipientApproval": "Waiting for recipient's confirmation",
+  "iPaidBtn": "I Paid / Upload Receipt",
+  "iPaidCashBtn": "I Paid in Cash",
+  "maintenanceCashPaidActivityMsg": "💵 {role} declared paying {amount} maintenance expense in cash. Awaiting confirmation.",
+  "@maintenanceCashPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceBankPaidActivityMsg": "📄 {role} declared paying {amount} maintenance expense via bank transfer (Receipt attached). Awaiting confirmation.",
+  "@maintenanceBankPaidActivityMsg": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceOffsetActivityMsg": "🏠 {amount} maintenance expense was offset from {paymentTitle}.",
+  "@maintenanceOffsetActivityMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "paymentTitle": {
+        "type": "String"
+      }
+    }
+  }
 }
