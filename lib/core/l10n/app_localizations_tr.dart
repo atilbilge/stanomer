@@ -2814,4 +2814,97 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get depositSecuredLabel => 'Depozito Güvencesi';
+
+  @override
+  String get maintenanceTitle => 'Arıza & Bakım Talepleri';
+
+  @override
+  String get maintenanceSubtitle =>
+      'Bildirilen arızaları, usta süreçlerini ve masraf dökümlerini takip edin.';
+
+  @override
+  String get filterActive => 'Açık & İşlemde';
+
+  @override
+  String get filterInvestigating => 'İnceleniyor';
+
+  @override
+  String get filterUrgent => 'Acil';
+
+  @override
+  String get filterCompleted => 'Çözüldü';
+
+  @override
+  String get filterCost => 'Masraflı / İade';
+
+  @override
+  String get searchMaintenancePlaceholder => 'Talep veya arıza ara...';
+
+  @override
+  String get statActiveIssues => 'Açık / İşlemde';
+
+  @override
+  String get statUrgentIssues => 'Acil Talepler';
+
+  @override
+  String get statResolvedIssues => 'Çözülenler';
+
+  @override
+  String get statPendingSettlement => 'Masraf / İade';
+
+  @override
+  String get progressReported => 'Bildirildi';
+
+  @override
+  String get progressInvestigating => 'İnceleniyor';
+
+  @override
+  String get progressInProgress => 'Usta / İşlemde';
+
+  @override
+  String get progressResolved => 'Çözüldü';
+
+  @override
+  String get statusInProgressTechnician => 'Usta Atandı';
+
+  @override
+  String get costDeductFromRent => 'Kiradan Düşülecek';
+
+  @override
+  String get costAddToRent => 'Kiraya Eklenecek';
+
+  @override
+  String get costPaidByTenant => 'Kiracı Ödedi';
+
+  @override
+  String get costPaidByLandlord => 'Ev Sahibi Ödedi';
+
+  @override
+  String get costPendingReview => 'Masraf Onayı Bekliyor';
+
+  @override
+  String get costRejected => 'Masraf Reddedildi';
+
+  @override
+  String get viewInvoiceAction => 'Fatura Görüntüle';
+
+  @override
+  String get noMatchingIssues => 'Aramanıza uygun arıza kaydı bulunamadı';
+
+  @override
+  String get clearFilters => 'Filtreleri Temizle';
+
+  @override
+  String photosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fotoğraf',
+      one: '$count fotoğraf',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewDetailsAction => 'Detayları Gör';
 }

@@ -1414,5 +1414,42 @@
   "quickActionHistory": "Istorija plaćanja",
   "monthlyBaseRent": "Mesečna kirija",
   "payNowAction": "Plati odmah",
-  "depositSecuredLabel": "Obezbeđen depozit"
+  "depositSecuredLabel": "Obezbeđen depozit",
+  "maintenanceTitle": "Zahtevi za održavanje i popravke",
+  "maintenanceSubtitle": "Pratite prijavljene kvarove, dolaske majstora i troškove.",
+  "filterActive": "Aktivni i u toku",
+  "filterInvestigating": "Na proveri",
+  "filterUrgent": "Hitno",
+  "filterCompleted": "Rešeno",
+  "filterCost": "Sa troškom / Refundacija",
+  "searchMaintenancePlaceholder": "Pretraži zahteve...",
+  "statActiveIssues": "Aktivni / U toku",
+  "statUrgentIssues": "Hitni zahtevi",
+  "statResolvedIssues": "Rešeni",
+  "statPendingSettlement": "Trošak / Refundacija",
+  "progressReported": "Prijavljeno",
+  "progressInvestigating": "Provera",
+  "progressInProgress": "Majstor",
+  "progressResolved": "Rešeno",
+  "statusInProgressTechnician": "Poslat majstor",
+  "statusClosed": "Zatvoreno",
+  "statusCancelled": "Otkazano",
+  "costDeductFromRent": "Odbija se od kirije",
+  "costAddToRent": "Dodaje se na kiriju",
+  "costPaidByTenant": "Platio stanar",
+  "costPaidByLandlord": "Platio vlasnik",
+  "costPendingReview": "Čeka proveru troška",
+  "costRejected": "Trošak odbijen",
+  "viewInvoiceAction": "Pogledaj račun",
+  "noMatchingIssues": "Nema zahteva za održavanje koji odgovaraju pretrazi",
+  "clearFilters": "Očisti filtere",
+  "photosCount": "{count, plural, one{{count} fotografija} few{{count} fotografije} other{{count} fotografija}}",
+  "@photosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewDetailsAction": "Pogledaj detalje"
 }

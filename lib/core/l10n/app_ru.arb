@@ -1366,5 +1366,42 @@
   "quickActionHistory": "История платежей",
   "monthlyBaseRent": "Месячная аренда",
   "payNowAction": "Оплатить",
-  "depositSecuredLabel": "Депозит внесен"
+  "depositSecuredLabel": "Депозит внесен",
+  "maintenanceTitle": "Заявки на ремонт и обслуживание",
+  "maintenanceSubtitle": "Отслеживайте заявки, визиты мастеров и взаиморасчеты расходов.",
+  "filterActive": "Активные и в работе",
+  "filterInvestigating": "На проверке",
+  "filterUrgent": "Срочно",
+  "filterCompleted": "Решенные",
+  "filterCost": "С расходами / Возврат",
+  "searchMaintenancePlaceholder": "Поиск заявок...",
+  "statActiveIssues": "Активные / В работе",
+  "statUrgentIssues": "Срочные заявки",
+  "statResolvedIssues": "Решенные",
+  "statPendingSettlement": "Расходы / Возврат",
+  "progressReported": "Создана",
+  "progressInvestigating": "Проверка",
+  "progressInProgress": "Мастер",
+  "progressResolved": "Решена",
+  "statusInProgressTechnician": "Мастер назначен",
+  "statusClosed": "Закрыта",
+  "statusCancelled": "Отменена",
+  "costDeductFromRent": "Вычесть из аренды",
+  "costAddToRent": "Добавить к аренде",
+  "costPaidByTenant": "Оплатил арендатор",
+  "costPaidByLandlord": "Оплатил владелец",
+  "costPendingReview": "Ожидает одобрения",
+  "costRejected": "Расход отклонен",
+  "viewInvoiceAction": "Смотреть счет",
+  "noMatchingIssues": "Заявки по вашему запросу не найдены",
+  "clearFilters": "Сбросить фильтры",
+  "photosCount": "{count, plural, one{{count} фото} few{{count} фото} other{{count} фото}}",
+  "@photosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewDetailsAction": "Смотреть детали"
 }

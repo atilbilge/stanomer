@@ -2149,10 +2149,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusInProgress => 'Мастер отправлен';
 
   @override
-  String get statusClosed => 'Закрыто';
+  String get statusClosed => 'Закрыта';
 
   @override
-  String get statusCancelled => 'Отменено';
+  String get statusCancelled => 'Отменена';
 
   @override
   String get financialDetails => 'Финансовые детали';
@@ -2833,4 +2833,98 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get depositSecuredLabel => 'Депозит внесен';
+
+  @override
+  String get maintenanceTitle => 'Заявки на ремонт и обслуживание';
+
+  @override
+  String get maintenanceSubtitle =>
+      'Отслеживайте заявки, визиты мастеров и взаиморасчеты расходов.';
+
+  @override
+  String get filterActive => 'Активные и в работе';
+
+  @override
+  String get filterInvestigating => 'На проверке';
+
+  @override
+  String get filterUrgent => 'Срочно';
+
+  @override
+  String get filterCompleted => 'Решенные';
+
+  @override
+  String get filterCost => 'С расходами / Возврат';
+
+  @override
+  String get searchMaintenancePlaceholder => 'Поиск заявок...';
+
+  @override
+  String get statActiveIssues => 'Активные / В работе';
+
+  @override
+  String get statUrgentIssues => 'Срочные заявки';
+
+  @override
+  String get statResolvedIssues => 'Решенные';
+
+  @override
+  String get statPendingSettlement => 'Расходы / Возврат';
+
+  @override
+  String get progressReported => 'Создана';
+
+  @override
+  String get progressInvestigating => 'Проверка';
+
+  @override
+  String get progressInProgress => 'Мастер';
+
+  @override
+  String get progressResolved => 'Решена';
+
+  @override
+  String get statusInProgressTechnician => 'Мастер назначен';
+
+  @override
+  String get costDeductFromRent => 'Вычесть из аренды';
+
+  @override
+  String get costAddToRent => 'Добавить к аренде';
+
+  @override
+  String get costPaidByTenant => 'Оплатил арендатор';
+
+  @override
+  String get costPaidByLandlord => 'Оплатил владелец';
+
+  @override
+  String get costPendingReview => 'Ожидает одобрения';
+
+  @override
+  String get costRejected => 'Расход отклонен';
+
+  @override
+  String get viewInvoiceAction => 'Смотреть счет';
+
+  @override
+  String get noMatchingIssues => 'Заявки по вашему запросу не найдены';
+
+  @override
+  String get clearFilters => 'Сбросить фильтры';
+
+  @override
+  String photosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фото',
+      few: '$count фото',
+      one: '$count фото',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewDetailsAction => 'Смотреть детали';
 }

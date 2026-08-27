@@ -5163,6 +5163,174 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Obezbeđen depozit'**
   String get depositSecuredLabel;
+
+  /// No description provided for @maintenanceTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zahtevi za održavanje i popravke'**
+  String get maintenanceTitle;
+
+  /// No description provided for @maintenanceSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pratite prijavljene kvarove, dolaske majstora i troškove.'**
+  String get maintenanceSubtitle;
+
+  /// No description provided for @filterActive.
+  ///
+  /// In sr, this message translates to:
+  /// **'Aktivni i u toku'**
+  String get filterActive;
+
+  /// No description provided for @filterInvestigating.
+  ///
+  /// In sr, this message translates to:
+  /// **'Na proveri'**
+  String get filterInvestigating;
+
+  /// No description provided for @filterUrgent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Hitno'**
+  String get filterUrgent;
+
+  /// No description provided for @filterCompleted.
+  ///
+  /// In sr, this message translates to:
+  /// **'Rešeno'**
+  String get filterCompleted;
+
+  /// No description provided for @filterCost.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sa troškom / Refundacija'**
+  String get filterCost;
+
+  /// No description provided for @searchMaintenancePlaceholder.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pretraži zahteve...'**
+  String get searchMaintenancePlaceholder;
+
+  /// No description provided for @statActiveIssues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Aktivni / U toku'**
+  String get statActiveIssues;
+
+  /// No description provided for @statUrgentIssues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Hitni zahtevi'**
+  String get statUrgentIssues;
+
+  /// No description provided for @statResolvedIssues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Rešeni'**
+  String get statResolvedIssues;
+
+  /// No description provided for @statPendingSettlement.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak / Refundacija'**
+  String get statPendingSettlement;
+
+  /// No description provided for @progressReported.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavljeno'**
+  String get progressReported;
+
+  /// No description provided for @progressInvestigating.
+  ///
+  /// In sr, this message translates to:
+  /// **'Provera'**
+  String get progressInvestigating;
+
+  /// No description provided for @progressInProgress.
+  ///
+  /// In sr, this message translates to:
+  /// **'Majstor'**
+  String get progressInProgress;
+
+  /// No description provided for @progressResolved.
+  ///
+  /// In sr, this message translates to:
+  /// **'Rešeno'**
+  String get progressResolved;
+
+  /// No description provided for @statusInProgressTechnician.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poslat majstor'**
+  String get statusInProgressTechnician;
+
+  /// No description provided for @costDeductFromRent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbija se od kirije'**
+  String get costDeductFromRent;
+
+  /// No description provided for @costAddToRent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaje se na kiriju'**
+  String get costAddToRent;
+
+  /// No description provided for @costPaidByTenant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio stanar'**
+  String get costPaidByTenant;
+
+  /// No description provided for @costPaidByLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Platio vlasnik'**
+  String get costPaidByLandlord;
+
+  /// No description provided for @costPendingReview.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka proveru troška'**
+  String get costPendingReview;
+
+  /// No description provided for @costRejected.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak odbijen'**
+  String get costRejected;
+
+  /// No description provided for @viewInvoiceAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pogledaj račun'**
+  String get viewInvoiceAction;
+
+  /// No description provided for @noMatchingIssues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema zahteva za održavanje koji odgovaraju pretrazi'**
+  String get noMatchingIssues;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In sr, this message translates to:
+  /// **'Očisti filtere'**
+  String get clearFilters;
+
+  /// No description provided for @photosCount.
+  ///
+  /// In sr, this message translates to:
+  /// **'{count, plural, one{{count} fotografija} few{{count} fotografije} other{{count} fotografija}}'**
+  String photosCount(int count);
+
+  /// No description provided for @viewDetailsAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pogledaj detalje'**
+  String get viewDetailsAction;
 }
 
 class _AppLocalizationsDelegate

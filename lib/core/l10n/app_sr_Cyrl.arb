@@ -1364,5 +1364,42 @@
   "quickActionHistory": "Историја плаћања",
   "monthlyBaseRent": "Месечна кирија",
   "payNowAction": "Плати одмах",
-  "depositSecuredLabel": "Обезбеђен депозит"
+  "depositSecuredLabel": "Обезбеђен депозит",
+  "maintenanceTitle": "Захтеви за одржавање и поправке",
+  "maintenanceSubtitle": "Пратите пријављене кварове, доласке мајстора и трошкове.",
+  "filterActive": "Активни и у току",
+  "filterInvestigating": "На провери",
+  "filterUrgent": "Хитно",
+  "filterCompleted": "Решено",
+  "filterCost": "Са трошком / Рефундација",
+  "searchMaintenancePlaceholder": "Претражи захтеве...",
+  "statActiveIssues": "Активни / У току",
+  "statUrgentIssues": "Хитни захтеви",
+  "statResolvedIssues": "Решени",
+  "statPendingSettlement": "Трошак / Рефундација",
+  "progressReported": "Пријављено",
+  "progressInvestigating": "Провера",
+  "progressInProgress": "Мајстор",
+  "progressResolved": "Решено",
+  "statusInProgressTechnician": "Послат мајстор",
+  "statusClosed": "Затворено",
+  "statusCancelled": "Отказано",
+  "costDeductFromRent": "Одбија се од кирије",
+  "costAddToRent": "Додаје се на кирију",
+  "costPaidByTenant": "Платио станар",
+  "costPaidByLandlord": "Платио власник",
+  "costPendingReview": "Чека проверу трошка",
+  "costRejected": "Трошак одбијен",
+  "viewInvoiceAction": "Погледај рачун",
+  "noMatchingIssues": "Нема захтева за одржавање који одговарају претрази",
+  "clearFilters": "Очисти филтере",
+  "photosCount": "{count, plural, one{{count} фотографија} few{{count} фотографије} other{{count} фотографија}}",
+  "@photosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewDetailsAction": "Погледај детаље"
 }

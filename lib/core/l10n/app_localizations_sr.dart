@@ -2812,6 +2812,101 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get depositSecuredLabel => 'Obezbeđen depozit';
+
+  @override
+  String get maintenanceTitle => 'Zahtevi za održavanje i popravke';
+
+  @override
+  String get maintenanceSubtitle =>
+      'Pratite prijavljene kvarove, dolaske majstora i troškove.';
+
+  @override
+  String get filterActive => 'Aktivni i u toku';
+
+  @override
+  String get filterInvestigating => 'Na proveri';
+
+  @override
+  String get filterUrgent => 'Hitno';
+
+  @override
+  String get filterCompleted => 'Rešeno';
+
+  @override
+  String get filterCost => 'Sa troškom / Refundacija';
+
+  @override
+  String get searchMaintenancePlaceholder => 'Pretraži zahteve...';
+
+  @override
+  String get statActiveIssues => 'Aktivni / U toku';
+
+  @override
+  String get statUrgentIssues => 'Hitni zahtevi';
+
+  @override
+  String get statResolvedIssues => 'Rešeni';
+
+  @override
+  String get statPendingSettlement => 'Trošak / Refundacija';
+
+  @override
+  String get progressReported => 'Prijavljeno';
+
+  @override
+  String get progressInvestigating => 'Provera';
+
+  @override
+  String get progressInProgress => 'Majstor';
+
+  @override
+  String get progressResolved => 'Rešeno';
+
+  @override
+  String get statusInProgressTechnician => 'Poslat majstor';
+
+  @override
+  String get costDeductFromRent => 'Odbija se od kirije';
+
+  @override
+  String get costAddToRent => 'Dodaje se na kiriju';
+
+  @override
+  String get costPaidByTenant => 'Platio stanar';
+
+  @override
+  String get costPaidByLandlord => 'Platio vlasnik';
+
+  @override
+  String get costPendingReview => 'Čeka proveru troška';
+
+  @override
+  String get costRejected => 'Trošak odbijen';
+
+  @override
+  String get viewInvoiceAction => 'Pogledaj račun';
+
+  @override
+  String get noMatchingIssues =>
+      'Nema zahteva za održavanje koji odgovaraju pretrazi';
+
+  @override
+  String get clearFilters => 'Očisti filtere';
+
+  @override
+  String photosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fotografija',
+      few: '$count fotografije',
+      one: '$count fotografija',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewDetailsAction => 'Pogledaj detalje';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -5545,4 +5640,99 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get depositSecuredLabel => 'Обезбеђен депозит';
+
+  @override
+  String get maintenanceTitle => 'Захтеви за одржавање и поправке';
+
+  @override
+  String get maintenanceSubtitle =>
+      'Пратите пријављене кварове, доласке мајстора и трошкове.';
+
+  @override
+  String get filterActive => 'Активни и у току';
+
+  @override
+  String get filterInvestigating => 'На провери';
+
+  @override
+  String get filterUrgent => 'Хитно';
+
+  @override
+  String get filterCompleted => 'Решено';
+
+  @override
+  String get filterCost => 'Са трошком / Рефундација';
+
+  @override
+  String get searchMaintenancePlaceholder => 'Претражи захтеве...';
+
+  @override
+  String get statActiveIssues => 'Активни / У току';
+
+  @override
+  String get statUrgentIssues => 'Хитни захтеви';
+
+  @override
+  String get statResolvedIssues => 'Решени';
+
+  @override
+  String get statPendingSettlement => 'Трошак / Рефундација';
+
+  @override
+  String get progressReported => 'Пријављено';
+
+  @override
+  String get progressInvestigating => 'Провера';
+
+  @override
+  String get progressInProgress => 'Мајстор';
+
+  @override
+  String get progressResolved => 'Решено';
+
+  @override
+  String get statusInProgressTechnician => 'Послат мајстор';
+
+  @override
+  String get costDeductFromRent => 'Одбија се од кирије';
+
+  @override
+  String get costAddToRent => 'Додаје се на кирију';
+
+  @override
+  String get costPaidByTenant => 'Платио станар';
+
+  @override
+  String get costPaidByLandlord => 'Платио власник';
+
+  @override
+  String get costPendingReview => 'Чека проверу трошка';
+
+  @override
+  String get costRejected => 'Трошак одбијен';
+
+  @override
+  String get viewInvoiceAction => 'Погледај рачун';
+
+  @override
+  String get noMatchingIssues =>
+      'Нема захтева за одржавање који одговарају претрази';
+
+  @override
+  String get clearFilters => 'Очисти филтере';
+
+  @override
+  String photosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фотографија',
+      few: '$count фотографије',
+      one: '$count фотографија',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewDetailsAction => 'Погледај детаље';
 }

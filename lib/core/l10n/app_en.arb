@@ -1315,5 +1315,42 @@
   "quickActionHistory": "Payment History",
   "monthlyBaseRent": "Monthly Rent",
   "payNowAction": "Pay Now",
-  "depositSecuredLabel": "Deposit Secured"
+  "depositSecuredLabel": "Deposit Secured",
+  "maintenanceTitle": "Maintenance & Repair Requests",
+  "maintenanceSubtitle": "Track reported issues, technician visits and expense settlements.",
+  "filterActive": "Active & In Progress",
+  "filterInvestigating": "Investigating",
+  "filterUrgent": "Urgent",
+  "filterCompleted": "Resolved",
+  "filterCost": "With Cost / Refund",
+  "searchMaintenancePlaceholder": "Search requests...",
+  "statActiveIssues": "Active / In Progress",
+  "statUrgentIssues": "Urgent Issues",
+  "statResolvedIssues": "Resolved",
+  "statPendingSettlement": "Cost / Settlement",
+  "progressReported": "Reported",
+  "progressInvestigating": "Reviewing",
+  "progressInProgress": "Technician",
+  "progressResolved": "Resolved",
+  "statusInProgressTechnician": "Technician Sent",
+  "statusClosed": "Closed",
+  "statusCancelled": "Cancelled",
+  "costDeductFromRent": "Deduct from Rent",
+  "costAddToRent": "Add to Rent",
+  "costPaidByTenant": "Paid by Tenant",
+  "costPaidByLandlord": "Paid by Landlord",
+  "costPendingReview": "Pending Review",
+  "costRejected": "Cost Rejected",
+  "viewInvoiceAction": "View Invoice",
+  "noMatchingIssues": "No matching maintenance requests found",
+  "clearFilters": "Clear Filters",
+  "photosCount": "{count, plural, one{{count} photo} other{{count} photos}}",
+  "@photosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewDetailsAction": "View Details"
 }

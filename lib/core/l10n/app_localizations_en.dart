@@ -2814,4 +2814,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get depositSecuredLabel => 'Deposit Secured';
+
+  @override
+  String get maintenanceTitle => 'Maintenance & Repair Requests';
+
+  @override
+  String get maintenanceSubtitle =>
+      'Track reported issues, technician visits and expense settlements.';
+
+  @override
+  String get filterActive => 'Active & In Progress';
+
+  @override
+  String get filterInvestigating => 'Investigating';
+
+  @override
+  String get filterUrgent => 'Urgent';
+
+  @override
+  String get filterCompleted => 'Resolved';
+
+  @override
+  String get filterCost => 'With Cost / Refund';
+
+  @override
+  String get searchMaintenancePlaceholder => 'Search requests...';
+
+  @override
+  String get statActiveIssues => 'Active / In Progress';
+
+  @override
+  String get statUrgentIssues => 'Urgent Issues';
+
+  @override
+  String get statResolvedIssues => 'Resolved';
+
+  @override
+  String get statPendingSettlement => 'Cost / Settlement';
+
+  @override
+  String get progressReported => 'Reported';
+
+  @override
+  String get progressInvestigating => 'Reviewing';
+
+  @override
+  String get progressInProgress => 'Technician';
+
+  @override
+  String get progressResolved => 'Resolved';
+
+  @override
+  String get statusInProgressTechnician => 'Technician Sent';
+
+  @override
+  String get costDeductFromRent => 'Deduct from Rent';
+
+  @override
+  String get costAddToRent => 'Add to Rent';
+
+  @override
+  String get costPaidByTenant => 'Paid by Tenant';
+
+  @override
+  String get costPaidByLandlord => 'Paid by Landlord';
+
+  @override
+  String get costPendingReview => 'Pending Review';
+
+  @override
+  String get costRejected => 'Cost Rejected';
+
+  @override
+  String get viewInvoiceAction => 'View Invoice';
+
+  @override
+  String get noMatchingIssues => 'No matching maintenance requests found';
+
+  @override
+  String get clearFilters => 'Clear Filters';
+
+  @override
+  String photosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '$count photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get viewDetailsAction => 'View Details';
 }

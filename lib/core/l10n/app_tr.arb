@@ -1414,5 +1414,42 @@
   "quickActionHistory": "Ödeme Geçmişi",
   "monthlyBaseRent": "Aylık Kira",
   "payNowAction": "Ödeme Yap",
-  "depositSecuredLabel": "Depozito Güvencesi"
+  "depositSecuredLabel": "Depozito Güvencesi",
+  "maintenanceTitle": "Arıza & Bakım Talepleri",
+  "maintenanceSubtitle": "Bildirilen arızaları, usta süreçlerini ve masraf dökümlerini takip edin.",
+  "filterActive": "Açık & İşlemde",
+  "filterInvestigating": "İnceleniyor",
+  "filterUrgent": "Acil",
+  "filterCompleted": "Çözüldü",
+  "filterCost": "Masraflı / İade",
+  "searchMaintenancePlaceholder": "Talep veya arıza ara...",
+  "statActiveIssues": "Açık / İşlemde",
+  "statUrgentIssues": "Acil Talepler",
+  "statResolvedIssues": "Çözülenler",
+  "statPendingSettlement": "Masraf / İade",
+  "progressReported": "Bildirildi",
+  "progressInvestigating": "İnceleniyor",
+  "progressInProgress": "Usta / İşlemde",
+  "progressResolved": "Çözüldü",
+  "statusInProgressTechnician": "Usta Atandı",
+  "statusClosed": "Kapatıldı",
+  "statusCancelled": "İptal Edildi",
+  "costDeductFromRent": "Kiradan Düşülecek",
+  "costAddToRent": "Kiraya Eklenecek",
+  "costPaidByTenant": "Kiracı Ödedi",
+  "costPaidByLandlord": "Ev Sahibi Ödedi",
+  "costPendingReview": "Masraf Onayı Bekliyor",
+  "costRejected": "Masraf Reddedildi",
+  "viewInvoiceAction": "Fatura Görüntüle",
+  "noMatchingIssues": "Aramanıza uygun arıza kaydı bulunamadı",
+  "clearFilters": "Filtreleri Temizle",
+  "photosCount": "{count, plural, one{{count} fotoğraf} other{{count} fotoğraf}}",
+  "@photosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewDetailsAction": "Detayları Gör"
 }
