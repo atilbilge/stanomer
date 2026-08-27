@@ -2400,7 +2400,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get landlordReimbursesSub =>
-      'Demirbaş expense paid in advance by tenant. Landlord reimburses or deducts from rent.';
+      'Property fixture expense paid in advance by tenant. Landlord reimburses or deducts from rent.';
 
   @override
   String get landlordReimbursesBadge => 'Pending Payment • Rent Deduction';
@@ -2508,7 +2508,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intentTenantReimburseTitle =>
-      'I Paid for Property Fixture (Demirbaş)';
+      'I Paid for Property Fixture (To be Covered by Landlord)';
 
   @override
   String get intentTenantReimburseSub =>
@@ -2519,7 +2519,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intentLandlordSelfTitle =>
-      'I Covered for Property Fixture (Demirbaş)';
+      'I Covered for Property Fixture (Landlord\'s Expense)';
 
   @override
   String get intentLandlordSelfSub =>

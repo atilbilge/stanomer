@@ -411,52 +411,57 @@ class _MaintenanceCard extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Row 1: Amount + Payer + Status Badge
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Cost Amount
-              if (request.costAmount != null) ...[
-                Text(
-                  '${request.costAmount!.toStringAsFixed(2)} $currency',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-
-              // Payer badge
-              if (request.paidBy != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                  decoration: BoxDecoration(
-                    color: (request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        request.paidBy == 'tenant' ? LucideIcons.user : LucideIcons.home,
-                        size: 10,
-                        color: request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
+              // Cost Amount + Payer badge
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (request.costAmount != null) ...[
+                    Text(
+                      '${request.costAmount!.toStringAsFixed(2)} $currency',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        letterSpacing: -0.2,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        request.paidBy == 'tenant' ? tenantLabel : landlordLabel,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (request.paidBy != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: (request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const Spacer(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            request.paidBy == 'tenant' ? LucideIcons.user : LucideIcons.home,
+                            size: 10,
+                            color: request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            request.paidBy == 'tenant' ? tenantLabel : landlordLabel,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: request.paidBy == 'tenant' ? StanomerColors.tenant : StanomerColors.landlord,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
 
               // Payment Status Badge
               Container(
@@ -487,7 +492,11 @@ class _MaintenanceCard extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // Row 2: Date info + Clickable Invoice Link
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               // Date Badge (Due Date or Payment Date)
               if (dateLabel.isNotEmpty) ...[
@@ -514,8 +523,6 @@ class _MaintenanceCard extends ConsumerWidget {
                   ),
                 ),
               ],
-
-              const Spacer(),
 
               // Clickable Invoice Link
               if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) ...[
