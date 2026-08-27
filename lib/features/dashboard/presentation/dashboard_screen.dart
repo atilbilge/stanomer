@@ -3074,6 +3074,40 @@ class _TenantHero extends ConsumerWidget {
   }
 }
 
+class _HeroMetaItem extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _HeroMetaItem({required this.icon, required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: Colors.white.withValues(alpha: 0.7)),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (label.isNotEmpty) ...[
+          const SizedBox(width: 3),
+          Text(
+            label.toLowerCase(),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _HeroStatusBadge extends StatelessWidget {
   final IconData icon;
   final String label;
