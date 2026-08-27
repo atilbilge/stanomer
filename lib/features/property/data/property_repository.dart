@@ -164,12 +164,13 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
         }
       }
 
-      // Factor in active Maintenance Settlements
+      // Factor in active approved Maintenance Settlements
       for (var m in maintenanceRequests) {
         final cost = m.costAmount;
         if (cost == null || cost <= 0) continue;
         final cur = m.currency ?? contract?.currency ?? (payments.isNotEmpty ? payments.first.currency : 'EUR');
 
+        // Only approved active settlements (pending_payment) factor into net balance debt / credit
         if (m.paymentStatus == 'pending_payment') {
           if (m.paidBy == 'landlord') {
             // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent
@@ -179,12 +180,6 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
           }
           pendingC++;
-        } else if (m.paymentStatus == 'pending_review') {
-          awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + cost;
-          awaitingC++;
-        } else if (m.paymentStatus == 'paid') {
-          paidTotals[cur] = (paidTotals[cur] ?? 0) + cost;
-          paidC++;
         }
       }
 

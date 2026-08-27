@@ -3949,18 +3949,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     required bool isAgencyManager,
     required AppLocalizations loc,
   }) {
-    final pendingSettlements = maintenanceSettlements.where((r) => r.paymentStatus == 'pending_payment').toList();
-    final reviewSettlements = maintenanceSettlements.where((r) => r.paymentStatus == 'pending_review').toList();
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: pendingSettlements.isNotEmpty
-              ? const Color(0xFF2563EB).withValues(alpha: 0.3)
-              : const Color(0xFFE2E8F0),
+          color: const Color(0xFF2563EB).withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -4000,10 +3995,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 ),
               ),
               const SizedBox(width: 8),
-              if (pendingSettlements.isNotEmpty)
-                _MiniBadge(count: pendingSettlements.length, color: const Color(0xFF2563EB))
-              else if (reviewSettlements.isNotEmpty)
-                _MiniBadge(count: reviewSettlements.length, color: Colors.orange),
+              if (maintenanceSettlements.isNotEmpty)
+                _MiniBadge(count: maintenanceSettlements.length, color: const Color(0xFF2563EB)),
             ],
           ),
           children: maintenanceSettlements.map((req) {
@@ -4334,7 +4327,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       data: (reqs) => reqs.where((r) =>
         r.costAmount != null &&
         r.costAmount! > 0 &&
-        (r.paymentStatus == 'pending_payment' || r.paymentStatus == 'pending_review')
+        r.paymentStatus == 'pending_payment'
       ).toList(),
       orElse: () => <MaintenanceRequest>[],
     );
