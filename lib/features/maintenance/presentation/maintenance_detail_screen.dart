@@ -1218,11 +1218,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                               width: double.infinity,
                               child: ElevatedButton.icon(
                                 onPressed: () => _showEditFinancialsSheet(context, request, isLandlordDeclaration: true),
-                                icon: Icon(request.paidBy == 'landlord' ? LucideIcons.rotateCcw : LucideIcons.receiptText, size: 14),
+                                icon: Icon(isLastDeclaredByTenant ? LucideIcons.pencil : (request.paidBy == 'landlord' ? LucideIcons.rotateCcw : LucideIcons.receiptText), size: 14),
                                 label: Text(
-                                  request.paidBy == 'landlord'
-                                      ? loc.resubmitExpenseIPaid
-                                      : loc.iPaidSubmitReceipt,
+                                  isLastDeclaredByTenant
+                                      ? (loc.localeName == 'tr' ? 'Yeni Masraf Tutarı Gir' : (loc.localeName == 'ru' ? 'Ввести новую сумму' : (loc.localeName.startsWith('sr') ? 'Unesi novi iznos troška' : 'Enter New Expense Amount')))
+                                      : (request.paidBy == 'landlord' ? loc.resubmitExpenseIPaid : loc.iPaidSubmitReceipt),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2563EB),
@@ -2481,9 +2481,10 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
   @override
   void initState() {
     super.initState();
-    _noteController = TextEditingController();
+    final isRejected = widget.request.paymentStatus == 'rejected';
     final isDifferentPayer = (widget.isLandlordDeclaration && widget.request.paidBy == 'tenant') ||
-        (widget.isTenantDeclaration && widget.request.paidBy == 'landlord');
+        (widget.isTenantDeclaration && widget.request.paidBy == 'landlord') ||
+        (widget.isLandlordDeclaration && isRejected);
 
     if (isDifferentPayer) {
       _costController = TextEditingController();
@@ -2662,11 +2663,15 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
             ? '\n\n📝 ${loc.noteLabel}: "$note"'
             : '';
 
+        final String statusNote = widget.isLandlordDeclaration && widget.request.paymentStatus == 'rejected'
+            ? (loc.localeName == 'tr' ? 'Yeni Masraf Belirlendi' : 'New Expense Entered')
+            : loc.receiptInvoiceDocument;
+
         try {
           await ref.read(maintenanceRepositoryProvider).addMessage(
             widget.request.id,
             widget.property.id,
-            '📄 $declarantName: ${costAmount.toStringAsFixed(2)} $_selectedCurrency\n📌 ${loc.settlementIntentTitle}: $intentBadge\n(${loc.receiptInvoiceDocument} • ${loc.financialStatusPendingReview})$noteSection',
+            '📄 $declarantName: ${costAmount.toStringAsFixed(2)} $_selectedCurrency\n📌 ${loc.settlementIntentTitle}: $intentBadge\n($statusNote • ${loc.financialStatusPendingReview})$noteSection',
             photoUrl: invoicePdfUrl,
           );
         } catch (_) {}
@@ -2745,15 +2750,25 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isDeclaration
-                            ? loc.iPaidSubmitReceipt
-                            : loc.editFinancialDetails,
+                        widget.isLandlordDeclaration
+                            ? (widget.request.paymentStatus == 'rejected'
+                                ? (loc.localeName == 'tr' ? 'Yeni Masraf Tutarı Gir' : (loc.localeName == 'ru' ? 'Ввести новую сумму' : (loc.localeName.startsWith('sr') ? 'Unesi novi iznos troška' : 'Enter New Expense Amount')))
+                                : loc.enterExpenseAmount)
+                            : (_isDeclaration
+                                ? loc.iPaidSubmitReceipt
+                                : loc.editFinancialDetails),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                       ),
                       if (_isDeclaration) ...[
                         const SizedBox(height: 2),
                         Text(
-                          loc.enterAmountAttachReceipt,
+                          widget.isLandlordDeclaration
+                              ? (loc.localeName == 'tr'
+                                  ? 'Masraf tutarını ve sorumluluk detayını belirleyin'
+                                  : (loc.localeName == 'ru'
+                                      ? 'Укажите сумму расхода и распределение ответственности'
+                                      : (loc.localeName.startsWith('sr') ? 'Navedite iznos i odgovornost za trošak' : 'Specify the expense amount and responsibility')))
+                              : loc.enterAmountAttachReceipt,
                           style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                         ),
                       ],
