@@ -46,7 +46,8 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   @override
   void initState() {
     super.initState();
-    _selectedCurrency = widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR';
+    final initialCur = widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR';
+    _selectedCurrency = (initialCur.toUpperCase() == 'RSD') ? 'RSD' : 'EUR';
   }
 
   @override
@@ -581,8 +582,6 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                   items: const [
                     DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
                     DropdownMenuItem(value: 'RSD', child: Text('RSD')),
-                    DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
-                    DropdownMenuItem(value: 'TRY', child: Text('TRY (₺)')),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedCurrency = val);

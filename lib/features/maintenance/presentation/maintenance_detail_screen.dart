@@ -2495,8 +2495,9 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
       _existingInvoiceUrl = widget.request.invoicePdfUrl;
     }
 
-    _selectedCurrency = widget.request.currency ??
+    final initialCur = widget.request.currency ??
         (widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR');
+    _selectedCurrency = (initialCur.toUpperCase() == 'RSD') ? 'RSD' : 'EUR';
 
     if (widget.isLandlordDeclaration) {
       _declarationIntent = widget.request.paidBy == 'tenant' ? 'tenant_due' : 'self';
@@ -2799,8 +2800,6 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                     items: const [
                       DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
                       DropdownMenuItem(value: 'RSD', child: Text('RSD')),
-                      DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
-                      DropdownMenuItem(value: 'TRY', child: Text('TRY (₺)')),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedCurrency = val);
