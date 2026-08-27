@@ -1325,5 +1325,46 @@
   "rentedStatusTag": "Сдано",
   "invitedStatusTag": "Приглашение отправлено",
   "settlementCredit": "Зачетный остаток",
-  "noDebtLabel": "Нет долга"
+  "noDebtLabel": "Нет долга",
+  "daysLeftBadge": "Осталось {count} дн.",
+  "@daysLeftBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dueTodayBadge": "Сегодня последний день",
+  "overdueBadge": "Просрочено",
+  "allTenantPaymentsUpToDate": "Все ваши платежи актуальны. Следующая аренда {date}.",
+  "@allTenantPaymentsUpToDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantAwaitingReceiptApprovalMsg": "Квитанция загружена для {count} платежей, ожидается подтверждение.",
+  "@tenantAwaitingReceiptApprovalMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tenantOutstandingDebtMsg": "У вас имеется {count} неоплаченных счетов.",
+  "@tenantOutstandingDebtMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActionFinance": "Аренда и счета",
+  "quickActionMaintenance": "Ремонт и заявки",
+  "quickActionContract": "Договор",
+  "quickActionHistory": "История платежей",
+  "monthlyBaseRent": "Месячная аренда",
+  "payNowAction": "Оплатить",
+  "depositSecuredLabel": "Депозит внесен"
 }

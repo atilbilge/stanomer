@@ -5085,6 +5085,84 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Nema duga'**
   String get noDebtLabel;
+
+  /// No description provided for @daysLeftBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Još {count} dana'**
+  String daysLeftBadge(int count);
+
+  /// No description provided for @dueTodayBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Danas ističe'**
+  String get dueTodayBadge;
+
+  /// No description provided for @overdueBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'U zakašnjenju'**
+  String get overdueBadge;
+
+  /// No description provided for @allTenantPaymentsUpToDate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve vaše uplate su ažurne. Sledeća kirija dospeva {date}.'**
+  String allTenantPaymentsUpToDate(String date);
+
+  /// No description provided for @tenantAwaitingReceiptApprovalMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uplatnica je priložena za {count} uplata, čeka se odobrenje.'**
+  String tenantAwaitingReceiptApprovalMsg(int count);
+
+  /// No description provided for @tenantOutstandingDebtMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Imate {count} neizmirenih obaveza.'**
+  String tenantOutstandingDebtMsg(int count);
+
+  /// No description provided for @quickActionFinance.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kirija i računi'**
+  String get quickActionFinance;
+
+  /// No description provided for @quickActionMaintenance.
+  ///
+  /// In sr, this message translates to:
+  /// **'Održavanje'**
+  String get quickActionMaintenance;
+
+  /// No description provided for @quickActionContract.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor'**
+  String get quickActionContract;
+
+  /// No description provided for @quickActionHistory.
+  ///
+  /// In sr, this message translates to:
+  /// **'Istorija plaćanja'**
+  String get quickActionHistory;
+
+  /// No description provided for @monthlyBaseRent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Mesečna kirija'**
+  String get monthlyBaseRent;
+
+  /// No description provided for @payNowAction.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plati odmah'**
+  String get payNowAction;
+
+  /// No description provided for @depositSecuredLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obezbeđen depozit'**
+  String get depositSecuredLabel;
 }
 
 class _AppLocalizationsDelegate

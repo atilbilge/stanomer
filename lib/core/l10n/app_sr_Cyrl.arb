@@ -1323,5 +1323,46 @@
   "rentedStatusTag": "Издато",
   "invitedStatusTag": "Позив на чекању",
   "settlementCredit": "Пребијање потраживања",
-  "noDebtLabel": "Нема дуга"
+  "noDebtLabel": "Нема дуга",
+  "daysLeftBadge": "Још {count} дана",
+  "@daysLeftBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dueTodayBadge": "Данас истиче",
+  "overdueBadge": "У закашњењу",
+  "allTenantPaymentsUpToDate": "Све ваше уплате су ажурне. Следећа кирија доспева {date}.",
+  "@allTenantPaymentsUpToDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantAwaitingReceiptApprovalMsg": "Уплатница је приложена за {count} уплата, чека се одобрење.",
+  "@tenantAwaitingReceiptApprovalMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tenantOutstandingDebtMsg": "Имате {count} неизмирених обавеза.",
+  "@tenantOutstandingDebtMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActionFinance": "Кирија и рачуни",
+  "quickActionMaintenance": "Одржавање",
+  "quickActionContract": "Уговор",
+  "quickActionHistory": "Историја плаћања",
+  "monthlyBaseRent": "Месечна кирија",
+  "payNowAction": "Плати одмах",
+  "depositSecuredLabel": "Обезбеђен депозит"
 }

@@ -2767,4 +2767,51 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noDebtLabel => 'Borç Yok';
+
+  @override
+  String daysLeftBadge(int count) {
+    return '$count gün kaldı';
+  }
+
+  @override
+  String get dueTodayBadge => 'Bugün son gün';
+
+  @override
+  String get overdueBadge => 'Gecikmede';
+
+  @override
+  String allTenantPaymentsUpToDate(String date) {
+    return 'Tüm ödemeleriniz güncel. Bir sonraki kira $date tarihinde.';
+  }
+
+  @override
+  String tenantAwaitingReceiptApprovalMsg(int count) {
+    return '$count ödemeniz için dekont yüklendi, onay bekleniyor.';
+  }
+
+  @override
+  String tenantOutstandingDebtMsg(int count) {
+    return 'Ödenmemiş $count adet borcunuz bulunmaktadır.';
+  }
+
+  @override
+  String get quickActionFinance => 'Kira & Faturalar';
+
+  @override
+  String get quickActionMaintenance => 'Arıza & Bakım';
+
+  @override
+  String get quickActionContract => 'Sözleşme';
+
+  @override
+  String get quickActionHistory => 'Ödeme Geçmişi';
+
+  @override
+  String get monthlyBaseRent => 'Aylık Kira';
+
+  @override
+  String get payNowAction => 'Ödeme Yap';
+
+  @override
+  String get depositSecuredLabel => 'Depozito Güvencesi';
 }

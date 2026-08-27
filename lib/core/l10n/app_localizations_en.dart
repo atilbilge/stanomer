@@ -2767,4 +2767,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDebtLabel => 'No Debt';
+
+  @override
+  String daysLeftBadge(int count) {
+    return '$count days left';
+  }
+
+  @override
+  String get dueTodayBadge => 'Due today';
+
+  @override
+  String get overdueBadge => 'Overdue';
+
+  @override
+  String allTenantPaymentsUpToDate(String date) {
+    return 'All your payments are up to date. Next rent due on $date.';
+  }
+
+  @override
+  String tenantAwaitingReceiptApprovalMsg(int count) {
+    return 'Receipt uploaded for $count payment(s), awaiting approval.';
+  }
+
+  @override
+  String tenantOutstandingDebtMsg(int count) {
+    return 'You have $count outstanding payment(s).';
+  }
+
+  @override
+  String get quickActionFinance => 'Rent & Bills';
+
+  @override
+  String get quickActionMaintenance => 'Maintenance';
+
+  @override
+  String get quickActionContract => 'Contract';
+
+  @override
+  String get quickActionHistory => 'Payment History';
+
+  @override
+  String get monthlyBaseRent => 'Monthly Rent';
+
+  @override
+  String get payNowAction => 'Pay Now';
+
+  @override
+  String get depositSecuredLabel => 'Deposit Secured';
 }

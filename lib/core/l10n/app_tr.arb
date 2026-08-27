@@ -1373,5 +1373,46 @@
   "rentedStatusTag": "Kiracı Var",
   "invitedStatusTag": "Davet Bekleniyor",
   "settlementCredit": "Mahsup Alacağı",
-  "noDebtLabel": "Borç Yok"
+  "noDebtLabel": "Borç Yok",
+  "daysLeftBadge": "{count} gün kaldı",
+  "@daysLeftBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dueTodayBadge": "Bugün son gün",
+  "overdueBadge": "Gecikmede",
+  "allTenantPaymentsUpToDate": "Tüm ödemeleriniz güncel. Bir sonraki kira {date} tarihinde.",
+  "@allTenantPaymentsUpToDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantAwaitingReceiptApprovalMsg": "{count} ödemeniz için dekont yüklendi, onay bekleniyor.",
+  "@tenantAwaitingReceiptApprovalMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tenantOutstandingDebtMsg": "Ödenmemiş {count} adet borcunuz bulunmaktadır.",
+  "@tenantOutstandingDebtMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActionFinance": "Kira & Faturalar",
+  "quickActionMaintenance": "Arıza & Bakım",
+  "quickActionContract": "Sözleşme",
+  "quickActionHistory": "Ödeme Geçmişi",
+  "monthlyBaseRent": "Aylık Kira",
+  "payNowAction": "Ödeme Yap",
+  "depositSecuredLabel": "Depozito Güvencesi"
 }

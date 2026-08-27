@@ -2786,4 +2786,51 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get noDebtLabel => 'Нет долга';
+
+  @override
+  String daysLeftBadge(int count) {
+    return 'Осталось $count дн.';
+  }
+
+  @override
+  String get dueTodayBadge => 'Сегодня последний день';
+
+  @override
+  String get overdueBadge => 'Просрочено';
+
+  @override
+  String allTenantPaymentsUpToDate(String date) {
+    return 'Все ваши платежи актуальны. Следующая аренда $date.';
+  }
+
+  @override
+  String tenantAwaitingReceiptApprovalMsg(int count) {
+    return 'Квитанция загружена для $count платежей, ожидается подтверждение.';
+  }
+
+  @override
+  String tenantOutstandingDebtMsg(int count) {
+    return 'У вас имеется $count неоплаченных счетов.';
+  }
+
+  @override
+  String get quickActionFinance => 'Аренда и счета';
+
+  @override
+  String get quickActionMaintenance => 'Ремонт и заявки';
+
+  @override
+  String get quickActionContract => 'Договор';
+
+  @override
+  String get quickActionHistory => 'История платежей';
+
+  @override
+  String get monthlyBaseRent => 'Месячная аренда';
+
+  @override
+  String get payNowAction => 'Оплатить';
+
+  @override
+  String get depositSecuredLabel => 'Депозит внесен';
 }

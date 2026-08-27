@@ -1274,5 +1274,46 @@
   "rentedStatusTag": "Rented",
   "invitedStatusTag": "Invited",
   "settlementCredit": "Settlement Credit",
-  "noDebtLabel": "No Debt"
+  "noDebtLabel": "No Debt",
+  "daysLeftBadge": "{count} days left",
+  "@daysLeftBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dueTodayBadge": "Due today",
+  "overdueBadge": "Overdue",
+  "allTenantPaymentsUpToDate": "All your payments are up to date. Next rent due on {date}.",
+  "@allTenantPaymentsUpToDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantAwaitingReceiptApprovalMsg": "Receipt uploaded for {count} payment(s), awaiting approval.",
+  "@tenantAwaitingReceiptApprovalMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tenantOutstandingDebtMsg": "You have {count} outstanding payment(s).",
+  "@tenantOutstandingDebtMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActionFinance": "Rent & Bills",
+  "quickActionMaintenance": "Maintenance",
+  "quickActionContract": "Contract",
+  "quickActionHistory": "Payment History",
+  "monthlyBaseRent": "Monthly Rent",
+  "payNowAction": "Pay Now",
+  "depositSecuredLabel": "Deposit Secured"
 }

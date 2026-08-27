@@ -2765,6 +2765,53 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get noDebtLabel => 'Nema duga';
+
+  @override
+  String daysLeftBadge(int count) {
+    return 'Još $count dana';
+  }
+
+  @override
+  String get dueTodayBadge => 'Danas ističe';
+
+  @override
+  String get overdueBadge => 'U zakašnjenju';
+
+  @override
+  String allTenantPaymentsUpToDate(String date) {
+    return 'Sve vaše uplate su ažurne. Sledeća kirija dospeva $date.';
+  }
+
+  @override
+  String tenantAwaitingReceiptApprovalMsg(int count) {
+    return 'Uplatnica je priložena za $count uplata, čeka se odobrenje.';
+  }
+
+  @override
+  String tenantOutstandingDebtMsg(int count) {
+    return 'Imate $count neizmirenih obaveza.';
+  }
+
+  @override
+  String get quickActionFinance => 'Kirija i računi';
+
+  @override
+  String get quickActionMaintenance => 'Održavanje';
+
+  @override
+  String get quickActionContract => 'Ugovor';
+
+  @override
+  String get quickActionHistory => 'Istorija plaćanja';
+
+  @override
+  String get monthlyBaseRent => 'Mesečna kirija';
+
+  @override
+  String get payNowAction => 'Plati odmah';
+
+  @override
+  String get depositSecuredLabel => 'Obezbeđen depozit';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -5451,4 +5498,51 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get noDebtLabel => 'Нема дуга';
+
+  @override
+  String daysLeftBadge(int count) {
+    return 'Још $count дана';
+  }
+
+  @override
+  String get dueTodayBadge => 'Данас истиче';
+
+  @override
+  String get overdueBadge => 'У закашњењу';
+
+  @override
+  String allTenantPaymentsUpToDate(String date) {
+    return 'Све ваше уплате су ажурне. Следећа кирија доспева $date.';
+  }
+
+  @override
+  String tenantAwaitingReceiptApprovalMsg(int count) {
+    return 'Уплатница је приложена за $count уплата, чека се одобрење.';
+  }
+
+  @override
+  String tenantOutstandingDebtMsg(int count) {
+    return 'Имате $count неизмирених обавеза.';
+  }
+
+  @override
+  String get quickActionFinance => 'Кирија и рачуни';
+
+  @override
+  String get quickActionMaintenance => 'Одржавање';
+
+  @override
+  String get quickActionContract => 'Уговор';
+
+  @override
+  String get quickActionHistory => 'Историја плаћања';
+
+  @override
+  String get monthlyBaseRent => 'Месечна кирија';
+
+  @override
+  String get payNowAction => 'Плати одмах';
+
+  @override
+  String get depositSecuredLabel => 'Обезбеђен депозит';
 }
