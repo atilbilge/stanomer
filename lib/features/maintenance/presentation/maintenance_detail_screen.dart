@@ -2481,6 +2481,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
   @override
   void initState() {
     super.initState();
+    _noteController = TextEditingController();
     final isRejected = widget.request.paymentStatus == 'rejected';
     final isDifferentPayer = (widget.isLandlordDeclaration && widget.request.paidBy == 'tenant') ||
         (widget.isTenantDeclaration && widget.request.paidBy == 'landlord') ||
