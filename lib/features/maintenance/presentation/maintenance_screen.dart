@@ -566,15 +566,16 @@ class _MaintenanceHeroHeader extends StatelessWidget {
           ),
 
           Padding(
-            padding: EdgeInsets.fromLTRB(16, isEmbedded ? 14 : topPadding + 8, 16, isEmbedded ? 16 : 20),
+            padding: EdgeInsets.fromLTRB(16, isEmbedded ? 10 : topPadding + 8, 16, isEmbedded ? 12 : 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Top Navigation Row (hidden when embedded)
-                if (!isEmbedded) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                // Single Top Navigation & Title Row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (!isEmbedded) ...[
                       InkWell(
                         onTap: () {
                           if (Navigator.canPop(context)) {
@@ -583,34 +584,87 @@ class _MaintenanceHeroHeader extends StatelessWidget {
                             context.go('/dashboard');
                           }
                         },
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
                           ),
-                          child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
+                          child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 18),
                         ),
                       ),
+                      const SizedBox(width: 10),
+                    ],
+
+                    // Title & Subtitle with page icon
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            loc.maintenanceTitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                LucideIcons.wrench,
+                                size: 11,
+                                color: Colors.white.withValues(alpha: 0.82),
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  loc.maintenanceSubtitle,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.82),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    // Property Context Badge
+                    if (!isEmbedded)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.black.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(LucideIcons.home, size: 12, color: Colors.white),
-                            const SizedBox(width: 5),
-                            Flexible(
+                            const Icon(LucideIcons.home, size: 11, color: Colors.white70),
+                            const SizedBox(width: 4),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 110),
                               child: Text(
                                 property.name,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 11.5,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 1,
@@ -620,78 +674,31 @@ class _MaintenanceHeroHeader extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Title & Subtitle
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                      ),
-                      child: const Icon(LucideIcons.wrench, color: Colors.white, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.maintenanceTitle,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.4,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            loc.maintenanceSubtitle,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.82),
-                              fontSize: 11.5,
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 18),
 
                 // Prominent "+ Yeni Arıza Bildir" Action CTA (Tenants Only)
-                if (isTenant)
+                if (isTenant) ...[
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: onNewRequest,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xFF0F766E),
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      shadowColor: Colors.black.withValues(alpha: 0.1),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shadowColor: Colors.black.withValues(alpha: 0.08),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(LucideIcons.plus, size: 18, color: Color(0xFF0F766E)),
-                        const SizedBox(width: 8),
+                        const Icon(LucideIcons.plus, size: 16, color: Color(0xFF0F766E)),
+                        const SizedBox(width: 6),
                         Text(
                           loc.reportIssue,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF0F766E),
                             letterSpacing: -0.1,
@@ -700,6 +707,7 @@ class _MaintenanceHeroHeader extends StatelessWidget {
                       ],
                     ),
                   ),
+                ],
               ],
             ),
           ),
