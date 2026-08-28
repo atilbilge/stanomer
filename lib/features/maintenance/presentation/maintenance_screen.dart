@@ -1075,19 +1075,29 @@ class _MaintenanceCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(LucideIcons.calendar, size: 12, color: Color(0xFF94A3B8)),
-                        const SizedBox(width: 5),
-                        Text(
-                          request.createdAt != null
-                              ? DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(request.createdAt!)
-                              : '-',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(LucideIcons.calendar, size: 12, color: Color(0xFF94A3B8)),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  request.createdAt != null
+                                      ? DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(request.createdAt!)
+                                      : '-',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

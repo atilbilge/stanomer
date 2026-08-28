@@ -60,13 +60,80 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTabIndex);
+    // Map initialTabIndex: 0 -> 0 (Financials), 1 -> 0 (Financials), 2 -> 1 (Maintenance)
+    final initialIdx = widget.initialTabIndex == 2 ? 1 : 0;
+    _tabController = TabController(length: 2, vsync: this, initialIndex: initialIdx);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _openOverviewModal(BuildContext context, Property property) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(LucideIcons.fileText, color: StanomerColors.brandPrimary, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          property.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: StanomerColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          AppLocalizations.of(ctx)!.overview,
+                          style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(LucideIcons.x, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _OverviewTab(property: property, isSidebar: true),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -80,38 +147,77 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
       error: (_, __) => widget.property,
     );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            // 1. Dynamic Multi-Party Hero Header with Segmented TabBar
-            _PropertyDetailHeroHeader(
-              property: property,
-              tabController: _tabController,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 960;
 
-            // 2. Tab Content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _OverviewTab(property: property),
-                  _FinancialsTab(
-                    property: property,
-                    initialExpandedPaymentId: widget.initialExpandedPaymentId,
-                  ),
-                  MaintenanceScreen(
-                    property: property,
-                    isEmbedded: true,
-                  ),
-                ],
-              ),
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                // Ultra-Compact Role-Aware Hero Header
+                _PropertyDetailHeroHeader(
+                  property: property,
+                  tabController: _tabController,
+                  onOpenOverview: () => _openOverviewModal(context, property),
+                  isWideScreen: isWide,
+                ),
+
+                // Responsive Operational Body
+                Expanded(
+                  child: isWide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left 65%: Operational Workflows (Financials / Maintenance)
+                            Expanded(
+                              flex: 65,
+                              child: TabBarView(
+                                controller: _tabController,
+                                children: [
+                                  _FinancialsTab(
+                                    property: property,
+                                    initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                                  ),
+                                  MaintenanceScreen(
+                                    property: property,
+                                    isEmbedded: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(width: 1, color: const Color(0xFFE2E8F0)),
+                            // Right 35%: Sticky SaaS Bento Overview Panel
+                            Expanded(
+                              flex: 35,
+                              child: Container(
+                                color: Colors.white,
+                                child: _OverviewTab(property: property, isSidebar: true),
+                              ),
+                            ),
+                          ],
+                        )
+                      : TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _FinancialsTab(
+                              property: property,
+                              initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                            ),
+                            MaintenanceScreen(
+                              property: property,
+                              isEmbedded: true,
+                            ),
+                          ],
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -119,10 +225,14 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
 class _PropertyDetailHeroHeader extends ConsumerWidget {
   final Property property;
   final TabController tabController;
+  final VoidCallback onOpenOverview;
+  final bool isWideScreen;
 
   const _PropertyDetailHeroHeader({
     required this.property,
     required this.tabController,
+    required this.onOpenOverview,
+    this.isWideScreen = false,
   });
 
   @override
@@ -155,12 +265,15 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
     final resolvedTenantPhone = tenantProfileAsync.value?['phone'] as String? ?? '';
     final resolvedTenantEmail = tenantProfileAsync.value?['email'] as String? ?? '';
 
-    // Management Type Badge
-    final isAgencyControlled = property.agencyId != null && property.agencyId!.isNotEmpty;
-
-    // Rental status
     final isRented = property.tenantId != null || activeContract != null;
     final isContractEnded = activeContract?.isEnded ?? false;
+
+    // Contact info for counterparty
+    final counterPartyName = isTenant ? resolvedLandlordName : resolvedTenantName;
+    final counterPartyPhone = isTenant ? resolvedLandlordPhone : resolvedTenantPhone;
+    final counterPartyEmail = isTenant ? resolvedLandlordEmail : resolvedTenantEmail;
+    final hasCounterParty = (isTenant && (resolvedLandlordEmail.isNotEmpty || resolvedLandlordPhone.isNotEmpty)) || 
+                            ((isLandlord || isAgencyManager) && isRented && (resolvedTenantEmail.isNotEmpty || resolvedTenantPhone.isNotEmpty || resolvedTenantName.isNotEmpty));
 
     return Container(
       width: double.infinity,
@@ -174,118 +287,112 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: (isTenant ? const Color(0xFF0F766E) : agencyColor).withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: (isTenant ? const Color(0xFF0F766E) : agencyColor).withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Row 1: Back + Clickable Title & Address + Quick Contact + Settings
           Padding(
-            padding: EdgeInsets.fromLTRB(16, topPadding + 8, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.fromLTRB(12, topPadding + 6, 12, 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Top Navigation Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.maybePop(context);
-                        } else {
-                          context.go('/dashboard');
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
-                      ),
+                // Back Button
+                InkWell(
+                  onTap: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.maybePop(context);
+                    } else {
+                      context.go('/dashboard');
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                     ),
-                    // Management Badge (Agency vs Peer-to-Peer)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isAgencyControlled ? LucideIcons.building : LucideIcons.userCheck,
-                            size: 13,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            isAgencyControlled
-                                ? (loc.localeName == 'tr' ? 'Acente Yönetiminde' : 'Agency Managed')
-                                : (loc.localeName == 'tr' ? 'Bireysel Yönetim' : 'Self Managed'),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 18),
+                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(width: 10),
 
-                // Property Title & Address
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                      ),
-                      child: const Icon(LucideIcons.home, color: Colors.white, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                // Clickable Property Title & Status (Tapping opens Overview Sheet on mobile)
+                Expanded(
+                  child: InkWell(
+                    onTap: isWideScreen ? null : onOpenOverview,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            property.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.3,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  property.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isContractEnded
+                                      ? Colors.red.withValues(alpha: 0.25)
+                                      : (isRented
+                                          ? const Color(0xFF10B981).withValues(alpha: 0.28)
+                                          : Colors.orange.withValues(alpha: 0.28)),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isContractEnded
+                                        ? Colors.red.withValues(alpha: 0.45)
+                                        : (isRented
+                                            ? const Color(0xFF10B981).withValues(alpha: 0.55)
+                                            : Colors.orange.withValues(alpha: 0.55)),
+                                  ),
+                                ),
+                                child: Text(
+                                  isContractEnded
+                                      ? loc.ended
+                                      : (isRented ? loc.activeLease : loc.statusVacant),
+                                  style: TextStyle(
+                                    color: isContractEnded
+                                        ? const Color(0xFFFCA5A5)
+                                        : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              const Icon(LucideIcons.mapPin, size: 12, color: Colors.white70),
-                              const SizedBox(width: 4),
-                              Expanded(
+                              const Icon(LucideIcons.mapPin, size: 10.5, color: Colors.white70),
+                              const SizedBox(width: 3),
+                              Flexible(
                                 child: Text(
                                   property.address,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 11.5,
-                                  ),
+                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -295,125 +402,155 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Status Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: isContractEnded
-                            ? Colors.red.withValues(alpha: 0.2)
-                            : (isRented
-                                ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                                : Colors.orange.withValues(alpha: 0.25)),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isContractEnded
-                              ? Colors.red.withValues(alpha: 0.4)
-                              : (isRented
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.5)
-                                  : Colors.orange.withValues(alpha: 0.5)),
-                        ),
-                      ),
-                      child: Text(
-                        isContractEnded
-                            ? loc.ended
-                            : (isRented ? loc.activeLease : loc.statusVacant),
-                        style: TextStyle(
-                          color: isContractEnded
-                              ? const Color(0xFFFCA5A5)
-                              : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
 
-                // Multi-Party Contact Strip
-                if (isTenant && resolvedLandlordEmail.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  _buildContactStrip(
-                    roleTitle: loc.landlord,
-                    name: resolvedLandlordName,
-                    phone: resolvedLandlordPhone,
-                    email: resolvedLandlordEmail,
+                const SizedBox(width: 6),
+
+                // Quick CounterParty Contact Action (WhatsApp / Call / Mail bottomsheet)
+                if (hasCounterParty)
+                  _buildQuickContactButton(
+                    context: context,
+                    loc: loc,
+                    name: counterPartyName,
+                    phone: counterPartyPhone,
+                    email: counterPartyEmail,
+                    isTenantViewing: isTenant,
                   ),
-                ] else if ((isLandlord || isAgencyManager) && isRented && (resolvedTenantEmail.isNotEmpty || resolvedTenantName.isNotEmpty)) ...[
-                  const SizedBox(height: 12),
-                  _buildContactStrip(
-                    roleTitle: loc.tenant,
-                    name: resolvedTenantName,
-                    phone: resolvedTenantPhone,
-                    email: resolvedTenantEmail,
+
+                const SizedBox(width: 4),
+
+                // More / Settings Button
+                InkWell(
+                  onTap: () {
+                    context.push('/property-settings/${property.id}');
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                    ),
+                    child: const Icon(LucideIcons.settings, color: Colors.white, size: 17),
                   ),
-                ],
+                ),
               ],
             ),
           ),
 
-          // Segmented Pill TabBar
-          Material(
-            color: Colors.transparent,
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.22),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TabBar(
-                controller: tabController,
-                indicator: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+          // Row 2: 2 Segmented Tabs + Overview Pill Action (Mobile only)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TabBar(
+                        controller: tabController,
+                        indicator: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        dividerColor: Colors.transparent,
+                        labelColor: isTenant ? const Color(0xFF0F766E) : agencyColor,
+                        unselectedLabelColor: Colors.white.withValues(alpha: 0.8),
+                        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                        unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                        tabs: [
+                          Tab(
+                            height: 32,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.creditCard, size: 13),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    loc.financials,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Tab(
+                            height: 32,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.wrench, size: 13),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    loc.maintenance,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                labelColor: isTenant ? const Color(0xFF0F766E) : agencyColor,
-                unselectedLabelColor: Colors.white.withValues(alpha: 0.8),
-                labelStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
-                unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                tabs: [
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(LucideIcons.layoutGrid, size: 14),
-                        const SizedBox(width: 6),
-                        Text(loc.overview),
-                      ],
-                    ),
-                  ),
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(LucideIcons.creditCard, size: 14),
-                        const SizedBox(width: 6),
-                        Text(loc.financials),
-                      ],
-                    ),
-                  ),
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(LucideIcons.wrench, size: 14),
-                        const SizedBox(width: 6),
-                        Text(loc.maintenance),
-                      ],
+                if (!isWideScreen) ...[
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: onOpenOverview,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            LucideIcons.info,
+                            size: 13,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            loc.overview,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              ),
+              ],
             ),
           ),
         ],
@@ -421,118 +558,145 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildContactStrip({
-    required String roleTitle,
+  Widget _buildQuickContactButton({
+    required BuildContext context,
+    required AppLocalizations loc,
     required String name,
     required String phone,
     required String email,
+    required bool isTenantViewing,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: Colors.white.withValues(alpha: 0.25),
-            child: const Icon(LucideIcons.user, size: 14, color: Colors.white),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
+    return InkWell(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => Container(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  roleTitle.toUpperCase(),
-                  style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.w700),
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
-                Text(
-                  name,
-                  style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                      child: const Icon(LucideIcons.user, color: StanomerColors.brandPrimary, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isTenantViewing ? loc.landlord : loc.tenant,
+                            style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary, fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            name,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 16),
+                if (phone.isNotEmpty) ...[
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.phone, color: Colors.green, size: 18),
+                    ),
+                    title: Text(loc.localeName == 'tr' ? 'Telefonla Ara' : (loc.localeName == 'sr' ? 'Pozovi' : 'Call Phone'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(phone),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      final clean = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+                      launchUrl(Uri.parse('tel:$clean'));
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.messageSquare, color: Colors.teal, size: 18),
+                    ),
+                    title: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(phone),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
+                      launchUrl(Uri.parse('https://wa.me/$clean'), mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                ],
+                if (email.isNotEmpty)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.mail, color: Colors.blue, size: 18),
+                    ),
+                    title: Text(loc.email, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(email),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      launchUrl(Uri.parse('mailto:$email'));
+                    },
+                  ),
               ],
             ),
           ),
-          if (phone.isNotEmpty) ...[
-            InkWell(
-              onTap: () => _launchPhone(phone),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.phone, size: 14, color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 6),
-            InkWell(
-              onTap: () => _launchWhatsApp(phone),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E).withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.5)),
-                ),
-                child: const Icon(LucideIcons.messageCircle, size: 14, color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 6),
-          ],
-          if (email.isNotEmpty)
-            InkWell(
-              onTap: () => _launchEmail(email),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.mail, size: 14, color: Colors.white),
-              ),
-            ),
-        ],
+        );
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: const Icon(LucideIcons.phoneCall, color: Colors.white, size: 17),
       ),
     );
-  }
-
-  static Future<void> _launchPhone(String phone) async {
-    final clean = phone.replaceAll(RegExp(r'[^0-9+]'), '');
-    final uri = Uri.parse('tel:$clean');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-
-  static Future<void> _launchWhatsApp(String phone) async {
-    final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    final uri = Uri.parse('https://wa.me/$clean');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  static Future<void> _launchEmail(String email) async {
-    final uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
   }
 }
 
 class _OverviewTab extends ConsumerWidget {
   final Property property;
-  const _OverviewTab({required this.property});
+  final bool isSidebar;
+  const _OverviewTab({required this.property, this.isSidebar = false});
 
   void _showInviteDialog(BuildContext context, WidgetRef ref) {
     Contract? template;
@@ -801,7 +965,7 @@ class _OverviewTab extends ConsumerWidget {
             final resolvedTenantEmail = tenantProfileAsync.value?['email'] ?? activeContract?.inviteeEmail ?? '';
 
             return ListView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(isSidebar ? 16 : 24),
               children: [
                 // ── Mülk ve Kira Özeti (Rent Banner) ───────────────────
                 if (activeContract != null) ...[
