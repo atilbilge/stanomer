@@ -240,26 +240,8 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final activeContract = activeContractAsync.valueOrNull;
 
-    final landlordProfileAsync = property.landlordId != null ? ref.watch(profileProvider(property.landlordId!)) : const AsyncValue<Map<String, dynamic>?>.data(null);
-    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : const AsyncValue<Map<String, dynamic>?>.data(null);
-
-    final resolvedLandlordName = landlordProfileAsync.value?['full_name'] ?? property.landlordName ?? 'Ev Sahibi';
-    final resolvedLandlordPhone = landlordProfileAsync.value?['phone'] as String? ?? '';
-    final resolvedLandlordEmail = landlordProfileAsync.value?['email'] as String? ?? property.landlordEmail ?? '';
-
-    final resolvedTenantName = tenantProfileAsync.value?['full_name'] ?? property.tenantName ?? 'Kiracı';
-    final resolvedTenantPhone = tenantProfileAsync.value?['phone'] as String? ?? '';
-    final resolvedTenantEmail = tenantProfileAsync.value?['email'] as String? ?? '';
-
     final isRented = property.tenantId != null || activeContract != null;
     final isContractEnded = activeContract?.isEnded ?? false;
-
-    // Contact info for counterparty
-    final counterPartyName = isTenant ? resolvedLandlordName : resolvedTenantName;
-    final counterPartyPhone = isTenant ? resolvedLandlordPhone : resolvedTenantPhone;
-    final counterPartyEmail = isTenant ? resolvedLandlordEmail : resolvedTenantEmail;
-    final hasCounterParty = (isTenant && (resolvedLandlordEmail.isNotEmpty || resolvedLandlordPhone.isNotEmpty)) || 
-                            ((isLandlord || isAgencyManager) && isRented && (resolvedTenantEmail.isNotEmpty || resolvedTenantPhone.isNotEmpty || resolvedTenantName.isNotEmpty));
 
     return Container(
       width: double.infinity,
@@ -283,7 +265,7 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Back + Clickable Title & Address + Quick Contact + Settings
+          // Row 1: Back + Clickable Title & Address
           Padding(
             padding: EdgeInsets.fromLTRB(12, topPadding + 6, 12, 6),
             child: Row(
@@ -390,38 +372,6 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 6),
-
-                // Quick CounterParty Contact Action
-                if (hasCounterParty)
-                  _buildQuickContactButton(
-                    context: context,
-                    loc: loc,
-                    name: counterPartyName,
-                    phone: counterPartyPhone,
-                    email: counterPartyEmail,
-                    isTenantViewing: isTenant,
-                  ),
-
-                const SizedBox(width: 4),
-
-                // More / Settings Button
-                InkWell(
-                  onTap: () {
-                    context.push('/property-settings/${property.id}');
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                    ),
-                    child: const Icon(LucideIcons.settings, color: Colors.white, size: 17),
-                  ),
-                ),
               ],
             ),
           ),
@@ -490,140 +440,6 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildQuickContactButton({
-    required BuildContext context,
-    required AppLocalizations loc,
-    required String name,
-    required String phone,
-    required String email,
-    required bool isTenantViewing,
-  }) {
-    return InkWell(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          builder: (ctx) => Container(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: StanomerColors.brandPrimary.withValues(alpha: 0.1),
-                      child: const Icon(LucideIcons.user, color: StanomerColors.brandPrimary, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isTenantViewing ? loc.landlord : loc.tenant,
-                            style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary, fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            name,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (phone.isNotEmpty) ...[
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(LucideIcons.phone, color: Colors.green, size: 18),
-                    ),
-                    title: Text(loc.localeName == 'tr' ? 'Telefonla Ara' : (loc.localeName == 'sr' ? 'Pozovi' : 'Call Phone'), style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(phone),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      final clean = phone.replaceAll(RegExp(r'[^0-9+]'), '');
-                      launchUrl(Uri.parse('tel:$clean'));
-                    },
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.teal.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(LucideIcons.messageSquare, color: Colors.teal, size: 18),
-                    ),
-                    title: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(phone),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
-                      launchUrl(Uri.parse('https://wa.me/$clean'), mode: LaunchMode.externalApplication);
-                    },
-                  ),
-                ],
-                if (email.isNotEmpty)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(LucideIcons.mail, color: Colors.blue, size: 18),
-                    ),
-                    title: Text(loc.email, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(email),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      launchUrl(Uri.parse('mailto:$email'));
-                    },
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-        ),
-        child: const Icon(LucideIcons.phoneCall, color: Colors.white, size: 17),
       ),
     );
   }
