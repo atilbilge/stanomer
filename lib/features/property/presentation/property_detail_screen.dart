@@ -54,24 +54,10 @@ class PropertyDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
 }
 
-class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
+  int _selectedPanelIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    // Map initialTabIndex: 0 -> 0 (Financials), 1 -> 0 (Financials), 2 -> 1 (Maintenance)
-    final initialIdx = widget.initialTabIndex == 2 ? 1 : 0;
-    _tabController = TabController(length: 2, vsync: this, initialIndex: initialIdx);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _openOverviewModal(BuildContext context, Property property) {
+  void _openOverviewModal(BuildContext context, Property property, {int initialTab = 0}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -85,11 +71,10 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
+              padding: const EdgeInsets.fromLTRB(20, 12, 16, 8),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
               ),
               child: Row(
                 children: [
@@ -100,7 +85,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
                       color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(LucideIcons.fileText, color: StanomerColors.brandPrimary, size: 18),
+                    child: const Icon(LucideIcons.home, color: StanomerColors.brandPrimary, size: 18),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -114,8 +99,10 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          AppLocalizations.of(ctx)!.overview,
-                          style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                          property.address,
+                          style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -128,7 +115,11 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
               ),
             ),
             Expanded(
-              child: _OverviewTab(property: property, isSidebar: true),
+              child: _OverviewAndActivityPanel(
+                property: property,
+                initialTabIndex: initialTab,
+                isSidebar: true,
+              ),
             ),
           ],
         ),
@@ -160,9 +151,16 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
                 // Ultra-Compact Role-Aware Hero Header
                 _PropertyDetailHeroHeader(
                   property: property,
-                  tabController: _tabController,
-                  onOpenOverview: () => _openOverviewModal(context, property),
+                  onOpenPanel: (tabIndex) {
+                    if (isWide) {
+                      setState(() => _selectedPanelIndex = tabIndex);
+                    } else {
+                      _openOverviewModal(context, property, initialTab: tabIndex);
+                    }
+                  },
                   isWideScreen: isWide,
+                  selectedSidebarIndex: _selectedPanelIndex,
+                  onSidebarTabSelected: (tabIndex) => setState(() => _selectedPanelIndex = tabIndex),
                 ),
 
                 // Responsive Operational Body
@@ -171,46 +169,32 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Left 65%: Operational Workflows (Financials / Maintenance)
+                            // Left 65%: Financials Tab
                             Expanded(
                               flex: 65,
-                              child: TabBarView(
-                                controller: _tabController,
-                                children: [
-                                  _FinancialsTab(
-                                    property: property,
-                                    initialExpandedPaymentId: widget.initialExpandedPaymentId,
-                                  ),
-                                  MaintenanceScreen(
-                                    property: property,
-                                    isEmbedded: true,
-                                  ),
-                                ],
+                              child: _FinancialsTab(
+                                property: property,
+                                initialExpandedPaymentId: widget.initialExpandedPaymentId,
                               ),
                             ),
                             Container(width: 1, color: const Color(0xFFE2E8F0)),
-                            // Right 35%: Sticky SaaS Bento Overview Panel
+                            // Right 35%: Sticky SaaS Bento Overview & Activity Panel
                             Expanded(
                               flex: 35,
                               child: Container(
                                 color: Colors.white,
-                                child: _OverviewTab(property: property, isSidebar: true),
+                                child: _OverviewAndActivityPanel(
+                                  property: property,
+                                  initialTabIndex: _selectedPanelIndex,
+                                  isSidebar: true,
+                                ),
                               ),
                             ),
                           ],
                         )
-                      : TabBarView(
-                          controller: _tabController,
-                          children: [
-                            _FinancialsTab(
-                              property: property,
-                              initialExpandedPaymentId: widget.initialExpandedPaymentId,
-                            ),
-                            MaintenanceScreen(
-                              property: property,
-                              isEmbedded: true,
-                            ),
-                          ],
+                      : _FinancialsTab(
+                          property: property,
+                          initialExpandedPaymentId: widget.initialExpandedPaymentId,
                         ),
                 ),
               ],
@@ -224,15 +208,17 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> wit
 
 class _PropertyDetailHeroHeader extends ConsumerWidget {
   final Property property;
-  final TabController tabController;
-  final VoidCallback onOpenOverview;
+  final Function(int tabIndex) onOpenPanel;
   final bool isWideScreen;
+  final int selectedSidebarIndex;
+  final Function(int tabIndex)? onSidebarTabSelected;
 
   const _PropertyDetailHeroHeader({
     required this.property,
-    required this.tabController,
-    required this.onOpenOverview,
+    required this.onOpenPanel,
     this.isWideScreen = false,
+    this.selectedSidebarIndex = 0,
+    this.onSidebarTabSelected,
   });
 
   @override
@@ -325,10 +311,10 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                 ),
                 const SizedBox(width: 10),
 
-                // Clickable Property Title & Status (Tapping opens Overview Sheet on mobile)
+                // Clickable Property Title & Status
                 Expanded(
                   child: InkWell(
-                    onTap: isWideScreen ? null : onOpenOverview,
+                    onTap: () => onOpenPanel(0),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
@@ -407,7 +393,7 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
 
                 const SizedBox(width: 6),
 
-                // Quick CounterParty Contact Action (WhatsApp / Call / Mail bottomsheet)
+                // Quick CounterParty Contact Action
                 if (hasCounterParty)
                   _buildQuickContactButton(
                     context: context,
@@ -440,120 +426,70 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
             ),
           ),
 
-          // Row 2: 2 Segmented Tabs + Overview Pill Action (Mobile only)
+          // Row 2: Secondary Hub Pills [ Overview / Contract ] & [ Activities ]
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
             child: Row(
               children: [
-                Expanded(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TabBar(
-                        controller: tabController,
-                        indicator: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        labelColor: isTenant ? const Color(0xFF0F766E) : agencyColor,
-                        unselectedLabelColor: Colors.white.withValues(alpha: 0.8),
-                        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-                        unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-                        tabs: [
-                          Tab(
-                            height: 32,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(LucideIcons.creditCard, size: 13),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    loc.financials,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Tab(
-                            height: 32,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(LucideIcons.wrench, size: 13),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    loc.maintenance,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                _buildHeaderPill(
+                  label: loc.overview,
+                  icon: LucideIcons.fileText,
+                  isActive: isWideScreen && selectedSidebarIndex == 0,
+                  onTap: () => onOpenPanel(0),
                 ),
-                if (!isWideScreen) ...[
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: onOpenOverview,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            LucideIcons.info,
-                            size: 13,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            loc.overview,
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                const SizedBox(width: 8),
+                _buildHeaderPill(
+                  label: loc.activity,
+                  icon: LucideIcons.history,
+                  isActive: isWideScreen && selectedSidebarIndex == 1,
+                  onTap: () => onOpenPanel(1),
+                ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderPill({
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive ? StanomerColors.brandPrimary : Colors.white,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: isActive ? StanomerColors.brandPrimary : Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -689,6 +625,255 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
         ),
         child: const Icon(LucideIcons.phoneCall, color: Colors.white, size: 17),
       ),
+    );
+  }
+}
+
+class _OverviewAndActivityPanel extends StatefulWidget {
+  final Property property;
+  final int initialTabIndex;
+  final bool isSidebar;
+
+  const _OverviewAndActivityPanel({
+    super.key,
+    required this.property,
+    this.initialTabIndex = 0,
+    this.isSidebar = false,
+  });
+
+  @override
+  State<_OverviewAndActivityPanel> createState() => _OverviewAndActivityPanelState();
+}
+
+class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> with SingleTickerProviderStateMixin {
+  late TabController _panelTabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _panelTabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex.clamp(0, 1),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _OverviewAndActivityPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTabIndex != widget.initialTabIndex) {
+      _panelTabController.animateTo(widget.initialTabIndex.clamp(0, 1));
+    }
+  }
+
+  @override
+  void dispose() {
+    _panelTabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TabBar(
+              controller: _panelTabController,
+              indicator: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelColor: StanomerColors.brandPrimary,
+              unselectedLabelColor: StanomerColors.textTertiary,
+              labelStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              tabs: [
+                Tab(
+                  height: 32,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.fileText, size: 14),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          loc.overview,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Tab(
+                  height: 32,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.history, size: 14),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          loc.activity,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _panelTabController,
+            children: [
+              _OverviewTab(property: widget.property, isSidebar: widget.isSidebar),
+              _ActivityTab(property: widget.property, isSidebar: widget.isSidebar),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivityTab extends ConsumerWidget {
+  final Property property;
+  final bool isSidebar;
+  const _ActivityTab({required this.property, this.isSidebar = false});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
+    final activitiesAsync = ref.watch(activityLogsProvider(property.id));
+    final brandingState = ref.watch(agencyBrandingProvider);
+    final agencyName = brandingState.appTitle.isNotEmpty && brandingState.appTitle != 'Stanomer'
+        ? brandingState.appTitle
+        : null;
+
+    return activitiesAsync.when(
+      data: (activities) {
+        if (activities.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(LucideIcons.history, size: 44, color: StanomerColors.textTertiary),
+                  const SizedBox(height: 14),
+                  Text(
+                    loc.noActivityLogs,
+                    style: const TextStyle(color: StanomerColors.textSecondary, fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Sort reverse chronological: newest first
+        final sortedActivities = List<ActivityLog>.from(activities)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        return ListView.separated(
+          padding: EdgeInsets.all(isSidebar ? 16 : 24),
+          itemCount: sortedActivities.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final log = sortedActivities[index];
+            final date = DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(log.createdAt.toLocal());
+            final desc = formatActivityLogDescription(
+              log: log,
+              property: property,
+              loc: loc,
+              agencyName: agencyName,
+            );
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 2),
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(LucideIcons.history, size: 14, color: StanomerColors.brandPrimary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          desc,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: StanomerColors.textPrimary,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.clock, size: 11, color: StanomerColors.textTertiary),
+                            const SizedBox(width: 4),
+                            Text(
+                              date,
+                              style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Center(child: Text('Error: $e')),
     );
   }
 }
