@@ -6,6 +6,9 @@ import 'package:stanomer/features/maintenance/presentation/maintenance_screen.da
 import 'package:stanomer/features/maintenance/domain/maintenance_request.dart';
 import 'package:stanomer/features/maintenance/data/maintenance_repository.dart';
 import 'package:stanomer/features/property/domain/property.dart';
+import 'package:stanomer/features/property/data/property_repository.dart';
+import 'package:stanomer/features/auth/data/auth_providers.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 void main() {
   group('MaintenanceScreen Tests', () {
@@ -88,14 +91,24 @@ void main() {
       expect(find.text('ACIL'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when no requests exist', (tester) async {
+    testWidgets('shows empty state with CTA for tenant when no requests exist', (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
+      const tenantUser = User(
+        id: 'tenant-1',
+        appMetadata: {},
+        userMetadata: {'role': 'tenant'},
+        aud: 'authenticated',
+        createdAt: '2026-01-01',
+      );
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            currentUserProvider.overrideWith((ref) => tenantUser),
+            profileProvider('tenant-1').overrideWith((ref) => Stream.value({'role': 'tenant'})),
             maintenanceRequestsProvider(mockProperty.id).overrideWith(
               (ref) => Stream.value([]),
             ),
@@ -114,6 +127,45 @@ void main() {
       // Check No Issues message
       expect(find.text('Kayıtlı sorun yok'), findsOneWidget);
       expect(find.text('Sorun Bildir'), findsWidgets);
+    });
+
+    testWidgets('agency user does not see report issue CTA on empty state', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      const agencyUser = User(
+        id: 'agency-1',
+        appMetadata: {},
+        userMetadata: {'role': 'agency'},
+        aud: 'authenticated',
+        createdAt: '2026-01-01',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => agencyUser),
+            profileProvider('agency-1').overrideWith((ref) => Stream.value({'role': 'agency'})),
+            maintenanceRequestsProvider(mockProperty.id).overrideWith(
+              (ref) => Stream.value([]),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: MaintenanceScreen(property: mockProperty),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Check No Issues message is visible
+      expect(find.text('Kayıtlı sorun yok'), findsOneWidget);
+      // Agency must NOT see "Sorun Bildir" button
+      expect(find.text('Sorun Bildir'), findsNothing);
     });
   });
 }

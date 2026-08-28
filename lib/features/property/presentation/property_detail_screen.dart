@@ -1182,12 +1182,12 @@ class _OverviewTab extends ConsumerWidget {
                         subtitle: isTenant ? loc.reportIssue : '${loc.maintenance} & ${loc.issues}',
                         iconColor: roleColor,
                         onTap: () async {
-                          if (isTenant || isAgencyManager) {
+                          if (isTenant) {
                             try {
                               // Check if there are any existing requests
                               final requests = await ref.read(maintenanceRequestsProvider(property.id).future);
                               if (requests.isEmpty) {
-                                // If empty, go directly to creation screen
+                                // If empty and tenant, go directly to creation screen
                                 if (context.mounted) context.push('/maintenance/new', extra: property);
                                 return;
                               }

@@ -671,8 +671,8 @@ class _MaintenanceHeroHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
 
-                // Prominent "+ Yeni Arıza Bildir" Action CTA
-                if (isTenant || isAgency)
+                // Prominent "+ Yeni Arıza Bildir" Action CTA (Tenants Only)
+                if (isTenant)
                   ElevatedButton(
                     onPressed: onNewRequest,
                     style: ElevatedButton.styleFrom(
@@ -1496,7 +1496,7 @@ class _EmptyMaintenanceView extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (isTenant || isAgency) ...[
+            if (isTenant) ...[
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: onNewRequest,
