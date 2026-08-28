@@ -279,6 +279,71 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
     final roleColor = StanomerColors.getRoleColor(role);
+    final isAgencyUser = role == 'agency' || user?.id == widget.property.agencyId;
+    final isManagedByAgency = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+
+    if (isManagedByAgency && !isAgencyUser) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.existingContract != null ? loc.editContract : loc.inviteTenant),
+          backgroundColor: roleColor,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.building2, size: 36, color: Color(0xFF2563EB)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  loc.localeName == 'tr' ? 'Mülk Acente Yönetiminde' : 'Property Managed by Agency',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.localeName == 'tr'
+                      ? 'Bu mülk acente tarafından yönetilmektedir. Kiracı daveti ve sözleşme işlemleri yalnızca yetkili acente tarafından gerçekleştirilebilir.'
+                      : (loc.localeName == 'ru'
+                          ? 'Этот объект управляется агентством. Приглашение арендаторов и договоры оформляются агентством.'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Ovom nekretninom upravlja agencija. Poziv stanara i ugovore vodi agencija.'
+                              : 'This property is managed by an agency. Tenant invitations and contracts can only be handled by the agency.')),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.maybePop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text(
+                    loc.localeName == 'tr'
+                        ? 'Geri Dön'
+                        : (loc.localeName == 'ru'
+                            ? 'Назад'
+                            : (loc.localeName.startsWith('sr')
+                                ? 'Nazad'
+                                : 'Go Back')),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -314,13 +379,28 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                       controller: _emailController,
                       enabled: widget.existingContract == null,
                       decoration: InputDecoration(
-                        labelText: '${loc.tenantEmail} (${loc.optional})',
+                        labelText: (role == 'agency' || user?.id == widget.property.agencyId)
+                            ? '${loc.tenantEmail} *'
+                            : '${loc.tenantEmail} (${loc.optional})',
                         prefixIcon: const Icon(LucideIcons.mail, size: 20),
                         hintText: "kiraci@email.com",
                       ),
+                      keyboardType: TextInputType.emailAddress,
                       validator: (val) {
-                        // Email opsiyonel — sadece girilmişse self-invite kontrolü yap
-                        if (val != null && val.isNotEmpty) {
+                        final isAgencyUser = role == 'agency' || user?.id == widget.property.agencyId;
+                        if (isAgencyUser && (val == null || val.trim().isEmpty)) {
+                          return loc.fieldRequired;
+                        }
+                        if (val != null && val.trim().isNotEmpty) {
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                            return loc.localeName == 'tr'
+                                ? 'Geçerli bir e-posta adresi giriniz'
+                                : (loc.localeName == 'ru'
+                                    ? 'Введите корректный e-mail'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Unesite validnu email adresu'
+                                        : 'Please enter a valid email address'));
+                          }
                           final currentUserEmail = ref.read(currentUserProvider)?.email;
                           if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
                             return loc.cannotInviteSelf;

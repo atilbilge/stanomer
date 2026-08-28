@@ -250,6 +250,7 @@ ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_re
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_status_check CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'));
 
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS cost_amount NUMERIC(10,2);
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS settled_amount NUMERIC(10,2) DEFAULT 0.00;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS currency TEXT;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS paid_by TEXT;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_date TIMESTAMPTZ;

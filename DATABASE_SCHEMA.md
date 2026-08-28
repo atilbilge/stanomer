@@ -223,6 +223,7 @@ Bakım ve arıza bildirimlerini ve finansal maliyet kayıtlarını saklar.
 | `status` | `TEXT` | **NO** | `'open'` | `CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'))` | Durumu |
 | `photos_urls` | `TEXT[]` | **NO** | `'{}'` | - | Arıza fotoğrafları URL dizisi |
 | `cost_amount` | `NUMERIC(10,2)` | YES | `NULL` | - | Bakım/onarım harcama tutarı |
+| `settled_amount` | `NUMERIC(10,2)` | YES | `0.00` | - | Mahsup edilen / ödenen tutar |
 | `currency` | `TEXT` | YES | `NULL` | - | Para birimi (örn: `'EUR'`, `'RSD'`) |
 | `paid_by` | `TEXT` | YES | `NULL` | `CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'))` | Ödemeyi yapan taraf |
 | `payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödeme yapılma tarihi |

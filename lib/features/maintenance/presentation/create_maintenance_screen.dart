@@ -34,11 +34,11 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
 
   late String _selectedCurrency;
   String? _paidBy;
-  String _paymentStatus = 'pending_review';
+  String? _paymentStatus;
   DateTime? _paymentDate;
   PlatformFile? _selectedInvoiceFile;
 
-  MaintenanceCategory _selectedCategory = MaintenanceCategory.plumbing;
+  MaintenanceCategory? _selectedCategory;
   MaintenancePriority _selectedPriority = MaintenancePriority.normal;
   bool _isLoading = false;
   List<PlatformFile> _selectedFiles = [];
@@ -130,6 +130,24 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     final loc = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            loc.localeName == 'tr'
+                ? 'Lütfen bir sorun kategorisi seçiniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Пожалуйста, выберите категорию проблемы.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Molimo izaberite kategoriju problema.'
+                        : 'Please select an issue category.')),
+          ),
+          backgroundColor: const Color(0xFFE11D48),
+        ),
+      );
+      return;
+    }
+
     // Validate cost amount if entered
     double? costAmount;
     final costText = _costController.text.trim().replaceAll(',', '.');
@@ -146,16 +164,38 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       }
     }
 
-    if ((_paymentStatus == 'pending_payment' || _paymentStatus == 'paid') &&
-        costAmount != null &&
-        _paidBy == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.payerRequiredError),
-          backgroundColor: const Color(0xFFE11D48),
-        ),
-      );
-      return;
+    final user = ref.read(currentUserProvider);
+    final userProfileAsync = user?.id != null
+        ? ref.read(profileProvider(user!.id))
+        : const AsyncValue<Map<String, dynamic>?>.data(null);
+    final profileRole = userProfileAsync.value?['role'] as String? ??
+        user?.userMetadata?['role'] as String?;
+
+    final isLandlord = widget.property.landlordId == user?.id || profileRole == 'landlord';
+    final isAgency = widget.property.agencyId == user?.id || profileRole == 'agency';
+    final isTenant = widget.property.tenantId == user?.id ||
+        profileRole == 'tenant' ||
+        (!isLandlord && !isAgency);
+
+    if (!isTenant && costAmount != null && costAmount > 0) {
+      if (_paidBy == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.pleaseSelectCostPayer),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
+      if (_paymentStatus == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.pleaseSelectDeclarationIntent),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
@@ -231,13 +271,13 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
       final String? finalPaidBy = isTenant ? null : _paidBy;
       final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
-      final String finalPaymentStatus = isTenant ? 'pending_review' : _paymentStatus;
+      final String finalPaymentStatus = isTenant ? 'pending_review' : (_paymentStatus ?? 'pending_review');
       final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
 
       await ref.read(maintenanceRepositoryProvider).createRequest(
             propertyId: widget.property.id,
             title: _titleController.text.trim(),
-            category: _selectedCategory,
+            category: _selectedCategory!,
             priority: _selectedPriority,
             description: _descriptionController.text.trim(),
             contractId: activeContract?.id,
@@ -381,7 +421,10 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                                 selectedCurrency: _selectedCurrency,
                                 onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
                                 paidBy: _paidBy,
-                                onPaidByChanged: (payer) => setState(() => _paidBy = payer),
+                                onPaidByChanged: (payer) => setState(() {
+                                  _paidBy = payer;
+                                  _paymentStatus = null;
+                                }),
                                 paymentStatus: _paymentStatus,
                                 onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
                                 paymentDate: _paymentDate,
@@ -749,7 +792,7 @@ class _CreateMaintenanceHeader extends StatelessWidget {
 
 /// ── Visual Category Grid Selector ──────────────────────────────
 class _VisualCategorySelector extends StatelessWidget {
-  final MaintenanceCategory selectedCategory;
+  final MaintenanceCategory? selectedCategory;
   final ValueChanged<MaintenanceCategory> onSelectCategory;
 
   const _VisualCategorySelector({
@@ -1149,8 +1192,8 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
   final String selectedCurrency;
   final ValueChanged<String> onCurrencyChanged;
   final String? paidBy;
-  final ValueChanged<String?> onPaidByChanged;
-  final String paymentStatus;
+  final ValueChanged<String> onPaidByChanged;
+  final String? paymentStatus;
   final ValueChanged<String> onPaymentStatusChanged;
   final DateTime? paymentDate;
   final VoidCallback onSelectPaymentDate;
@@ -1179,341 +1222,526 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F766E).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(LucideIcons.receipt, size: 18, color: Color(0xFF0F766E)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      loc.financialSectionTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12.5,
-                        letterSpacing: 0.4,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      loc.financialSectionSubtitle,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                    ),
-                  ],
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 600;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF0F766E).withValues(alpha: 0.25), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F766E).withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          const SizedBox(height: 14),
-
-          // 1. Cost Amount & Currency
-          Text(
-            loc.costAmountLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
-          ),
-          const SizedBox(height: 6),
-          Row(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 3,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TextFormField(
-                    controller: costController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      hintText: '0.00',
-                      prefixIcon: Icon(LucideIcons.circleDollarSign, size: 16, color: Color(0xFF64748B)),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 2,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: selectedCurrency,
-                    items: const [
-                      DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', overflow: TextOverflow.ellipsis)),
-                      DropdownMenuItem(value: 'RSD', child: Text('RSD', overflow: TextOverflow.ellipsis)),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) onCurrencyChanged(val);
-                    },
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // 2. Paid By Section (Payer Selector)
-          Text(
-            loc.paidByLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _buildPayerChip(
-                  label: loc.tenant,
-                  icon: LucideIcons.user,
-                  isSelected: paidBy == 'tenant',
-                  activeColor: StanomerColors.tenant,
-                  onTap: () => onPaidByChanged('tenant'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildPayerChip(
-                  label: loc.landlord,
-                  icon: LucideIcons.home,
-                  isSelected: paidBy == 'landlord',
-                  activeColor: StanomerColors.landlord,
-                  onTap: () => onPaidByChanged('landlord'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildPayerChip(
-                  label: loc.unassignedLabel,
-                  icon: LucideIcons.helpCircle,
-                  isSelected: paidBy == null,
-                  activeColor: const Color(0xFF64748B),
-                  onTap: () => onPaidByChanged(null),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // 3. Payment Status Grid
-          Text(
-            loc.paymentStatusLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
-          ),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 2.3,
-            children: [
-              _buildStatusTile(
-                label: loc.costPendingReview,
-                subtitle: loc.pendingReviewHint,
-                icon: LucideIcons.search,
-                activeColor: const Color(0xFF0284C7),
-                isSelected: paymentStatus == 'pending_review' || paymentStatus == 'pending',
-                onTap: () => onPaymentStatusChanged('pending_review'),
-              ),
-              _buildStatusTile(
-                label: loc.costDeductFromRent,
-                subtitle: loc.pendingPaymentHint,
-                icon: LucideIcons.clock,
-                activeColor: const Color(0xFFD97706),
-                isSelected: paymentStatus == 'pending_payment',
-                onTap: () => onPaymentStatusChanged('pending_payment'),
-              ),
-              _buildStatusTile(
-                label: loc.paidLabel,
-                subtitle: loc.paymentCompletedSubtitle,
-                icon: LucideIcons.checkCircle2,
-                activeColor: const Color(0xFF059669),
-                isSelected: paymentStatus == 'paid',
-                onTap: () => onPaymentStatusChanged('paid'),
-              ),
-              _buildStatusTile(
-                label: loc.costRejected,
-                subtitle: loc.paymentRejectedSubtitle,
-                icon: LucideIcons.xCircle,
-                activeColor: const Color(0xFFE11D48),
-                isSelected: paymentStatus == 'rejected',
-                onTap: () => onPaymentStatusChanged('rejected'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // 4. Payment Date Picker
-          Text(
-            loc.paymentDate,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
-          ),
-          const SizedBox(height: 6),
-          InkWell(
-            onTap: onSelectPaymentDate,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              height: 46,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
+              // Header
+              Row(
                 children: [
-                  const Icon(LucideIcons.calendar, size: 16, color: Color(0xFF64748B)),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F766E).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(LucideIcons.receipt, size: 15, color: Color(0xFF0F766E)),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      paymentDate != null
-                          ? DateFormat('dd MMMM yyyy').format(paymentDate!)
-                          : loc.selectDate,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: paymentDate != null ? FontWeight.w600 : FontWeight.normal,
-                        color: paymentDate != null ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                      loc.financialSectionTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                        color: Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 12),
+
+              // 1. Tutar & Para Birimi, 2. Payment Date, 3. Ödeyecek Taraf
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // 1. Cost & Currency
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.costAmountLabel,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildCostInput(),
+                        ],
                       ),
                     ),
-                  ),
-                  if (paymentDate != null)
-                    GestureDetector(
-                      onTap: onClearPaymentDate,
-                      child: const Icon(LucideIcons.x, size: 16, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 12),
+                    // 2. Payment Date
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.paymentDate,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildDateSelector(loc),
+                        ],
+                      ),
                     ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 5. Invoice PDF Upload
-          Text(
-            loc.invoicePdfLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
-          ),
-          const SizedBox(height: 6),
-          if (selectedInvoiceFile != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F2),
-                border: Border.all(color: const Color(0xFFFECDD3)),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 12),
+                    // 3. Paid By (Payer)
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${loc.paidByLabel} *',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildPayerSelector(loc, paidBy),
+                        ],
+                      ),
                     ),
-                    child: const Icon(LucideIcons.fileText, size: 20, color: Colors.red),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          selectedInvoiceFile!.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${(selectedInvoiceFile!.size / 1024).toStringAsFixed(1)} KB • PDF',
-                          style: const TextStyle(fontSize: 11, color: Color(0xFFE11D48)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: onRemoveInvoiceFile,
-                    icon: const Icon(LucideIcons.trash2, size: 18, color: Color(0xFFE11D48)),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
-              ),
-            )
-          else
-            InkWell(
-              onTap: onPickInvoicePdf,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  border: Border.all(color: const Color(0xFFCBD5E1)),
-                  borderRadius: BorderRadius.circular(12),
+                  ],
+                )
+              else ...[
+                // Mobile: 1. Cost & Currency
+                Text(
+                  loc.costAmountLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                const SizedBox(height: 5),
+                _buildCostInput(),
+                const SizedBox(height: 10),
+                // Mobile: 2. Payment Date + 3. Paid By
+                Row(
                   children: [
-                    const Icon(LucideIcons.uploadCloud, size: 18, color: Color(0xFF0F766E)),
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.paymentDate,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildDateSelector(loc),
+                        ],
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          loc.uploadPdfTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF0F172A)),
-                        ),
-                        Text(
-                          loc.uploadPdfSubtitle,
-                          style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
-                        ),
-                      ],
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${loc.paidByLabel} *',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildPayerSelector(loc, paidBy),
+                        ],
+                      ),
                     ),
                   ],
                 ),
+              ],
+              const SizedBox(height: 14),
+
+              // 4. Payment Purpose & Settlement Request
+              Text(
+                '${loc.settlementIntentTitle} *',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+              ),
+              const SizedBox(height: 8),
+
+              if (paidBy == null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.info, size: 16, color: Color(0xFF64748B)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          loc.pleaseSelectCostPayer,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (paidBy == 'tenant') ...[
+                // Option 1 (Tenant Self Usage)
+                _buildPurposeOptionCard(
+                  title: loc.intentTenantSelfTitle,
+                  subtitle: loc.intentTenantSelfSub,
+                  badgeLabel: loc.intentTenantSelfBadge,
+                  badgeColor: const Color(0xFF059669),
+                  icon: LucideIcons.user,
+                  isSelected: paymentStatus == 'paid',
+                  onTap: () => onPaymentStatusChanged('paid'),
+                ),
+                const SizedBox(height: 8),
+                // Option 2 (Tenant Deduct from Rent)
+                _buildPurposeOptionCard(
+                  title: loc.intentTenantReimburseTitle,
+                  subtitle: loc.intentTenantReimburseSub,
+                  badgeLabel: loc.intentTenantReimburseBadge,
+                  badgeColor: const Color(0xFF2563EB),
+                  icon: LucideIcons.home,
+                  isSelected: paymentStatus == 'pending_payment',
+                  onTap: () => onPaymentStatusChanged('pending_payment'),
+                ),
+              ] else ...[
+                // Option 1 (Landlord Covered Fixture)
+                _buildPurposeOptionCard(
+                  title: loc.intentLandlordSelfTitle,
+                  subtitle: loc.intentLandlordSelfSub,
+                  badgeLabel: loc.intentLandlordSelfBadge,
+                  badgeColor: const Color(0xFF059669),
+                  icon: LucideIcons.home,
+                  isSelected: paymentStatus == 'paid',
+                  onTap: () => onPaymentStatusChanged('paid'),
+                ),
+                const SizedBox(height: 8),
+                // Option 2 (Landlord Add to Rent)
+                _buildPurposeOptionCard(
+                  title: loc.intentLandlordTenantDueTitle,
+                  subtitle: loc.intentLandlordTenantDueSub,
+                  badgeLabel: loc.intentLandlordTenantDueBadge,
+                  badgeColor: const Color(0xFFD97706),
+                  icon: LucideIcons.user,
+                  isSelected: paymentStatus == 'pending_payment',
+                  onTap: () => onPaymentStatusChanged('pending_payment'),
+                ),
+              ],
+              const SizedBox(height: 14),
+
+              // 5. Upload Invoice
+              Text(
+                loc.invoicePdfLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+              ),
+              const SizedBox(height: 6),
+              _buildInvoiceUploader(loc),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCostInput() {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Icon(LucideIcons.circleDollarSign, size: 15, color: Color(0xFF64748B)),
+          ),
+          Expanded(
+            child: TextFormField(
+              controller: costController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              decoration: const InputDecoration(
+                hintText: '0.00',
+                hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
               ),
             ),
+          ),
+          Container(width: 1, height: 22, color: const Color(0xFFE2E8F0)),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedCurrency,
+              items: const [
+                DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                DropdownMenuItem(value: 'RSD', child: Text('RSD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+              ],
+              onChanged: (val) {
+                if (val != null) onCurrencyChanged(val);
+              },
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPayerSelector(AppLocalizations loc, String? currentPayer) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.tenant,
+              icon: LucideIcons.user,
+              isSelected: currentPayer == 'tenant',
+              activeColor: StanomerColors.tenant,
+              onTap: () => onPaidByChanged('tenant'),
+            ),
+          ),
+          const SizedBox(width: 2),
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.landlord,
+              icon: LucideIcons.home,
+              isSelected: currentPayer == 'landlord',
+              activeColor: StanomerColors.landlord,
+              onTap: () => onPaidByChanged('landlord'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateSelector(AppLocalizations loc) {
+    return InkWell(
+      onTap: onSelectPaymentDate,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.calendar, size: 14, color: Color(0xFF64748B)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                paymentDate != null
+                    ? DateFormat('dd MMM yyyy').format(paymentDate!)
+                    : loc.selectDate,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: paymentDate != null ? FontWeight.w600 : FontWeight.normal,
+                  color: paymentDate != null ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (paymentDate != null)
+              GestureDetector(
+                onTap: onClearPaymentDate,
+                child: const Icon(LucideIcons.x, size: 14, color: Color(0xFF94A3B8)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPurposeOptionCard({
+    required String title,
+    required String subtitle,
+    required String badgeLabel,
+    required Color badgeColor,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? badgeColor.withValues(alpha: 0.04) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? badgeColor : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: badgeColor.withValues(alpha: 0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? badgeColor.withValues(alpha: 0.12)
+                    : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 17,
+                color: isSelected ? badgeColor : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Title & Subtitle
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF64748B),
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: badgeColor.withValues(alpha: 0.25)),
+              ),
+              child: Text(
+                badgeLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: badgeColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceUploader(AppLocalizations loc) {
+    if (selectedInvoiceFile != null) {
+      return Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF1F2),
+          border: Border.all(color: const Color(0xFFFECDD3)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.fileText, size: 16, color: Color(0xFFE11D48)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${selectedInvoiceFile!.name} (${(selectedInvoiceFile!.size / 1024).toStringAsFixed(1)} KB)',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: Color(0xFF9F1239)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            GestureDetector(
+              onTap: onRemoveInvoiceFile,
+              child: const Icon(LucideIcons.trash2, size: 16, color: Color(0xFFE11D48)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return InkWell(
+      onTap: onPickInvoicePdf,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(LucideIcons.uploadCloud, size: 16, color: Color(0xFF0F766E)),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                loc.uploadPdfTitle,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF0F766E)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1527,87 +1755,37 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.12) : const Color(0xFFF8FAFC),
-          border: Border.all(
-            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.5 : 1.0,
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 16, color: isSelected ? activeColor : const Color(0xFF64748B)),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? activeColor : const Color(0xFF475569),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusTile({
-    required String label,
-    required String subtitle,
-    required IconData icon,
-    required Color activeColor,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
-          border: Border.all(
-            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.5 : 1.0,
-          ),
-          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: isSelected ? activeColor : const Color(0xFF94A3B8)),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected ? activeColor : const Color(0xFF0F172A),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: isSelected ? activeColor : const Color(0xFF94A3B8),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            Icon(icon, size: 13, color: isSelected ? activeColor : const Color(0xFF64748B)),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? activeColor : const Color(0xFF64748B),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

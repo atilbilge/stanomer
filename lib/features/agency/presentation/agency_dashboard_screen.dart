@@ -54,11 +54,9 @@ bool _matchesInsight(Property property, Contract? contract, ActionableInsightTyp
 
   switch (insightType) {
     case ActionableInsightType.pendingApprovals:
-      final isLandlordPending = property.landlordId == null;
-      final isTenantPending = property.tenantId == null;
       final isContractPending = contract != null &&
           (contract.status == ContractStatus.pending || contract.status == ContractStatus.negotiating);
-      return isLandlordPending || isTenantPending || isContractPending;
+      return isContractPending;
 
     case ActionableInsightType.withoutContracts:
       return contract == null;
@@ -147,7 +145,16 @@ ActionableInsightConfig getInsightConfig(
 String _getWebSafeImageUrl(String rawUrl) {
   final url = rawUrl.trim();
   if (url.isEmpty || !kIsWeb) return url;
-  if (url.contains('supabase.co') || url.contains('localhost') || url.contains('127.0.0.1')) {
+  if (url.contains('supabase.co') ||
+      url.contains('localhost') ||
+      url.contains('127.0.0.1') ||
+      url.contains('gstatic.com') ||
+      url.contains('googleusercontent.com') ||
+      url.contains('google.com') ||
+      url.contains('googleapis.com') ||
+      url.contains('unsplash.com') ||
+      url.contains('cloudinary.com') ||
+      url.contains('weserv.nl')) {
     return url;
   }
   final cleanUrl = url.replaceFirst(RegExp(r'^https?://'), '');
@@ -170,6 +177,9 @@ final agencyAllPaymentsProvider =
     StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
   final propertiesAsync = ref.watch(agencyPropertiesProvider);
   final properties = propertiesAsync.value ?? [];
+  final maintenanceAsync = ref.watch(agencyMaintenanceRequestsProvider);
+  final maintenanceList = maintenanceAsync.value ?? [];
+
   if (properties.isEmpty) return Stream.value([]);
 
   final repo = ref.watch(propertyRepositoryProvider);
@@ -177,6 +187,8 @@ final agencyAllPaymentsProvider =
     properties.map((p) => repo.getRentPaymentsStream(p.id)),
     (List<List<RentPayment>> allPaymentsList) {
       final List<Map<String, dynamic>> result = [];
+      final propertiesMap = {for (var p in properties) p.id: p};
+
       for (int i = 0; i < properties.length; i++) {
         final propMap = properties[i].toJson();
         for (final payment in allPaymentsList[i]) {
@@ -186,6 +198,39 @@ final agencyAllPaymentsProvider =
           result.add(json);
         }
       }
+
+      // Add maintenance financial settlements awaiting agency approval (pending_review with cost > 0)
+      for (final m in maintenanceList) {
+        final cost = (m.costAmount ?? 0.0);
+        final hasValidCost = cost > 0;
+
+        if (hasValidCost && m.paymentStatus == 'pending_review') {
+          final propObj = propertiesMap[m.propertyId];
+          if (propObj == null) continue;
+          final propMap = propObj.toJson();
+
+          final mJson = {
+            'id': m.id,
+            'property_id': m.propertyId,
+            'property': propMap,
+            'title': '🛠️ ${m.title}',
+            'amount': cost,
+            'cost_amount': cost,
+            'settled_amount': m.settledAmount,
+            'currency': m.currency ?? (propObj.currency.isNotEmpty ? propObj.currency : 'EUR'),
+            'due_date': (m.paymentDate ?? m.createdAt ?? DateTime.now()).toIso8601String(),
+            'status': 'declared',
+            'receiver_type': m.paidBy == 'tenant' ? 'landlord' : 'tenant',
+            'receipt_url': m.invoicePdfUrl,
+            'is_maintenance': true,
+            'maintenance_request': m,
+            'payer_role': m.paidBy == 'tenant' ? 'tenant' : 'landlord',
+            'created_at': m.createdAt?.toIso8601String(),
+          };
+          result.add(mJson);
+        }
+      }
+
       result.sort((a, b) {
         final dueAStr = a['due_date'] as String?;
         final dueBStr = b['due_date'] as String?;
@@ -390,20 +435,22 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             ),
 
       // ── Floating Action Button (Global Mülk Ekle +) ────────────────────
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await context.push('/add-property');
-          ref.invalidate(agencyPropertiesProvider);
-        },
-        backgroundColor: colors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        icon: const Icon(LucideIcons.plus, size: 20),
-        label: Text(
-          loc.agencyAddProperty,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
+      floatingActionButton: _currentTab == 3
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () async {
+                await context.push('/add-property');
+                ref.invalidate(agencyPropertiesProvider);
+              },
+              backgroundColor: colors.primary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: const Icon(LucideIcons.plus, size: 20),
+              label: Text(
+                loc.agencyAddProperty,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
 
       // ── Bottom Navigation Bar (Hidden on Desktop Web, Active on Mobile) ──
       bottomNavigationBar: isDesktop
@@ -1709,6 +1756,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     width: cardWidth,
                     title: loc.unenteredBillsTitle,
                     count: unenteredCount,
+                    customHeroValue: '$unenteredCount ${loc.localeName == 'tr' ? 'Fatura' : (loc.localeName == 'ru' ? 'Счетов' : (loc.localeName.startsWith('sr') ? 'Računa' : 'Bills'))}',
                     totals: const {},
                     color: const Color(0xFFEA580C),
                     icon: LucideIcons.fileQuestion,
@@ -2140,6 +2188,7 @@ class _FinanceKpiCard extends StatelessWidget {
   final String title;
   final int count;
   final Map<String, double> totals;
+  final String? customHeroValue;
   final Color color;
   final IconData icon;
   final bool isSelected;
@@ -2151,6 +2200,7 @@ class _FinanceKpiCard extends StatelessWidget {
     required this.title,
     required this.count,
     required this.totals,
+    this.customHeroValue,
     required this.color,
     required this.icon,
     required this.isSelected,
@@ -2160,11 +2210,14 @@ class _FinanceKpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedTotal = CurrencyUtils.formatCurrencyMap(
-      totals,
-      useSymbols: true,
-      separator: ' + ',
-    );
+    final String heroValue = customHeroValue ??
+        (totals.isNotEmpty
+            ? CurrencyUtils.formatCurrencyMap(
+                totals,
+                useSymbols: true,
+                separator: ' + ',
+              )
+            : '$count');
 
     return InkWell(
       onTap: onTap,
@@ -2232,7 +2285,7 @@ class _FinanceKpiCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              formattedTotal.isNotEmpty ? formattedTotal : '$count',
+              heroValue,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -3077,9 +3130,41 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                         constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                         onPressed: () async {
                           try {
-                            final propRepo = ref.read(propertyRepositoryProvider);
-                            final monthName = periodText.isNotEmpty ? periodText : 'Kira';
-                            await propRepo.approveRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                            if (widget.payment['is_maintenance'] == true) {
+                              final mRepo = ref.read(maintenanceRepositoryProvider);
+                              final mReq = widget.payment['maintenance_request'] as MaintenanceRequest?;
+                              final payerRole = (widget.payment['payer_role'] as String?) ?? mReq?.paidBy ?? 'landlord';
+                              final isLandlordResponsibility = payerRole == 'landlord';
+                              final targetStatus = isLandlordResponsibility ? 'pending_payment' : 'paid';
+                              final resolvedAmount = mReq?.costAmount ?? (widget.payment['cost_amount'] as num?)?.toDouble() ?? (widget.payment['amount'] as num?)?.toDouble();
+
+                              await mRepo.updateFinancialDetails(
+                                requestId: id,
+                                propertyId: propertyId,
+                                costAmount: resolvedAmount,
+                                settledAmount: isLandlordResponsibility ? 0.0 : (resolvedAmount ?? 0.0),
+                                currency: (widget.payment['currency'] as String?) ?? mReq?.currency,
+                                paidBy: payerRole,
+                                paymentDate: DateTime.now(),
+                                paymentStatus: targetStatus,
+                                invoicePdfUrl: (widget.payment['receipt_url'] as String?) ?? mReq?.invoicePdfUrl,
+                              );
+                              try {
+                                final msg = isLandlordResponsibility
+                                    ? '💰 ${widget.payment['amount']} ${widget.payment['currency']} tutarındaki masraf acente tarafından onaylandı. Kiradan düşülebilir / mahsup edilebilir.'
+                                    : '💰 ${widget.payment['amount']} ${widget.payment['currency']} tutarındaki bakım ödemesi acente tarafından onaylandı ve kapatıldı.';
+                                await mRepo.addMessage(
+                                  id,
+                                  propertyId,
+                                  msg,
+                                );
+                              } catch (_) {}
+                              ref.invalidate(agencyMaintenanceRequestsProvider);
+                            } else {
+                              final propRepo = ref.read(propertyRepositoryProvider);
+                              final monthName = periodText.isNotEmpty ? periodText : 'Kira';
+                              await propRepo.approveRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                            }
 
                             ref.invalidate(agencyPendingPaymentsProvider);
                             ref.invalidate(agencyAllPaymentsProvider);
@@ -3571,9 +3656,33 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                         ElevatedButton(
                           onPressed: () async {
                             try {
-                              final propRepo = ref.read(propertyRepositoryProvider);
-                              final monthName = periodText.isNotEmpty ? periodText : 'Kira';
-                              await propRepo.rejectRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                              if (payment['is_maintenance'] == true) {
+                                final mRepo = ref.read(maintenanceRepositoryProvider);
+                                final mReq = payment['maintenance_request'] as MaintenanceRequest?;
+                                await mRepo.updateFinancialDetails(
+                                  requestId: id,
+                                  propertyId: propertyId,
+                                  costAmount: mReq?.costAmount ?? (payment['cost_amount'] as num?)?.toDouble(),
+                                  settledAmount: mReq?.settledAmount ?? (payment['settled_amount'] as num?)?.toDouble() ?? 0.0,
+                                  currency: (payment['currency'] as String?) ?? mReq?.currency,
+                                  paidBy: (payment['payer_role'] as String?) ?? mReq?.paidBy,
+                                  paymentDate: null,
+                                  paymentStatus: 'pending_payment',
+                                  invoicePdfUrl: null,
+                                );
+                                try {
+                                  await mRepo.addMessage(
+                                    id,
+                                    propertyId,
+                                    '⚠️ ${payment['amount']} ${payment['currency']} tutarındaki bakım ödemesi acente tarafından reddedildi.',
+                                  );
+                                } catch (_) {}
+                                ref.invalidate(agencyMaintenanceRequestsProvider);
+                              } else {
+                                final propRepo = ref.read(propertyRepositoryProvider);
+                                final monthName = periodText.isNotEmpty ? periodText : 'Kira';
+                                await propRepo.rejectRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                              }
 
                               ref.invalidate(agencyPendingPaymentsProvider);
                               ref.invalidate(agencyAllPaymentsProvider);
@@ -3618,9 +3727,41 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                         ElevatedButton.icon(
                           onPressed: () async {
                             try {
-                              final propRepo = ref.read(propertyRepositoryProvider);
-                              final monthName = periodText.isNotEmpty ? periodText : 'Kira';
-                              await propRepo.approveRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                              if (payment['is_maintenance'] == true) {
+                                final mRepo = ref.read(maintenanceRepositoryProvider);
+                                final mReq = payment['maintenance_request'] as MaintenanceRequest?;
+                                final payerRole = (payment['payer_role'] as String?) ?? mReq?.paidBy ?? 'landlord';
+                                final isLandlordResponsibility = payerRole == 'landlord';
+                                final targetStatus = isLandlordResponsibility ? 'pending_payment' : 'paid';
+                                final resolvedAmount = mReq?.costAmount ?? (payment['cost_amount'] as num?)?.toDouble() ?? (payment['amount'] as num?)?.toDouble();
+
+                                await mRepo.updateFinancialDetails(
+                                  requestId: id,
+                                  propertyId: propertyId,
+                                  costAmount: resolvedAmount,
+                                  settledAmount: isLandlordResponsibility ? 0.0 : (resolvedAmount ?? 0.0),
+                                  currency: (payment['currency'] as String?) ?? mReq?.currency,
+                                  paidBy: payerRole,
+                                  paymentDate: DateTime.now(),
+                                  paymentStatus: targetStatus,
+                                  invoicePdfUrl: (payment['receipt_url'] as String?) ?? mReq?.invoicePdfUrl,
+                                );
+                                try {
+                                  final msg = isLandlordResponsibility
+                                      ? '💰 ${payment['amount']} ${payment['currency']} tutarındaki masraf acente tarafından onaylandı. Kiradan düşülebilir / mahsup edilebilir.'
+                                      : '💰 ${payment['amount']} ${payment['currency']} tutarındaki bakım ödemesi acente tarafından onaylandı ve kapatıldı.';
+                                  await mRepo.addMessage(
+                                    id,
+                                    propertyId,
+                                    msg,
+                                  );
+                                } catch (_) {}
+                                ref.invalidate(agencyMaintenanceRequestsProvider);
+                              } else {
+                                final propRepo = ref.read(propertyRepositoryProvider);
+                                final monthName = periodText.isNotEmpty ? periodText : 'Kira';
+                                await propRepo.approveRentPayment(id, propertyId, monthName, dueDate ?? DateTime.now());
+                              }
 
                               ref.invalidate(agencyPendingPaymentsProvider);
                               ref.invalidate(agencyAllPaymentsProvider);
@@ -3649,7 +3790,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                           icon: const Icon(LucideIcons.check, size: 14),
                           label: Text(
                             loc.approvePayment,
-                            style: const TextStyle(fontSize: 11),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                             maxLines: 2,
                             softWrap: true,
                             textAlign: TextAlign.center,
@@ -3658,7 +3799,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             backgroundColor: const Color(0xFF059669),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -7076,7 +7217,7 @@ class _AgencyCockpitSectionState extends State<_AgencyCockpitSection> {
     final pendingContractsCount = widget.properties.where((p) {
       final c = widget.contractsMap[p.id];
       return c != null && (c.status == ContractStatus.pending || c.status == ContractStatus.negotiating);
-    }).length + widget.properties.where((p) => p.landlordId == null || p.tenantId == null).length;
+    }).length;
     final pendingApprovalsTotal = declaredPaymentsCount + pendingContractsCount;
     final isPendingApprovalsEmpty = pendingApprovalsTotal == 0;
 

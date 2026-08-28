@@ -92,6 +92,7 @@ abstract class MaintenanceRequest with _$MaintenanceRequest {
     @Default(MaintenancePriority.normal) MaintenancePriority priority,
     @Default([]) @JsonKey(name: 'photos_urls') List<String> photosUrls,
     @JsonKey(name: 'cost_amount') double? costAmount,
+    @JsonKey(name: 'settled_amount') @Default(0.0) double settledAmount,
     String? currency,
     @JsonKey(name: 'paid_by') String? paidBy,
     @JsonKey(name: 'payment_date') DateTime? paymentDate,
@@ -113,5 +114,8 @@ extension MaintenanceRequestMapX on MaintenanceRequest {
   
   MaintenancePaymentStatus get financialStatus =>
       MaintenancePaymentStatusX.fromString(paymentStatus);
+
+  double get remainingAmount => (costAmount != null ? (costAmount! - settledAmount).clamp(0.0, double.infinity) : 0.0);
+  bool get hasPartialSettlement => settledAmount > 0 && remainingAmount > 0;
 }
 

@@ -497,36 +497,78 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
               if (isAgency) ...[
                 const SizedBox(height: 32),
                 _buildSectionHeader(
-                  'Ev Sahibi İletişim Bilgileri',
+                  loc.localeName == 'tr'
+                      ? 'Ev Sahibi İletişim Bilgileri'
+                      : (loc.localeName == 'ru'
+                          ? 'Контактная информация арендодателя'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Kontakt podaci stanodavca'
+                              : 'Landlord Contact Information')),
                   LucideIcons.userCheck,
-                  subtitle: 'Acente mülk eklerken ev sahibi bilgileri girilir. Kayıttan sonra ev sahibine sahiplik QR/Linki gönderilir.',
+                  subtitle: loc.localeName == 'tr'
+                      ? 'Acente mülk eklerken ev sahibi bilgileri girilir. Kayıttan sonra ev sahibine sahiplik QR/Linki gönderilir.'
+                      : (loc.localeName == 'ru'
+                          ? 'Введите данные арендодателя при добавлении объекта. После создания будет отправлен QR/ссылка на владение.'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Unesite podatke stanodavca pri dodavanju nekretnine. QR/Link za preuzimanje vlasništva biće dostupan nakon kreiranja.'
+                              : 'Enter landlord details when adding property. An ownership QR/Link will be shared after creation.')),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _landlordNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ev Sahibinin Adı Soyadı *',
-                    prefixIcon: Icon(LucideIcons.user, size: 20),
+                  decoration: InputDecoration(
+                    labelText: loc.localeName == 'tr'
+                        ? 'Ev Sahibinin Adı Soyadı *'
+                        : (loc.localeName == 'ru'
+                            ? 'ФИО арендодателя *'
+                            : (loc.localeName.startsWith('sr')
+                                ? 'Ime i prezime stanodavca *'
+                                : 'Landlord Full Name *')),
+                    prefixIcon: const Icon(LucideIcons.user, size: 20),
                   ),
                   validator: (val) => isAgency && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _landlordEmailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ev Sahibinin E-posta Adresi',
-                    hintText: 'ornek@email.com (İsteğe bağlı)',
-                    prefixIcon: Icon(LucideIcons.mail, size: 20),
+                  decoration: InputDecoration(
+                    labelText: isAgency
+                        ? (loc.localeName == 'tr' ? 'Ev Sahibinin E-posta Adresi *' : (loc.localeName == 'ru' ? 'Email арендодателя *' : (loc.localeName.startsWith('sr') ? 'Email stanodavca *' : 'Landlord Email *')))
+                        : (loc.localeName == 'tr' ? 'Ev Sahibinin E-posta Adresi' : (loc.localeName == 'ru' ? 'Email арендодателя' : (loc.localeName.startsWith('sr') ? 'Email stanodavca' : 'Landlord Email'))),
+                    hintText: 'ornek@email.com',
+                    prefixIcon: const Icon(LucideIcons.mail, size: 20),
                   ),
                   keyboardType: TextInputType.emailAddress,
+                  validator: (val) {
+                    if (!isAgency) return null;
+                    if (val == null || val.trim().isEmpty) {
+                      return loc.fieldRequired;
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                      return loc.localeName == 'tr'
+                          ? 'Geçerli bir e-posta adresi giriniz'
+                          : (loc.localeName == 'ru'
+                              ? 'Введите корректный e-mail'
+                              : (loc.localeName.startsWith('sr')
+                                  ? 'Unesite validnu email adresu'
+                                  : 'Please enter a valid email address'));
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _landlordPhoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ev Sahibinin Telefon Numarası',
+                  decoration: InputDecoration(
+                    labelText: loc.localeName == 'tr'
+                        ? 'Ev Sahibinin Telefon Numarası'
+                        : (loc.localeName == 'ru'
+                            ? 'Номер телефона арендодателя'
+                            : (loc.localeName.startsWith('sr')
+                                ? 'Broj telefona stanodavca'
+                                : 'Landlord Phone Number')),
                     hintText: '+90 5xx xxx xx xx',
-                    prefixIcon: Icon(LucideIcons.phone, size: 20),
+                    prefixIcon: const Icon(LucideIcons.phone, size: 20),
                   ),
                   keyboardType: TextInputType.phone,
                 ),

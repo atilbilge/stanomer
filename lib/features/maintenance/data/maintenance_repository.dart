@@ -285,6 +285,7 @@ class MaintenanceRepository {
     required String requestId,
     required String propertyId,
     double? costAmount,
+    double? settledAmount,
     String? currency,
     String? paidBy,
     DateTime? paymentDate,
@@ -293,6 +294,7 @@ class MaintenanceRepository {
   }) async {
     final payload = <String, dynamic>{};
     if (costAmount != null) payload['cost_amount'] = costAmount;
+    if (settledAmount != null) payload['settled_amount'] = settledAmount;
     if (currency != null) payload['currency'] = currency;
     if (paidBy != null) payload['paid_by'] = paidBy;
     if (paymentDate != null) payload['payment_date'] = paymentDate.toIso8601String();

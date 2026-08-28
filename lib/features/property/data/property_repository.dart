@@ -166,20 +166,23 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
 
       // Factor in active approved Maintenance Settlements
       for (var m in maintenanceRequests) {
-        final cost = m.costAmount;
+        final cost = m.remainingAmount > 0 ? m.remainingAmount : m.costAmount;
         if (cost == null || cost <= 0) continue;
         final cur = m.currency ?? contract?.currency ?? (payments.isNotEmpty ? payments.first.currency : 'EUR');
 
         // Only approved active settlements (pending_payment) factor into net balance debt / credit
         if (m.paymentStatus == 'pending_payment') {
           if (m.paidBy == 'landlord') {
-            // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent
+            // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent (Tenant credit)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) - cost;
           } else if (m.paidBy == 'tenant') {
-            // Landlord paid upfront for tenant fault -> Tenant owes / Add to rent
+            // Landlord paid upfront for tenant fault -> Tenant owes / Add to rent (Tenant debt)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
+            pendingC++;
           }
-          pendingC++;
+        } else if (m.paymentStatus == 'pending_review') {
+          awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + cost;
+          awaitingC++;
         }
       }
 
@@ -359,6 +362,9 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
           int awaitingApprovalCount = 0;
           String? latestAwaitingTitle;
           String? latestAwaitingPropertyId;
+          int unenteredBillsCount = 0;
+          String? latestUnenteredTitle;
+          String? latestUnenteredPropertyId;
           
           final now = DateTime.now();
           final currentMonth = now.month;
@@ -401,6 +407,13 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
                 final typeMap = Map<String, double>.from(collectedByType[type] ?? {});
                 collectedByType[type] = CurrencyUtils.addToMap(typeMap, p.amount, p.currency);
               }
+
+              // 4. Unentered bills
+              if (p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0) {
+                unenteredBillsCount++;
+                latestUnenteredTitle ??= '${properties[i].name} — ${p.title}';
+                latestUnenteredPropertyId ??= properties[i].id;
+              }
             }
             
             // Count as delay
@@ -420,6 +433,9 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
             awaitingApprovalCount: awaitingApprovalCount,
             latestAwaitingTitle: latestAwaitingTitle,
             latestAwaitingPropertyId: latestAwaitingPropertyId,
+            unenteredBillsCount: unenteredBillsCount,
+            latestUnenteredTitle: latestUnenteredTitle,
+            latestUnenteredPropertyId: latestUnenteredPropertyId,
           );
         },
       );

@@ -11,6 +11,10 @@ class LandlordDashboardStats {
   final String? latestAwaitingTitle;
   final String? latestAwaitingPropertyId;
 
+  final int unenteredBillsCount;
+  final String? latestUnenteredTitle;
+  final String? latestUnenteredPropertyId;
+
   const LandlordDashboardStats({
     this.expectedByCurrency = const {},
     this.collectedByCurrency = const {},
@@ -22,6 +26,9 @@ class LandlordDashboardStats {
     this.awaitingApprovalCount = 0,
     this.latestAwaitingTitle,
     this.latestAwaitingPropertyId,
+    this.unenteredBillsCount = 0,
+    this.latestUnenteredTitle,
+    this.latestUnenteredPropertyId,
   });
 
   LandlordDashboardStats copyWith({
@@ -35,6 +42,9 @@ class LandlordDashboardStats {
     int? awaitingApprovalCount,
     String? latestAwaitingTitle,
     String? latestAwaitingPropertyId,
+    int? unenteredBillsCount,
+    String? latestUnenteredTitle,
+    String? latestUnenteredPropertyId,
   }) {
     return LandlordDashboardStats(
       expectedByCurrency: expectedByCurrency ?? this.expectedByCurrency,
@@ -47,6 +57,9 @@ class LandlordDashboardStats {
       awaitingApprovalCount: awaitingApprovalCount ?? this.awaitingApprovalCount,
       latestAwaitingTitle: latestAwaitingTitle ?? this.latestAwaitingTitle,
       latestAwaitingPropertyId: latestAwaitingPropertyId ?? this.latestAwaitingPropertyId,
+      unenteredBillsCount: unenteredBillsCount ?? this.unenteredBillsCount,
+      latestUnenteredTitle: latestUnenteredTitle ?? this.latestUnenteredTitle,
+      latestUnenteredPropertyId: latestUnenteredPropertyId ?? this.latestUnenteredPropertyId,
     );
   }
 }

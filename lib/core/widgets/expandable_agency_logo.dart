@@ -42,8 +42,20 @@ class ExpandableAgencyLogo extends StatelessWidget {
     final effectiveRadius = borderRadius ?? BorderRadius.circular(6);
     final rawUrl = logoUrl?.trim();
     final hasUrl = rawUrl != null && rawUrl.isNotEmpty;
+    final isDirectSafe = rawUrl != null && (
+      rawUrl.contains('supabase.co') ||
+      rawUrl.contains('localhost') ||
+      rawUrl.contains('127.0.0.1') ||
+      rawUrl.contains('gstatic.com') ||
+      rawUrl.contains('googleusercontent.com') ||
+      rawUrl.contains('google.com') ||
+      rawUrl.contains('googleapis.com') ||
+      rawUrl.contains('unsplash.com') ||
+      rawUrl.contains('cloudinary.com') ||
+      rawUrl.contains('weserv.nl')
+    );
     final effectiveUrl = hasUrl && kIsWeb
-        ? (rawUrl.contains('supabase.co') || rawUrl.contains('localhost') || rawUrl.contains('127.0.0.1')
+        ? (isDirectSafe
             ? rawUrl
             : 'https://images.weserv.nl/?url=${Uri.encodeComponent(rawUrl.replaceFirst(RegExp(r'^https?://'), ''))}')
         : rawUrl;
@@ -58,6 +70,16 @@ class ExpandableAgencyLogo extends StatelessWidget {
           width: width,
           fit: BoxFit.contain,
           errorBuilder: (ctx, err, stack) {
+            // If proxied URL failed, try original rawUrl before fallback
+            if (effectiveUrl != rawUrl && rawUrl != null) {
+              return Image.network(
+                rawUrl,
+                height: height,
+                width: width,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => fallbackWidget ?? const AppLogo(height: 28),
+              );
+            }
             return fallbackWidget ?? const AppLogo(height: 28);
           },
         ),
@@ -173,10 +195,17 @@ class _AgencyLogoViewerDialog extends StatelessWidget {
                           tag: 'agency_logo_${logoUrl ?? title}',
                           child: hasUrl
                               ? Image.network(
-                                  logoUrl!,
+                                  (kIsWeb && !(logoUrl!.contains('supabase.co') || logoUrl!.contains('localhost') || logoUrl!.contains('127.0.0.1') || logoUrl!.contains('gstatic.com') || logoUrl!.contains('googleusercontent.com') || logoUrl!.contains('google.com') || logoUrl!.contains('googleapis.com') || logoUrl!.contains('weserv.nl')))
+                                      ? 'https://images.weserv.nl/?url=${Uri.encodeComponent(logoUrl!.replaceFirst(RegExp(r'^https?://'), ''))}'
+                                      : logoUrl!,
                                   fit: BoxFit.contain,
                                   errorBuilder: (ctx, err, stack) =>
-                                      fallbackWidget ?? const AppLogo(height: 64),
+                                      Image.network(
+                                        logoUrl!,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            fallbackWidget ?? const AppLogo(height: 64),
+                                      ),
                                 )
                               : (fallbackWidget ?? const AppLogo(height: 64)),
                         ),

@@ -41,6 +41,7 @@ _MaintenanceRequest _$MaintenanceRequestFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       costAmount: (json['cost_amount'] as num?)?.toDouble(),
+      settledAmount: (json['settled_amount'] as num?)?.toDouble() ?? 0.0,
       currency: json['currency'] as String?,
       paidBy: json['paid_by'] as String?,
       paymentDate: json['payment_date'] == null
@@ -69,6 +70,7 @@ Map<String, dynamic> _$MaintenanceRequestToJson(_MaintenanceRequest instance) =>
       'priority': _$MaintenancePriorityEnumMap[instance.priority]!,
       'photos_urls': instance.photosUrls,
       'cost_amount': instance.costAmount,
+      'settled_amount': instance.settledAmount,
       'currency': instance.currency,
       'paid_by': instance.paidBy,
       'payment_date': instance.paymentDate?.toIso8601String(),

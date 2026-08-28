@@ -130,6 +130,26 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await context.push('/maintenance/new', extra: widget.property);
+          ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+        },
+        backgroundColor: const Color(0xFF0F766E),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        highlightElevation: 8,
+        icon: const Icon(LucideIcons.plus, size: 20, color: Colors.white),
+        label: Text(
+          loc.reportIssue,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 13.5,
+            color: Colors.white,
+            letterSpacing: -0.1,
+          ),
+        ),
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -170,17 +190,13 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
-                        // 1. Dynamic Hero Header with Back button, Title & New Request CTA
+                        // 1. Dynamic Hero Header with Back button & Title
                         SliverToBoxAdapter(
                           child: _MaintenanceHeroHeader(
                             property: widget.property,
                             isTenant: isTenant,
                             isAgency: isAgency,
                             isEmbedded: widget.isEmbedded,
-                            onNewRequest: () async {
-                              await context.push('/maintenance/new', extra: widget.property);
-                              ref.invalidate(maintenanceRequestsProvider(widget.property.id));
-                            },
                           ),
                         ),
 
@@ -495,14 +511,12 @@ class _MaintenanceHeroHeader extends StatelessWidget {
   final bool isTenant;
   final bool isAgency;
   final bool isEmbedded;
-  final VoidCallback onNewRequest;
 
   const _MaintenanceHeroHeader({
     required this.property,
     required this.isTenant,
     required this.isAgency,
     this.isEmbedded = false,
-    required this.onNewRequest,
   });
 
   @override
@@ -676,38 +690,6 @@ class _MaintenanceHeroHeader extends StatelessWidget {
                       ),
                   ],
                 ),
-
-                // Prominent "+ Yeni Arıza Bildir" Action CTA (Tenants Only)
-                if (isTenant) ...[
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: onNewRequest,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0F766E),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      shadowColor: Colors.black.withValues(alpha: 0.08),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(LucideIcons.plus, size: 16, color: Color(0xFF0F766E)),
-                        const SizedBox(width: 6),
-                        Text(
-                          loc.reportIssue,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F766E),
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -1366,6 +1348,31 @@ class _MaintenanceFinancialBox extends StatelessWidget {
                     color: Color(0xFF0F172A),
                   ),
                 ),
+                if (request.hasPartialSettlement) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: Text(
+                      loc.localeName == 'tr'
+                          ? 'Kalan: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                          : (loc.localeName == 'ru'
+                              ? 'Остаток: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                              : (loc.localeName.startsWith('sr')
+                                  ? 'Preostalo: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                                  : 'Rem: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}')),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB45309),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(width: 8),
               ],
               if (payerLabel.isNotEmpty)

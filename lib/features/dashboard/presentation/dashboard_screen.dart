@@ -184,12 +184,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
           const SizedBox(width: 16),
         ],
-        bottom: screenWidth >= 850
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(48),
-                child: _buildDesktopHeaderNav(context, loc, role ?? 'tenant'),
-              )
-            : null,
       ),
       floatingActionButton: () {
         if (zzplDocumentVersion == null) return null;
@@ -748,110 +742,6 @@ else if (propertiesAsync.hasError) ...[
 ),
 );
 }
-
-  Widget _buildDesktopHeaderNav(BuildContext context, AppLocalizations loc, String role) {
-    final isLandlord = role == 'landlord';
-    final primaryColor = StanomerColors.getRoleColor(role);
-
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withValues(alpha: 0.08),
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1360),
-          child: Row(
-            children: [
-              _buildDesktopHeaderTabItem(
-                icon: LucideIcons.layoutDashboard,
-                label: loc.localeName == 'tr' ? 'Ana Panel' : 'Dashboard',
-                isSelected: true,
-                primaryColor: primaryColor,
-                onTap: () {},
-              ),
-              const SizedBox(width: 12),
-              if (isLandlord) ...[
-                _buildDesktopHeaderTabItem(
-                  icon: LucideIcons.plusCircle,
-                  label: loc.addProperty,
-                  isSelected: false,
-                  primaryColor: primaryColor,
-                  onTap: () => context.push('/add-property'),
-                ),
-                const SizedBox(width: 12),
-              ],
-              _buildDesktopHeaderTabItem(
-                icon: LucideIcons.wrench,
-                label: loc.localeName == 'tr' ? 'Bakım ve Onarım' : 'Maintenance',
-                isSelected: false,
-                primaryColor: primaryColor,
-                onTap: () => context.push('/maintenance'),
-              ),
-              const SizedBox(width: 12),
-              _buildDesktopHeaderTabItem(
-                icon: LucideIcons.settings,
-                label: loc.settingsHeader,
-                isSelected: false,
-                primaryColor: primaryColor,
-                onTap: () => context.push('/profile'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesktopHeaderTabItem({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required Color primaryColor,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? primaryColor.withValues(alpha: 0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            border: isSelected
-                ? Border.all(color: primaryColor.withValues(alpha: 0.3), width: 1)
-                : null,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: isSelected ? primaryColor : Colors.black54,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? primaryColor : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showRoleSwitcher(BuildContext context, String? currentRole) {
     final user = ref.read(currentUserProvider);
@@ -1585,9 +1475,10 @@ class _LandlordActionCenter extends StatelessWidget {
     return statsAsync.when(
       data: (stats) {
         final hasAwaiting = stats.awaitingApprovalCount > 0;
+        final hasUnentered = stats.unenteredBillsCount > 0;
         final hasDelays = stats.delaysCount > 0;
 
-        if (!hasAwaiting && !hasDelays) {
+        if (!hasAwaiting && !hasUnentered && !hasDelays) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -1623,6 +1514,7 @@ class _LandlordActionCenter extends StatelessWidget {
         }
 
         final property = properties.where((p) => p.id == stats.latestAwaitingPropertyId).firstOrNull;
+        final unenteredProperty = properties.where((p) => p.id == stats.latestUnenteredPropertyId).firstOrNull;
 
         return Column(
           children: [
@@ -1722,6 +1614,114 @@ class _LandlordActionCenter extends StatelessWidget {
                 ),
               ),
 
+            if (hasUnentered)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDBEAFE),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(LucideIcons.receipt, size: 18, color: Color(0xFF1D4ED8)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                loc.localeName == 'tr'
+                                    ? '${stats.unenteredBillsCount} faturanın tutarı girilmedi'
+                                    : loc.localeName == 'ru'
+                                        ? '${stats.unenteredBillsCount} счет(а) ждут ввода суммы'
+                                        : loc.localeName.startsWith('sr')
+                                            ? '${stats.unenteredBillsCount} računa čeka unos iznosa'
+                                            : '${stats.unenteredBillsCount} bill(s) need amount entered',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E40AF),
+                                ),
+                              ),
+                              if (unenteredProperty != null) ...[
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    '(${unenteredProperty.name})',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2563EB),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (stats.latestUnenteredTitle != null)
+                            Text(
+                              stats.latestUnenteredTitle!,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFF2563EB),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        if (unenteredProperty != null) {
+                          context.push('/property-detail', extra: {
+                            'property': unenteredProperty,
+                            'initialTabIndex': 1,
+                          });
+                        }
+                      },
+                      icon: const Icon(LucideIcons.arrowRight, size: 14, color: Colors.white),
+                      label: Text(
+                        loc.localeName == 'tr'
+                            ? 'Tutar Gir'
+                            : loc.localeName == 'ru'
+                                ? 'Ввести'
+                                : loc.localeName.startsWith('sr')
+                                    ? 'Unesi'
+                                    : 'Enter',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             if (hasDelays)
               Container(
                 padding: const EdgeInsets.all(14),
@@ -1744,7 +1744,13 @@ class _LandlordActionCenter extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        loc.overduePaymentsAlert(stats.delaysCount),
+                        loc.localeName == 'tr'
+                            ? '${stats.delaysCount} mülkte kiracı ödemesi gecikiyor.'
+                            : loc.localeName == 'ru'
+                                ? 'В ${stats.delaysCount} объекте(ах) просрочен платёж арендатора.'
+                                : loc.localeName.startsWith('sr')
+                                    ? 'U ${stats.delaysCount} nekretnini zakupac kasni s plaćanjem.'
+                                    : '${stats.delaysCount} property/properties have delayed tenant payment(s).',
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
@@ -1755,6 +1761,7 @@ class _LandlordActionCenter extends StatelessWidget {
                   ],
                 ),
               ),
+
           ],
         );
       },
@@ -2367,10 +2374,7 @@ class _LandlordPropertyCard extends ConsumerWidget {
                 const SizedBox(width: 6),
                 // Maintenance Quick Jump Button
                 TextButton.icon(
-                  onPressed: () => context.push('/property-detail', extra: {
-                    'property': property,
-                    'initialTabIndex': 2,
-                  }),
+                  onPressed: () => context.push('/maintenance', extra: property),
                   icon: const Icon(LucideIcons.wrench, size: 14, color: Color(0xFF4F46E5)),
                   label: Text(
                     loc.tabRequests,
@@ -3194,7 +3198,9 @@ class _TenantActionCenter extends StatelessWidget {
     final awaitingCount = financialStatus?.awaitingCount ?? 0;
     final hasAwaiting = awaitingCount > 0;
     final pendingCount = financialStatus?.pendingCount ?? 0;
-    final hasDebt = (financialStatus?.pendingTotals.values.any((v) => v > 0) ?? false) || pendingCount > 0;
+    final totalPendingNet = financialStatus?.pendingTotals.values.fold<double>(0.0, (sum, val) => sum + val) ?? 0.0;
+    final hasDebt = (totalPendingNet > 0.01 && pendingCount > 0) || (financialStatus?.pendingTotals.values.any((v) => v > 0.01) ?? false);
+    final hasCredit = totalPendingNet < -0.01 && !hasDebt;
     final isOverdue = financialStatus?.rentStatus == RentStatus.debt || financialStatus?.billStatus == BillStatus.debt;
 
     final now = DateTime.now();
@@ -3204,6 +3210,69 @@ class _TenantActionCenter extends StatelessWidget {
         : nextDue;
 
     if (!hasPendingProposal && !hasAwaiting && !hasDebt && !isOverdue) {
+      if (hasCredit) {
+        final creditAmount = totalPendingNet.abs();
+        final cur = contract.currency.isNotEmpty ? contract.currency : (financialStatus?.pendingTotals.keys.firstOrNull ?? 'EUR');
+        final formattedCredit = CurrencyUtils.formatAmount(creditAmount, cur, useSymbol: true);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFBFDBFE)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDBEAFE),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(LucideIcons.wallet, size: 16, color: Color(0xFF1D4ED8)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loc.localeName == 'tr'
+                          ? 'Masraf mahsubundan $formattedCredit alacağınız bulunmaktadır.'
+                          : (loc.localeName == 'ru'
+                              ? 'У вас есть остаток зачета по расходам: $formattedCredit.'
+                              : (loc.localeName.startsWith('sr')
+                                  ? 'Imate preostalo potraživanje od prebijanja troškova: $formattedCredit.'
+                                  : 'You have a maintenance credit balance of $formattedCredit.')),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E40AF),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      loc.localeName == 'tr'
+                          ? 'Sonraki kira veya aidat ödemelerinizden mahsup edilebilir.'
+                          : (loc.localeName == 'ru'
+                              ? 'Может быть зачтено в счет будущих платежей по аренде или счетам.'
+                              : (loc.localeName.startsWith('sr')
+                                  ? 'Može se prebiti sa predstojećim zakupom ili računima.'
+                                  : 'Can be deducted from upcoming rent or utility payments.')),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       // Clean, peaceful state
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -3328,7 +3397,15 @@ class _TenantActionCenter extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        loc.awaitingExplanation,
+                        property.agencyId != null && property.agencyId!.isNotEmpty
+                            ? (loc.localeName == 'tr'
+                                ? 'Ödemelerin ödendi olarak işaretlenmesi için acentenin onaylaması gerekiyor.'
+                                : (loc.localeName == 'ru'
+                                    ? 'Требуется подтверждение агентства, чтобы отметить как оплачено.'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Potrebno je odobrenje agencije da bi se označilo kao plaćeno.'
+                                        : 'Agency approval is required to mark payments as paid.')))
+                            : loc.awaitingExplanation,
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFFA0621A),
@@ -3659,10 +3736,7 @@ class _TenantPropertyOverviewCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => context.push('/property-detail', extra: {
-                      'property': property,
-                      'initialTabIndex': 2,
-                    }),
+                    onPressed: () => context.push('/maintenance', extra: property),
                     icon: const Icon(LucideIcons.wrench, size: 14, color: Color(0xFF2563EB)),
                     label: Text(
                       loc.quickActionMaintenance,
