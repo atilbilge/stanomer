@@ -26,8 +26,13 @@ enum _MaintenanceFilter {
 
 class MaintenanceScreen extends ConsumerStatefulWidget {
   final Property property;
+  final bool isEmbedded;
 
-  const MaintenanceScreen({super.key, required this.property});
+  const MaintenanceScreen({
+    super.key,
+    required this.property,
+    this.isEmbedded = false,
+  });
 
   @override
   ConsumerState<MaintenanceScreen> createState() => _MaintenanceScreenState();
@@ -171,6 +176,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                             property: widget.property,
                             isTenant: isTenant,
                             isAgency: isAgency,
+                            isEmbedded: widget.isEmbedded,
                             onNewRequest: () async {
                               await context.push('/maintenance/new', extra: widget.property);
                               ref.invalidate(maintenanceRequestsProvider(widget.property.id));
@@ -488,19 +494,21 @@ class _MaintenanceHeroHeader extends StatelessWidget {
   final Property property;
   final bool isTenant;
   final bool isAgency;
+  final bool isEmbedded;
   final VoidCallback onNewRequest;
 
   const _MaintenanceHeroHeader({
     required this.property,
     required this.isTenant,
     required this.isAgency,
+    this.isEmbedded = false,
     required this.onNewRequest,
   });
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final topPadding = MediaQuery.of(context).padding.top;
+    final topPadding = isEmbedded ? 4.0 : MediaQuery.of(context).padding.top;
 
     return Container(
       width: double.infinity,
@@ -514,9 +522,11 @@ class _MaintenanceHeroHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(isEmbedded ? 20 : 28),
+          bottomRight: Radius.circular(isEmbedded ? 20 : 28),
+          topLeft: Radius.circular(isEmbedded ? 20 : 0),
+          topRight: Radius.circular(isEmbedded ? 20 : 0),
         ),
         boxShadow: [
           BoxShadow(
@@ -556,62 +566,64 @@ class _MaintenanceHeroHeader extends StatelessWidget {
           ),
 
           Padding(
-            padding: EdgeInsets.fromLTRB(16, topPadding + 8, 16, 20),
+            padding: EdgeInsets.fromLTRB(16, isEmbedded ? 14 : topPadding + 8, 16, isEmbedded ? 16 : 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Navigation Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.maybePop(context);
-                        } else {
-                          context.go('/dashboard');
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(LucideIcons.home, size: 12, color: Colors.white),
-                          const SizedBox(width: 5),
-                          Flexible(
-                            child: Text(
-                              property.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                // Top Navigation Row (hidden when embedded)
+                if (!isEmbedded) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          if (Navigator.canPop(context)) {
+                            Navigator.maybePop(context);
+                          } else {
+                            context.go('/dashboard');
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                           ),
-                        ],
+                          child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.home, size: 12, color: Colors.white),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                property.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Title & Subtitle
                 Row(
