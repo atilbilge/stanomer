@@ -2907,4 +2907,87 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get viewDetailsAction => 'Detayları Gör';
+
+  @override
+  String get reportIssueSubtitle =>
+      'Mülkünüzdeki arıza veya bakım ihtiyacını fotoğraflarla birlikte iletin.';
+
+  @override
+  String get issueTitleHint => 'Örn: Mutfak lavabosu altından su sızıyor';
+
+  @override
+  String get issueDescriptionHint =>
+      'Arızanın tam konumunu, ne zaman başladığını ve detaylarını yazınız...';
+
+  @override
+  String get priorityNormalDesc => 'Standart bakım ve onarım süreci';
+
+  @override
+  String get priorityUrgentDesc =>
+      'Su baskını, elektrik kaçağı vb. acil müdahale';
+
+  @override
+  String get photosSubtitle =>
+      'Arızayı gösteren net fotoğraflar ekleyin (Maks. 5 adet)';
+
+  @override
+  String get addPhotoFromGallery => 'Fotoğraf Yükle';
+
+  @override
+  String get sendRequestBtn => 'Arıza Bildirimini Gönder';
+
+  @override
+  String get categorySelectorTitle => 'Arıza Kategorisi';
+
+  @override
+  String get prioritySelectorTitle => 'Öncelik Seviyesi';
+
+  @override
+  String get financialSectionTitle => 'FİNANSAL BİLGİLER & FATURA';
+
+  @override
+  String get financialSectionSubtitle =>
+      'Arıza tamir maliyetini ve varsa faturayı ekleyin (İsteğe bağlı).';
+
+  @override
+  String get costAmountLabel => 'Maliyet Tutarı';
+
+  @override
+  String get paidByLabel => 'Maliyet Sorumlusu';
+
+  @override
+  String get unassignedLabel => 'Belirtilmedi';
+
+  @override
+  String get paymentStatusLabel => 'Fatura & Ödeme Durumu';
+
+  @override
+  String get pendingReviewHint => 'Fatura inceleniyor (Panoya yansımaz)';
+
+  @override
+  String get pendingPaymentHint => 'Onaylandı • Borç/gider olarak yansır';
+
+  @override
+  String get paymentCompletedSubtitle => 'Ödeme tamamlandı';
+
+  @override
+  String get paymentRejectedSubtitle => 'Geçersiz / Reddedildi';
+
+  @override
+  String get invoicePdfLabel => 'Fatura / Makbuz Belgesi';
+
+  @override
+  String get uploadPdfTitle => 'Fatura PDF Yükle';
+
+  @override
+  String get uploadPdfSubtitle =>
+      'PDF belgesi seçmek için dokunun (Maks. 10MB)';
+
+  @override
+  String get tenantLockedStatusNotice =>
+      'Kiracı masrafı kendisi ödemediği sürece ödeme statüsünü değiştiremez. Fatura \'İnceleme Bekliyor\' olarak yöneticiye iletilir.';
+
+  @override
+  String get payerRequiredError =>
+      'Lütfen ödeme bekleyen veya ödenmiş kayıt için maliyet sorumlusunu seçiniz.';
 }

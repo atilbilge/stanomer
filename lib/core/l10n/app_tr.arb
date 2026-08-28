@@ -1451,5 +1451,30 @@
       }
     }
   },
-  "viewDetailsAction": "Detayları Gör"
+  "viewDetailsAction": "Detayları Gör",
+  "reportIssueSubtitle": "Mülkünüzdeki arıza veya bakım ihtiyacını fotoğraflarla birlikte iletin.",
+  "issueTitleHint": "Örn: Mutfak lavabosu altından su sızıyor",
+  "issueDescriptionHint": "Arızanın tam konumunu, ne zaman başladığını ve detaylarını yazınız...",
+  "priorityNormalDesc": "Standart bakım ve onarım süreci",
+  "priorityUrgentDesc": "Su baskını, elektrik kaçağı vb. acil müdahale",
+  "photosSubtitle": "Arızayı gösteren net fotoğraflar ekleyin (Maks. 5 adet)",
+  "addPhotoFromGallery": "Fotoğraf Yükle",
+  "sendRequestBtn": "Arıza Bildirimini Gönder",
+  "categorySelectorTitle": "Arıza Kategorisi",
+  "prioritySelectorTitle": "Öncelik Seviyesi",
+  "financialSectionTitle": "FİNANSAL BİLGİLER & FATURA",
+  "financialSectionSubtitle": "Arıza tamir maliyetini ve varsa faturayı ekleyin (İsteğe bağlı).",
+  "costAmountLabel": "Maliyet Tutarı",
+  "paidByLabel": "Maliyet Sorumlusu",
+  "unassignedLabel": "Belirtilmedi",
+  "paymentStatusLabel": "Fatura & Ödeme Durumu",
+  "pendingReviewHint": "Fatura inceleniyor (Panoya yansımaz)",
+  "pendingPaymentHint": "Onaylandı • Borç/gider olarak yansır",
+  "paymentCompletedSubtitle": "Ödeme tamamlandı",
+  "paymentRejectedSubtitle": "Geçersiz / Reddedildi",
+  "invoicePdfLabel": "Fatura / Makbuz Belgesi",
+  "uploadPdfTitle": "Fatura PDF Yükle",
+  "uploadPdfSubtitle": "PDF belgesi seçmek için dokunun (Maks. 10MB)",
+  "tenantLockedStatusNotice": "Kiracı masrafı kendisi ödemediği sürece ödeme statüsünü değiştiremez. Fatura 'İnceleme Bekliyor' olarak yöneticiye iletilir.",
+  "payerRequiredError": "Lütfen ödeme bekleyen veya ödenmiş kayıt için maliyet sorumlusunu seçiniz."
 }

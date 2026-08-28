@@ -1352,5 +1352,30 @@
       }
     }
   },
-  "viewDetailsAction": "View Details"
+  "viewDetailsAction": "View Details",
+  "reportIssueSubtitle": "Submit issue or maintenance details with photos for quick resolution.",
+  "issueTitleHint": "e.g. Water leaking under the kitchen sink",
+  "issueDescriptionHint": "Describe the exact location, when it started, and any details...",
+  "priorityNormalDesc": "Standard repair and maintenance process",
+  "priorityUrgentDesc": "Water flood, electrical hazard, or emergency",
+  "photosSubtitle": "Add clear photos showing the issue (Max 5)",
+  "addPhotoFromGallery": "Upload Photos",
+  "sendRequestBtn": "Submit Issue Report",
+  "categorySelectorTitle": "Issue Category",
+  "prioritySelectorTitle": "Priority Level",
+  "financialSectionTitle": "FINANCIAL DETAILS & INVOICE",
+  "financialSectionSubtitle": "Record maintenance cost and vendor invoice (Optional).",
+  "costAmountLabel": "Cost Amount",
+  "paidByLabel": "Cost Responsibility",
+  "unassignedLabel": "Unassigned",
+  "paymentStatusLabel": "Invoice & Payment Status",
+  "pendingReviewHint": "Under review (Not reflected on balance)",
+  "pendingPaymentHint": "Approved • Reflected as debt/expense",
+  "paymentCompletedSubtitle": "Payment completed",
+  "paymentRejectedSubtitle": "Invalid / Rejected",
+  "invoicePdfLabel": "Invoice / Receipt",
+  "uploadPdfTitle": "Upload Invoice PDF",
+  "uploadPdfSubtitle": "Tap to select PDF file (Max 10MB)",
+  "tenantLockedStatusNotice": "Tenants cannot change payment status unless paying themselves (submitted as Pending Review).",
+  "payerRequiredError": "Please select who pays before setting payment status."
 }

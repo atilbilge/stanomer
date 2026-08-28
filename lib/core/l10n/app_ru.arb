@@ -1403,5 +1403,30 @@
       }
     }
   },
-  "viewDetailsAction": "Смотреть детали"
+  "viewDetailsAction": "Смотреть детали",
+  "reportIssueSubtitle": "Отправьте информацию о поломке или ремонте с фото для быстрого решения.",
+  "issueTitleHint": "Напр: Протекает вода под кухонной раковиной",
+  "issueDescriptionHint": "Опишите точное место, когда началась проблема и детали...",
+  "priorityNormalDesc": "Стандартный процесс ремонта и обслуживания",
+  "priorityUrgentDesc": "Затопление, замыкание или срочная ситуация",
+  "photosSubtitle": "Добавьте четкие фото поломки (Макс. 5)",
+  "addPhotoFromGallery": "Загрузить фото",
+  "sendRequestBtn": "Отправить заявку на ремонт",
+  "categorySelectorTitle": "Категория поломки",
+  "prioritySelectorTitle": "Уровень приоритета",
+  "financialSectionTitle": "ФИНАНСОВЫЕ ДАННЫЕ И СЧЕТ",
+  "financialSectionSubtitle": "Укажите расходы на ремонт и счет при наличии (Необязательно).",
+  "costAmountLabel": "Сумма расходов",
+  "paidByLabel": "Кто оплачивает",
+  "unassignedLabel": "Не указано",
+  "paymentStatusLabel": "Статус счета и оплаты",
+  "pendingReviewHint": "Счет на проверке (Не влияет на баланс)",
+  "pendingPaymentHint": "Одобрено • Отражается к оплате",
+  "paymentCompletedSubtitle": "Оплата завершена",
+  "paymentRejectedSubtitle": "Недействительно / Отклонено",
+  "invoicePdfLabel": "Счет / Квитанция",
+  "uploadPdfTitle": "Загрузить счет PDF",
+  "uploadPdfSubtitle": "Нажмите для выбора PDF (Макс. 10MB)",
+  "tenantLockedStatusNotice": "Арендатор не может изменить статус оплаты, если не оплачивает сам (сохраняется как На проверке).",
+  "payerRequiredError": "Пожалуйста, укажите кто оплачивает перед установкой статуса."
 }

@@ -2907,4 +2907,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewDetailsAction => 'View Details';
+
+  @override
+  String get reportIssueSubtitle =>
+      'Submit issue or maintenance details with photos for quick resolution.';
+
+  @override
+  String get issueTitleHint => 'e.g. Water leaking under the kitchen sink';
+
+  @override
+  String get issueDescriptionHint =>
+      'Describe the exact location, when it started, and any details...';
+
+  @override
+  String get priorityNormalDesc => 'Standard repair and maintenance process';
+
+  @override
+  String get priorityUrgentDesc =>
+      'Water flood, electrical hazard, or emergency';
+
+  @override
+  String get photosSubtitle => 'Add clear photos showing the issue (Max 5)';
+
+  @override
+  String get addPhotoFromGallery => 'Upload Photos';
+
+  @override
+  String get sendRequestBtn => 'Submit Issue Report';
+
+  @override
+  String get categorySelectorTitle => 'Issue Category';
+
+  @override
+  String get prioritySelectorTitle => 'Priority Level';
+
+  @override
+  String get financialSectionTitle => 'FINANCIAL DETAILS & INVOICE';
+
+  @override
+  String get financialSectionSubtitle =>
+      'Record maintenance cost and vendor invoice (Optional).';
+
+  @override
+  String get costAmountLabel => 'Cost Amount';
+
+  @override
+  String get paidByLabel => 'Cost Responsibility';
+
+  @override
+  String get unassignedLabel => 'Unassigned';
+
+  @override
+  String get paymentStatusLabel => 'Invoice & Payment Status';
+
+  @override
+  String get pendingReviewHint => 'Under review (Not reflected on balance)';
+
+  @override
+  String get pendingPaymentHint => 'Approved • Reflected as debt/expense';
+
+  @override
+  String get paymentCompletedSubtitle => 'Payment completed';
+
+  @override
+  String get paymentRejectedSubtitle => 'Invalid / Rejected';
+
+  @override
+  String get invoicePdfLabel => 'Invoice / Receipt';
+
+  @override
+  String get uploadPdfTitle => 'Upload Invoice PDF';
+
+  @override
+  String get uploadPdfSubtitle => 'Tap to select PDF file (Max 10MB)';
+
+  @override
+  String get tenantLockedStatusNotice =>
+      'Tenants cannot change payment status unless paying themselves (submitted as Pending Review).';
+
+  @override
+  String get payerRequiredError =>
+      'Please select who pays before setting payment status.';
 }

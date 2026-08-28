@@ -2927,4 +2927,84 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get viewDetailsAction => 'Смотреть детали';
+
+  @override
+  String get reportIssueSubtitle =>
+      'Отправьте информацию о поломке или ремонте с фото для быстрого решения.';
+
+  @override
+  String get issueTitleHint => 'Напр: Протекает вода под кухонной раковиной';
+
+  @override
+  String get issueDescriptionHint =>
+      'Опишите точное место, когда началась проблема и детали...';
+
+  @override
+  String get priorityNormalDesc => 'Стандартный процесс ремонта и обслуживания';
+
+  @override
+  String get priorityUrgentDesc => 'Затопление, замыкание или срочная ситуация';
+
+  @override
+  String get photosSubtitle => 'Добавьте четкие фото поломки (Макс. 5)';
+
+  @override
+  String get addPhotoFromGallery => 'Загрузить фото';
+
+  @override
+  String get sendRequestBtn => 'Отправить заявку на ремонт';
+
+  @override
+  String get categorySelectorTitle => 'Категория поломки';
+
+  @override
+  String get prioritySelectorTitle => 'Уровень приоритета';
+
+  @override
+  String get financialSectionTitle => 'ФИНАНСОВЫЕ ДАННЫЕ И СЧЕТ';
+
+  @override
+  String get financialSectionSubtitle =>
+      'Укажите расходы на ремонт и счет при наличии (Необязательно).';
+
+  @override
+  String get costAmountLabel => 'Сумма расходов';
+
+  @override
+  String get paidByLabel => 'Кто оплачивает';
+
+  @override
+  String get unassignedLabel => 'Не указано';
+
+  @override
+  String get paymentStatusLabel => 'Статус счета и оплаты';
+
+  @override
+  String get pendingReviewHint => 'Счет на проверке (Не влияет на баланс)';
+
+  @override
+  String get pendingPaymentHint => 'Одобрено • Отражается к оплате';
+
+  @override
+  String get paymentCompletedSubtitle => 'Оплата завершена';
+
+  @override
+  String get paymentRejectedSubtitle => 'Недействительно / Отклонено';
+
+  @override
+  String get invoicePdfLabel => 'Счет / Квитанция';
+
+  @override
+  String get uploadPdfTitle => 'Загрузить счет PDF';
+
+  @override
+  String get uploadPdfSubtitle => 'Нажмите для выбора PDF (Макс. 10MB)';
+
+  @override
+  String get tenantLockedStatusNotice =>
+      'Арендатор не может изменить статус оплаты, если не оплачивает сам (сохраняется как На проверке).';
+
+  @override
+  String get payerRequiredError =>
+      'Пожалуйста, укажите кто оплачивает перед установкой статуса.';
 }

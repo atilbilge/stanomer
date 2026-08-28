@@ -5331,6 +5331,156 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Pogledaj detalje'**
   String get viewDetailsAction;
+
+  /// No description provided for @reportIssueSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavite kvar ili potrebu za održavanjem uz fotografije za brže rešavanje.'**
+  String get reportIssueSubtitle;
+
+  /// No description provided for @issueTitleHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Npr: Curenje vode ispod sudopere u kuhinji'**
+  String get issueTitleHint;
+
+  /// No description provided for @issueDescriptionHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Opišite tačnu lokaciju kvara, kada je počeo i detalje...'**
+  String get issueDescriptionHint;
+
+  /// No description provided for @priorityNormalDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Standardan postupak popravke i održavanja'**
+  String get priorityNormalDesc;
+
+  /// No description provided for @priorityUrgentDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poplava, opasnost od struje ili hitna intervencija'**
+  String get priorityUrgentDesc;
+
+  /// No description provided for @photosSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodajte jasne fotografije kvara (Maks. 5)'**
+  String get photosSubtitle;
+
+  /// No description provided for @addPhotoFromGallery.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otpremi fotografije'**
+  String get addPhotoFromGallery;
+
+  /// No description provided for @sendRequestBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pošalji prijavu kvara'**
+  String get sendRequestBtn;
+
+  /// No description provided for @categorySelectorTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kategorija kvara'**
+  String get categorySelectorTitle;
+
+  /// No description provided for @prioritySelectorTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nivo prioriteta'**
+  String get prioritySelectorTitle;
+
+  /// No description provided for @financialSectionTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'FINANSIJSKI PODACI & FAKTURA'**
+  String get financialSectionTitle;
+
+  /// No description provided for @financialSectionSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodajte trošak popravke i fakturu ako postoji (Opciono).'**
+  String get financialSectionSubtitle;
+
+  /// No description provided for @costAmountLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznos troška'**
+  String get costAmountLabel;
+
+  /// No description provided for @paidByLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odgovoran za trošak'**
+  String get paidByLabel;
+
+  /// No description provided for @unassignedLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nije navedeno'**
+  String get unassignedLabel;
+
+  /// No description provided for @paymentStatusLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Status fakture i plaćanja'**
+  String get paymentStatusLabel;
+
+  /// No description provided for @pendingReviewHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Račun se proverava (Ne utiče na bilans)'**
+  String get pendingReviewHint;
+
+  /// No description provided for @pendingPaymentHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobreno • Evidentira se zaduženje'**
+  String get pendingPaymentHint;
+
+  /// No description provided for @paymentCompletedSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Plaćanje završeno'**
+  String get paymentCompletedSubtitle;
+
+  /// No description provided for @paymentRejectedSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nevažeće / Odbijeno'**
+  String get paymentRejectedSubtitle;
+
+  /// No description provided for @invoicePdfLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Faktura / Račun'**
+  String get invoicePdfLabel;
+
+  /// No description provided for @uploadPdfTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otpremi PDF račun'**
+  String get uploadPdfTitle;
+
+  /// No description provided for @uploadPdfSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodirnite za izbor PDF-a (Maks. 10MB)'**
+  String get uploadPdfSubtitle;
+
+  /// No description provided for @tenantLockedStatusNotice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanar ne može menjati status plaćanja ukoliko sam ne plaća trošak (biće sačuvano kao Čeka proveru).'**
+  String get tenantLockedStatusNotice;
+
+  /// No description provided for @payerRequiredError.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja.'**
+  String get payerRequiredError;
 }
 
 class _AppLocalizationsDelegate

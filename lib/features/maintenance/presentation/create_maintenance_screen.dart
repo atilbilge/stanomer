@@ -6,16 +6,16 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
+import '../../../core/services/document_storage_service.dart';
 import '../../property/domain/property.dart';
 import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../data/maintenance_repository.dart';
-import '../../../core/services/document_storage_service.dart';
-import 'package:path_provider/path_provider.dart';
 
 class CreateMaintenanceRequestScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -31,14 +31,14 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _costController = TextEditingController();
-  
+
   late String _selectedCurrency;
   String? _paidBy;
   String _paymentStatus = 'pending_review';
   DateTime? _paymentDate;
   PlatformFile? _selectedInvoiceFile;
 
-  MaintenanceCategory _selectedCategory = MaintenanceCategory.other;
+  MaintenanceCategory _selectedCategory = MaintenanceCategory.plumbing;
   MaintenancePriority _selectedPriority = MaintenancePriority.normal;
   bool _isLoading = false;
   List<PlatformFile> _selectedFiles = [];
@@ -59,6 +59,16 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   }
 
   Future<void> _pickImages() async {
+    if (_selectedFiles.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('En fazla 5 fotoğraf ekleyebilirsiniz.'),
+          backgroundColor: Color(0xFFE11D48),
+        ),
+      );
+      return;
+    }
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: true,
@@ -67,7 +77,9 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
 
     if (result != null) {
       setState(() {
-        _selectedFiles = [..._selectedFiles, ...result.files];
+        final remaining = 5 - _selectedFiles.length;
+        final toAdd = result.files.take(remaining).toList();
+        _selectedFiles = [..._selectedFiles, ...toAdd];
       });
     }
   }
@@ -116,7 +128,6 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
 
   Future<void> _submit() async {
     final loc = AppLocalizations.of(context)!;
-    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
     if (!_formKey.currentState!.validate()) return;
 
     // Validate cost amount if entered
@@ -128,25 +139,20 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.errorWithDetails('Invalid cost amount')),
-            backgroundColor: StanomerColors.alertPrimary,
+            backgroundColor: const Color(0xFFE11D48),
           ),
         );
         return;
       }
     }
 
-    if ((_paymentStatus == 'pending_payment' || _paymentStatus == 'paid') && costAmount != null && _paidBy == null) {
-      String payerRequiredMsg;
-      switch (languageCode) {
-        case 'tr': payerRequiredMsg = 'Lütfen ödeme bekleyen veya ödenmiş kayıt için maliyet sorumlusunu (Kiracı veya Ev Sahibi) seçiniz.'; break;
-        case 'sr': payerRequiredMsg = 'Molimo izaberite ko plaća trošak (Stanar ili Vlasnik).'; break;
-        case 'ru': payerRequiredMsg = 'Пожалуйста, укажите кто оплачивает (Арендатор или Владелец).'; break;
-        default: payerRequiredMsg = 'Please select who pays before setting payment status.'; break;
-      }
+    if ((_paymentStatus == 'pending_payment' || _paymentStatus == 'paid') &&
+        costAmount != null &&
+        _paidBy == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(payerRequiredMsg),
-          backgroundColor: StanomerColors.alertPrimary,
+          content: Text(loc.payerRequiredError),
+          backgroundColor: const Color(0xFFE11D48),
         ),
       );
       return;
@@ -170,10 +176,10 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           final String url;
           if (isCloudAllowed) {
             url = await ref.read(maintenanceRepositoryProvider).uploadMaintenancePhoto(
-              requestId: tempRequestId,
-              fileName: file.name,
-              bytes: Uint8List.fromList(fileBytes),
-            );
+                  requestId: tempRequestId,
+                  fileName: file.name,
+                  bytes: Uint8List.fromList(fileBytes),
+                );
           } else {
             final io.File localFile;
             if (!kIsWeb && file.path != null) {
@@ -198,45 +204,51 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         }
         if (invoiceBytes != null) {
           invoicePdfUrl = await ref.read(maintenanceRepositoryProvider).uploadMaintenanceInvoice(
-            propertyId: widget.property.id,
-            requestId: tempRequestId,
-            fileName: _selectedInvoiceFile!.name,
-            bytes: Uint8List.fromList(invoiceBytes),
-          );
+                propertyId: widget.property.id,
+                requestId: tempRequestId,
+                fileName: _selectedInvoiceFile!.name,
+                bytes: Uint8List.fromList(invoiceBytes),
+              );
         }
       }
 
       // 3. Create the request with financial fields
       final user = ref.read(currentUserProvider);
-      final userProfileAsync = user?.id != null ? ref.read(profileProvider(user!.id)) : const AsyncValue<Map<String, dynamic>?>.data(null);
-      final profileRole = userProfileAsync.value?['role'] as String? ?? user?.userMetadata?['role'] as String?;
+      final userProfileAsync = user?.id != null
+          ? ref.read(profileProvider(user!.id))
+          : const AsyncValue<Map<String, dynamic>?>.data(null);
+      final profileRole = userProfileAsync.value?['role'] as String? ??
+          user?.userMetadata?['role'] as String?;
 
       final isLandlord = widget.property.landlordId == user?.id || profileRole == 'landlord';
       final isAgency = widget.property.agencyId == user?.id || profileRole == 'agency';
-      final isTenant = widget.property.tenantId == user?.id || profileRole == 'tenant' || (!isLandlord && !isAgency);
+      final isTenant = widget.property.tenantId == user?.id ||
+          profileRole == 'tenant' ||
+          (!isLandlord && !isAgency);
 
       final double? finalCostAmount = isTenant ? null : costAmount;
-      final String? finalCurrency = (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
+      final String? finalCurrency =
+          (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
       final String? finalPaidBy = isTenant ? null : _paidBy;
       final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
       final String finalPaymentStatus = isTenant ? 'pending_review' : _paymentStatus;
       final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
 
       await ref.read(maintenanceRepositoryProvider).createRequest(
-        propertyId: widget.property.id,
-        title: _titleController.text.trim(),
-        category: _selectedCategory,
-        priority: _selectedPriority,
-        description: _descriptionController.text.trim(),
-        contractId: activeContract?.id,
-        photosUrls: uploadedUrls,
-        costAmount: finalCostAmount,
-        currency: finalCurrency,
-        paidBy: finalPaidBy,
-        paymentDate: finalPaymentDate,
-        paymentStatus: finalPaymentStatus,
-        invoicePdfUrl: finalInvoicePdfUrl,
-      );
+            propertyId: widget.property.id,
+            title: _titleController.text.trim(),
+            category: _selectedCategory,
+            priority: _selectedPriority,
+            description: _descriptionController.text.trim(),
+            contractId: activeContract?.id,
+            photosUrls: uploadedUrls,
+            costAmount: finalCostAmount,
+            currency: finalCurrency,
+            paidBy: finalPaidBy,
+            paymentDate: finalPaymentDate,
+            paymentStatus: finalPaymentStatus,
+            invoicePdfUrl: finalInvoicePdfUrl,
+          );
 
       // Invalidate the provider so the list refreshes immediately
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
@@ -250,7 +262,10 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorWithDetails(e.toString())), backgroundColor: StanomerColors.alertPrimary),
+          SnackBar(
+            content: Text(loc.errorWithDetails(e.toString())),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
         );
       }
     } finally {
@@ -261,784 +276,858 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     final user = ref.watch(currentUserProvider);
-    final userProfileAsync = user?.id != null ? ref.watch(profileProvider(user!.id)) : const AsyncValue<Map<String, dynamic>?>.data(null);
-    final profileRole = userProfileAsync.value?['role'] as String? ?? user?.userMetadata?['role'] as String?;
+    final userProfileAsync = user?.id != null
+        ? ref.watch(profileProvider(user!.id))
+        : const AsyncValue<Map<String, dynamic>?>.data(null);
+    final profileRole = userProfileAsync.value?['role'] as String? ??
+        user?.userMetadata?['role'] as String?;
 
     final isLandlord = widget.property.landlordId == user?.id || profileRole == 'landlord';
     final isAgency = widget.property.agencyId == user?.id || profileRole == 'agency';
-    final isTenant = widget.property.tenantId == user?.id || profileRole == 'tenant' || (!isLandlord && !isAgency);
+    final isTenant = widget.property.tenantId == user?.id ||
+        profileRole == 'tenant' ||
+        (!isLandlord && !isAgency);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.reportIssue),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(loc.issueTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  hintText: loc.issueTitle,
-                ),
-                validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
-              ),
-              const SizedBox(height: 20),
-              
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(loc.issueCategory, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<MaintenanceCategory>(
-                          isExpanded: true,
-                          initialValue: _selectedCategory,
-                          items: MaintenanceCategory.values.map((cat) => DropdownMenuItem(
-                            value: cat,
-                            child: Text(
-                              _getCategoryLabel(cat, loc),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          )).toList(),
-                          onChanged: (val) => setState(() => _selectedCategory = val!),
-                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(loc.issuePriority, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<MaintenancePriority>(
-                          isExpanded: true,
-                          initialValue: _selectedPriority,
-                          items: const [MaintenancePriority.normal, MaintenancePriority.urgent].map((p) => DropdownMenuItem(
-                            value: p,
-                            child: Text(
-                              p == MaintenancePriority.urgent ? loc.priorityUrgent : loc.priorityNormal,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          )).toList(),
-                          onChanged: (val) => setState(() => _selectedPriority = val!),
-                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              Text(loc.issueDescription, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: loc.issueDescription,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              _buildPhotoSection(loc),
-              
-              if (!isTenant) ...[
-                const SizedBox(height: 24),
-                // ── Financial Section (Only for Landlords & Agency Managers) ──
-                _buildFinancialSection(loc, isDark),
-              ],
-              const SizedBox(height: 32),
-              
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: StanomerColors.getRoleColor(profileRole),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(loc.send),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFinancialSection(AppLocalizations loc, bool isDark) {
-    final languageCode = Localizations.localeOf(context).languageCode.toLowerCase();
-    
-    String sectionTitle;
-    String sectionSubtitle;
-    String costLabel;
-    String paidByLabel;
-    String tenantLabel;
-    String landlordLabel;
-    String unassignedLabel;
-    String statusLabel;
-    String pendingReviewLabel;
-    String pendingReviewHint;
-    String pendingPaymentLabel;
-    String pendingPaymentHint;
-    String paidLabel;
-    String rejectedLabel;
-    String paymentDateLabel;
-    String notSelectedLabel;
-    String invoicePdfLabel;
-    String uploadPdfTitle;
-    String uploadPdfSubtitle;
-    String tenantLockedStatusNotice;
-
-    switch (languageCode) {
-      case 'tr':
-        sectionTitle = 'FİNANSAL BİLGİLER & FATURA';
-        sectionSubtitle = 'Arıza tamir maliyetini ve varsa faturayı ekleyin (İsteğe bağlı).';
-        costLabel = 'Maliyet Tutarı';
-        paidByLabel = 'Maliyet Sorumlusu (Ödeyen Taraf)';
-        tenantLabel = 'Kiracı';
-        landlordLabel = 'Ev Sahibi';
-        unassignedLabel = 'Belirtilmedi';
-        statusLabel = 'Fatura & Ödeme Durumu';
-        pendingReviewLabel = 'İnceleme Bekliyor';
-        pendingReviewHint = 'Fatura inceleniyor (Panoya yansımaz)';
-        pendingPaymentLabel = 'Ödeme Bekliyor';
-        pendingPaymentHint = 'Onaylandı • Borç/gider olarak yansır';
-        paidLabel = 'Ödendi';
-        rejectedLabel = 'Reddedildi';
-        paymentDateLabel = 'Ödeme Tarihi';
-        notSelectedLabel = 'Tarih seçilmedi';
-        invoicePdfLabel = 'Fatura / Makbuz Belgesi';
-        uploadPdfTitle = 'Fatura PDF Yükle';
-        uploadPdfSubtitle = 'PDF belgesi seçmek için dokunun (Maks. 10MB)';
-        tenantLockedStatusNotice = 'Kiracı masrafı kendisi ödemediği sürece ödeme statüsünü değiştiremez. Fatura "İnceleme Bekliyor" olarak yöneticiye iletilir.';
-        break;
-      case 'sr':
-        sectionTitle = 'FINANSIJSKI PODACI & FAKTURA';
-        sectionSubtitle = 'Dodajte trošak popravke i fakturu ako postoji (Opciono).';
-        costLabel = 'Iznos troška';
-        paidByLabel = 'Odgovoran za trošak (Platilac)';
-        tenantLabel = 'Stanar';
-        landlordLabel = 'Vlasnik';
-        unassignedLabel = 'Nije navedeno';
-        statusLabel = 'Status fakture i plaćanja';
-        pendingReviewLabel = 'Čeka proveru';
-        pendingReviewHint = 'Račun se proverava (Ne utiče na bilans)';
-        pendingPaymentLabel = 'Čeka plaćanje';
-        pendingPaymentHint = 'Odobreno • Evidentira se zaduženje';
-        paidLabel = 'Plaćeno';
-        rejectedLabel = 'Odbijeno';
-        paymentDateLabel = 'Datum plaćanja';
-        notSelectedLabel = 'Datum nije izabran';
-        invoicePdfLabel = 'Faktura / Račun';
-        uploadPdfTitle = 'Otpremi PDF račun';
-        uploadPdfSubtitle = 'Dodirnite za izbor PDF-a (Maks. 10MB)';
-        tenantLockedStatusNotice = 'Stanar ne može menjati status plaćanja ukoliko sam ne plaća trošak (biće sačuvano kao Čeka proveru).';
-        break;
-      case 'ru':
-        sectionTitle = 'ФИНАНСОВЫЕ ДАННЫЕ И СЧЕТ';
-        sectionSubtitle = 'Укажите расходы на ремонт и счет при наличии (Необязательно).';
-        costLabel = 'Сумма расходов';
-        paidByLabel = 'Кто оплачивает (Ответственный)';
-        tenantLabel = 'Арендатор';
-        landlordLabel = 'Владелец';
-        unassignedLabel = 'Не указано';
-        statusLabel = 'Статус счета и оплаты';
-        pendingReviewLabel = 'На проверке';
-        pendingReviewHint = 'Счет на проверке (Не влияет на баланс)';
-        pendingPaymentLabel = 'Ожидает оплаты';
-        pendingPaymentHint = 'Одобрено • Отражается к оплате';
-        paidLabel = 'Оплачено';
-        rejectedLabel = 'Отклонено';
-        paymentDateLabel = 'Дата оплаты';
-        notSelectedLabel = 'Дата не выбрана';
-        invoicePdfLabel = 'Счет / Квитанция';
-        uploadPdfTitle = 'Загрузить счет PDF';
-        uploadPdfSubtitle = 'Нажмите для выбора PDF (Макс. 10MB)';
-        tenantLockedStatusNotice = 'Арендатор не может изменить статус оплаты, если не оплачивает сам (сохраняется как На проверке).';
-        break;
-      default:
-        sectionTitle = 'FINANCIAL DETAILS & INVOICE';
-        sectionSubtitle = 'Record maintenance cost and vendor invoice (Optional).';
-        costLabel = 'Cost Amount';
-        paidByLabel = 'Cost Responsibility (Paid By)';
-        tenantLabel = 'Tenant';
-        landlordLabel = 'Landlord / Owner';
-        unassignedLabel = 'Unassigned';
-        statusLabel = 'Invoice & Payment Status';
-        pendingReviewLabel = 'Pending Review';
-        pendingReviewHint = 'Under review (Not reflected on balance)';
-        pendingPaymentLabel = 'Pending Payment';
-        pendingPaymentHint = 'Approved • Reflected as debt/expense';
-        paidLabel = 'Paid';
-        rejectedLabel = 'Rejected';
-        paymentDateLabel = 'Payment Date';
-        notSelectedLabel = 'Date not selected';
-        invoicePdfLabel = 'Invoice / Receipt';
-        uploadPdfTitle = 'Upload Invoice PDF';
-        uploadPdfSubtitle = 'Tap to select PDF file (Max 10MB)';
-        tenantLockedStatusNotice = 'Tenants cannot change payment status unless paying themselves (submitted as Pending Review).';
-        break;
-    }
-
-    final user = ref.watch(currentUserProvider);
-    final isTenant = user?.id != null && user!.id == widget.property.tenantId;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.receipt, size: 16, color: StanomerColors.brandPrimary),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sectionTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        letterSpacing: 0.6,
-                        color: StanomerColors.textTertiary,
-                      ),
-                    ),
-                    Text(
-                      sectionSubtitle,
-                      style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(height: 1),
-          const SizedBox(height: 16),
-
-          // 1. Cost Amount & Currency
-          Text(costLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textSecondary)),
-          const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: TextFormField(
-                  controller: _costController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    hintText: '0.00',
-                    prefixIcon: const Icon(LucideIcons.circleDollarSign, size: 18),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  validator: (value) {
-                    if (value != null && value.trim().isNotEmpty) {
-                      final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
-                      if (parsed == null || parsed < 0) {
-                        return 'Invalid';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 2,
-                child: DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  initialValue: _selectedCurrency,
-                  items: const [
-                    DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', overflow: TextOverflow.ellipsis, maxLines: 1)),
-                    DropdownMenuItem(value: 'RSD', child: Text('RSD', overflow: TextOverflow.ellipsis, maxLines: 1)),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setState(() => _selectedCurrency = val);
-                  },
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // 2. Paid By Section (Read-only for Tenant, Segmented for Manager/Landlord)
-          Text(paidByLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textSecondary)),
-          const SizedBox(height: 6),
-          if (isTenant)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(LucideIcons.lock, size: 16, color: StanomerColors.textTertiary),
-                  SizedBox(width: 10),
-                  Text(
-                    'Yönetici Tarafından Belirlenecektir',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                ],
-              ),
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCreatePayerOption(
-                    label: tenantLabel,
-                    icon: LucideIcons.user,
-                    isSelected: _paidBy == 'tenant',
-                    activeColor: StanomerColors.tenant,
-                    onTap: () => setState(() => _paidBy = 'tenant'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildCreatePayerOption(
-                    label: landlordLabel,
-                    icon: LucideIcons.home,
-                    isSelected: _paidBy == 'landlord',
-                    activeColor: StanomerColors.landlord,
-                    onTap: () => setState(() => _paidBy = 'landlord'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildCreatePayerOption(
-                    label: unassignedLabel,
-                    icon: LucideIcons.helpCircle,
-                    isSelected: _paidBy == null,
-                    activeColor: StanomerColors.textSecondary,
-                    onTap: () => setState(() => _paidBy = null),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 16),
-
-          // 3. Payment Status (Notice for Tenant, 4-State Grid for Manager/Landlord)
-          Text(statusLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textSecondary)),
-          const SizedBox(height: 8),
-
-          if (isTenant) ...[
-            // Tenant locked banner
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEBF3FC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF1A5EB8).withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.info, size: 18, color: Color(0xFF1A5EB8)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      tenantLockedStatusNotice,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF1A5EB8),
-                        fontWeight: FontWeight.w500,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ] else ...[
-            // Management / Landlord full 4-state grid
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.2,
-              children: [
-                _buildCreatePaymentStatusTile(
-                  label: pendingReviewLabel,
-                  subtitle: pendingReviewHint,
-                  icon: LucideIcons.fileSearch,
-                  activeColor: const Color(0xFF1A5EB8),
-                  isSelected: _paymentStatus == 'pending_review' || _paymentStatus == 'pending',
-                  onTap: () => setState(() => _paymentStatus = 'pending_review'),
-                ),
-                _buildCreatePaymentStatusTile(
-                  label: pendingPaymentLabel,
-                  subtitle: pendingPaymentHint,
-                  icon: LucideIcons.clock,
-                  activeColor: StanomerColors.statusPending,
-                  isSelected: _paymentStatus == 'pending_payment',
-                  onTap: () => setState(() => _paymentStatus = 'pending_payment'),
-                ),
-                _buildCreatePaymentStatusTile(
-                  label: paidLabel,
-                  subtitle: 'Ödeme tamamlandı',
-                  icon: LucideIcons.checkCircle2,
-                  activeColor: StanomerColors.statusPaid,
-                  isSelected: _paymentStatus == 'paid',
-                  onTap: () => setState(() => _paymentStatus = 'paid'),
-                ),
-                _buildCreatePaymentStatusTile(
-                  label: rejectedLabel,
-                  subtitle: 'Geçersiz / Reddedildi',
-                  icon: LucideIcons.xCircle,
-                  activeColor: StanomerColors.alertPrimary,
-                  isSelected: _paymentStatus == 'rejected',
-                  onTap: () => setState(() => _paymentStatus = 'rejected'),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
-
-          // 4. Payment Date Picker
-          Text(paymentDateLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textSecondary)),
-          const SizedBox(height: 6),
-          InkWell(
-            onTap: () => _selectPaymentDate(context),
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-                borderRadius: BorderRadius.circular(12),
-                color: isDark ? const Color(0xFF0F172A) : Colors.white,
-              ),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.calendar, size: 16, color: StanomerColors.textSecondary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _paymentDate != null
-                          ? DateFormat('dd MMMM yyyy').format(_paymentDate!)
-                          : notSelectedLabel,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: _paymentDate != null ? FontWeight.w600 : FontWeight.normal,
-                        color: _paymentDate != null ? StanomerColors.textPrimary : StanomerColors.textTertiary,
-                      ),
-                    ),
-                  ),
-                  if (_paymentDate != null)
-                    GestureDetector(
-                      onTap: () => setState(() => _paymentDate = null),
-                      child: const Icon(LucideIcons.x, size: 16, color: StanomerColors.textTertiary),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 5. Invoice PDF Section
-          Text(invoicePdfLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textSecondary)),
-          const SizedBox(height: 6),
-          if (_selectedInvoiceFile != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: StanomerColors.brandPrimary.withValues(alpha: 0.08),
-                border: Border.all(color: StanomerColors.brandPrimary.withValues(alpha: 0.4)),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(LucideIcons.fileText, size: 22, color: Colors.red),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedInvoiceFile!.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${(_selectedInvoiceFile!.size / 1024).toStringAsFixed(1)} KB • PDF Seçildi',
-                          style: const TextStyle(fontSize: 11, color: StanomerColors.brandPrimary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _removeInvoiceFile,
-                    icon: const Icon(LucideIcons.trash2, size: 18, color: StanomerColors.alertPrimary),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
-              ),
-            )
-          else
-            InkWell(
-              onTap: _pickInvoicePdf,
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(LucideIcons.uploadCloud, size: 18, color: StanomerColors.brandPrimary),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          uploadPdfTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                        Text(
-                          uploadPdfSubtitle,
-                          style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCreatePayerOption({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required Color activeColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.12) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? activeColor : StanomerColors.borderDefault,
-            width: isSelected ? 1.5 : 1.0,
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            Icon(icon, size: 18, color: isSelected ? activeColor : StanomerColors.textTertiary),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? activeColor : StanomerColors.textSecondary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCreatePaymentStatusTile({
-    required String label,
-    required String subtitle,
-    required IconData icon,
-    required Color activeColor,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.1) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? activeColor : StanomerColors.borderDefault,
-            width: isSelected ? 1.5 : 1.0,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: isSelected ? activeColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 16, color: isSelected ? activeColor : StanomerColors.textTertiary),
-            ),
-            const SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected ? activeColor : StanomerColors.textPrimary,
+              child: CustomScrollView(
+                slivers: [
+                  // 1. Dynamic Hero Header with Back Button and Property Context
+                  SliverToBoxAdapter(
+                    child: _CreateMaintenanceHeader(
+                      property: widget.property,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isSelected ? activeColor.withValues(alpha: 0.8) : StanomerColors.textTertiary,
+
+                  // 2. Form Body
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── A. Category Selector (Visual Cards) ──
+                            _buildSectionLabel(
+                              icon: LucideIcons.layers,
+                              title: loc.categorySelectorTitle,
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 10),
+                            _VisualCategorySelector(
+                              selectedCategory: _selectedCategory,
+                              onSelectCategory: (cat) => setState(() => _selectedCategory = cat),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // ── B. Priority Selector (Segmented Cards) ──
+                            _buildSectionLabel(
+                              icon: LucideIcons.shieldAlert,
+                              title: loc.prioritySelectorTitle,
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 10),
+                            _SegmentedPrioritySelector(
+                              selectedPriority: _selectedPriority,
+                              onSelectPriority: (p) => setState(() => _selectedPriority = p),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // ── C. Issue Title & Description ──
+                            _buildSectionLabel(
+                              icon: LucideIcons.fileText,
+                              title: loc.issueTitle,
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildTitleInput(loc),
+                            const SizedBox(height: 20),
+
+                            _buildSectionLabel(
+                              icon: LucideIcons.alignLeft,
+                              title: loc.issueDescription,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildDescriptionInput(loc),
+                            const SizedBox(height: 24),
+
+                            // ── D. Photo Attachments Tray ──
+                            _buildSectionLabel(
+                              icon: LucideIcons.camera,
+                              title: loc.photos,
+                              subtitle: loc.photosSubtitle,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 10),
+                            _PhotoAttachmentDropzone(
+                              selectedFiles: _selectedFiles,
+                              onPickImages: _pickImages,
+                              onRemoveFile: _removeFile,
+                            ),
+
+                            // ── E. Financial Section (Landlord & Agency Only) ──
+                            if (!isTenant) ...[
+                              const SizedBox(height: 28),
+                              _CreateMaintenanceFinancialCard(
+                                costController: _costController,
+                                selectedCurrency: _selectedCurrency,
+                                onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
+                                paidBy: _paidBy,
+                                onPaidByChanged: (payer) => setState(() => _paidBy = payer),
+                                paymentStatus: _paymentStatus,
+                                onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
+                                paymentDate: _paymentDate,
+                                onSelectPaymentDate: () => _selectPaymentDate(context),
+                                onClearPaymentDate: () => setState(() => _paymentDate = null),
+                                selectedInvoiceFile: _selectedInvoiceFile,
+                                onPickInvoicePdf: _pickInvoicePdf,
+                                onRemoveInvoiceFile: _removeInvoiceFile,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
+
+            // ── Sticky Bottom Submit Action ──
+            _buildBottomSubmitBar(loc),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPhotoSection(AppLocalizations loc) {
+  Widget _buildSectionLabel({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required bool isRequired,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Icon(icon, size: 15, color: const Color(0xFF0F766E)),
+            const SizedBox(width: 6),
             Text(
-              loc.photos, 
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: StanomerColors.textTertiary)
+              title,
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+                letterSpacing: -0.2,
+              ),
             ),
-            TextButton.icon(
-              onPressed: _pickImages,
-              icon: const Icon(LucideIcons.camera, size: 16),
-              label: Text(loc.add),
-              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-            ),
+            if (isRequired) ...[
+              const SizedBox(width: 4),
+              const Text(
+                '*',
+                style: TextStyle(
+                  color: Color(0xFFE11D48),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ],
         ),
-        if (_selectedFiles.isNotEmpty) ...[
-          const SizedBox(height: 8),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 11.5,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTitleInput(AppLocalizations loc) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: _titleController,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF0F172A),
+        ),
+        decoration: InputDecoration(
+          hintText: loc.issueTitleHint,
+          hintStyle: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.normal,
+            color: Color(0xFF94A3B8),
+          ),
+          prefixIcon: const Icon(LucideIcons.penLine, size: 18, color: Color(0xFF64748B)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        ),
+        validator: (val) => val == null || val.trim().isEmpty ? loc.fieldRequired : null,
+      ),
+    );
+  }
+
+  Widget _buildDescriptionInput(AppLocalizations loc) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: _descriptionController,
+        maxLines: 4,
+        style: const TextStyle(
+          fontSize: 13.5,
+          color: Color(0xFF0F172A),
+          height: 1.4,
+        ),
+        decoration: InputDecoration(
+          hintText: loc.issueDescriptionHint,
+          hintStyle: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF94A3B8),
+            height: 1.4,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomSubmitBar(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _submit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0F766E),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              disabledBackgroundColor: const Color(0xFF0F766E).withValues(alpha: 0.6),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(LucideIcons.send, size: 18, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Text(
+                        loc.sendRequestBtn,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ── Dynamic Hero Header Component ─────────────────────────────
+class _CreateMaintenanceHeader extends StatelessWidget {
+  final Property property;
+
+  const _CreateMaintenanceHeader({
+    required this.property,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF064E3B),
+            Color(0xFF0F766E),
+            Color(0xFF115E59),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F766E).withValues(alpha: 0.3),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // Ambient Background Glow
+          Positioned(
+            right: -25,
+            top: -25,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, topPadding + 8, 16, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Navigation Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.maybePop(context),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(LucideIcons.home, size: 12, color: Colors.white),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              property.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Title & Subtitle
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                      ),
+                      child: const Icon(LucideIcons.plusCircle, color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.reportIssue,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            loc.reportIssueSubtitle,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 11.5,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ── Visual Category Grid Selector ──────────────────────────────
+class _VisualCategorySelector extends StatelessWidget {
+  final MaintenanceCategory selectedCategory;
+  final ValueChanged<MaintenanceCategory> onSelectCategory;
+
+  const _VisualCategorySelector({
+    required this.selectedCategory,
+    required this.onSelectCategory,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    final categories = [
+      _CategoryMeta(MaintenanceCategory.plumbing, loc.categoryPlumbing, LucideIcons.droplets, const Color(0xFF0284C7)),
+      _CategoryMeta(MaintenanceCategory.electrical, loc.categoryElectrical, LucideIcons.zap, const Color(0xFFD97706)),
+      _CategoryMeta(MaintenanceCategory.heating, loc.categoryHeating, LucideIcons.flame, const Color(0xFFEA580C)),
+      _CategoryMeta(MaintenanceCategory.appliance, loc.categoryAppliance, LucideIcons.tv, const Color(0xFF9333EA)),
+      _CategoryMeta(MaintenanceCategory.internet, loc.categoryInternet, LucideIcons.wifi, const Color(0xFF4F46E5)),
+      _CategoryMeta(MaintenanceCategory.structural, loc.categoryStructural, LucideIcons.building2, const Color(0xFF475569)),
+      _CategoryMeta(MaintenanceCategory.other, loc.categoryOther, LucideIcons.wrench, const Color(0xFF0F766E)),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: categories.map((item) {
+        final isSelected = selectedCategory == item.category;
+        return InkWell(
+          onTap: () => onSelectCategory(item.category),
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? item.color.withValues(alpha: 0.12) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? item.color : const Color(0xFFE2E8F0),
+                width: isSelected ? 1.6 : 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  item.icon,
+                  size: 15,
+                  color: isSelected ? item.color : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  item.name,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected ? item.color : const Color(0xFF334155),
+                  ),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: 6),
+                  Icon(LucideIcons.check, size: 13, color: item.color),
+                ],
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _CategoryMeta {
+  final MaintenanceCategory category;
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  const _CategoryMeta(this.category, this.name, this.icon, this.color);
+}
+
+/// ── Segmented Priority Selector (Normal vs. Urgent) ────────────
+class _SegmentedPrioritySelector extends StatelessWidget {
+  final MaintenancePriority selectedPriority;
+  final ValueChanged<MaintenancePriority> onSelectPriority;
+
+  const _SegmentedPrioritySelector({
+    required this.selectedPriority,
+    required this.onSelectPriority,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final isNormal = selectedPriority == MaintenancePriority.normal ||
+        selectedPriority == MaintenancePriority.low ||
+        selectedPriority == MaintenancePriority.medium;
+    final isUrgent = selectedPriority == MaintenancePriority.urgent ||
+        selectedPriority == MaintenancePriority.high;
+
+    return Row(
+      children: [
+        // 1. Normal Priority
+        Expanded(
+          child: InkWell(
+            onTap: () => onSelectPriority(MaintenancePriority.normal),
+            borderRadius: BorderRadius.circular(14),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isNormal ? const Color(0xFF0F766E).withValues(alpha: 0.1) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isNormal ? const Color(0xFF0F766E) : const Color(0xFFE2E8F0),
+                  width: isNormal ? 1.6 : 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isNormal
+                          ? const Color(0xFF0F766E).withValues(alpha: 0.18)
+                          : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      LucideIcons.checkCircle2,
+                      size: 16,
+                      color: isNormal ? const Color(0xFF0F766E) : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.priorityNormal,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: isNormal ? const Color(0xFF0F766E) : const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          loc.priorityNormalDesc,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isNormal ? const Color(0xFF0F766E) : const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // 2. Urgent Priority
+        Expanded(
+          child: InkWell(
+            onTap: () => onSelectPriority(MaintenancePriority.urgent),
+            borderRadius: BorderRadius.circular(14),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isUrgent ? const Color(0xFFFFF1F2) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFFE2E8F0),
+                  width: isUrgent ? 1.6 : 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isUrgent
+                        ? const Color(0xFFE11D48).withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isUrgent ? const Color(0xFFFECDD3) : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      LucideIcons.alertTriangle,
+                      size: 16,
+                      color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.priorityUrgent,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          loc.priorityUrgentDesc,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isUrgent ? const Color(0xFFE11D48) : const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// ── Multi-Photo Attachment Dropzone ────────────────────────────
+class _PhotoAttachmentDropzone extends StatelessWidget {
+  final List<PlatformFile> selectedFiles;
+  final VoidCallback onPickImages;
+  final ValueChanged<int> onRemoveFile;
+
+  const _PhotoAttachmentDropzone({
+    required this.selectedFiles,
+    required this.onPickImages,
+    required this.onRemoveFile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Upload Action Button / Dropzone
+        InkWell(
+          onTap: onPickImages,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFCBD5E1)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F766E).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(LucideIcons.camera, size: 18, color: Color(0xFF0F766E)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        loc.addPhotoFromGallery,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        loc.photosSubtitle,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${selectedFiles.length} / 5',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Photo Preview Strip
+        if (selectedFiles.isNotEmpty) ...[
+          const SizedBox(height: 12),
           SizedBox(
-            height: 100,
+            height: 90,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: _selectedFiles.length,
+              itemCount: selectedFiles.length,
               itemBuilder: (context, index) {
-                final file = _selectedFiles[index];
+                final file = selectedFiles[index];
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 10),
                   child: Stack(
                     children: [
                       Container(
-                        width: 100,
-                        height: 100,
+                        width: 90,
+                        height: 90,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: StanomerColors.borderDefault),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFCBD5E1)),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: file.bytes != null 
-                          ? Image.memory(file.bytes!, fit: BoxFit.cover)
-                          : const Center(child: Icon(LucideIcons.image)),
+                        child: file.bytes != null
+                            ? Image.memory(file.bytes!, fit: BoxFit.cover)
+                            : const Center(child: Icon(LucideIcons.image, color: Color(0xFF94A3B8))),
                       ),
                       Positioned(
                         top: 4,
                         right: 4,
                         child: GestureDetector(
-                          onTap: () => _removeFile(index),
+                          onTap: () => onRemoveFile(index),
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
-                              color: Colors.black54,
+                              color: Colors.black87,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(LucideIcons.x, size: 14, color: Colors.white),
+                            child: const Icon(LucideIcons.x, size: 12, color: Colors.white),
                           ),
                         ),
                       ),
@@ -1052,32 +1141,478 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       ],
     );
   }
-
-  String _getCategoryLabel(MaintenanceCategory cat, AppLocalizations loc) {
-    switch (cat) {
-      case MaintenanceCategory.plumbing: return loc.categoryPlumbing;
-      case MaintenanceCategory.electrical: return loc.categoryElectrical;
-      case MaintenanceCategory.heating: return loc.categoryHeating;
-      case MaintenanceCategory.internet: return loc.categoryInternet;
-      case MaintenanceCategory.appliance: return loc.categoryAppliance;
-      case MaintenanceCategory.structural: return loc.categoryStructural;
-      case MaintenanceCategory.other:
-      default:
-        return loc.categoryOther;
-    }
-  }
-
-  String _getPriorityLabel(MaintenancePriority p, AppLocalizations loc) {
-    switch (p) {
-      case MaintenancePriority.urgent:
-      case MaintenancePriority.high:
-        return loc.priorityUrgent;
-      case MaintenancePriority.normal:
-      case MaintenancePriority.medium:
-      case MaintenancePriority.low:
-      default:
-        return loc.priorityNormal;
-    }
-  }
 }
 
+/// ── Modernized Financial Card (Landlord & Agency Only) ─────────
+class _CreateMaintenanceFinancialCard extends StatelessWidget {
+  final TextEditingController costController;
+  final String selectedCurrency;
+  final ValueChanged<String> onCurrencyChanged;
+  final String? paidBy;
+  final ValueChanged<String?> onPaidByChanged;
+  final String paymentStatus;
+  final ValueChanged<String> onPaymentStatusChanged;
+  final DateTime? paymentDate;
+  final VoidCallback onSelectPaymentDate;
+  final VoidCallback onClearPaymentDate;
+  final PlatformFile? selectedInvoiceFile;
+  final VoidCallback onPickInvoicePdf;
+  final VoidCallback onRemoveInvoiceFile;
+
+  const _CreateMaintenanceFinancialCard({
+    required this.costController,
+    required this.selectedCurrency,
+    required this.onCurrencyChanged,
+    required this.paidBy,
+    required this.onPaidByChanged,
+    required this.paymentStatus,
+    required this.onPaymentStatusChanged,
+    required this.paymentDate,
+    required this.onSelectPaymentDate,
+    required this.onClearPaymentDate,
+    required this.selectedInvoiceFile,
+    required this.onPickInvoicePdf,
+    required this.onRemoveInvoiceFile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F766E).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(LucideIcons.receipt, size: 18, color: Color(0xFF0F766E)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loc.financialSectionTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12.5,
+                        letterSpacing: 0.4,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      loc.financialSectionSubtitle,
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 14),
+
+          // 1. Cost Amount & Currency
+          Text(
+            loc.costAmountLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: TextFormField(
+                    controller: costController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      hintText: '0.00',
+                      prefixIcon: Icon(LucideIcons.circleDollarSign, size: 16, color: Color(0xFF64748B)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    isExpanded: true,
+                    initialValue: selectedCurrency,
+                    items: const [
+                      DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(value: 'RSD', child: Text('RSD', overflow: TextOverflow.ellipsis)),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) onCurrencyChanged(val);
+                    },
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 2. Paid By Section (Payer Selector)
+          Text(
+            loc.paidByLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPayerChip(
+                  label: loc.tenant,
+                  icon: LucideIcons.user,
+                  isSelected: paidBy == 'tenant',
+                  activeColor: StanomerColors.tenant,
+                  onTap: () => onPaidByChanged('tenant'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPayerChip(
+                  label: loc.landlord,
+                  icon: LucideIcons.home,
+                  isSelected: paidBy == 'landlord',
+                  activeColor: StanomerColors.landlord,
+                  onTap: () => onPaidByChanged('landlord'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPayerChip(
+                  label: loc.unassignedLabel,
+                  icon: LucideIcons.helpCircle,
+                  isSelected: paidBy == null,
+                  activeColor: const Color(0xFF64748B),
+                  onTap: () => onPaidByChanged(null),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 3. Payment Status Grid
+          Text(
+            loc.paymentStatusLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 8),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 2.3,
+            children: [
+              _buildStatusTile(
+                label: loc.costPendingReview,
+                subtitle: loc.pendingReviewHint,
+                icon: LucideIcons.search,
+                activeColor: const Color(0xFF0284C7),
+                isSelected: paymentStatus == 'pending_review' || paymentStatus == 'pending',
+                onTap: () => onPaymentStatusChanged('pending_review'),
+              ),
+              _buildStatusTile(
+                label: loc.costDeductFromRent,
+                subtitle: loc.pendingPaymentHint,
+                icon: LucideIcons.clock,
+                activeColor: const Color(0xFFD97706),
+                isSelected: paymentStatus == 'pending_payment',
+                onTap: () => onPaymentStatusChanged('pending_payment'),
+              ),
+              _buildStatusTile(
+                label: loc.paidLabel,
+                subtitle: loc.paymentCompletedSubtitle,
+                icon: LucideIcons.checkCircle2,
+                activeColor: const Color(0xFF059669),
+                isSelected: paymentStatus == 'paid',
+                onTap: () => onPaymentStatusChanged('paid'),
+              ),
+              _buildStatusTile(
+                label: loc.costRejected,
+                subtitle: loc.paymentRejectedSubtitle,
+                icon: LucideIcons.xCircle,
+                activeColor: const Color(0xFFE11D48),
+                isSelected: paymentStatus == 'rejected',
+                onTap: () => onPaymentStatusChanged('rejected'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 4. Payment Date Picker
+          Text(
+            loc.paymentDate,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 6),
+          InkWell(
+            onTap: onSelectPaymentDate,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: 46,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.calendar, size: 16, color: Color(0xFF64748B)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      paymentDate != null
+                          ? DateFormat('dd MMMM yyyy').format(paymentDate!)
+                          : loc.selectDate,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: paymentDate != null ? FontWeight.w600 : FontWeight.normal,
+                        color: paymentDate != null ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
+                  if (paymentDate != null)
+                    GestureDetector(
+                      onTap: onClearPaymentDate,
+                      child: const Icon(LucideIcons.x, size: 16, color: Color(0xFF94A3B8)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 5. Invoice PDF Upload
+          Text(
+            loc.invoicePdfLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 6),
+          if (selectedInvoiceFile != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF1F2),
+                border: Border.all(color: const Color(0xFFFECDD3)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(LucideIcons.fileText, size: 20, color: Colors.red),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selectedInvoiceFile!.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${(selectedInvoiceFile!.size / 1024).toStringAsFixed(1)} KB • PDF',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFFE11D48)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onRemoveInvoiceFile,
+                    icon: const Icon(LucideIcons.trash2, size: 18, color: Color(0xFFE11D48)),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+            )
+          else
+            InkWell(
+              onTap: onPickInvoicePdf,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.uploadCloud, size: 18, color: Color(0xFF0F766E)),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.uploadPdfTitle,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF0F172A)),
+                        ),
+                        Text(
+                          loc.uploadPdfSubtitle,
+                          style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayerChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.12) : const Color(0xFFF8FAFC),
+          border: Border.all(
+            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 16, color: isSelected ? activeColor : const Color(0xFF64748B)),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? activeColor : const Color(0xFF475569),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusTile({
+    required String label,
+    required String subtitle,
+    required IconData icon,
+    required Color activeColor,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+          border: Border.all(
+            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 14, color: isSelected ? activeColor : const Color(0xFF94A3B8)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isSelected ? activeColor : const Color(0xFF0F172A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: isSelected ? activeColor : const Color(0xFF94A3B8),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

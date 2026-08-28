@@ -1451,5 +1451,30 @@
       }
     }
   },
-  "viewDetailsAction": "Pogledaj detalje"
+  "viewDetailsAction": "Pogledaj detalje",
+  "reportIssueSubtitle": "Prijavite kvar ili potrebu za održavanjem uz fotografije za brže rešavanje.",
+  "issueTitleHint": "Npr: Curenje vode ispod sudopere u kuhinji",
+  "issueDescriptionHint": "Opišite tačnu lokaciju kvara, kada je počeo i detalje...",
+  "priorityNormalDesc": "Standardan postupak popravke i održavanja",
+  "priorityUrgentDesc": "Poplava, opasnost od struje ili hitna intervencija",
+  "photosSubtitle": "Dodajte jasne fotografije kvara (Maks. 5)",
+  "addPhotoFromGallery": "Otpremi fotografije",
+  "sendRequestBtn": "Pošalji prijavu kvara",
+  "categorySelectorTitle": "Kategorija kvara",
+  "prioritySelectorTitle": "Nivo prioriteta",
+  "financialSectionTitle": "FINANSIJSKI PODACI & FAKTURA",
+  "financialSectionSubtitle": "Dodajte trošak popravke i fakturu ako postoji (Opciono).",
+  "costAmountLabel": "Iznos troška",
+  "paidByLabel": "Odgovoran za trošak",
+  "unassignedLabel": "Nije navedeno",
+  "paymentStatusLabel": "Status fakture i plaćanja",
+  "pendingReviewHint": "Račun se proverava (Ne utiče na bilans)",
+  "pendingPaymentHint": "Odobreno • Evidentira se zaduženje",
+  "paymentCompletedSubtitle": "Plaćanje završeno",
+  "paymentRejectedSubtitle": "Nevažeće / Odbijeno",
+  "invoicePdfLabel": "Faktura / Račun",
+  "uploadPdfTitle": "Otpremi PDF račun",
+  "uploadPdfSubtitle": "Dodirnite za izbor PDF-a (Maks. 10MB)",
+  "tenantLockedStatusNotice": "Stanar ne može menjati status plaćanja ukoliko sam ne plaća trošak (biće sačuvano kao Čeka proveru).",
+  "payerRequiredError": "Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja."
 }

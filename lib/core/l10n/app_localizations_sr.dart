@@ -2907,6 +2907,87 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get viewDetailsAction => 'Pogledaj detalje';
+
+  @override
+  String get reportIssueSubtitle =>
+      'Prijavite kvar ili potrebu za održavanjem uz fotografije za brže rešavanje.';
+
+  @override
+  String get issueTitleHint => 'Npr: Curenje vode ispod sudopere u kuhinji';
+
+  @override
+  String get issueDescriptionHint =>
+      'Opišite tačnu lokaciju kvara, kada je počeo i detalje...';
+
+  @override
+  String get priorityNormalDesc => 'Standardan postupak popravke i održavanja';
+
+  @override
+  String get priorityUrgentDesc =>
+      'Poplava, opasnost od struje ili hitna intervencija';
+
+  @override
+  String get photosSubtitle => 'Dodajte jasne fotografije kvara (Maks. 5)';
+
+  @override
+  String get addPhotoFromGallery => 'Otpremi fotografije';
+
+  @override
+  String get sendRequestBtn => 'Pošalji prijavu kvara';
+
+  @override
+  String get categorySelectorTitle => 'Kategorija kvara';
+
+  @override
+  String get prioritySelectorTitle => 'Nivo prioriteta';
+
+  @override
+  String get financialSectionTitle => 'FINANSIJSKI PODACI & FAKTURA';
+
+  @override
+  String get financialSectionSubtitle =>
+      'Dodajte trošak popravke i fakturu ako postoji (Opciono).';
+
+  @override
+  String get costAmountLabel => 'Iznos troška';
+
+  @override
+  String get paidByLabel => 'Odgovoran za trošak';
+
+  @override
+  String get unassignedLabel => 'Nije navedeno';
+
+  @override
+  String get paymentStatusLabel => 'Status fakture i plaćanja';
+
+  @override
+  String get pendingReviewHint => 'Račun se proverava (Ne utiče na bilans)';
+
+  @override
+  String get pendingPaymentHint => 'Odobreno • Evidentira se zaduženje';
+
+  @override
+  String get paymentCompletedSubtitle => 'Plaćanje završeno';
+
+  @override
+  String get paymentRejectedSubtitle => 'Nevažeće / Odbijeno';
+
+  @override
+  String get invoicePdfLabel => 'Faktura / Račun';
+
+  @override
+  String get uploadPdfTitle => 'Otpremi PDF račun';
+
+  @override
+  String get uploadPdfSubtitle => 'Dodirnite za izbor PDF-a (Maks. 10MB)';
+
+  @override
+  String get tenantLockedStatusNotice =>
+      'Stanar ne može menjati status plaćanja ukoliko sam ne plaća trošak (biće sačuvano kao Čeka proveru).';
+
+  @override
+  String get payerRequiredError =>
+      'Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -5735,4 +5816,85 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get viewDetailsAction => 'Погледај детаље';
+
+  @override
+  String get reportIssueSubtitle =>
+      'Пријавите квар или потребу за одржавањем уз фотографије за брже решавање.';
+
+  @override
+  String get issueTitleHint => 'Нпр: Цурење воде испод судопере у кухињи';
+
+  @override
+  String get issueDescriptionHint =>
+      'Опишите тачну локацију квара, када је почео и детаље...';
+
+  @override
+  String get priorityNormalDesc => 'Стандардан поступак поправке и одржавања';
+
+  @override
+  String get priorityUrgentDesc =>
+      'Поплава, опасност од струје или хитна интервенција';
+
+  @override
+  String get photosSubtitle => 'Додајте јасне фотографије квара (Макс. 5)';
+
+  @override
+  String get addPhotoFromGallery => 'Отпреми фотографије';
+
+  @override
+  String get sendRequestBtn => 'Пошаљи пријаву квара';
+
+  @override
+  String get categorySelectorTitle => 'Категорија квара';
+
+  @override
+  String get prioritySelectorTitle => 'Ниво приоритета';
+
+  @override
+  String get financialSectionTitle => 'ФИНАНСИЈСКИ ПОДАЦИ & ФАКТУРА';
+
+  @override
+  String get financialSectionSubtitle =>
+      'Додајте трошак поправке и фактуру ако постоји (Опционо).';
+
+  @override
+  String get costAmountLabel => 'Износ трошка';
+
+  @override
+  String get paidByLabel => 'Одговоран за трошак';
+
+  @override
+  String get unassignedLabel => 'Није наведено';
+
+  @override
+  String get paymentStatusLabel => 'Статус фактуре и плаћања';
+
+  @override
+  String get pendingReviewHint => 'Рачун се проверава (Не утиче на биланс)';
+
+  @override
+  String get pendingPaymentHint => 'Одобрено • Евидентира се задужење';
+
+  @override
+  String get paymentCompletedSubtitle => 'Плаћање завршено';
+
+  @override
+  String get paymentRejectedSubtitle => 'Неважеће / Одбијено';
+
+  @override
+  String get invoicePdfLabel => 'Фактура / Рачун';
+
+  @override
+  String get uploadPdfTitle => 'Отпреми PDF рачун';
+
+  @override
+  String get uploadPdfSubtitle => 'Додирните за избор PDF-а (Макс. 10MB)';
+
+  @override
+  String get tenantLockedStatusNotice =>
+      'Станар не може мењати статус плаћања уколико сам не плаћа трошак (биће сачувано као Чека проверу).';
+
+  @override
+  String get payerRequiredError =>
+      'Молимо изаберите ко плаћа трошак пре постављања статуса плаћања.';
 }
