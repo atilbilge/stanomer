@@ -367,77 +367,35 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(width: 8),
-
-          // Action 1: Overview / Info Button
-          _buildHeaderActionButton(
-            label: loc.overview,
-            icon: LucideIcons.info,
-            isWideScreen: isWideScreen,
-            isActive: isWideScreen && selectedSidebarIndex == 0,
-            onTap: () => onOpenPanel(0),
-          ),
-
-          const SizedBox(width: 6),
-
-          // Action 2: History / Activity Button
-          _buildHeaderActionButton(
-            label: loc.activity,
-            icon: LucideIcons.history,
-            isWideScreen: isWideScreen,
-            isActive: isWideScreen && selectedSidebarIndex == 1,
-            onTap: () => onOpenPanel(1),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderActionButton({
-    required String label,
-    required IconData icon,
-    required bool isWideScreen,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return Tooltip(
-      message: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          height: 34,
-          padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 10 : 8),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.22),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: isActive ? StanomerColors.brandPrimary : Colors.white,
-              ),
-              if (isWideScreen) ...[
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: isActive ? StanomerColors.brandPrimary : Colors.white,
+          // Action on Mobile only: Overview / Info Button
+          if (!isWideScreen) ...[
+            const SizedBox(width: 8),
+            Tooltip(
+              message: loc.overview,
+              child: InkWell(
+                onTap: () => onOpenPanel(0),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  height: 34,
+                  width: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    LucideIcons.info,
+                    size: 17,
+                    color: Colors.white,
                   ),
                 ),
-              ],
-            ],
-          ),
-        ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -95,12 +95,11 @@ void main() {
       expect(find.text('Luxury Residence 10A'), findsWidgets);
       expect(find.text('Terazije 25, Belgrade'), findsWidgets);
 
-      // Check Overview (Info) and Activity (History) Action buttons are present in header
+      // Check only Overview (Info) action button is present in mobile header
       expect(find.byIcon(LucideIcons.info), findsOneWidget);
-      expect(find.byIcon(LucideIcons.history), findsOneWidget);
     });
 
-    testWidgets('tapping overview pill opens Overview Modal Sheet with contract info on mobile', (tester) async {
+    testWidgets('tapping info button opens Overview Modal Sheet with contract info on mobile', (tester) async {
       tester.view.physicalSize = const Size(412, 915);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -143,7 +142,7 @@ void main() {
       expect(find.text('Luxury Residence 10A'), findsWidgets);
     });
 
-    testWidgets('tapping activity pill opens Overview & Activity Modal Sheet with Activity tab active', (tester) async {
+    testWidgets('tapping activity tab inside modal sheet shows activity timeline', (tester) async {
       tester.view.physicalSize = const Size(412, 915);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -177,8 +176,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on Activity Action Icon Button
-      await tester.tap(find.byIcon(LucideIcons.history));
+      // Tap on Info Action Icon Button on mobile
+      await tester.tap(find.byIcon(LucideIcons.info));
+      await tester.pumpAndSettle();
+
+      // Switch to Activity Tab inside modal sheet
+      await tester.tap(find.text('Aktivite'));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -219,6 +222,9 @@ void main() {
 
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
+
+      // On wide screen, info button is hidden in header (panel is side-by-side)
+      expect(find.byIcon(LucideIcons.info), findsNothing);
 
       // Both financials on left and overview/activity panel on right are displayed simultaneously on wide screen
       expect(find.text('Luxury Residence 10A'), findsWidgets);
