@@ -12,6 +12,7 @@ import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
 import 'package:stanomer/features/property/domain/contract.dart';
 import 'package:stanomer/features/property/domain/activity_log.dart';
 import 'package:stanomer/core/providers/agency_branding_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class _FakeAgencyBrandingNotifier extends StateNotifier<AgencyBrandingState> implements AgencyBrandingNotifier {
   _FakeAgencyBrandingNotifier() : super(const AgencyBrandingState());
@@ -94,9 +95,9 @@ void main() {
       expect(find.text('Luxury Residence 10A'), findsWidgets);
       expect(find.text('Terazije 25, Belgrade'), findsWidgets);
 
-      // Check Overview and Activity Pills are present in header
-      expect(find.text('Genel Bakış'), findsWidgets);
-      expect(find.text('Aktivite'), findsWidgets);
+      // Check Overview (Info) and Activity (History) Action buttons are present in header
+      expect(find.byIcon(LucideIcons.info), findsOneWidget);
+      expect(find.byIcon(LucideIcons.history), findsOneWidget);
     });
 
     testWidgets('tapping overview pill opens Overview Modal Sheet with contract info on mobile', (tester) async {
@@ -133,8 +134,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on Overview Action Pill
-      await tester.tap(find.text('Genel Bakış').first);
+      // Tap on Overview Action Icon Button
+      await tester.tap(find.byIcon(LucideIcons.info));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -176,8 +177,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on Activity Action Pill
-      await tester.tap(find.text('Aktivite').first);
+      // Tap on Activity Action Icon Button
+      await tester.tap(find.byIcon(LucideIcons.history));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
 

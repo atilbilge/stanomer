@@ -261,184 +261,182 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.fromLTRB(12, topPadding + 6, 12, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Row 1: Back + Clickable Title & Address
-          Padding(
-            padding: EdgeInsets.fromLTRB(12, topPadding + 6, 12, 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Back Button
-                InkWell(
-                  onTap: () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.maybePop(context);
-                    } else {
-                      context.go('/dashboard');
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                    ),
-                    child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 18),
-                  ),
-                ),
-                const SizedBox(width: 10),
+          // Back Button
+          InkWell(
+            onTap: () {
+              if (Navigator.canPop(context)) {
+                Navigator.maybePop(context);
+              } else {
+                context.go('/dashboard');
+              }
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              ),
+              child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 18),
+            ),
+          ),
+          const SizedBox(width: 10),
 
-                // Clickable Property Title & Status
-                Expanded(
-                  child: InkWell(
-                    onTap: () => onOpenPanel(0),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  property.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: isContractEnded
-                                      ? Colors.red.withValues(alpha: 0.25)
-                                      : (isRented
-                                          ? const Color(0xFF10B981).withValues(alpha: 0.28)
-                                          : Colors.orange.withValues(alpha: 0.28)),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isContractEnded
-                                        ? Colors.red.withValues(alpha: 0.45)
-                                        : (isRented
-                                            ? const Color(0xFF10B981).withValues(alpha: 0.55)
-                                            : Colors.orange.withValues(alpha: 0.55)),
-                                  ),
-                                ),
-                                child: Text(
-                                  isContractEnded
-                                      ? loc.ended
-                                      : (isRented ? loc.activeLease : loc.statusVacant),
-                                  style: TextStyle(
-                                    color: isContractEnded
-                                        ? const Color(0xFFFCA5A5)
-                                        : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
+          // Clickable Property Title & Status
+          Expanded(
+            child: InkWell(
+              onTap: () => onOpenPanel(0),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            property.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(LucideIcons.mapPin, size: 10.5, color: Colors.white70),
-                              const SizedBox(width: 3),
-                              Flexible(
-                                child: Text(
-                                  property.address,
-                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isContractEnded
+                                ? Colors.red.withValues(alpha: 0.25)
+                                : (isRented
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.28)
+                                    : Colors.orange.withValues(alpha: 0.28)),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: isContractEnded
+                                  ? Colors.red.withValues(alpha: 0.45)
+                                  : (isRented
+                                      ? const Color(0xFF10B981).withValues(alpha: 0.55)
+                                      : Colors.orange.withValues(alpha: 0.55)),
+                            ),
                           ),
-                        ],
-                      ),
+                          child: Text(
+                            isContractEnded
+                                ? loc.ended
+                                : (isRented ? loc.activeLease : loc.statusVacant),
+                            style: TextStyle(
+                              color: isContractEnded
+                                  ? const Color(0xFFFCA5A5)
+                                  : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.mapPin, size: 10.5, color: Colors.white70),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            property.address,
+                            style: const TextStyle(color: Colors.white70, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
 
-          // Row 2: Secondary Hub Pills [ Overview / Contract ] & [ Activities ]
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
-            child: Row(
-              children: [
-                _buildHeaderPill(
-                  label: loc.overview,
-                  icon: LucideIcons.fileText,
-                  isActive: isWideScreen && selectedSidebarIndex == 0,
-                  onTap: () => onOpenPanel(0),
-                ),
-                const SizedBox(width: 8),
-                _buildHeaderPill(
-                  label: loc.activity,
-                  icon: LucideIcons.history,
-                  isActive: isWideScreen && selectedSidebarIndex == 1,
-                  onTap: () => onOpenPanel(1),
-                ),
-              ],
-            ),
+          const SizedBox(width: 8),
+
+          // Action 1: Overview / Info Button
+          _buildHeaderActionButton(
+            label: loc.overview,
+            icon: LucideIcons.info,
+            isWideScreen: isWideScreen,
+            isActive: isWideScreen && selectedSidebarIndex == 0,
+            onTap: () => onOpenPanel(0),
+          ),
+
+          const SizedBox(width: 6),
+
+          // Action 2: History / Activity Button
+          _buildHeaderActionButton(
+            label: loc.activity,
+            icon: LucideIcons.history,
+            isWideScreen: isWideScreen,
+            isActive: isWideScreen && selectedSidebarIndex == 1,
+            onTap: () => onOpenPanel(1),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderPill({
+  Widget _buildHeaderActionButton({
     required String label,
     required IconData icon,
+    required bool isWideScreen,
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.25),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13,
-              color: isActive ? StanomerColors.brandPrimary : Colors.white,
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 34,
+          padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 10 : 8),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.22),
             ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
                 color: isActive ? StanomerColors.brandPrimary : Colors.white,
               ),
-            ),
-          ],
+              if (isWideScreen) ...[
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? StanomerColors.brandPrimary : Colors.white,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
