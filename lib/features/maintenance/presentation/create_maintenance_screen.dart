@@ -268,33 +268,39 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       final isTenant = widget.property.tenantId == user?.id ||
           profileRole == 'tenant' ||
           (!isLandlord && !isAgency);
-
-      final double? finalCostAmount = isTenant ? null : costAmount;
-      final String? finalCurrency =
-          (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
-      final String? finalPaidBy = isTenant ? null : _paidBy;
-      final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
-      final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
-
       final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+      final isPayerLocked = !isAgencyManaged || !isAgency;
+      final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : (_paidBy ?? 'landlord');
+
+      final double? finalCostAmount = costAmount;
+      final String? finalCurrency = (finalCostAmount == null) ? null : _selectedCurrency;
+      final String? finalPaidBy = (finalCostAmount == null) ? null : effectivePaidBy;
+      final DateTime? finalPaymentDate = (finalCostAmount == null) ? null : (_paymentDate ?? DateTime.now());
+      final String? finalInvoicePdfUrl = (finalCostAmount == null) ? null : invoicePdfUrl;
+
       String finalPaymentStatus = 'pending_review';
 
-      if (finalCostAmount != null && !isTenant) {
+      if (finalCostAmount != null && finalCostAmount > 0) {
         if (isAgencyManaged) {
           if (isAgency) {
-            finalPaymentStatus = (_paidBy == 'tenant') ? 'pending_payment' : 'paid';
+            finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_payment';
+          } else if (isLandlord) {
+            finalPaymentStatus = (_paymentStatus == 'paid')
+                ? 'pending_agency_approval'
+                : 'pending_opposite_approval';
           } else {
-            // Landlord on agency property
-            finalPaymentStatus = (_paidBy == 'tenant')
-                ? 'pending_opposite_approval'
+            // Tenant on agency property
+            finalPaymentStatus = (_paymentStatus == 'paid')
+                ? 'paid'
                 : 'pending_agency_approval';
           }
         } else {
           // Self-managed property (direct landlord-tenant)
-          if (_paidBy == 'tenant') {
-            finalPaymentStatus = 'pending_review';
+          if (effectivePaidBy == 'tenant') {
+            finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_review';
           } else {
-            finalPaymentStatus = 'paid';
+            // Landlord
+            finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_review';
           }
         }
       }
@@ -316,12 +322,21 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           );
 
       if (finalCostAmount != null && finalCostAmount > 0) {
-        final chargeType = _paidBy == 'tenant'
-            ? 'reimbursement'
-            : (_paidBy == 'landlord' ? 'direct_charge' : 'direct_charge');
+        final chargeType = effectivePaidBy == 'tenant'
+            ? (_paymentStatus == 'paid' ? 'direct_charge' : 'reimbursement')
+            : 'direct_charge';
         final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
-        final debtorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
-        final creditorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
+        final debtorId = effectivePaidBy == 'landlord'
+            ? (_paymentStatus == 'paid' ? widget.property.landlordId : widget.property.tenantId)
+            : (_paymentStatus == 'paid' ? widget.property.tenantId : widget.property.landlordId);
+        final creditorId = effectivePaidBy == 'landlord'
+            ? widget.property.landlordId
+            : widget.property.tenantId;
+
+        final chargeStatus = finalPaymentStatus == 'paid'
+            ? 'paid'
+            : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending');
+        final settlementMethod = _paymentStatus == 'paid' ? 'separate_payment' : 'rent_offset';
 
         try {
           await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
@@ -338,8 +353,8 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
               amount: finalCostAmount,
               settledAmount: 0.0,
               currency: finalCurrency ?? 'EUR',
-              status: finalPaymentStatus == 'paid' ? 'paid' : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending'),
-              settlementMethod: _paymentStatus == 'paid' ? 'separate_payment' : 'rent_offset',
+              status: chargeStatus,
+              settlementMethod: settlementMethod,
               receiptUrl: finalInvoicePdfUrl,
               declaredAt: finalPaymentDate ?? DateTime.now(),
               paidAt: finalPaymentStatus == 'paid' ? (finalPaymentDate ?? DateTime.now()) : null,
@@ -392,6 +407,9 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     final isTenant = widget.property.tenantId == user?.id ||
         profileRole == 'tenant' ||
         (!isLandlord && !isAgency);
+    final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final isPayerLocked = !isAgencyManaged || !isAgency;
+    final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : (_paidBy ?? 'landlord');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -477,28 +495,27 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
                               onRemoveFile: _removeFile,
                             ),
 
-                            // ── E. Financial Section (Landlord & Agency Only) ──
-                            if (!isTenant) ...[
-                              const SizedBox(height: 28),
-                              _CreateMaintenanceFinancialCard(
-                                costController: _costController,
-                                selectedCurrency: _selectedCurrency,
-                                onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
-                                paidBy: _paidBy,
-                                onPaidByChanged: (payer) => setState(() {
-                                  _paidBy = payer;
-                                  _paymentStatus = null;
-                                }),
-                                paymentStatus: _paymentStatus,
-                                onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
-                                paymentDate: _paymentDate,
-                                onSelectPaymentDate: () => _selectPaymentDate(context),
-                                onClearPaymentDate: () => setState(() => _paymentDate = null),
-                                selectedInvoiceFile: _selectedInvoiceFile,
-                                onPickInvoicePdf: _pickInvoicePdf,
-                                onRemoveInvoiceFile: _removeInvoiceFile,
-                              ),
-                            ],
+                            // ── E. Financial Section (Available to Landlord, Agency & Tenant) ──
+                            const SizedBox(height: 28),
+                            _CreateMaintenanceFinancialCard(
+                              costController: _costController,
+                              selectedCurrency: _selectedCurrency,
+                              onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
+                              paidBy: effectivePaidBy,
+                              isPayerLocked: isPayerLocked,
+                              onPaidByChanged: (payer) => setState(() {
+                                _paidBy = payer;
+                                _paymentStatus = null;
+                              }),
+                              paymentStatus: _paymentStatus,
+                              onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
+                              paymentDate: _paymentDate,
+                              onSelectPaymentDate: () => _selectPaymentDate(context),
+                              onClearPaymentDate: () => setState(() => _paymentDate = null),
+                              selectedInvoiceFile: _selectedInvoiceFile,
+                              onPickInvoicePdf: _pickInvoicePdf,
+                              onRemoveInvoiceFile: _removeInvoiceFile,
+                            ),
                           ],
                         ),
                       ),
@@ -1250,12 +1267,13 @@ class _PhotoAttachmentDropzone extends StatelessWidget {
   }
 }
 
-/// ── Modernized Financial Card (Landlord & Agency Only) ─────────
+/// ── Modernized Financial Card ─────────
 class _CreateMaintenanceFinancialCard extends StatelessWidget {
   final TextEditingController costController;
   final String selectedCurrency;
   final ValueChanged<String> onCurrencyChanged;
   final String? paidBy;
+  final bool isPayerLocked;
   final ValueChanged<String> onPaidByChanged;
   final String? paymentStatus;
   final ValueChanged<String> onPaymentStatusChanged;
@@ -1271,6 +1289,7 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
     required this.selectedCurrency,
     required this.onCurrencyChanged,
     required this.paidBy,
+    this.isPayerLocked = false,
     required this.onPaidByChanged,
     required this.paymentStatus,
     required this.onPaymentStatusChanged,
@@ -1520,6 +1539,39 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
   }
 
   Widget _buildPayerSelector(AppLocalizations loc, String? currentPayer) {
+    if (isPayerLocked) {
+      final isTenant = currentPayer == 'tenant';
+      final activeColor = isTenant ? const Color(0xFF059669) : const Color(0xFF2563EB);
+      final label = isTenant ? loc.payerTenant : loc.payerLandlord;
+      final icon = isTenant ? LucideIcons.user : LucideIcons.home;
+
+      return Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: activeColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: activeColor.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: activeColor),
+            const SizedBox(width: 8),
+            Text(
+              '$label (${loc.roleYou})',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: activeColor,
+              ),
+            ),
+            const Spacer(),
+            Icon(LucideIcons.lock, size: 13, color: activeColor.withValues(alpha: 0.6)),
+          ],
+        ),
+      );
+    }
+
     return Container(
       height: 40,
       padding: const EdgeInsets.all(2),
