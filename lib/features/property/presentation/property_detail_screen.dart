@@ -6405,21 +6405,27 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           ] else if (!isManagedByAgency && isLandlord && isAddToRent && isPendingPayment) ...[
                             const SizedBox(width: 8),
                             Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _handleConfirmReceipt(request),
-                                icon: const Icon(LucideIcons.checkCheck, size: 14),
-                                label: Text(
-                                  loc.confirmReceiptBtn,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFFDE68A)),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF059669),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  elevation: 0,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(LucideIcons.clock, size: 13, color: Color(0xFFD97706)),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        loc.waitingForTenantPayment,
+                                        style: const TextStyle(fontSize: 11, color: Color(0xFFB45309), fontWeight: FontWeight.w600),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
