@@ -4382,6 +4382,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               ],
             ],
           ],
+        ],
         ),
       ),
     ),
