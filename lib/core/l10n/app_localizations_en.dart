@@ -2344,7 +2344,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get costAmount => 'Cost Amount';
 
   @override
-  String get costResponsibility => 'Cost Responsibility';
+  String get costResponsibility => 'Who Paid the Cost?';
+
+  @override
+  String get whoPaidTheCost => 'Who Paid the Cost?';
 
   @override
   String get paymentInvoiceStatus => 'Payment & Invoice Status';
@@ -2373,7 +2376,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String declaredAmountTitle(String amount) {
-    return 'Declared Amount: $amount • Please select final cost responsibility:';
+    return 'Declared Amount: $amount • Please select who paid the cost:';
   }
 
   @override
@@ -2513,43 +2516,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get intentTenantSelfTitle =>
-      'I Paid for My Own Usage (Tenant Usage Damage)';
+      'Tenant Paid for Own Usage (Tenant Usage Damage)';
 
   @override
   String get intentTenantSelfSub =>
-      'Amount stays with me. No rent deduction requested, close as paid.';
+      'Amount stays with the tenant. No rent deduction requested, closed as paid.';
 
   @override
   String get intentTenantSelfBadge => 'Paid • Tenant Cost';
 
   @override
   String get intentTenantReimburseTitle =>
-      'I Paid for Property Fixture (To be Covered by Landlord)';
+      'Tenant Paid for Property Fixture (To be Covered by Landlord)';
 
   @override
   String get intentTenantReimburseSub =>
-      'I paid fixture repair in advance. Please deduct from next rent or reimburse.';
+      'Tenant paid fixture repair in advance. Requests deduction from next rent or reimbursement.';
 
   @override
   String get intentTenantReimburseBadge => 'Deduct from Rent';
 
   @override
   String get intentLandlordSelfTitle =>
-      'I Covered for Property Fixture (Landlord\'s Expense)';
+      'Landlord Paid for Property Fixture (Landlord\'s Expense)';
 
   @override
   String get intentLandlordSelfSub =>
-      'Fixture cost covered by landlord. No tenant reimbursement requested, close as paid.';
+      'Fixture cost covered by landlord. Not charged to tenant, closed as paid.';
 
   @override
   String get intentLandlordSelfBadge => 'Paid • Landlord';
 
   @override
-  String get intentLandlordTenantDueTitle => 'I Paid for Tenant Usage / Damage';
+  String get intentLandlordTenantDueTitle =>
+      'Landlord Paid for Tenant Usage / Damage (Charge to Tenant)';
 
   @override
   String get intentLandlordTenantDueSub =>
-      'Damage caused by tenant usage. Please add amount to tenant\'s next rent.';
+      'Damage caused by tenant usage. Amount requested to be added to tenant\'s next rent.';
 
   @override
   String get intentLandlordTenantDueBadge => 'Add to Rent';

@@ -4375,8 +4375,14 @@ abstract class AppLocalizations {
   /// No description provided for @costResponsibility.
   ///
   /// In sr, this message translates to:
-  /// **'Odgovoran za trošak'**
+  /// **'Ko je platio trošak?'**
   String get costResponsibility;
+
+  /// No description provided for @whoPaidTheCost.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ko je platio trošak?'**
+  String get whoPaidTheCost;
 
   /// No description provided for @paymentInvoiceStatus.
   ///
@@ -4429,7 +4435,7 @@ abstract class AppLocalizations {
   /// No description provided for @declaredAmountTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Prijavljeni iznos: {amount} • Izaberite konačnu odgovornost za trošak:'**
+  /// **'Prijavljeni iznos: {amount} • Izaberite ko je platio trošak:'**
   String declaredAmountTitle(String amount);
 
   /// No description provided for @expenseApprovalResponsibility.
@@ -4663,31 +4669,31 @@ abstract class AppLocalizations {
   /// No description provided for @intentTenantSelfTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Platio sam za sopstvenu upotrebu (Kvar usled korišćenja)'**
+  /// **'Stanar je platio za sopstvenu upotrebu (Kvar usled korišćenja)'**
   String get intentTenantSelfTitle;
 
   /// No description provided for @intentTenantSelfSub.
   ///
   /// In sr, this message translates to:
-  /// **'Trošak ostaje na meni. Ne tražim refundaciju, zatvara se kao plaćeno.'**
+  /// **'Trošak ostaje na stanaru. Ne traži se refundacija, zatvara se kao plaćeno.'**
   String get intentTenantSelfSub;
 
   /// No description provided for @intentTenantSelfBadge.
   ///
   /// In sr, this message translates to:
-  /// **'Plaćeno • Lični trošak'**
+  /// **'Plaćeno • Trošak stanara'**
   String get intentTenantSelfBadge;
 
   /// No description provided for @intentTenantReimburseTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Platio sam za investiciono održavanje (U ime vlasnika)'**
+  /// **'Stanar je platio za investiciono održavanje (U ime vlasnika)'**
   String get intentTenantReimburseTitle;
 
   /// No description provided for @intentTenantReimburseSub.
   ///
   /// In sr, this message translates to:
-  /// **'Predujmio sam trošak demirbaša. Molim odbitak od sledeće kirije ili refundaciju.'**
+  /// **'Stanar je predujmio trošak demirbaša. Traži se odbitak od sledeće kirije ili refundacija.'**
   String get intentTenantReimburseSub;
 
   /// No description provided for @intentTenantReimburseBadge.
@@ -4699,13 +4705,13 @@ abstract class AppLocalizations {
   /// No description provided for @intentLandlordSelfTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Pokrio sam za investiciono održavanje (Demirbaš)'**
+  /// **'Vlasnik je platio za investiciono održavanje (Demirbaš)'**
   String get intentLandlordSelfTitle;
 
   /// No description provided for @intentLandlordSelfSub.
   ///
   /// In sr, this message translates to:
-  /// **'Trošak je na vlasniku. Ne potražuje se od stanara, zatvara se kao plaćeno.'**
+  /// **'Trošak snosi vlasnik. Ne potražuje se od stanara, zatvara se kao plaćeno.'**
   String get intentLandlordSelfSub;
 
   /// No description provided for @intentLandlordSelfBadge.
@@ -4717,7 +4723,7 @@ abstract class AppLocalizations {
   /// No description provided for @intentLandlordTenantDueTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Platio sam za kvar usled upotrebe stanara'**
+  /// **'Vlasnik je platio za kvar usled upotrebe stanara (Na teret stanara)'**
   String get intentLandlordTenantDueTitle;
 
   /// No description provided for @intentLandlordTenantDueSub.

@@ -2340,7 +2340,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get costAmount => 'Maliyet Tutarı';
 
   @override
-  String get costResponsibility => 'Maliyet Sorumlusu';
+  String get costResponsibility => 'Masrafı Kim Ödedi?';
+
+  @override
+  String get whoPaidTheCost => 'Masrafı Kim Ödedi?';
 
   @override
   String get paymentInvoiceStatus => 'Ödeme & Fatura Durumu';
@@ -2366,11 +2369,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get enterAmountAttachReceipt =>
-      'Ödediğiniz tutarı girip fiş/fatura belgesini yükleyin.';
+      'Ödenen tutarı girip fiş/fatura belgesini yükleyin.';
 
   @override
   String declaredAmountTitle(String amount) {
-    return 'Bildirilen Tutar: $amount • Lütfen nihai maliyet sorumlusunu seçiniz:';
+    return 'Bildirilen Tutar: $amount • Lütfen masrafı kimin ödediğini seçiniz:';
   }
 
   @override
@@ -2512,44 +2515,44 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get intentTenantSelfTitle =>
-      'Kendi Kullanımım İçin Ödedim (Kullanım Hasarı)';
+      'Kiracı Kendi Kullanımı İçin Ödedi (Kullanım Hasarı)';
 
   @override
   String get intentTenantSelfSub =>
-      'Tutar kendi üzerimde kalır. Mahsuplaşma talep etmiyorum, ödendi olarak kapatılsın.';
+      'Tutar kiracı üzerinde kalır. Mahsuplaşma talep edilmez, ödendi olarak kapatılır.';
 
   @override
-  String get intentTenantSelfBadge => 'Ödendi • Kendi Masrafım';
+  String get intentTenantSelfBadge => 'Ödendi • Kiracı Masrafı';
 
   @override
   String get intentTenantReimburseTitle =>
-      'Demirbaş / Mülk Adına Ödedim (Ev Sahibi Karşılasın)';
+      'Kiracı Demirbaş / Mülk Adına Ödedi (Ev Sahibi Karşılasın)';
 
   @override
   String get intentTenantReimburseSub =>
-      'Mülk demirbaşı için peşin ödedim. Sonraki kiradan düşülmesini veya iade edilmesini talep ediyorum.';
+      'Kiracı demirbaş için peşin ödedi. Sonraki kiradan düşülmesini veya iade edilmesini talep ediyor.';
 
   @override
   String get intentTenantReimburseBadge => 'Kiradan Düşülsün';
 
   @override
   String get intentLandlordSelfTitle =>
-      'Mülk Demirbaşı İçin Karşıladım (Demirbaş Masrafı)';
+      'Ev Sahibi Demirbaş / Genel Bakım İçin Ödedi';
 
   @override
   String get intentLandlordSelfSub =>
-      'Demirbaş harcamasını ben üstlendim. Kiracıdan talep edilmez, ödendi olarak kapatılsın.';
+      'Demirbaş harcamasını ev sahibi karşıladı. Kiracıdan talep edilmez, ödendi olarak kapatılır.';
 
   @override
   String get intentLandlordSelfBadge => 'Ödendi • Ev Sahibi';
 
   @override
   String get intentLandlordTenantDueTitle =>
-      'Kiracı Kullanımı / Kusuru İçin Ödedim';
+      'Ev Sahibi Kiracı Kullanımı / Kusuru İçin Ödedi (Kiracıya Yansıt)';
 
   @override
   String get intentLandlordTenantDueSub =>
-      'Hasar kiracı kullanımından doğmuştur. Tutarın kiracının sonraki kirasına eklenmesini talep ediyorum.';
+      'Hasar kiracı kullanımından doğmuştur. Tutarın kiracının sonraki kirasına eklenmesi talep edilir.';
 
   @override
   String get intentLandlordTenantDueBadge => 'Kiraya Eklensin';

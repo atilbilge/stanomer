@@ -1395,41 +1395,67 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               ],
               const SizedBox(height: 16),
 
-              // 3. Masrafın Niteliği (Settlement Intent - Matches I Paid Flow)
+              // 2. Masrafı Kim Ödedi? (Who Paid the Cost?)
+              Text(
+                '${loc.whoPaidTheCost} *',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+              ),
+              const SizedBox(height: 8),
+              _buildPayerSelector(loc, paidBy),
+              const SizedBox(height: 16),
+
+              // 3. Masrafın Niteliği & Amacı (Payment Purpose based on Payer)
               Text(
                 '${loc.settlementIntentTitle} *',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
               ),
               const SizedBox(height: 8),
 
-              // Option 1 (Landlord Covered Fixture)
-              _buildPurposeOptionCard(
-                title: loc.intentLandlordSelfTitle,
-                subtitle: loc.intentLandlordSelfSub,
-                badgeLabel: loc.intentLandlordSelfBadge,
-                badgeColor: const Color(0xFF059669),
-                icon: LucideIcons.home,
-                isSelected: paidBy == 'landlord',
-                onTap: () {
-                  onPaidByChanged('landlord');
-                  onPaymentStatusChanged('paid');
-                },
-              ),
-              const SizedBox(height: 8),
-
-              // Option 2 (Landlord Add to Rent / Tenant Due)
-              _buildPurposeOptionCard(
-                title: loc.intentLandlordTenantDueTitle,
-                subtitle: loc.intentLandlordTenantDueSub,
-                badgeLabel: loc.intentLandlordTenantDueBadge,
-                badgeColor: const Color(0xFFD97706),
-                icon: LucideIcons.user,
-                isSelected: paidBy == 'tenant',
-                onTap: () {
-                  onPaidByChanged('tenant');
-                  onPaymentStatusChanged('pending_review');
-                },
-              ),
+              if (paidBy == 'tenant') ...[
+                // Tenant Option 1 (Self Usage)
+                _buildPurposeOptionCard(
+                  title: loc.intentTenantSelfTitle,
+                  subtitle: loc.intentTenantSelfSub,
+                  badgeLabel: loc.intentTenantSelfBadge,
+                  badgeColor: const Color(0xFF059669),
+                  icon: LucideIcons.user,
+                  isSelected: paymentStatus == 'paid',
+                  onTap: () => onPaymentStatusChanged('paid'),
+                ),
+                const SizedBox(height: 8),
+                // Tenant Option 2 (Reimburse / Deduct from Rent)
+                _buildPurposeOptionCard(
+                  title: loc.intentTenantReimburseTitle,
+                  subtitle: loc.intentTenantReimburseSub,
+                  badgeLabel: loc.intentTenantReimburseBadge,
+                  badgeColor: const Color(0xFF2563EB),
+                  icon: LucideIcons.home,
+                  isSelected: paymentStatus == 'pending_payment',
+                  onTap: () => onPaymentStatusChanged('pending_payment'),
+                ),
+              ] else ...[
+                // Landlord Option 1 (Covered Fixture)
+                _buildPurposeOptionCard(
+                  title: loc.intentLandlordSelfTitle,
+                  subtitle: loc.intentLandlordSelfSub,
+                  badgeLabel: loc.intentLandlordSelfBadge,
+                  badgeColor: const Color(0xFF059669),
+                  icon: LucideIcons.home,
+                  isSelected: paymentStatus == 'paid',
+                  onTap: () => onPaymentStatusChanged('paid'),
+                ),
+                const SizedBox(height: 8),
+                // Landlord Option 2 (Add to Rent / Tenant Due)
+                _buildPurposeOptionCard(
+                  title: loc.intentLandlordTenantDueTitle,
+                  subtitle: loc.intentLandlordTenantDueSub,
+                  badgeLabel: loc.intentLandlordTenantDueBadge,
+                  badgeColor: const Color(0xFFD97706),
+                  icon: LucideIcons.user,
+                  isSelected: paymentStatus == 'pending_review',
+                  onTap: () => onPaymentStatusChanged('pending_review'),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // 4. Upload Invoice / Receipt
@@ -1489,6 +1515,94 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPayerSelector(AppLocalizations loc, String? currentPayer) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.tenant,
+              icon: LucideIcons.user,
+              isSelected: currentPayer == 'tenant',
+              activeColor: const Color(0xFF059669),
+              onTap: () {
+                onPaidByChanged('tenant');
+                onPaymentStatusChanged('paid');
+              },
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.landlord,
+              icon: LucideIcons.home,
+              isSelected: currentPayer == 'landlord',
+              activeColor: const Color(0xFF2563EB),
+              onTap: () {
+                onPaidByChanged('landlord');
+                onPaymentStatusChanged('paid');
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayerChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 13, color: isSelected ? activeColor : const Color(0xFF64748B)),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? activeColor : const Color(0xFF64748B),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

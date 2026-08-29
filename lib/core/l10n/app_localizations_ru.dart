@@ -2360,7 +2360,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get costAmount => 'Сумма расхода';
 
   @override
-  String get costResponsibility => 'Ответственный за расход';
+  String get costResponsibility => 'Кто оплатил расход?';
+
+  @override
+  String get whoPaidTheCost => 'Кто оплатил расход?';
 
   @override
   String get paymentInvoiceStatus => 'Статус оплаты и счета';
@@ -2388,7 +2391,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String declaredAmountTitle(String amount) {
-    return 'Заявленная сумма: $amount • Выберите ответственного за оплату:';
+    return 'Заявленная сумма: $amount • Выберите, кто оплатил расход:';
   }
 
   @override
@@ -2530,44 +2533,44 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get intentTenantSelfTitle =>
-      'Оплатил за личное пользование (Поломка при эксплуатации)';
+      'Арендатор оплатил за личное пользование (Поломка при эксплуатации)';
 
   @override
   String get intentTenantSelfSub =>
-      'Сумма остается на мне. Возмещение не требуется, закрыть как оплачено.';
+      'Сумма остается на арендаторе. Возмещение не требуется, закрыть как оплачено.';
 
   @override
-  String get intentTenantSelfBadge => 'Оплачено • Личный расход';
+  String get intentTenantSelfBadge => 'Оплачено • Расход арендатора';
 
   @override
   String get intentTenantReimburseTitle =>
-      'Оплатил за имущество/ремонт (От имени владельца)';
+      'Арендатор оплатил за имущество/ремонт (От имени владельца)';
 
   @override
   String get intentTenantReimburseSub =>
-      'Оплатил авансом за основные фонды. Прошу вычесть из аренды или возместить.';
+      'Арендатор оплатил авансом за основные фонды. Запрашивается вычет из аренды или возврат.';
 
   @override
   String get intentTenantReimburseBadge => 'Вычесть из аренды';
 
   @override
   String get intentLandlordSelfTitle =>
-      'Покрыл за имущество/ремонт (Расход владельца)';
+      'Владелец оплатил за имущество/ремонт (Расход владельца)';
 
   @override
   String get intentLandlordSelfSub =>
-      'Расходы владельца. С арендатора не удерживается, закрыть как оплачено.';
+      'Расход покрыл владелец. С арендатора не взимается, закрыть как оплачено.';
 
   @override
   String get intentLandlordSelfBadge => 'Оплачено • Владелец';
 
   @override
   String get intentLandlordTenantDueTitle =>
-      'Оплатил за поломку по вине арендатора';
+      'Владелец оплатил за поломку по вине арендатора (Взыскать с арендатора)';
 
   @override
   String get intentLandlordTenantDueSub =>
-      'Поломка возникла при использовании арендатором. Прошу добавить к следующей аренде.';
+      'Поломка возникла при использовании арендатором. Запрашивается добавить к следующей аренде.';
 
   @override
   String get intentLandlordTenantDueBadge => 'Добавить к аренде';

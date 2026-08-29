@@ -3260,7 +3260,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
             // Payer (Only visible when not declaring)
             if (!_isDeclaration) ...[
               Text(
-                '${loc.costResponsibility} *',
+                '${loc.whoPaidTheCost} *',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 6),

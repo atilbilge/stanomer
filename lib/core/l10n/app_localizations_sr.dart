@@ -2340,7 +2340,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get costAmount => 'Iznos troška';
 
   @override
-  String get costResponsibility => 'Odgovoran za trošak';
+  String get costResponsibility => 'Ko je platio trošak?';
+
+  @override
+  String get whoPaidTheCost => 'Ko je platio trošak?';
 
   @override
   String get paymentInvoiceStatus => 'Status uplate i računa';
@@ -2369,7 +2372,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String declaredAmountTitle(String amount) {
-    return 'Prijavljeni iznos: $amount • Izaberite konačnu odgovornost za trošak:';
+    return 'Prijavljeni iznos: $amount • Izaberite ko je platio trošak:';
   }
 
   @override
@@ -2510,40 +2513,40 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get intentTenantSelfTitle =>
-      'Platio sam za sopstvenu upotrebu (Kvar usled korišćenja)';
+      'Stanar je platio za sopstvenu upotrebu (Kvar usled korišćenja)';
 
   @override
   String get intentTenantSelfSub =>
-      'Trošak ostaje na meni. Ne tražim refundaciju, zatvara se kao plaćeno.';
+      'Trošak ostaje na stanaru. Ne traži se refundacija, zatvara se kao plaćeno.';
 
   @override
-  String get intentTenantSelfBadge => 'Plaćeno • Lični trošak';
+  String get intentTenantSelfBadge => 'Plaćeno • Trošak stanara';
 
   @override
   String get intentTenantReimburseTitle =>
-      'Platio sam za investiciono održavanje (U ime vlasnika)';
+      'Stanar je platio za investiciono održavanje (U ime vlasnika)';
 
   @override
   String get intentTenantReimburseSub =>
-      'Predujmio sam trošak demirbaša. Molim odbitak od sledeće kirije ili refundaciju.';
+      'Stanar je predujmio trošak demirbaša. Traži se odbitak od sledeće kirije ili refundacija.';
 
   @override
   String get intentTenantReimburseBadge => 'Odbitak od kirije';
 
   @override
   String get intentLandlordSelfTitle =>
-      'Pokrio sam za investiciono održavanje (Demirbaš)';
+      'Vlasnik je platio za investiciono održavanje (Demirbaš)';
 
   @override
   String get intentLandlordSelfSub =>
-      'Trošak je na vlasniku. Ne potražuje se od stanara, zatvara se kao plaćeno.';
+      'Trošak snosi vlasnik. Ne potražuje se od stanara, zatvara se kao plaćeno.';
 
   @override
   String get intentLandlordSelfBadge => 'Plaćeno • Vlasnik';
 
   @override
   String get intentLandlordTenantDueTitle =>
-      'Platio sam za kvar usled upotrebe stanara';
+      'Vlasnik je platio za kvar usled upotrebe stanara (Na teret stanara)';
 
   @override
   String get intentLandlordTenantDueSub =>
@@ -5259,7 +5262,10 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get costAmount => 'Износ трошка';
 
   @override
-  String get costResponsibility => 'Одговоран за трошак';
+  String get costResponsibility => 'Ко је платио трошак?';
+
+  @override
+  String get whoPaidTheCost => 'Ко је платио трошак?';
 
   @override
   String get paymentInvoiceStatus => 'Статус уплате и рачуна';
@@ -5288,7 +5294,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String declaredAmountTitle(String amount) {
-    return 'Пријављени износ: $amount • Изаберите коначну одговорност за трошак:';
+    return 'Пријављени износ: $amount • Изаберите ко је платио трошак:';
   }
 
   @override
@@ -5429,40 +5435,40 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get intentTenantSelfTitle =>
-      'Платио сам за сопствену употребу (Квар услед коришћења)';
+      'Станар је платио за сопствену употребу (Квар услед коришћења)';
 
   @override
   String get intentTenantSelfSub =>
-      'Трошак остаје на мени. Не тражим рефундацију, затвара се као плаћено.';
+      'Трошак остаје на станару. Не тражи се рефундација, затвара се као плаћено.';
 
   @override
-  String get intentTenantSelfBadge => 'Плаћено • Лични трошак';
+  String get intentTenantSelfBadge => 'Плаћено • Трошак станара';
 
   @override
   String get intentTenantReimburseTitle =>
-      'Платио сам за инвестиционо одржавање (У име власника)';
+      'Станар је платио за инвестиционо одржавање (У име власника)';
 
   @override
   String get intentTenantReimburseSub =>
-      'Предујмио сам трошак демирбаша. Молим одбитак од следеће кирије или рефундацију.';
+      'Станар је предујмио трошак демирбаша. Тражи се одбитак од следеће кирије или рефундација.';
 
   @override
   String get intentTenantReimburseBadge => 'Одбитак од кирије';
 
   @override
   String get intentLandlordSelfTitle =>
-      'Покрио сам за инвестиционо одржавање (Демирбаш)';
+      'Власник је платио за инвестиционо одржавање (Демирбаш)';
 
   @override
   String get intentLandlordSelfSub =>
-      'Трошак је на власнику. Не потражује се од станара, затвара се као плаћено.';
+      'Трошак сноси власник. Не потражује се од станара, затвара се као плаћено.';
 
   @override
   String get intentLandlordSelfBadge => 'Плаћено • Власник';
 
   @override
   String get intentLandlordTenantDueTitle =>
-      'Платио сам за квар услед употребе станара';
+      'Власник је платио за квар услед употребе станара (На терет станара)';
 
   @override
   String get intentLandlordTenantDueSub =>
