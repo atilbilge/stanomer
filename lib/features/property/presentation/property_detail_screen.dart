@@ -5626,7 +5626,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         paidBy: req.paidBy,
         paymentDate: DateTime.now(),
         paymentStatus: 'pending_review',
-        invoicePdfUrl: req.invoicePdfUrl,
+        invoicePdfUrl: (req.invoicePdfUrl != null && req.invoicePdfUrl!.isNotEmpty) ? req.invoicePdfUrl : 'cash_settlement',
       );
 
       try {
@@ -5855,7 +5855,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     // Tenant must pay their usage damage debt (Banka transferi dekontu yükle / Nakit ödedim)
     final bool canTenantPayDamage = isTenant && isAddToRent && isPendingPayment;
     
-    final hasPaymentSubmission = messages.any((m) =>
+    final hasReceiptProof = (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty);
+    final hasPaymentSubmission = hasReceiptProof || request.paymentDate != null || messages.any((m) =>
       m.message.contains('dekont') ||
       m.message.contains('receipt') ||
       m.message.contains('квитанция') ||
