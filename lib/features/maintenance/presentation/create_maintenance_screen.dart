@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/colors.dart';
 import '../../../core/services/document_storage_service.dart';
 import '../../property/domain/property.dart';
 import '../../property/data/property_repository.dart';
@@ -49,6 +48,9 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     super.initState();
     final initialCur = widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR';
     _selectedCurrency = (initialCur.toUpperCase() == 'RSD') ? 'RSD' : 'EUR';
+    _paidBy = 'landlord';
+    _paymentStatus = 'paid';
+    _paymentDate = DateTime.now();
   }
 
   @override
@@ -270,43 +272,29 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       final double? finalCostAmount = isTenant ? null : costAmount;
       final String? finalCurrency =
           (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
-      String? finalPaidBy = isTenant ? null : _paidBy;
-      if (!isTenant && _paidBy != null) {
-        if (_paidBy == 'tenant') {
-          // If payer was tenant and intent was reimburse/deduct (pending_payment), responsibility is landlord
-          finalPaidBy = (_paymentStatus == 'pending_payment') ? 'landlord' : 'tenant';
-        } else if (_paidBy == 'landlord') {
-          // If payer was landlord and intent was tenant_due/add to rent (pending_payment), responsibility is tenant
-          finalPaidBy = (_paymentStatus == 'pending_payment') ? 'tenant' : 'landlord';
-        }
-      }
-
+      final String? finalPaidBy = isTenant ? null : _paidBy;
       final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
       final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
 
       final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
-      String finalPaymentStatus = _paymentStatus ?? 'pending_review';
+      String finalPaymentStatus = 'pending_review';
 
-      if (finalCostAmount != null) {
+      if (finalCostAmount != null && !isTenant) {
         if (isAgencyManaged) {
           if (isAgency) {
-            finalPaymentStatus = _paymentStatus ?? 'pending_payment';
+            finalPaymentStatus = (_paidBy == 'tenant') ? 'pending_payment' : 'paid';
           } else {
-            // Tenant or Landlord on agency property
-            if (_paymentStatus == 'paid') {
-              finalPaymentStatus = 'pending_agency_approval';
-            } else if (_paymentStatus == 'pending_payment') {
-              finalPaymentStatus = 'pending_opposite_approval';
-            } else {
-              finalPaymentStatus = 'pending_agency_approval';
-            }
+            // Landlord on agency property
+            finalPaymentStatus = (_paidBy == 'tenant')
+                ? 'pending_opposite_approval'
+                : 'pending_agency_approval';
           }
         } else {
           // Self-managed property (direct landlord-tenant)
-          if (isTenant) {
+          if (_paidBy == 'tenant') {
             finalPaymentStatus = 'pending_review';
           } else {
-            finalPaymentStatus = _paymentStatus ?? 'pending_payment';
+            finalPaymentStatus = 'paid';
           }
         }
       }
@@ -1350,19 +1338,19 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
               const SizedBox(height: 12),
 
-              // 1. Tutar & Para Birimi, 2. Payment Date, 3. Ödeyecek Taraf
+              // 1. Tutar & Para Birimi ve 2. Ödeme Tarihi
               if (isWide)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     // 1. Cost & Currency
                     Expanded(
-                      flex: 4,
+                      flex: 6,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            loc.costAmountLabel,
+                            '${loc.amountPaid} *',
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
                           ),
                           const SizedBox(height: 5),
@@ -1373,7 +1361,7 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     // 2. Payment Date
                     Expanded(
-                      flex: 3,
+                      flex: 4,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1383,22 +1371,6 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 5),
                           _buildDateSelector(loc),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // 3. Paid By (Payer)
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${loc.paidByLabel} *',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
-                          ),
-                          const SizedBox(height: 5),
-                          _buildPayerSelector(loc, paidBy),
                         ],
                       ),
                     ),
@@ -1407,126 +1379,60 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               else ...[
                 // Mobile: 1. Cost & Currency
                 Text(
-                  loc.costAmountLabel,
+                  '${loc.amountPaid} *',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
                 ),
                 const SizedBox(height: 5),
                 _buildCostInput(),
                 const SizedBox(height: 10),
-                // Mobile: 2. Payment Date + 3. Paid By
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.paymentDate,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
-                          ),
-                          const SizedBox(height: 5),
-                          _buildDateSelector(loc),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 5,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${loc.paidByLabel} *',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
-                          ),
-                          const SizedBox(height: 5),
-                          _buildPayerSelector(loc, paidBy),
-                        ],
-                      ),
-                    ),
-                  ],
+                // Mobile: 2. Payment Date
+                Text(
+                  loc.paymentDate,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
                 ),
+                const SizedBox(height: 5),
+                _buildDateSelector(loc),
               ],
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
 
-              // 4. Payment Purpose & Settlement Request
+              // 3. Masrafın Niteliği (Settlement Intent - Matches I Paid Flow)
               Text(
                 '${loc.settlementIntentTitle} *',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
               ),
               const SizedBox(height: 8),
 
-              if (paidBy == null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.info, size: 16, color: Color(0xFF64748B)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          loc.pleaseSelectCostPayer,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (paidBy == 'tenant') ...[
-                // Option 1 (Tenant Self Usage)
-                _buildPurposeOptionCard(
-                  title: loc.intentTenantSelfTitle,
-                  subtitle: loc.intentTenantSelfSub,
-                  badgeLabel: loc.intentTenantSelfBadge,
-                  badgeColor: const Color(0xFF059669),
-                  icon: LucideIcons.user,
-                  isSelected: paymentStatus == 'paid',
-                  onTap: () => onPaymentStatusChanged('paid'),
-                ),
-                const SizedBox(height: 8),
-                // Option 2 (Tenant Deduct from Rent)
-                _buildPurposeOptionCard(
-                  title: loc.intentTenantReimburseTitle,
-                  subtitle: loc.intentTenantReimburseSub,
-                  badgeLabel: loc.intentTenantReimburseBadge,
-                  badgeColor: const Color(0xFF2563EB),
-                  icon: LucideIcons.home,
-                  isSelected: paymentStatus == 'pending_payment',
-                  onTap: () => onPaymentStatusChanged('pending_payment'),
-                ),
-              ] else ...[
-                // Option 1 (Landlord Covered Fixture)
-                _buildPurposeOptionCard(
-                  title: loc.intentLandlordSelfTitle,
-                  subtitle: loc.intentLandlordSelfSub,
-                  badgeLabel: loc.intentLandlordSelfBadge,
-                  badgeColor: const Color(0xFF059669),
-                  icon: LucideIcons.home,
-                  isSelected: paymentStatus == 'paid',
-                  onTap: () => onPaymentStatusChanged('paid'),
-                ),
-                const SizedBox(height: 8),
-                // Option 2 (Landlord Add to Rent)
-                _buildPurposeOptionCard(
-                  title: loc.intentLandlordTenantDueTitle,
-                  subtitle: loc.intentLandlordTenantDueSub,
-                  badgeLabel: loc.intentLandlordTenantDueBadge,
-                  badgeColor: const Color(0xFFD97706),
-                  icon: LucideIcons.user,
-                  isSelected: paymentStatus == 'pending_payment',
-                  onTap: () => onPaymentStatusChanged('pending_payment'),
-                ),
-              ],
-              const SizedBox(height: 14),
+              // Option 1 (Landlord Covered Fixture)
+              _buildPurposeOptionCard(
+                title: loc.intentLandlordSelfTitle,
+                subtitle: loc.intentLandlordSelfSub,
+                badgeLabel: loc.intentLandlordSelfBadge,
+                badgeColor: const Color(0xFF059669),
+                icon: LucideIcons.home,
+                isSelected: paidBy == 'landlord',
+                onTap: () {
+                  onPaidByChanged('landlord');
+                  onPaymentStatusChanged('paid');
+                },
+              ),
+              const SizedBox(height: 8),
 
-              // 5. Upload Invoice
+              // Option 2 (Landlord Add to Rent / Tenant Due)
+              _buildPurposeOptionCard(
+                title: loc.intentLandlordTenantDueTitle,
+                subtitle: loc.intentLandlordTenantDueSub,
+                badgeLabel: loc.intentLandlordTenantDueBadge,
+                badgeColor: const Color(0xFFD97706),
+                icon: LucideIcons.user,
+                isSelected: paidBy == 'tenant',
+                onTap: () {
+                  onPaidByChanged('tenant');
+                  onPaymentStatusChanged('pending_review');
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 4. Upload Invoice / Receipt
               Text(
                 loc.invoicePdfLabel,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
@@ -1580,40 +1486,6 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
                 if (val != null) onCurrencyChanged(val);
               },
               padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPayerSelector(AppLocalizations loc, String? currentPayer) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildPayerChip(
-              label: loc.tenant,
-              icon: LucideIcons.user,
-              isSelected: currentPayer == 'tenant',
-              activeColor: StanomerColors.tenant,
-              onTap: () => onPaidByChanged('tenant'),
-            ),
-          ),
-          const SizedBox(width: 2),
-          Expanded(
-            child: _buildPayerChip(
-              label: loc.landlord,
-              icon: LucideIcons.home,
-              isSelected: currentPayer == 'landlord',
-              activeColor: StanomerColors.landlord,
-              onTap: () => onPaidByChanged('landlord'),
             ),
           ),
         ],
@@ -1812,54 +1684,6 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               child: Text(
                 loc.uploadPdfTitle,
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF0F766E)),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPayerChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required Color activeColor,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 13, color: isSelected ? activeColor : const Color(0xFF64748B)),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? activeColor : const Color(0xFF64748B),
-                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
