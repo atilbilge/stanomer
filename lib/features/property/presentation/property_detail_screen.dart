@@ -5710,17 +5710,22 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final String amountDisplay;
     final String settlementRoleLabel;
 
-    if (isPendingPayment || isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview) {
+    if (isPendingAgencyApproval) {
+      amountDisplay = formattedAmount;
+      settlementRoleLabel = (request.paidBy == 'tenant')
+          ? (loc.localeName == 'tr' ? 'Kiracı Kendi Masrafı (Kullanım)' : (loc.localeName == 'ru' ? 'Собственные расходы арендатора' : (loc.localeName.startsWith('sr') ? 'Lični trošak stanara' : 'Tenant Self Expense')))
+          : (loc.localeName == 'tr' ? 'Ev Sahibi Kendi Masrafı (Demirbaş)' : (loc.localeName == 'ru' ? 'Собственные расходы владельца' : (loc.localeName.startsWith('sr') ? 'Lični trošak vlasnika' : 'Landlord Self Expense')));
+    } else if (isPendingPayment || isPendingOppositeApproval || isPendingReview) {
       if (isDeductFromRent) {
         amountDisplay = (isTenant ? '- ' : '') + formattedAmount;
         settlementRoleLabel = isTenant
-            ? (loc.localeName == 'tr' ? 'Kiracı Alacağı (Kiradan Düşülecek)' : 'Tenant Credit (Deduct from rent)')
-            : (loc.localeName == 'tr' ? 'Ev Sahibi Borcu (Kiracıya Ödenecek / Mahsup)' : 'Landlord Debt (Reimburse to tenant)');
+            ? (loc.localeName == 'tr' ? 'Kiracı Alacağı (Kiradan Düşülecek)' : (loc.localeName == 'ru' ? 'Кредит арендатора (к зачету)' : (loc.localeName.startsWith('sr') ? 'Potraživanje stanara (za prebijanje)' : 'Tenant Credit (Deduct from rent)')))
+            : (loc.localeName == 'tr' ? 'Ev Sahibi Borcu (Kiracıya Ödenecek / Mahsup)' : (loc.localeName == 'ru' ? 'Долг владельца (к зачету/возврату)' : (loc.localeName.startsWith('sr') ? 'Dug vlasnika (za prebijanje)' : 'Landlord Debt (Reimburse to tenant)')));
       } else {
         amountDisplay = (isTenant ? '+ ' : '') + formattedAmount;
         settlementRoleLabel = isTenant
-            ? (loc.localeName == 'tr' ? 'Kiracı Borcu (Kiraya Eklenecek)' : 'Tenant Debt (Add to rent)')
-            : (loc.localeName == 'tr' ? 'Ev Sahibi Alacağı (Kiracıdan Tahsil)' : 'Landlord Credit (To collect from tenant)');
+            ? (loc.localeName == 'tr' ? 'Kiracı Borcu (Kiraya Eklenecek)' : (loc.localeName == 'ru' ? 'Долг арендатора (добавить к аренде)' : (loc.localeName.startsWith('sr') ? 'Dug stanara (dodati na zakupninu)' : 'Tenant Debt (Add to rent)')))
+            : (loc.localeName == 'tr' ? 'Ev Sahibi Alacağı (Kiracıdan Tahsil)' : (loc.localeName == 'ru' ? 'Кредит владельца (к взысканию с арендатора)' : (loc.localeName.startsWith('sr') ? 'Potraživanje vlasnika (naplata od stanara)' : 'Landlord Credit (To collect from tenant)')));
       }
     } else {
       amountDisplay = formattedOriginalCost;
@@ -5944,13 +5949,29 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                isDeductFromRent
-                                    ? (loc.localeName == 'tr'
-                                        ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
-                                        : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
-                                    : (loc.localeName == 'tr'
-                                        ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
-                                        : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.'),
+                                isPendingAgencyApproval
+                                    ? (request.paidBy == 'tenant'
+                                        ? (loc.localeName == 'tr'
+                                            ? 'Kiracı tarafından kendi kullanım hasarı olarak ödendi. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
+                                            : 'Paid by tenant for self usage damage. Will be closed as paid upon agency approval (no rent impact).')
+                                        : (loc.localeName == 'tr'
+                                            ? 'Ev sahibi tarafından mülk demirbaşı olarak karşılandı. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
+                                            : 'Paid by landlord as property fixture. Will be closed as paid upon agency approval (no rent impact).'))
+                                    : (isPendingOppositeApproval
+                                        ? (isDeductFromRent
+                                            ? (loc.localeName == 'tr'
+                                                ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.'
+                                                : 'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.')
+                                            : (loc.localeName == 'tr'
+                                                ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Acente onayı sonrası kiraya ilave edilebilir duruma gelecektir.'
+                                                : 'Tenant usage damage covered by landlord upfront. Will be ready to add to rent upon agency approval.'))
+                                        : (isDeductFromRent
+                                            ? (loc.localeName == 'tr'
+                                                ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
+                                                : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
+                                            : (loc.localeName == 'tr'
+                                                ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
+                                                : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.'))),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,

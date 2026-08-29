@@ -2926,7 +2926,26 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
         : (widget.isTenantDeclaration
             ? (_declarationIntent == 'reimburse' ? 'landlord' : 'tenant')
             : _paidBy);
-    final String finalPaymentStatus = _isDeclaration ? 'pending_review' : _paymentStatus;
+
+    final bool isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final String finalPaymentStatus;
+    if (_isDeclaration) {
+      if (isAgencyManaged) {
+        if (widget.isTenantDeclaration) {
+          finalPaymentStatus = (_declarationIntent == 'reimburse')
+              ? 'pending_opposite_approval'
+              : 'pending_agency_approval';
+        } else {
+          finalPaymentStatus = (_declarationIntent == 'tenant_due')
+              ? 'pending_opposite_approval'
+              : 'pending_agency_approval';
+        }
+      } else {
+        finalPaymentStatus = 'pending_review';
+      }
+    } else {
+      finalPaymentStatus = _paymentStatus;
+    }
 
     if (!_isDeclaration && costAmount != null && costAmount > 0 && finalPaidBy == null) {
       setState(() => _validationError = loc.pleaseSelectCostPayer);

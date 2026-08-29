@@ -269,7 +269,17 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       final double? finalCostAmount = isTenant ? null : costAmount;
       final String? finalCurrency =
           (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
-      final String? finalPaidBy = isTenant ? null : _paidBy;
+      String? finalPaidBy = isTenant ? null : _paidBy;
+      if (!isTenant && _paidBy != null) {
+        if (_paidBy == 'tenant') {
+          // If payer was tenant and intent was reimburse/deduct (pending_payment), responsibility is landlord
+          finalPaidBy = (_paymentStatus == 'pending_payment') ? 'landlord' : 'tenant';
+        } else if (_paidBy == 'landlord') {
+          // If payer was landlord and intent was tenant_due/add to rent (pending_payment), responsibility is tenant
+          finalPaidBy = (_paymentStatus == 'pending_payment') ? 'tenant' : 'landlord';
+        }
+      }
+
       final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
       final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
 
