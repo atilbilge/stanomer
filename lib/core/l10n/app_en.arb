@@ -1105,8 +1105,8 @@
   "intentLandlordTenantDueSub": "Damage caused by tenant usage. Amount requested to be added to tenant's next rent.",
   "intentLandlordTenantDueBadge": "Add to Rent",
   "pleaseSelectDeclarationIntent": "Please select the purpose of payment and settlement request.",
-  "confirmTenantReimburseApprovalTitle": "Rent Deduction Approval",
-  "confirmTenantReimburseApprovalMsg": "Do you confirm tenant's {amount} fixture expense and that it will be deducted from next rent?",
+  "confirmTenantReimburseApprovalTitle": "Offset Approval",
+  "confirmTenantReimburseApprovalMsg": "Do you confirm that the tenant can deduct this {amount} fixture expense from rent payments?",
   "@confirmTenantReimburseApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1132,8 +1132,8 @@
       }
     }
   },
-  "confirmLandlordTenantDueApprovalTitle": "Add to Rent Approval",
-  "confirmLandlordTenantDueApprovalMsg": "Do you confirm that the declared {amount} expense was caused by your usage and will be added to your next rent?",
+  "confirmLandlordTenantDueApprovalTitle": "Debt Approval",
+  "confirmLandlordTenantDueApprovalMsg": "Do you confirm that this {amount} expense was caused by your usage and will be paid to the landlord?",
   "@confirmLandlordTenantDueApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1141,6 +1141,10 @@
       }
     }
   },
+  "acceptDebtBtn": "Accept Debt",
+  "approveOffsetBtn": "Approve Offset",
+  "acceptDebtNote": "When accepted, this amount will be added to your pending debts in the payment plan.",
+  "approveOffsetNote": "When approved, this amount is credited to tenant's offset balance and can be deducted from upcoming rent.",
   "declaredIntentLabel": "Settlement Request: {intent}",
   "@declaredIntentLabel": {
     "placeholders": {

@@ -581,6 +581,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     bool canApproveExpense = false;
     String approvalTitle = '';
     String approvalSubtitle = '';
+    String? approvalNote;
+    String approvalButtonLabel = loc.approve;
     String waitingOnText = '';
 
     if (hasAgency) {
@@ -589,6 +591,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       approvalSubtitle = isLastDeclaredByTenant
           ? loc.tenantDeclaredExpenseSubtitle(formattedCost ?? '')
           : loc.landlordDeclaredExpenseSubtitle(formattedCost ?? '');
+      approvalButtonLabel = loc.approve;
       if (!isAgency) {
         waitingOnText = loc.propertyManagedByAgencyNotice;
       }
@@ -596,8 +599,10 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       if (isPayerTenant) {
         // Tenant paid for fixture / maintenance -> Landlord reimburses or offsets from rent
         canApproveExpense = isLandlord;
-        approvalTitle = loc.landlordExpenseApproval;
+        approvalTitle = loc.confirmTenantReimburseApprovalTitle;
         approvalSubtitle = loc.confirmTenantReimburseApprovalMsg(formattedCost ?? '');
+        approvalNote = loc.approveOffsetNote;
+        approvalButtonLabel = loc.approveOffsetBtn;
         if (isTenant) {
           waitingOnText = loc.expenseSubmittedForLandlordReview;
         }
@@ -614,14 +619,17 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                   : (loc.localeName.startsWith('sr')
                       ? 'Da li potvrđujete prijem uplate od ${formattedCost ?? ''} od stanara i zatvaranje duga?'
                       : 'Do you confirm receiving the payment of ${formattedCost ?? ''} from the tenant and closing the debt?'));
+          approvalButtonLabel = loc.confirmReceiptBtn;
           if (isTenant) {
             waitingOnText = loc.waitingForOwnerApproval;
           }
         } else {
           // Initial declaration: Landlord charged tenant for usage damage -> Tenant confirms the debt
           canApproveExpense = isTenant;
-          approvalTitle = loc.tenantExpenseApproval;
+          approvalTitle = loc.confirmLandlordTenantDueApprovalTitle;
           approvalSubtitle = loc.confirmLandlordTenantDueApprovalMsg(formattedCost ?? '');
+          approvalNote = loc.acceptDebtNote;
+          approvalButtonLabel = loc.acceptDebtBtn;
           if (isLandlord) {
             waitingOnText = loc.expenseSubmittedForTenantReview;
           }
@@ -1332,6 +1340,29 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                               approvalSubtitle,
                               style: const TextStyle(fontSize: 11, color: Color(0xFF475569), height: 1.35),
                             ),
+                            if (approvalNote != null) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1D4ED8).withValues(alpha: 0.06),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(LucideIcons.info, size: 12, color: Color(0xFF2563EB)),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        approvalNote,
+                                        style: const TextStyle(fontSize: 10.5, color: Color(0xFF1E40AF), height: 1.3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             Row(
                               children: [
@@ -1349,7 +1380,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                                       hasPaymentSubmission: hasPaymentSubmission,
                                     ),
                                     icon: const Icon(LucideIcons.check, size: 14),
-                                    label: Text(loc.approve),
+                                    label: Text(approvalButtonLabel),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF059669),
                                       foregroundColor: Colors.white,

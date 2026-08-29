@@ -1204,8 +1204,8 @@
   "intentLandlordTenantDueSub": "Kvar je nastao upotrebom stanara. Iznos se dodaje na sledeću kiriju stanara.",
   "intentLandlordTenantDueBadge": "Dug stanara",
   "pleaseSelectDeclarationIntent": "Molimo izaberite svrhu plaćanja i predlog obračuna.",
-  "confirmTenantReimburseApprovalTitle": "Odobrenje odbitka od kirije",
-  "confirmTenantReimburseApprovalMsg": "Potvrđujete li da stanar ima pravo na refundaciju od {amount} za investiciono održavanje i da se iznos odbije od sledeće kirije?",
+  "confirmTenantReimburseApprovalTitle": "Odobrenje prebijanja",
+  "confirmTenantReimburseApprovalMsg": "Potvrđujete li da stanar može prebiti ovaj investicioni trošak od {amount} sa plaćanjem kirije?",
   "@confirmTenantReimburseApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1231,8 +1231,8 @@
       }
     }
   },
-  "confirmLandlordTenantDueApprovalTitle": "Odobrenje troška zaduženja",
-  "confirmLandlordTenantDueApprovalMsg": "Potvrđujete li da je trošak od {amount} nastao vašom upotrebom i da se doda na vašu sledeću kiriju?",
+  "confirmLandlordTenantDueApprovalTitle": "Odobrenje duga",
+  "confirmLandlordTenantDueApprovalMsg": "Potvrđujete li da je ovaj trošak od {amount} nastao vašim korišćenjem i da ćete ga platiti stanodavcu?",
   "@confirmLandlordTenantDueApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1240,6 +1240,10 @@
       }
     }
   },
+  "acceptDebtBtn": "Prihvati dug",
+  "approveOffsetBtn": "Odobri prebijanje",
+  "acceptDebtNote": "Kada prihvatite, ovaj iznos će biti dodat vašim dugovanjima u planu plaćanja.",
+  "approveOffsetNote": "Kada odobrite, iznos se dodaje potraživanjima stanara za prebijanje sa predstojećim zakupom.",
   "declaredIntentLabel": "Predlog obračuna: {intent}",
   "@declaredIntentLabel": {
     "placeholders": {

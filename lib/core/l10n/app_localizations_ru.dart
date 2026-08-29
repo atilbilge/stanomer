@@ -2580,12 +2580,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Пожалуйста, выберите цель оплаты и вариант взаиморасчета.';
 
   @override
-  String get confirmTenantReimburseApprovalTitle =>
-      'Подтверждение вычета из аренды';
+  String get confirmTenantReimburseApprovalTitle => 'Подтверждение зачета';
 
   @override
   String confirmTenantReimburseApprovalMsg(String amount) {
-    return 'Вы подтверждаете, что расход арендатора на сумму $amount относится к имуществу и будет вычтен из следующей аренды?';
+    return 'Вы подтверждаете, что арендатор может вычесть этот расход на имущество на сумму $amount из арендной платы?';
   }
 
   @override
@@ -2606,13 +2605,26 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get confirmLandlordTenantDueApprovalTitle =>
-      'Подтверждение добавления к аренде';
+  String get confirmLandlordTenantDueApprovalTitle => 'Подтверждение долга';
 
   @override
   String confirmLandlordTenantDueApprovalMsg(String amount) {
-    return 'Вы подтверждаете, что заявленный расход на сумму $amount возник при вашем использовании и будет добавлен к вашей следующей аренде?';
+    return 'Вы подтверждаете, что этот расход на сумму $amount возник в результате вашего использования и будет оплачен владельцу?';
   }
+
+  @override
+  String get acceptDebtBtn => 'Принять долг';
+
+  @override
+  String get approveOffsetBtn => 'Подтвердить зачет';
+
+  @override
+  String get acceptDebtNote =>
+      'После принятия сумма будет добавлена к вашим долгам в плане платежей.';
+
+  @override
+  String get approveOffsetNote =>
+      'После подтверждения сумма зачисляется на баланс зачета арендатора для вычета из будущей аренды.';
 
   @override
   String declaredIntentLabel(String intent) {

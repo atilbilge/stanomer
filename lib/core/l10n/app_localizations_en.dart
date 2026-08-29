@@ -2563,11 +2563,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please select the purpose of payment and settlement request.';
 
   @override
-  String get confirmTenantReimburseApprovalTitle => 'Rent Deduction Approval';
+  String get confirmTenantReimburseApprovalTitle => 'Offset Approval';
 
   @override
   String confirmTenantReimburseApprovalMsg(String amount) {
-    return 'Do you confirm tenant\'s $amount fixture expense and that it will be deducted from next rent?';
+    return 'Do you confirm that the tenant can deduct this $amount fixture expense from rent payments?';
   }
 
   @override
@@ -2588,12 +2588,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get confirmLandlordTenantDueApprovalTitle => 'Add to Rent Approval';
+  String get confirmLandlordTenantDueApprovalTitle => 'Debt Approval';
 
   @override
   String confirmLandlordTenantDueApprovalMsg(String amount) {
-    return 'Do you confirm that the declared $amount expense was caused by your usage and will be added to your next rent?';
+    return 'Do you confirm that this $amount expense was caused by your usage and will be paid to the landlord?';
   }
+
+  @override
+  String get acceptDebtBtn => 'Accept Debt';
+
+  @override
+  String get approveOffsetBtn => 'Approve Offset';
+
+  @override
+  String get acceptDebtNote =>
+      'When accepted, this amount will be added to your pending debts in the payment plan.';
+
+  @override
+  String get approveOffsetNote =>
+      'When approved, this amount is credited to tenant\'s offset balance and can be deducted from upcoming rent.';
 
   @override
   String declaredIntentLabel(String intent) {

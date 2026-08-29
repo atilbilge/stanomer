@@ -2560,12 +2560,11 @@ class AppLocalizationsSr extends AppLocalizations {
       'Molimo izaberite svrhu plaćanja i predlog obračuna.';
 
   @override
-  String get confirmTenantReimburseApprovalTitle =>
-      'Odobrenje odbitka od kirije';
+  String get confirmTenantReimburseApprovalTitle => 'Odobrenje prebijanja';
 
   @override
   String confirmTenantReimburseApprovalMsg(String amount) {
-    return 'Potvrđujete li da stanar ima pravo na refundaciju od $amount za investiciono održavanje i da se iznos odbije od sledeće kirije?';
+    return 'Potvrđujete li da stanar može prebiti ovaj investicioni trošak od $amount sa plaćanjem kirije?';
   }
 
   @override
@@ -2585,13 +2584,26 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get confirmLandlordTenantDueApprovalTitle =>
-      'Odobrenje troška zaduženja';
+  String get confirmLandlordTenantDueApprovalTitle => 'Odobrenje duga';
 
   @override
   String confirmLandlordTenantDueApprovalMsg(String amount) {
-    return 'Potvrđujete li da je trošak od $amount nastao vašom upotrebom i da se doda na vašu sledeću kiriju?';
+    return 'Potvrđujete li da je ovaj trošak od $amount nastao vašim korišćenjem i da ćete ga platiti stanodavcu?';
   }
+
+  @override
+  String get acceptDebtBtn => 'Prihvati dug';
+
+  @override
+  String get approveOffsetBtn => 'Odobri prebijanje';
+
+  @override
+  String get acceptDebtNote =>
+      'Kada prihvatite, ovaj iznos će biti dodat vašim dugovanjima u planu plaćanja.';
+
+  @override
+  String get approveOffsetNote =>
+      'Kada odobrite, iznos se dodaje potraživanjima stanara za prebijanje sa predstojećim zakupom.';
 
   @override
   String declaredIntentLabel(String intent) {
@@ -5482,12 +5494,11 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
       'Молимо изаберите сврху плаћања и предлог обрачуна.';
 
   @override
-  String get confirmTenantReimburseApprovalTitle =>
-      'Одобрење одбитка од кирије';
+  String get confirmTenantReimburseApprovalTitle => 'Одобрење пребијања';
 
   @override
   String confirmTenantReimburseApprovalMsg(String amount) {
-    return 'Потврђујете ли да станар има право на рефундацију од $amount за инвестиционо одржавање и да се износ одбије од следеће кирије?';
+    return 'Потврђујете ли да станар може пребити овај инвестициони трошак од $amount са плаћањем кирије?';
   }
 
   @override
@@ -5507,13 +5518,26 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   }
 
   @override
-  String get confirmLandlordTenantDueApprovalTitle =>
-      'Одобрење трошка задужења';
+  String get confirmLandlordTenantDueApprovalTitle => 'Одобрење дуга';
 
   @override
   String confirmLandlordTenantDueApprovalMsg(String amount) {
-    return 'Потврђујете ли да је трошак од $amount настао вашом употребом и да се дода на вашу следећу кирију?';
+    return 'Потврђујете ли да је овај трошак од $amount настао вашим коришћењем и да ћете га платити станодавцу?';
   }
+
+  @override
+  String get acceptDebtBtn => 'Прихвати дуг';
+
+  @override
+  String get approveOffsetBtn => 'Одобри пребијање';
+
+  @override
+  String get acceptDebtNote =>
+      'Када прихватите, овај износ ће бити додат вашим дуговањима у плану плаћања.';
+
+  @override
+  String get approveOffsetNote =>
+      'Када одобрите, износ се додаје потраживањима станара за пребијање са предстојећим закупом.';
 
   @override
   String declaredIntentLabel(String intent) {

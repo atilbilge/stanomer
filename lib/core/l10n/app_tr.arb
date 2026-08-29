@@ -1204,8 +1204,8 @@
   "intentLandlordTenantDueSub": "Hasar kiracı kullanımından doğmuştur. Tutarın kiracının sonraki kirasına eklenmesi talep edilir.",
   "intentLandlordTenantDueBadge": "Kiraya Eklensin",
   "pleaseSelectDeclarationIntent": "Lütfen masrafın amacını ve mahsuplaşma talebinizi seçiniz.",
-  "confirmTenantReimburseApprovalTitle": "Kiradan Düşüm Onayı",
-  "confirmTenantReimburseApprovalMsg": "Kiracının {amount} tutarındaki demirbaş masrafını ve bu tutarın sonraki kiradan düşülmesini onaylıyor musunuz?",
+  "confirmTenantReimburseApprovalTitle": "Mahsup Onayı",
+  "confirmTenantReimburseApprovalMsg": "Kiracının {amount} tutarındaki demirbaş masrafını kira ödemelerinden düşebileceğini onaylıyor musunuz?",
   "@confirmTenantReimburseApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1231,8 +1231,8 @@
       }
     }
   },
-  "confirmLandlordTenantDueApprovalTitle": "Kiraya Ekleme Onayı",
-  "confirmLandlordTenantDueApprovalMsg": "Ev sahibinin bildirdiği {amount} masrafın kullanımınızdan kaynaklandığını ve sonraki kiranıza eklenmesini onaylıyor musunuz?",
+  "confirmLandlordTenantDueApprovalTitle": "Borç Onayı",
+  "confirmLandlordTenantDueApprovalMsg": "Bu {amount} masrafın kullanımınızdan kaynaklandığını ve ev sahibine ödeneceğini onaylıyor musunuz?",
   "@confirmLandlordTenantDueApprovalMsg": {
     "placeholders": {
       "amount": {
@@ -1240,6 +1240,10 @@
       }
     }
   },
+  "acceptDebtBtn": "Borcu Kabul Et",
+  "approveOffsetBtn": "Mahsubu Onayla",
+  "acceptDebtNote": "Onayladığınızda tutar ödeme planınızdaki bekleyen borçlarınıza eklenecektir.",
+  "approveOffsetNote": "Onayladığınızda tutar kiracının mahsup alacaklarına tanımlanır; kiracı sonraki kiralarından düşebilir.",
   "declaredIntentLabel": "Mahsuplaşma Talebi: {intent}",
   "@declaredIntentLabel": {
     "placeholders": {

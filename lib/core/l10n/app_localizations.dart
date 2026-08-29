@@ -4747,13 +4747,13 @@ abstract class AppLocalizations {
   /// No description provided for @confirmTenantReimburseApprovalTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Odobrenje odbitka od kirije'**
+  /// **'Odobrenje prebijanja'**
   String get confirmTenantReimburseApprovalTitle;
 
   /// No description provided for @confirmTenantReimburseApprovalMsg.
   ///
   /// In sr, this message translates to:
-  /// **'Potvrđujete li da stanar ima pravo na refundaciju od {amount} za investiciono održavanje i da se iznos odbije od sledeće kirije?'**
+  /// **'Potvrđujete li da stanar može prebiti ovaj investicioni trošak od {amount} sa plaćanjem kirije?'**
   String confirmTenantReimburseApprovalMsg(String amount);
 
   /// No description provided for @confirmTenantSelfApprovalTitle.
@@ -4783,14 +4783,38 @@ abstract class AppLocalizations {
   /// No description provided for @confirmLandlordTenantDueApprovalTitle.
   ///
   /// In sr, this message translates to:
-  /// **'Odobrenje troška zaduženja'**
+  /// **'Odobrenje duga'**
   String get confirmLandlordTenantDueApprovalTitle;
 
   /// No description provided for @confirmLandlordTenantDueApprovalMsg.
   ///
   /// In sr, this message translates to:
-  /// **'Potvrđujete li da je trošak od {amount} nastao vašom upotrebom i da se doda na vašu sledeću kiriju?'**
+  /// **'Potvrđujete li da je ovaj trošak od {amount} nastao vašim korišćenjem i da ćete ga platiti stanodavcu?'**
   String confirmLandlordTenantDueApprovalMsg(String amount);
+
+  /// No description provided for @acceptDebtBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prihvati dug'**
+  String get acceptDebtBtn;
+
+  /// No description provided for @approveOffsetBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odobri prebijanje'**
+  String get approveOffsetBtn;
+
+  /// No description provided for @acceptDebtNote.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kada prihvatite, ovaj iznos će biti dodat vašim dugovanjima u planu plaćanja.'**
+  String get acceptDebtNote;
+
+  /// No description provided for @approveOffsetNote.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kada odobrite, iznos se dodaje potraživanjima stanara za prebijanje sa predstojećim zakupom.'**
+  String get approveOffsetNote;
 
   /// No description provided for @declaredIntentLabel.
   ///

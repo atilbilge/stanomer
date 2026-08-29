@@ -2562,11 +2562,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Lütfen masrafın amacını ve mahsuplaşma talebinizi seçiniz.';
 
   @override
-  String get confirmTenantReimburseApprovalTitle => 'Kiradan Düşüm Onayı';
+  String get confirmTenantReimburseApprovalTitle => 'Mahsup Onayı';
 
   @override
   String confirmTenantReimburseApprovalMsg(String amount) {
-    return 'Kiracının $amount tutarındaki demirbaş masrafını ve bu tutarın sonraki kiradan düşülmesini onaylıyor musunuz?';
+    return 'Kiracının $amount tutarındaki demirbaş masrafını kira ödemelerinden düşebileceğini onaylıyor musunuz?';
   }
 
   @override
@@ -2586,12 +2586,26 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get confirmLandlordTenantDueApprovalTitle => 'Kiraya Ekleme Onayı';
+  String get confirmLandlordTenantDueApprovalTitle => 'Borç Onayı';
 
   @override
   String confirmLandlordTenantDueApprovalMsg(String amount) {
-    return 'Ev sahibinin bildirdiği $amount masrafın kullanımınızdan kaynaklandığını ve sonraki kiranıza eklenmesini onaylıyor musunuz?';
+    return 'Bu $amount masrafın kullanımınızdan kaynaklandığını ve ev sahibine ödeneceğini onaylıyor musunuz?';
   }
+
+  @override
+  String get acceptDebtBtn => 'Borcu Kabul Et';
+
+  @override
+  String get approveOffsetBtn => 'Mahsubu Onayla';
+
+  @override
+  String get acceptDebtNote =>
+      'Onayladığınızda tutar ödeme planınızdaki bekleyen borçlarınıza eklenecektir.';
+
+  @override
+  String get approveOffsetNote =>
+      'Onayladığınızda tutar kiracının mahsup alacaklarına tanımlanır; kiracı sonraki kiralarından düşebilir.';
 
   @override
   String declaredIntentLabel(String intent) {

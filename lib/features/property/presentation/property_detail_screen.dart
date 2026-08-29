@@ -6319,7 +6319,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 },
                                 icon: const Icon(LucideIcons.checkCheck, size: 14),
                                 label: Text(
-                                  loc.approve,
+                                  canLandlordApproveP2P ? loc.approveOffsetBtn : loc.acceptDebtBtn,
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
