@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/maintenance_request.dart';
 import '../domain/maintenance_message.dart';
+import '../domain/maintenance_charge.dart';
 import '../../../core/utils/stream_utils.dart';
 
 final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
@@ -23,6 +24,22 @@ final maintenanceMessagesProvider = StreamProvider.autoDispose.family<List<Maint
   final repo = ref.watch(maintenanceRepositoryProvider);
   return repo.getMaintenanceMessagesStream(requestId);
 });
+
+final maintenanceChargesProvider = StreamProvider.autoDispose.family<List<MaintenanceCharge>, String>((ref, requestId) {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getMaintenanceChargesStream(requestId);
+});
+
+final propertyMaintenanceChargesProvider = StreamProvider.autoDispose.family<List<MaintenanceCharge>, String>((ref, propertyId) {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getPropertyMaintenanceChargesStream(propertyId);
+});
+
+final agencyMaintenanceChargesProvider = StreamProvider.autoDispose<List<MaintenanceCharge>>((ref) {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getAllMaintenanceChargesStream();
+});
+
 
 class MaintenanceRepository {
   final SupabaseClient _client;
@@ -593,6 +610,165 @@ class MaintenanceRepository {
     }
   }
 
+  // ── Maintenance Charges (1:N Financials) ──────────────────────────
+
+  Stream<List<MaintenanceCharge>> getMaintenanceChargesStream(String requestId) {
+    return resilientStream(
+      () => _client
+          .from('maintenance_charges')
+          .stream(primaryKey: ['id'])
+          .eq('maintenance_request_id', requestId)
+          .order('created_at', ascending: true)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getMaintenanceChargesStream($requestId)',
+    );
+  }
+
+  Stream<List<MaintenanceCharge>> getPropertyMaintenanceChargesStream(String propertyId) {
+    return resilientStream(
+      () => _client
+          .from('maintenance_charges')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getPropertyMaintenanceChargesStream($propertyId)',
+    );
+  }
+
+  Stream<List<MaintenanceCharge>> getAllMaintenanceChargesStream() {
+    return resilientStream(
+      () => _client
+          .from('maintenance_charges')
+          .stream(primaryKey: ['id'])
+          .order('created_at', ascending: false)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+      debugName: 'getAllMaintenanceChargesStream',
+    );
+  }
+
+  Future<MaintenanceCharge> createMaintenanceCharge(MaintenanceCharge charge) async {
+    final user = _client.auth.currentUser;
+    final payload = charge.toJson();
+    payload.remove('id');
+    if (charge.createdBy == null && user != null) {
+      payload['created_by'] = user.id;
+    }
+
+    final response = await _client
+        .from('maintenance_charges')
+        .insert(payload)
+        .select()
+        .single();
+
+    final created = MaintenanceCharge.fromJson(response);
+
+    try {
+      await _logActivity(
+        propertyId: charge.propertyId,
+        type: 'maintenance_charge_created',
+        metadata: {
+          'charge_id': created.id,
+          'request_id': charge.maintenanceRequestId,
+          'amount': charge.amount,
+          'currency': charge.currency,
+          'charge_type': charge.chargeType,
+        },
+      );
+    } catch (e) {
+      print('Error logging charge activity: $e');
+    }
+
+    return created;
+  }
+
+  Future<void> updateMaintenanceChargeStatus({
+    required String chargeId,
+    required String propertyId,
+    required String status,
+    String? rejectionReason,
+    String? disputeReason,
+    String? approvedBy,
+    DateTime? paidAt,
+  }) async {
+    final user = _client.auth.currentUser;
+    final payload = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+
+    if (status == 'approved') {
+      payload['approved_at'] = DateTime.now().toIso8601String();
+      payload['approved_by'] = approvedBy ?? user?.id;
+    } else if (status == 'paid') {
+      payload['paid_at'] = (paidAt ?? DateTime.now()).toIso8601String();
+    } else if (status == 'rejected') {
+      payload['rejection_reason'] = rejectionReason;
+      payload['rejected_by'] = user?.id;
+    } else if (status == 'disputed') {
+      payload['dispute_reason'] = disputeReason;
+    }
+
+    await _client.from('maintenance_charges').update(payload).eq('id', chargeId);
+
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_charge_status_updated',
+        metadata: {
+          'charge_id': chargeId,
+          'status': status,
+        },
+      );
+    } catch (e) {
+      print('Error logging charge status update: $e');
+    }
+  }
+
+  Future<void> updateMaintenanceChargeSettlement({
+    required String chargeId,
+    required String propertyId,
+    required double settledAmount,
+    required String status,
+    String? settlementMethod,
+  }) async {
+    final payload = <String, dynamic>{
+      'settled_amount': settledAmount,
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (settlementMethod != null) {
+      payload['settlement_method'] = settlementMethod;
+    }
+    if (status == 'paid') {
+      payload['paid_at'] = DateTime.now().toIso8601String();
+    }
+
+    await _client.from('maintenance_charges').update(payload).eq('id', chargeId);
+
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_charge_settled',
+        metadata: {
+          'charge_id': chargeId,
+          'settled_amount': settledAmount,
+          'status': status,
+          'settlement_method': settlementMethod,
+        },
+      );
+    } catch (e) {
+      print('Error logging charge settlement: $e');
+    }
+  }
+
+  Future<void> deleteMaintenanceCharge(String chargeId) async {
+    await _client.from('maintenance_charges').delete().eq('id', chargeId);
+  }
+
   Future<String> _getLandlordId(String propertyId) async {
     final data = await _client.from('properties').select('landlord_id').eq('id', propertyId).single();
     return data['landlord_id'] as String;
@@ -603,3 +779,4 @@ class MaintenanceRepository {
     return data['reporter_id'] as String;
   }
 }
+
