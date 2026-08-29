@@ -5853,9 +5853,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
     // Tenant must pay their usage damage debt (Banka transferi dekontu yükle / Nakit ödedim)
     final bool canTenantPayDamage = isTenant && isAddToRent && isPendingPayment;
-    
-    final hasReceiptProof = (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty);
-    final hasPaymentSubmission = hasReceiptProof || request.paymentDate != null || messages.any((m) =>
+
+    final hasPaymentSubmission = messages.any((m) =>
       m.message.contains('dekont') ||
       m.message.contains('receipt') ||
       m.message.contains('квитанция') ||
