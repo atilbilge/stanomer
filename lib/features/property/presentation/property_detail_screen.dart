@@ -5766,8 +5766,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final formattedAmount = CurrencyUtils.formatAmount(activeCost, currency);
     final originalCost = request.costAmount ?? 0;
     final formattedOriginalCost = CurrencyUtils.formatAmount(originalCost, currency);
-    final isDeductFromRent = request.paidBy == 'landlord';
-    final isAddToRent = request.paidBy == 'tenant';
+    final isTenantReporter = (property.tenantId != null && request.reporterId == property.tenantId);
+    final isDeductFromRent = isTenantReporter || request.paidBy == 'landlord';
+    final isAddToRent = !isDeductFromRent;
     final isPendingPayment = request.paymentStatus == 'pending_payment';
     final isPaid = request.paymentStatus == 'paid';
     final isPendingReview = request.paymentStatus == 'pending_review';
