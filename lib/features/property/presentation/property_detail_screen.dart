@@ -5851,6 +5851,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     
     // Tenant can offset their approved credit against any of their rent/utility bills
     final bool canTenantSettle = isTenant && isDeductFromRent && isPendingPayment;
+
+    // Tenant must pay their usage damage debt (Banka transferi dekontu yükle / Nakit ödedim)
+    final bool canTenantPayDamage = isTenant && isAddToRent && isPendingPayment;
     
     // Direct P2P Approval permissions when not managed by agency
     final bool canLandlordApproveP2P = !isManagedByAgency && isLandlord && isDeductFromRent &&
@@ -6299,6 +6302,33 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
+                          ] else if (canTenantPayDamage) ...[
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showTenantMaintenanceSettlementSheet(context, request, formattedAmount, currency, loc),
+                                icon: const Icon(LucideIcons.arrowUpRight, size: 14),
+                                label: Text(
+                                  loc.localeName == 'tr'
+                                      ? 'Borcu Öde'
+                                      : (loc.localeName == 'ru'
+                                          ? 'Оплатить долг'
+                                          : (loc.localeName.startsWith('sr')
+                                              ? 'Plati dug'
+                                              : 'Pay Debt')),
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD97706),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
                           ] else if (canLandlordSettle) ...[
                             const SizedBox(width: 8),
                             Expanded(
@@ -6313,6 +6343,27 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2563EB),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
+                          ] else if (!isManagedByAgency && isLandlord && isAddToRent && isPendingPayment) ...[
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _handleConfirmReceipt(request),
+                                icon: const Icon(LucideIcons.checkCheck, size: 14),
+                                label: Text(
+                                  loc.confirmReceiptBtn,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF059669),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 10),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
