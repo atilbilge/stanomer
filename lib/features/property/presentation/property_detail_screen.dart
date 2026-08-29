@@ -5849,6 +5849,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         ? isAgencyManager && isDeductFromRent && isPendingPayment
         : (isLandlord || isAgencyManager) && isDeductFromRent && isPendingPayment;
     
+    // Tenant can offset their approved credit against any of their rent/utility bills
+    final bool canTenantSettle = isTenant && isDeductFromRent && isPendingPayment;
+    
     // Direct P2P Approval permissions when not managed by agency
     final bool canLandlordApproveP2P = !isManagedByAgency && isLandlord && isDeductFromRent &&
         (isPendingReview || isPendingOppositeApproval);
@@ -6268,6 +6271,27 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF059669),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
+                          ] else if (canTenantSettle) ...[
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showOffsetDialog(context, request, allPayments, allMaintenanceRequests, formattedAmount, currency, loc),
+                                icon: const Icon(LucideIcons.layers, size: 14),
+                                label: Text(
+                                  loc.optionOffsetFromRent,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2563EB),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 10),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
