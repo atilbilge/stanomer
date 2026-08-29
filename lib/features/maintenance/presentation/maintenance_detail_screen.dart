@@ -531,7 +531,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         finStatusIcon = LucideIcons.fileSearch;
         break;
       case MaintenancePaymentStatus.pendingPayment:
-        if (isPayerLandlord) {
+        if (isPayerTenant) {
           finStatusLabel = loc.localeName == 'tr'
               ? 'Mahsup Bekliyor'
               : (loc.localeName == 'ru' ? 'К зачету' : (loc.localeName.startsWith('sr') ? 'Za prebijanje' : 'Ready for Offset'));
@@ -561,6 +561,18 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         break;
     }
 
+    final allMessages = messagesAsync?.value ?? [];
+    final hasPaymentSubmission = allMessages.any((m) =>
+      m.message.contains('dekont') ||
+      m.message.contains('receipt') ||
+      m.message.contains('квитанция') ||
+      m.message.contains('uplatnic') ||
+      m.message.contains('nakit') ||
+      m.message.contains('cash') ||
+      m.message.contains('наличными') ||
+      m.message.contains('gotovin')
+    );
+
     final hasFinancials = request.costAmount != null || (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty);
     final canAgencyEdit = isAgency;
     final canLandlordEdit = !hasAgency && isLandlord && (!hasFinancials || request.financialStatus == MaintenancePaymentStatus.pendingReview);
@@ -581,25 +593,38 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         waitingOnText = loc.propertyManagedByAgencyNotice;
       }
     } else {
-      if (isLastDeclaredByTenant) {
-        // Tenant declared
+      if (isPayerTenant) {
+        // Tenant paid for fixture / maintenance -> Landlord reimburses or offsets from rent
         canApproveExpense = isLandlord;
         approvalTitle = loc.landlordExpenseApproval;
-        approvalSubtitle = isPayerLandlord
-            ? loc.confirmTenantReimburseApprovalMsg(formattedCost ?? '')
-            : loc.confirmTenantSelfApprovalMsg(formattedCost ?? '');
+        approvalSubtitle = loc.confirmTenantReimburseApprovalMsg(formattedCost ?? '');
         if (isTenant) {
           waitingOnText = loc.expenseSubmittedForLandlordReview;
         }
       } else {
-        // Landlord declared
-        canApproveExpense = isTenant;
-        approvalTitle = loc.tenantExpenseApproval;
-        approvalSubtitle = isPayerLandlord
-            ? loc.confirmLandlordSelfApprovalMsg(formattedCost ?? '')
-            : loc.confirmLandlordTenantDueApprovalMsg(formattedCost ?? '');
-        if (isLandlord) {
-          waitingOnText = loc.expenseSubmittedForTenantReview;
+        // Landlord paid upfront for usage damage -> Charged to tenant (Add to rent)
+        if (hasPaymentSubmission) {
+          // Tenant has uploaded payment proof / declared cash payment -> Landlord confirms receipt of payment
+          canApproveExpense = isLandlord;
+          approvalTitle = loc.confirmReceiptBtn;
+          approvalSubtitle = loc.localeName == 'tr'
+              ? 'Kiracının yaptığı ${formattedCost ?? ''} tutarındaki ödemeyi aldığınızı ve borcu kapattığınızı onaylıyor musunuz?'
+              : (loc.localeName == 'ru'
+                  ? 'Вы подтверждаете получение платежа на сумму ${formattedCost ?? ''} от арендатора и закрытие долга?'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Da li potvrđujete prijem uplate od ${formattedCost ?? ''} od stanara i zatvaranje duga?'
+                      : 'Do you confirm receiving the payment of ${formattedCost ?? ''} from the tenant and closing the debt?'));
+          if (isTenant) {
+            waitingOnText = loc.waitingForOwnerApproval;
+          }
+        } else {
+          // Initial declaration: Landlord charged tenant for usage damage -> Tenant confirms the debt
+          canApproveExpense = isTenant;
+          approvalTitle = loc.tenantExpenseApproval;
+          approvalSubtitle = loc.confirmLandlordTenantDueApprovalMsg(formattedCost ?? '');
+          if (isLandlord) {
+            waitingOnText = loc.expenseSubmittedForTenantReview;
+          }
         }
       }
     }
@@ -1321,6 +1346,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                                       isLandlordApproving: isLandlord,
                                       isAgencyApproving: isAgency,
                                       isLastDeclaredByTenant: isLastDeclaredByTenant,
+                                      hasPaymentSubmission: hasPaymentSubmission,
                                     ),
                                     icon: const Icon(LucideIcons.check, size: 14),
                                     label: Text(loc.approve),
@@ -2007,6 +2033,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     required bool isLandlordApproving,
     required bool isAgencyApproving,
     required bool isLastDeclaredByTenant,
+    required bool hasPaymentSubmission,
   }) async {
     final loc = AppLocalizations.of(context)!;
     final currency = request.currency ?? (widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR');
@@ -2056,29 +2083,21 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
           detailMsg = '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
         }
       }
-    } else if (isLastDeclaredByTenant) {
-      // Tenant declared the expense
-      if (isPayerLandlord || targetPaidBy == 'landlord') {
-        // Tenant requested landlord reimbursement (demirbaş / rent deduction)
-        targetPaidBy = 'landlord';
-        targetPaymentStatus = 'pending_payment';
-        detailMsg = '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})';
-      } else {
-        // Tenant declared self payment (usage / closed)
-        targetPaidBy = 'tenant';
-        targetPaymentStatus = 'paid';
-        detailMsg = '${loc.coveredByTenant} (${loc.financialStatusPaid})';
-      }
+    } else if (isPayerTenant || targetPaidBy == 'tenant') {
+      // Tenant declared fixture reimbursement claim -> Landlord approves -> moves to pending_payment for rent offset
+      targetPaidBy = 'tenant';
+      targetPaymentStatus = 'pending_payment';
+      detailMsg = '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})';
     } else {
-      // Landlord declared the expense
-      if (isPayerLandlord || targetPaidBy == 'landlord') {
-        // Landlord covered demirbaş (closed)
+      // Landlord declared damage claim (paidBy == 'landlord')
+      if (hasPaymentSubmission) {
+        // Landlord confirms tenant's payment -> moves to paid
         targetPaidBy = 'landlord';
         targetPaymentStatus = 'paid';
-        detailMsg = '${loc.coveredByLandlord} (${loc.financialStatusPaid})';
+        detailMsg = '${loc.confirmReceiptBtn} (${loc.financialStatusPaid})';
       } else {
-        // Landlord requested tenant payment (usage damage / add to rent)
-        targetPaidBy = 'tenant';
+        // Tenant accepts initial damage charge -> moves to pending_payment for tenant to pay
+        targetPaidBy = 'landlord';
         targetPaymentStatus = 'pending_payment';
         detailMsg = '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
       }
