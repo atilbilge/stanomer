@@ -2941,9 +2941,9 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
     }
 
     final String? finalPaidBy = widget.isLandlordDeclaration
-        ? (_declarationIntent == 'tenant_due' ? 'tenant' : 'landlord')
+        ? 'landlord'
         : (widget.isTenantDeclaration
-            ? (_declarationIntent == 'reimburse' ? 'landlord' : 'tenant')
+            ? 'tenant'
             : _paidBy);
 
     final bool isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
@@ -3032,12 +3032,12 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
       if (costAmount != null && costAmount > 0) {
         final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
-        final chargeType = _declarationIntent == 'reimburse'
+        final chargeType = finalPaidBy == 'tenant'
             ? 'reimbursement'
-            : (finalPaidBy == 'landlord' ? 'direct_charge' : 'direct_charge');
+            : 'direct_charge';
         final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
-        final debtorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
-        final creditorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
+        final debtorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
+        final creditorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
 
         try {
           await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
