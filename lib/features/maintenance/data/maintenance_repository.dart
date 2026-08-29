@@ -349,9 +349,9 @@ class MaintenanceRepository {
     if (messageNote != null && messageNote.isNotEmpty) {
       try {
         await addMessage(
-          requestId: requestId,
-          propertyId: propertyId,
-          message: messageNote,
+          requestId,
+          propertyId,
+          messageNote,
         );
       } catch (e) {
         print('Error posting approval message: $e');
@@ -378,9 +378,9 @@ class MaintenanceRepository {
     final note = messageNote ?? '❌ Masraf beyanı reddedildi: $reason';
     try {
       await addMessage(
-        requestId: requestId,
-        propertyId: propertyId,
-        message: note,
+        requestId,
+        propertyId,
+        note,
       );
     } catch (e) {
       print('Error posting rejection message: $e');

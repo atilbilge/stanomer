@@ -5416,6 +5416,8 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
     String landlordLabel;
     String pendingReviewLabel;
     String pendingPaymentLabel;
+    String pendingAgencyApprovalLabel;
+    String pendingOppositeApprovalLabel;
     String paidLabel;
     String rejectedLabel;
 
@@ -5424,6 +5426,8 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
         tenantLabel = 'Kiracı';
         landlordLabel = 'Ev Sahibi';
         pendingReviewLabel = 'İnceleme Bekliyor';
+        pendingAgencyApprovalLabel = 'Acente Onayı Bekliyor';
+        pendingOppositeApprovalLabel = 'Mahsup Onayı Bekliyor';
         pendingPaymentLabel = 'Ödeme Bekliyor';
         paidLabel = 'Ödendi';
         rejectedLabel = 'Reddedildi';
@@ -5432,6 +5436,8 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
         tenantLabel = 'Stanar';
         landlordLabel = 'Vlasnik';
         pendingReviewLabel = 'Čeka proveru';
+        pendingAgencyApprovalLabel = 'Čeka odobrenje agencije';
+        pendingOppositeApprovalLabel = 'Čeka odobrenje poravnanja';
         pendingPaymentLabel = 'Čeka plaćanje';
         paidLabel = 'Plaćeno';
         rejectedLabel = 'Odbijeno';
@@ -5440,6 +5446,8 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
         tenantLabel = 'Арендатор';
         landlordLabel = 'Владелец';
         pendingReviewLabel = 'На проверке';
+        pendingAgencyApprovalLabel = 'Ожидает подтверждения агентства';
+        pendingOppositeApprovalLabel = 'Ожидает подтверждения взаимозачета';
         pendingPaymentLabel = 'Ожидает оплаты';
         paidLabel = 'Оплачено';
         rejectedLabel = 'Отклонено';
@@ -5448,6 +5456,8 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
         tenantLabel = 'Tenant';
         landlordLabel = 'Landlord';
         pendingReviewLabel = 'Pending Review';
+        pendingAgencyApprovalLabel = 'Awaiting Agency Approval';
+        pendingOppositeApprovalLabel = 'Awaiting Settlement Approval';
         pendingPaymentLabel = 'Pending Payment';
         paidLabel = 'Paid';
         rejectedLabel = 'Rejected';
@@ -5460,6 +5470,18 @@ class _MaintenanceTicketCardState extends State<_MaintenanceTicketCard> {
     String finStatusLabel;
 
     switch (req.financialStatus) {
+      case MaintenancePaymentStatus.pendingAgencyApproval:
+        finStatusColor = const Color(0xFFB06C10);
+        finStatusBg = const Color(0xFFFEF6E8);
+        finStatusIcon = LucideIcons.clock;
+        finStatusLabel = pendingAgencyApprovalLabel;
+        break;
+      case MaintenancePaymentStatus.pendingOppositeApproval:
+        finStatusColor = const Color(0xFF1A5EB8);
+        finStatusBg = const Color(0xFFEBF3FC);
+        finStatusIcon = LucideIcons.scale;
+        finStatusLabel = pendingOppositeApprovalLabel;
+        break;
       case MaintenancePaymentStatus.pendingReview:
         finStatusColor = const Color(0xFF1A5EB8);
         finStatusBg = const Color(0xFFEBF3FC);
@@ -6072,6 +6094,18 @@ class _MaintenanceSaasRowState extends State<_MaintenanceSaasRow> {
     IconData finStatusIcon = LucideIcons.clock;
 
     switch (req.financialStatus) {
+      case MaintenancePaymentStatus.pendingAgencyApproval:
+        finStatusLabel = loc.financialStatusPendingAgencyApproval;
+        finStatusColor = const Color(0xFFB45309);
+        finStatusBg = const Color(0xFFFFFBEB);
+        finStatusIcon = LucideIcons.clock;
+        break;
+      case MaintenancePaymentStatus.pendingOppositeApproval:
+        finStatusLabel = loc.financialStatusPendingOppositeApproval;
+        finStatusColor = const Color(0xFF1D4ED8);
+        finStatusBg = const Color(0xFFEFF6FF);
+        finStatusIcon = LucideIcons.scale;
+        break;
       case MaintenancePaymentStatus.pendingReview:
         finStatusLabel = loc.financialStatusPendingReview;
         finStatusColor = const Color(0xFF1D4ED8);

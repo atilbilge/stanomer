@@ -1295,6 +1295,18 @@ class _MaintenanceFinancialBox extends StatelessWidget {
     final IconData finIcon;
 
     switch (request.financialStatus) {
+      case MaintenancePaymentStatus.pendingAgencyApproval:
+        finColor = const Color(0xFFD97706);
+        finBg = const Color(0xFFFFFBEB);
+        finIcon = LucideIcons.clock;
+        finLabel = loc.financialStatusPendingAgencyApproval;
+        break;
+      case MaintenancePaymentStatus.pendingOppositeApproval:
+        finColor = const Color(0xFF0284C7);
+        finBg = const Color(0xFFF0F9FF);
+        finIcon = LucideIcons.scale;
+        finLabel = loc.financialStatusPendingOppositeApproval;
+        break;
       case MaintenancePaymentStatus.pendingReview:
         finColor = const Color(0xFF0284C7);
         finBg = const Color(0xFFF0F9FF);

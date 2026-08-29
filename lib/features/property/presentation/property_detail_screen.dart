@@ -4377,16 +4377,17 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
-                      ),
                     ),
-                ],
+                  ),
               ],
-            ),
-          ),
+            ],
+          ],
         ),
-      ],
+      ),
     ),
-  ),
+  ],
+),
+),
 );
   }
 
@@ -5964,7 +5965,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         InkWell(
-                          onTap: () => DocumentUtils.openDocument(context, request.invoicePdfUrl!),
+                          onTap: () => _openFileOrUrl(context, request.invoicePdfUrl!, mounted: context.mounted),
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -6050,7 +6051,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 },
                                 icon: const Icon(LucideIcons.checkCheck, size: 14),
                                 label: Text(
-                                  loc.approveDeclarationBtn,
+                                  loc.approve,
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -6068,7 +6069,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () => _showMaintenanceSettlementSheet(context, request, allPayments, formattedAmount, currency, loc),
+                                onPressed: () => _showLandlordSettlementSheet(context, request, allPayments, allMaintenanceRequests, formattedAmount, currency, loc),
                                 icon: Icon(isDeductFromRent ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight, size: 14),
                                 label: Text(
                                   loc.settleExpenseTitle,
