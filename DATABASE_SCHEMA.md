@@ -193,6 +193,7 @@ Aylık kira ve bina/fatura ödeme kalemlerini saklar.
 | `owner_note` | `TEXT` | YES | `NULL` | - | Notlar |
 | `dispute_reason` | `TEXT` | YES | `NULL` | - | Ödeme itiraz nedeni |
 | `disputed_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | İtiraz eden kullanıcı |
+| `linked_charge_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES maintenance_charges(id) ON DELETE SET NULL` | Mahsup edilen bakım masrafı ID |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncelleme tarihi |
 
@@ -207,7 +208,7 @@ Aylık kira ve bina/fatura ödeme kalemlerini saklar.
 ---
 
 ### 2.5 `maintenance_requests`
-Bakım ve arıza bildirimlerini ve finansal maliyet kayıtlarını saklar.
+Bakım ve arıza bildirimlerini saklar.
 
 #### Tablo Yapısı
 | Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
@@ -222,27 +223,60 @@ Bakım ve arıza bildirimlerini ve finansal maliyet kayıtlarını saklar.
 | `priority` | `TEXT` | **NO** | `'normal'` | `CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'))` | Öncelik derecesi |
 | `status` | `TEXT` | **NO** | `'open'` | `CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'))` | Durumu |
 | `photos_urls` | `TEXT[]` | **NO** | `'{}'` | - | Arıza fotoğrafları URL dizisi |
-| `cost_amount` | `NUMERIC(10,2)` | YES | `NULL` | - | Bakım/onarım harcama tutarı |
-| `settled_amount` | `NUMERIC(10,2)` | YES | `0.00` | - | Mahsup edilen / ödenen tutar |
-| `currency` | `TEXT` | YES | `NULL` | - | Para birimi (örn: `'EUR'`, `'RSD'`) |
-| `paid_by` | `TEXT` | YES | `NULL` | `CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'))` | Ödemeyi yapan taraf |
-| `payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödeme yapılma tarihi |
-| `payment_status`| `TEXT`               | **NO**    | `'pending_review'`| `CHECK (payment_status IN ('pending_review', 'pending_agency_approval', 'pending_opposite_approval', 'pending_payment', 'paid', 'rejected'))` | Fatura/Ödeme durumu (`pending_review`, `pending_agency_approval`, `pending_opposite_approval`, `pending_payment`, `paid`, `rejected`) |
-| `invoice_pdf_url`| `TEXT` | YES | `NULL` | - | Fatura PDF/belge dosya URL'i |
-| `rejection_reason`| `TEXT` | YES | `NULL` | - | Masraf beyanı red gerekçesi |
-| `rejected_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES auth.users(id) ON DELETE SET NULL` | Reddeden kullanıcı ID |
 | `resolved_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Çözümlenme tarihi |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncelleme tarihi |
 
 #### RLS Politikaları (`public.maintenance_requests`)
-* **`"Users can view maintenance requests"`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid())))`
-* **`"Users can update maintenance requests"`**: `FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid())))`
-* **`"Users can delete maintenance requests"`**: `FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND p.landlord_id = auth.uid()))`
+* **`"Users can view maintenance requests"`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+* **`"Users can update maintenance requests"`**: `FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+* **`"Users can delete maintenance requests"`**: `FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_requests.property_id AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
 
 ---
 
-### 2.6 `maintenance_messages`
+### 2.6 `maintenance_charges`
+Bakım ve arıza taleplerine bağlı finansal masrafları, faturaları, usta ödemelerini ve kira mahsuplaşmalarını saklar (1:N ilişki).
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Masraf ID |
+| `maintenance_request_id` | `UUID` | **NO** | - | **FK** `REFERENCES maintenance_requests(id) ON DELETE CASCADE` | İlgili bakım talebi ID |
+| `property_id` | `UUID` | **NO** | - | **FK** `REFERENCES properties(id) ON DELETE CASCADE` | Mülk ID |
+| `created_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | Masrafı kaydeden kullanıcı |
+| `title` | `TEXT` | YES | `NULL` | - | Masraf başlığı (örn: Malzeme Faturası, İşçilik) |
+| `charge_type` | `TEXT` | **NO** | `'direct_charge'` | `CHECK (charge_type IN ('direct_charge', 'agency_advance', 'reimbursement'))` | Masraf türü |
+| `approver_role` | `TEXT` | **NO** | `'counterparty'` | `CHECK (approver_role IN ('agency', 'counterparty'))` | Onaylayıcı merci |
+| `debtor_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | Borçlu taraf |
+| `creditor_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | Alacaklı taraf |
+| `contractor_name`| `TEXT` | YES | `NULL` | - | Usta/Firma adı |
+| `amount` | `NUMERIC(12,2)` | **NO** | - | `CHECK (amount >= 0)` | Masraf tutarı |
+| `settled_amount` | `NUMERIC(12,2)` | **NO** | `0.00` | `CHECK (settled_amount >= 0)` | Mahsup edilen / ödenen tutar |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi |
+| `status` | `TEXT` | **NO** | `'pending'` | `CHECK (status IN ('pending', 'declared', 'disputed', 'approved', 'rejected', 'paid'))` | Süreç durumu |
+| `contractor_payment_status` | `TEXT` | YES | `NULL` | `CHECK (contractor_payment_status IN ('unpaid', 'paid'))` | Acente usta ödeme durumu |
+| `contractor_payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Usta ödeme tarihi |
+| `settlement_method` | `TEXT` | YES | `NULL` | `CHECK (settlement_method IN ('separate_payment', 'rent_offset'))` | Kapatılma yöntemi |
+| `receipt_url` | `TEXT` | YES | `NULL` | - | Fatura/makbuz belge URL'i |
+| `dispute_reason` | `TEXT` | YES | `NULL` | - | İtiraz gerekçesi |
+| `rejection_reason`| `TEXT` | YES | `NULL` | - | Red gerekçesi |
+| `rejected_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | Reddeden kullanıcı |
+| `declared_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Beyan tarihi |
+| `approved_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Onay tarihi |
+| `approved_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id)` | Onaylayan kullanıcı |
+| `paid_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödenme/Kapanma tarihi |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme tarihi |
+
+#### RLS Politikaları (`public.maintenance_charges`)
+* **`"Users can view maintenance charges"`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+* **`"Users can insert maintenance charges"`**: `FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM properties p WHERE p.id = property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+* **`"Users can update maintenance charges"`**: `FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+* **`"Landlord and Agency can delete maintenance charges"`**: `FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))))`
+
+---
+
+### 2.7 `maintenance_messages`
 Arıza talepleri altındaki sohbet mesajlarını saklar.
 
 #### Tablo Yapısı

@@ -281,6 +281,38 @@ ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS photo_url TEXT;
 ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 
+CREATE TABLE IF NOT EXISTS public.maintenance_charges (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    maintenance_request_id UUID NOT NULL REFERENCES public.maintenance_requests(id) ON DELETE CASCADE,
+    property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    title TEXT,
+    charge_type TEXT NOT NULL DEFAULT 'direct_charge' CHECK (charge_type IN ('direct_charge', 'agency_advance', 'reimbursement')),
+    approver_role TEXT NOT NULL DEFAULT 'counterparty' CHECK (approver_role IN ('agency', 'counterparty')),
+    debtor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    creditor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    contractor_name TEXT,
+    amount NUMERIC(12,2) NOT NULL CHECK (amount >= 0),
+    settled_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00 CHECK (settled_amount >= 0),
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'declared', 'disputed', 'approved', 'rejected', 'paid')),
+    contractor_payment_status TEXT CHECK (contractor_payment_status IS NULL OR contractor_payment_status IN ('unpaid', 'paid')),
+    contractor_payment_date TIMESTAMPTZ,
+    settlement_method TEXT CHECK (settlement_method IS NULL OR settlement_method IN ('separate_payment', 'rent_offset')),
+    receipt_url TEXT,
+    dispute_reason TEXT,
+    rejection_reason TEXT,
+    rejected_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    declared_at TIMESTAMPTZ,
+    approved_at TIMESTAMPTZ,
+    approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS linked_charge_id UUID REFERENCES public.maintenance_charges(id) ON DELETE SET NULL;
+
+
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -462,11 +494,31 @@ CREATE POLICY "activity_logs_select_policy" ON public.activity_logs FOR SELECT T
 DROP POLICY IF EXISTS "activity_logs_insert_policy" ON public.activity_logs;
 CREATE POLICY "activity_logs_insert_policy" ON public.activity_logs FOR INSERT TO authenticated WITH CHECK (true);
 
+-- Maintenance Charges RLS
+ALTER TABLE public.maintenance_charges ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "maintenance_charges_select_policy" ON public.maintenance_charges;
+CREATE POLICY "maintenance_charges_select_policy" ON public.maintenance_charges FOR SELECT TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))));
+
+DROP POLICY IF EXISTS "maintenance_charges_insert_policy" ON public.maintenance_charges;
+CREATE POLICY "maintenance_charges_insert_policy" ON public.maintenance_charges FOR INSERT TO authenticated
+    WITH CHECK (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))));
+
+DROP POLICY IF EXISTS "maintenance_charges_update_policy" ON public.maintenance_charges;
+CREATE POLICY "maintenance_charges_update_policy" ON public.maintenance_charges FOR UPDATE TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))));
+
+DROP POLICY IF EXISTS "maintenance_charges_delete_policy" ON public.maintenance_charges;
+CREATE POLICY "maintenance_charges_delete_policy" ON public.maintenance_charges FOR DELETE TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))));
+
 -- 5. REALTIME PUBLICATION & REPLICA IDENTITY FOR PUBLIC TABLES
 ALTER TABLE public.properties REPLICA IDENTITY FULL;
 ALTER TABLE public.contracts REPLICA IDENTITY FULL;
 ALTER TABLE public.rent_payments REPLICA IDENTITY FULL;
 ALTER TABLE public.maintenance_requests REPLICA IDENTITY FULL;
+ALTER TABLE public.maintenance_charges REPLICA IDENTITY FULL;
 ALTER TABLE public.maintenance_messages REPLICA IDENTITY FULL;
 ALTER TABLE public.notifications REPLICA IDENTITY FULL;
 ALTER TABLE public.activity_logs REPLICA IDENTITY FULL;
@@ -480,6 +532,9 @@ DO $$ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'rent_payments') THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.rent_payments;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'maintenance_charges') THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.maintenance_charges;
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'invitations') THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.invitations;
