@@ -2293,7 +2293,6 @@ class _IssueHeroCard extends StatelessWidget {
       case MaintenanceCategory.appliance: return loc.categoryAppliance;
       case MaintenanceCategory.structural: return loc.categoryStructural;
       case MaintenanceCategory.other:
-      default:
         return loc.categoryOther;
     }
   }
@@ -3254,7 +3253,14 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                initialValue: ['pending_review', 'pending_payment', 'paid', 'rejected'].contains(_paymentStatus)
+                initialValue: [
+                  'pending_agency_approval',
+                  'pending_opposite_approval',
+                  'pending_review',
+                  'pending_payment',
+                  'paid',
+                  'rejected',
+                ].contains(_paymentStatus)
                     ? _paymentStatus
                     : 'pending_review',
                 isExpanded: true,
@@ -3263,6 +3269,34 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 items: [
+                  DropdownMenuItem(
+                    value: 'pending_agency_approval',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(LucideIcons.clock, size: 15, color: Color(0xFFD97706)),
+                        const SizedBox(width: 8),
+                        Text(
+                          loc.financialStatusPendingAgencyApproval,
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFFD97706)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'pending_opposite_approval',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(LucideIcons.scale, size: 15, color: Color(0xFF2563EB)),
+                        const SizedBox(width: 8),
+                        Text(
+                          loc.financialStatusPendingOppositeApproval,
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
+                        ),
+                      ],
+                    ),
+                  ),
                   DropdownMenuItem(
                     value: 'pending_review',
                     child: Row(
