@@ -6027,7 +6027,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                context.push('/maintenance/${request.id}', extra: {
+                                context.push('/maintenance/detail', extra: {
                                   'request': request,
                                   'property': property,
                                 });

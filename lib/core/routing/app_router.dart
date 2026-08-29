@@ -275,6 +275,33 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/maintenance/:id',
+        builder: (context, state) {
+          if (state.extra != null && state.extra is Map<String, dynamic>) {
+            final extras = state.extra as Map<String, dynamic>;
+            final rawProperty = extras['property'];
+            final property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
+            final rawRequest = extras['request'];
+            final request = rawRequest is MaintenanceRequest
+                ? rawRequest
+                : (rawRequest is Map<String, dynamic>
+                    ? MaintenanceRequest.fromJson(rawRequest)
+                    : null);
+            if (property != null && request != null) {
+              return MaintenanceDetailScreen(
+                property: property,
+                request: request,
+              );
+            }
+          }
+          return const DashboardScreen();
+        },
+      ),
+      GoRoute(
         path: '/paywall',
         builder: (context, state) => const PaywallScreen(),
       ),
