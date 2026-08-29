@@ -3195,7 +3195,7 @@ class _TenantActionCenter extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final hasPendingProposal = contract.status == ContractStatus.revisionRequested;
-    final awaitingCount = financialStatus?.awaitingCount ?? 0;
+    final awaitingCount = awaitingPayments.length;
     final hasAwaiting = awaitingCount > 0;
     final pendingCount = financialStatus?.pendingCount ?? 0;
     final totalPendingNet = financialStatus?.pendingTotals.values.fold<double>(0.0, (sum, val) => sum + val) ?? 0.0;

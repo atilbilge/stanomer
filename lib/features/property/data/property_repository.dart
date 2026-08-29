@@ -172,17 +172,14 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
 
         // Only approved active settlements (pending_payment) factor into net balance debt / credit
         if (m.paymentStatus == 'pending_payment') {
-          if (m.paidBy == 'landlord') {
+          if (m.paidBy == 'tenant') {
             // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent (Tenant credit)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) - cost;
-          } else if (m.paidBy == 'tenant') {
+          } else if (m.paidBy == 'landlord') {
             // Landlord paid upfront for tenant fault -> Tenant owes / Add to rent (Tenant debt)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
             pendingC++;
           }
-        } else if (m.paymentStatus == 'pending_review') {
-          awaitingTotals[cur] = (awaitingTotals[cur] ?? 0) + cost;
-          awaitingC++;
         }
       }
 
