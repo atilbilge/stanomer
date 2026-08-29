@@ -367,34 +367,54 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
             ),
           ),
 
-          // Action on Mobile only: Maintenance & Overview Buttons
-          if (!isWideScreen) ...[
-            const SizedBox(width: 6),
-            Tooltip(
-              message: loc.maintenance,
-              child: InkWell(
-                onTap: () => onOpenPanel(2),
+          // Action Buttons / Tabs (Overview, Activity, Maintenance)
+          if (isWideScreen) ...[
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 34,
-                  width: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHeaderPillTab(
+                    label: loc.overview,
+                    icon: LucideIcons.fileText,
+                    isSelected: selectedSidebarIndex == 0,
+                    onTap: () => onSidebarTabSelected?.call(0),
+                  ),
+                  const SizedBox(width: 2),
+                  _buildHeaderPillTab(
+                    label: loc.activity,
+                    icon: LucideIcons.history,
+                    isSelected: selectedSidebarIndex == 1,
+                    onTap: () => onSidebarTabSelected?.call(1),
+                  ),
+                  const SizedBox(width: 2),
+                  ref.watch(maintenanceRequestsProvider(property.id)).maybeWhen(
+                    data: (reqs) => _buildHeaderPillTab(
+                      label: loc.maintenance,
+                      icon: LucideIcons.wrench,
+                      isSelected: selectedSidebarIndex == 2,
+                      badgeCount: reqs.isNotEmpty ? reqs.length : null,
+                      onTap: () => onSidebarTabSelected?.call(2),
+                    ),
+                    orElse: () => _buildHeaderPillTab(
+                      label: loc.maintenance,
+                      icon: LucideIcons.wrench,
+                      isSelected: selectedSidebarIndex == 2,
+                      onTap: () => onSidebarTabSelected?.call(2),
                     ),
                   ),
-                  child: const Icon(
-                    LucideIcons.wrench,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ),
+                ],
               ),
             ),
+          ] else ...[
             const SizedBox(width: 6),
+            // Overview Button
             Tooltip(
               message: loc.overview,
               child: InkWell(
@@ -407,20 +427,149 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
-                    ),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
                   ),
-                  child: const Icon(
-                    LucideIcons.info,
-                    size: 17,
-                    color: Colors.white,
+                  child: const Icon(LucideIcons.fileText, size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Activity Button
+            Tooltip(
+              message: loc.activity,
+              child: InkWell(
+                onTap: () => onOpenPanel(1),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  height: 34,
+                  width: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+                  ),
+                  child: const Icon(LucideIcons.history, size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Maintenance Button
+            Tooltip(
+              message: loc.maintenance,
+              child: InkWell(
+                onTap: () => onOpenPanel(2),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.wrench, size: 15, color: Colors.white),
+                      ref.watch(maintenanceRequestsProvider(property.id)).maybeWhen(
+                        data: (reqs) => reqs.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${reqs.length}',
+                                    style: TextStyle(
+                                      color: isTenant ? const Color(0xFF064E3B) : agencyColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderPillTab({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    int? badgeCount,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(7),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected ? const Color(0xFF0F172A) : Colors.white.withValues(alpha: 0.85),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFF0F172A) : Colors.white.withValues(alpha: 0.85),
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+            if (badgeCount != null) ...[
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF2563EB) : Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$badgeCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
