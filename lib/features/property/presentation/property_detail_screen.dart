@@ -5844,14 +5844,15 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isManagedByAgency = property.agencyId != null && property.agencyId!.isNotEmpty;
 
     // Role-based action button permissions
-    bool canLandlordSettle = isManagedByAgency
+    final bool canLandlordSettle = isManagedByAgency
         ? isAgencyManager && isDeductFromRent && isPendingPayment
         : (isLandlord || isAgencyManager) && isDeductFromRent && isPendingPayment;
-    bool canLandlordConfirm = isManagedByAgency
-        ? isAgencyManager && isAddToRent && isPendingReview
-        : (isLandlord || isAgencyManager) && isAddToRent && isPendingReview;
-    bool canTenantPay = isTenant && isAddToRent && isPendingPayment;
-    bool canTenantConfirm = isTenant && isDeductFromRent && isPendingReview;
+    
+    // Direct P2P Approval permissions when not managed by agency
+    final bool canLandlordApproveP2P = !isManagedByAgency && isLandlord && isDeductFromRent &&
+        (isPendingReview || isPendingOppositeApproval);
+    final bool canTenantApproveP2P = !isManagedByAgency && isTenant && isAddToRent &&
+        (isPendingReview || isPendingOppositeApproval);
 
     final bool isAgencyApprovalActionNeeded = isManagedByAgency && isAgencyManager &&
         (isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview);
@@ -6236,6 +6237,43 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
+                          ] else if (canLandlordApproveP2P || canTenantApproveP2P) ...[
+                            const SizedBox(width: 8),
+                            // Reject Button
+                            OutlinedButton.icon(
+                              onPressed: () => _showRejectMaintenanceDeclarationDialog(context, request),
+                              icon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFE11D48),
+                                side: const BorderSide(color: Color(0xFFFDA4AF)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // Approve Expense Button
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  _handleApproveMaintenanceDeclaration(context, request, 'pending_payment');
+                                },
+                                icon: const Icon(LucideIcons.checkCheck, size: 14),
+                                label: Text(
+                                  loc.approve,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF059669),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
                           ] else if (canLandlordSettle) ...[
                             const SizedBox(width: 8),
                             Expanded(
@@ -6284,31 +6322,63 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (canTenantConfirm || canLandlordConfirm) ...[
+                          ] else if (!isManagedByAgency && isTenant && isDeductFromRent && (isPendingReview || isPendingOppositeApproval)) ...[
                             const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: () => _showRejectMaintenanceDeclarationDialog(context, request),
-                              icon: const Icon(LucideIcons.x, size: 14),
-                              label: Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFE11D48),
-                                side: const BorderSide(color: Color(0xFFFDA4AF)),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFFDE68A)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(LucideIcons.clock, size: 13, color: Color(0xFFD97706)),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        loc.waitingForOwnerApproval,
+                                        style: const TextStyle(fontSize: 11, color: Color(0xFFB45309), fontWeight: FontWeight.w600),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                          ] else if (!isManagedByAgency && isLandlord && isAddToRent && (isPendingReview || isPendingOppositeApproval)) ...[
+                            const SizedBox(width: 8),
                             Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _handleConfirmReceipt(request),
-                                icon: const Icon(LucideIcons.checkCheck, size: 14),
-                                label: Text(loc.confirmReceiptBtn, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF059669),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  elevation: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFFDE68A)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(LucideIcons.clock, size: 13, color: Color(0xFFD97706)),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        loc.localeName == 'tr'
+                                            ? 'Kiracı Onayı Bekleniyor'
+                                            : (loc.localeName == 'ru'
+                                                ? 'Ожидает одобрения арендатора'
+                                                : (loc.localeName.startsWith('sr')
+                                                    ? 'Čeka odobrenje stanara'
+                                                    : 'Waiting for Tenant Approval')),
+                                        style: const TextStyle(fontSize: 11, color: Color(0xFFB45309), fontWeight: FontWeight.w600),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
