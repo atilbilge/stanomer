@@ -5855,11 +5855,29 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     // Tenant must pay their usage damage debt (Banka transferi dekontu yükle / Nakit ödedim)
     final bool canTenantPayDamage = isTenant && isAddToRent && isPendingPayment;
     
+    final hasPaymentSubmission = messages.any((m) =>
+      m.message.contains('dekont') ||
+      m.message.contains('receipt') ||
+      m.message.contains('квитанция') ||
+      m.message.contains('uplatnic') ||
+      m.message.contains('nakit') ||
+      m.message.contains('cash') ||
+      m.message.contains('наличными') ||
+      m.message.contains('gotovin')
+    );
+
     // Direct P2P Approval permissions when not managed by agency
+    // 1) Landlord approves tenant fixture claim:
     final bool canLandlordApproveP2P = !isManagedByAgency && isLandlord && isDeductFromRent &&
         (isPendingReview || isPendingOppositeApproval);
-    final bool canTenantApproveP2P = !isManagedByAgency && isTenant && isAddToRent &&
-        (isPendingReview || isPendingOppositeApproval);
+
+    // 2) Tenant approves landlord initial usage damage claim:
+    final bool canTenantApproveInitialDamageP2P = !isManagedByAgency && isTenant && isAddToRent &&
+        (isPendingReview || isPendingOppositeApproval) && !hasPaymentSubmission;
+
+    // 3) Landlord confirms tenant's payment for usage damage (receipt / cash declaration):
+    final bool canLandlordApproveTenantPaymentP2P = !isManagedByAgency && (isLandlord || isAgencyManager) && isAddToRent &&
+        (isPendingReview || isPendingOppositeApproval) && hasPaymentSubmission;
 
     final bool isAgencyApprovalActionNeeded = isManagedByAgency && isAgencyManager &&
         (isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview);
@@ -6244,7 +6262,42 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (canLandlordApproveP2P || canTenantApproveP2P) ...[
+                          ] else if (canLandlordApproveTenantPaymentP2P) ...[
+                            const SizedBox(width: 8),
+                            // Reject Button
+                            OutlinedButton.icon(
+                              onPressed: () => _showRejectMaintenanceDeclarationDialog(context, request),
+                              icon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFE11D48),
+                                side: const BorderSide(color: Color(0xFFFDA4AF)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // Confirm Payment Received Button
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _handleConfirmReceipt(request),
+                                icon: const Icon(LucideIcons.checkCheck, size: 14),
+                                label: Text(
+                                  loc.confirmReceiptBtn,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF059669),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
+                          ] else if (canLandlordApproveP2P || canTenantApproveInitialDamageP2P) ...[
                             const SizedBox(width: 8),
                             // Reject Button
                             OutlinedButton.icon(
@@ -6398,7 +6451,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (!isManagedByAgency && isTenant && isDeductFromRent && (isPendingReview || isPendingOppositeApproval)) ...[
+                          ] else if (!isManagedByAgency && isTenant && ((isDeductFromRent && (isPendingReview || isPendingOppositeApproval)) || (isAddToRent && hasPaymentSubmission && (isPendingReview || isPendingOppositeApproval)))) ...[
                             const SizedBox(width: 8),
                             Expanded(
                               child: Container(
@@ -6425,7 +6478,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (!isManagedByAgency && isLandlord && isAddToRent && (isPendingReview || isPendingOppositeApproval)) ...[
+                          ] else if (!isManagedByAgency && isLandlord && isAddToRent && !hasPaymentSubmission && (isPendingReview || isPendingOppositeApproval)) ...[
                             const SizedBox(width: 8),
                             Expanded(
                               child: Container(
