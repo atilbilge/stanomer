@@ -20,6 +20,7 @@ import '../../property/data/property_repository.dart';
 import '../../agency/presentation/agency_dashboard_screen.dart';
 import '../domain/maintenance_request.dart';
 import '../domain/maintenance_message.dart';
+import '../domain/maintenance_charge.dart';
 import '../data/maintenance_repository.dart';
 
 class MaintenanceDetailScreen extends ConsumerStatefulWidget {
@@ -3010,6 +3011,48 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
         } catch (_) {}
       }
 
+      if (costAmount != null && costAmount > 0) {
+        final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+        final chargeType = _declarationIntent == 'reimburse'
+            ? 'reimbursement'
+            : (finalPaidBy == 'landlord' ? 'direct_charge' : 'direct_charge');
+        final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
+        final debtorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
+        final creditorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
+
+        try {
+          await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
+            MaintenanceCharge(
+              id: '',
+              maintenanceRequestId: widget.request.id,
+              propertyId: widget.property.id,
+              createdBy: ref.read(currentUserProvider)?.id,
+              title: widget.request.title,
+              chargeType: chargeType,
+              approverRole: approverRole,
+              debtorId: debtorId,
+              creditorId: creditorId,
+              amount: costAmount,
+              settledAmount: 0.0,
+              currency: _selectedCurrency,
+              status: finalPaymentStatus == 'paid' ? 'paid' : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending'),
+              settlementMethod: finalPaymentStatus == 'paid' ? 'separate_payment' : 'rent_offset',
+              receiptUrl: invoicePdfUrl,
+              declaredAt: _paymentDate ?? DateTime.now(),
+              paidAt: finalPaymentStatus == 'paid' ? (_paymentDate ?? DateTime.now()) : null,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+        } catch (e) {
+          // Log non-fatal error during dual-write transition
+          debugPrint('Error inserting maintenance charge: $e');
+        }
+      }
+
+      ref.invalidate(maintenanceChargesProvider(widget.request.id));
+      ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceChargesProvider);
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(maintenanceMessagesProvider(widget.request.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));

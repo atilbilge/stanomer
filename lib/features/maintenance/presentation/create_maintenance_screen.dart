@@ -15,6 +15,7 @@ import '../../property/domain/property.dart';
 import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
+import '../domain/maintenance_charge.dart';
 import '../data/maintenance_repository.dart';
 
 class CreateMaintenanceRequestScreen extends ConsumerStatefulWidget {
@@ -310,7 +311,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         }
       }
 
-      await ref.read(maintenanceRepositoryProvider).createRequest(
+      final newRequest = await ref.read(maintenanceRepositoryProvider).createRequest(
             propertyId: widget.property.id,
             title: _titleController.text.trim(),
             category: _selectedCategory!,
@@ -326,8 +327,47 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
             invoicePdfUrl: finalInvoicePdfUrl,
           );
 
-      // Invalidate the provider so the list refreshes immediately
+      if (finalCostAmount != null && finalCostAmount > 0) {
+        final chargeType = _paidBy == 'tenant'
+            ? 'reimbursement'
+            : (_paidBy == 'landlord' ? 'direct_charge' : 'direct_charge');
+        final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
+        final debtorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
+        final creditorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
+
+        try {
+          await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
+            MaintenanceCharge(
+              id: '',
+              maintenanceRequestId: newRequest.id,
+              propertyId: widget.property.id,
+              createdBy: user?.id,
+              title: _titleController.text.trim(),
+              chargeType: chargeType,
+              approverRole: approverRole,
+              debtorId: debtorId,
+              creditorId: creditorId,
+              amount: finalCostAmount,
+              settledAmount: 0.0,
+              currency: finalCurrency ?? 'EUR',
+              status: finalPaymentStatus == 'paid' ? 'paid' : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending'),
+              settlementMethod: _paymentStatus == 'paid' ? 'separate_payment' : 'rent_offset',
+              receiptUrl: finalInvoicePdfUrl,
+              declaredAt: finalPaymentDate ?? DateTime.now(),
+              paidAt: finalPaymentStatus == 'paid' ? (finalPaymentDate ?? DateTime.now()) : null,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+        } catch (e) {
+          debugPrint('Error inserting initial maintenance charge: $e');
+        }
+      }
+
+      // Invalidate providers so lists refresh immediately
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceChargesProvider);
 
       if (mounted) {
         context.pop();

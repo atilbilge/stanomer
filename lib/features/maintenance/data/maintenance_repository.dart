@@ -178,7 +178,7 @@ class MaintenanceRepository {
     }
   }
 
-  Future<void> createRequest({
+  Future<MaintenanceRequest> createRequest({
     required String propertyId,
     required String title,
     required MaintenanceCategory category,
@@ -296,6 +296,8 @@ class MaintenanceRepository {
         print('Error creating notification: $e');
       }
     }
+
+    return MaintenanceRequest.fromJson(data);
   }
 
   Future<void> updateFinancialDetails({
