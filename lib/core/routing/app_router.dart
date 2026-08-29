@@ -1,0 +1,330 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth/presentation/profile_screen.dart';
+import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/property/presentation/add_property_screen.dart';
+import '../../features/property/presentation/property_detail_screen.dart';
+import '../../features/property/presentation/invitation_accept_screen.dart';
+import '../../features/property/domain/property.dart';
+import '../../features/property/presentation/property_settings_screen.dart';
+import '../../features/auth/presentation/terms_conditions_screen.dart';
+import '../../features/auth/presentation/privacy_policy_screen.dart';
+import '../../features/support/presentation/support_screen.dart';
+import '../../features/auth/data/auth_providers.dart';
+import '../../features/auth/data/auth_repository.dart';
+import '../../features/agency/presentation/agency_dashboard_screen.dart';
+import '../../features/agency/presentation/agency_demo_request_screen.dart';
+
+import '../../features/property/presentation/join_property_sheet.dart';
+
+import '../../features/property/presentation/invite_tenant_screen.dart';
+import '../../features/property/domain/contract.dart';
+import '../../features/maintenance/presentation/create_maintenance_screen.dart';
+import '../../features/maintenance/presentation/maintenance_screen.dart';
+import '../../features/maintenance/presentation/maintenance_detail_screen.dart';
+import '../../features/maintenance/presentation/tenant_maintenance_gateway_screen.dart';
+import '../../features/maintenance/domain/maintenance_request.dart';
+import '../../features/notifications/presentation/notification_screen.dart';
+import '../../features/subscriptions/presentation/paywall_screen.dart';
+
+final goRouterProvider = Provider<GoRouter>((ref) {
+  final listenable = ref.watch(routerListenableProvider);
+
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: listenable,
+    redirect: (context, state) {
+      final authRepository = ref.read(authRepositoryProvider);
+      
+      // If we are currently deleting the account, do NOT redirect anywhere.
+      // This prevents jumping to Dashboard during OAuth re-authentication.
+      if (authRepository.isDeletingAccount) return null;
+
+      final user = authRepository.currentUser;
+      final role = ref.read(userRoleProvider);
+      
+      final isGoingToLogin = state.matchedLocation == '/login';
+      final isGoingToSignup = state.matchedLocation == '/signup';
+      final isGoingToInvite = state.matchedLocation == '/invite';
+
+      if (user == null) {
+        if (!isGoingToLogin && !isGoingToSignup && !isGoingToInvite) return '/login';
+      } else {
+        // Agency users go to their own dashboard
+        if (role == 'agency') {
+          if (isGoingToLogin || isGoingToSignup || state.matchedLocation == '/' || state.matchedLocation == '/dashboard') {
+            return '/agency-dashboard';
+          }
+        } else {
+          if (isGoingToLogin || isGoingToSignup || state.matchedLocation == '/') return '/dashboard';
+        }
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      // B2B2C: Agency-specific dashboard
+      GoRoute(
+        path: '/agency-dashboard',
+        builder: (context, state) => const AgencyDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: '/add-property',
+        builder: (context, state) => AddPropertyScreen(
+          property: state.extra is Property
+              ? state.extra as Property
+              : (state.extra is Map<String, dynamic>
+                  ? Property.fromJson(state.extra as Map<String, dynamic>)
+                  : null),
+        ),
+      ),
+      GoRoute(
+        path: '/property-detail',
+        builder: (context, state) {
+          // Guard: extra can be null if iOS cleared navigation state while the
+          // app was backgrounded / the tablet was sleeping. Fall back to the
+          // Dashboard so the user sees a clean state instead of a crash.
+          if (state.extra == null) return const DashboardScreen();
+
+          if (state.extra is Property) {
+            return PropertyDetailScreen(property: state.extra! as Property);
+          }
+
+          final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          if (property == null) return const DashboardScreen();
+
+          return PropertyDetailScreen(
+            property: property,
+            initialTabIndex: extras['initialTabIndex'] as int? ?? 0,
+            initialExpandedPaymentId: extras['initialExpandedPaymentId'] as String?,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/invite-tenant',
+        builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
+          Property? property;
+          Contract? existingContract;
+          Contract? leaseTemplate;
+
+          if (state.extra is Property) {
+            property = state.extra as Property;
+          } else if (state.extra is Map<String, dynamic>) {
+            final extras = state.extra as Map<String, dynamic>;
+            final rawProperty = extras['property'];
+            property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
+            final rawContract = extras['contract'];
+            existingContract = rawContract is Contract
+                ? rawContract
+                : (rawContract is Map<String, dynamic>
+                    ? Contract.fromJson(rawContract)
+                    : null);
+            final rawLeaseTemplate = extras['leaseTemplate'];
+            leaseTemplate = rawLeaseTemplate is Contract
+                ? rawLeaseTemplate
+                : (rawLeaseTemplate is Map<String, dynamic>
+                    ? Contract.fromJson(rawLeaseTemplate)
+                    : null);
+          }
+
+          if (property == null) return const DashboardScreen();
+          return InviteTenantScreen(
+            property: property,
+            existingContract: existingContract,
+            leaseTemplate: leaseTemplate,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/invite',
+        builder: (context, state) => InvitationAcceptScreen(
+          token: state.uri.queryParameters['token'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/join-property',
+        builder: (context, state) => const JoinPropertySheet(),
+      ),
+      GoRoute(
+        path: '/maintenance',
+        builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
+          Property? property;
+          if (state.extra is Property) {
+            property = state.extra as Property;
+          } else if (state.extra is Map<String, dynamic>) {
+            final rawProperty = (state.extra as Map<String, dynamic>)['property'] ?? state.extra;
+            property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
+          }
+          if (property == null) return const DashboardScreen();
+          return MaintenanceScreen(
+            property: property,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/tenant-maintenance',
+        builder: (context, state) => const TenantMaintenanceGatewayScreen(),
+      ),
+      GoRoute(
+        path: '/maintenance/new',
+        builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
+          Property? property;
+          if (state.extra is Property) {
+            property = state.extra as Property;
+          } else if (state.extra is Map<String, dynamic>) {
+            final rawProperty = (state.extra as Map<String, dynamic>)['property'] ?? state.extra;
+            property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
+          }
+          if (property == null) return const DashboardScreen();
+          return CreateMaintenanceRequestScreen(
+            property: property,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/property-settings',
+        builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
+          if (state.extra is! Map<String, dynamic>) return const DashboardScreen();
+          final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          if (property == null) return const DashboardScreen();
+          return PropertySettingsScreen(
+            property: property,
+            initialTab: extras['initialTab'] as String? ?? 'contract',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/maintenance/detail',
+        builder: (context, state) {
+          if (state.extra == null) return const DashboardScreen();
+          if (state.extra is! Map<String, dynamic>) return const DashboardScreen();
+          final extras = state.extra as Map<String, dynamic>;
+          final rawProperty = extras['property'];
+          final property = rawProperty is Property
+              ? rawProperty
+              : (rawProperty is Map<String, dynamic>
+                  ? Property.fromJson(rawProperty)
+                  : null);
+          final rawRequest = extras['request'];
+          final request = rawRequest is MaintenanceRequest
+              ? rawRequest
+              : (rawRequest is Map<String, dynamic>
+                  ? MaintenanceRequest.fromJson(rawRequest)
+                  : null);
+          if (property == null || request == null) return const DashboardScreen();
+          return MaintenanceDetailScreen(
+            property: property,
+            request: request,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/maintenance/:id',
+        builder: (context, state) {
+          if (state.extra != null && state.extra is Map<String, dynamic>) {
+            final extras = state.extra as Map<String, dynamic>;
+            final rawProperty = extras['property'];
+            final property = rawProperty is Property
+                ? rawProperty
+                : (rawProperty is Map<String, dynamic>
+                    ? Property.fromJson(rawProperty)
+                    : null);
+            final rawRequest = extras['request'];
+            final request = rawRequest is MaintenanceRequest
+                ? rawRequest
+                : (rawRequest is Map<String, dynamic>
+                    ? MaintenanceRequest.fromJson(rawRequest)
+                    : null);
+            if (property != null && request != null) {
+              return MaintenanceDetailScreen(
+                property: property,
+                request: request,
+              );
+            }
+          }
+          return const DashboardScreen();
+        },
+      ),
+      GoRoute(
+        path: '/paywall',
+        builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => const TermsConditionsScreen(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const SupportScreen(),
+      ),
+      GoRoute(
+        path: '/agency_demo',
+        builder: (context, state) => const AgencyDemoRequestScreen(),
+      ),
+      GoRoute(
+        path: '/agency-demo',
+        builder: (context, state) => const AgencyDemoRequestScreen(),
+      ),
+    ],
+  );
+});
