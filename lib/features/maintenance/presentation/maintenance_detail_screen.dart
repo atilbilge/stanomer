@@ -511,6 +511,18 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     IconData finStatusIcon = LucideIcons.clock;
 
     switch (request.financialStatus) {
+      case MaintenancePaymentStatus.pendingAgencyApproval:
+        finStatusLabel = loc.financialStatusPendingAgencyApproval;
+        finStatusColor = const Color(0xFFD97706);
+        finStatusBg = const Color(0xFFFFFBEB);
+        finStatusIcon = LucideIcons.clock;
+        break;
+      case MaintenancePaymentStatus.pendingOppositeApproval:
+        finStatusLabel = loc.financialStatusPendingOppositeApproval;
+        finStatusColor = const Color(0xFF2563EB);
+        finStatusBg = const Color(0xFFEFF6FF);
+        finStatusIcon = LucideIcons.scale;
+        break;
       case MaintenancePaymentStatus.pendingReview:
         finStatusLabel = loc.financialStatusPendingReview;
         finStatusColor = const Color(0xFF1D4ED8);
@@ -1031,6 +1043,48 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                       ),
                     ),
                     const SizedBox(height: 12),
+                  ] else if (request.financialStatus == MaintenancePaymentStatus.rejected && request.costAmount != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE11D48).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE11D48).withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(LucideIcons.xCircle, size: 13, color: Color(0xFFE11D48)),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc.financialStatusRejected,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF9F1239)),
+                                ),
+                                if (request.rejectionReason != null && request.rejectionReason!.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    request.rejectionReason!,
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFFBE123C), height: 1.35),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                   ],
 
                   // Details Grid Container
@@ -1221,7 +1275,10 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                     ],
 
                   // Approval Action Box
-                  if (request.financialStatus == MaintenancePaymentStatus.pendingReview && request.costAmount != null) ...[
+                  if ((request.financialStatus == MaintenancePaymentStatus.pendingReview ||
+                       request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval ||
+                       request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) &&
+                      request.costAmount != null) ...[
                     if (canApproveExpense) ...[
                       const SizedBox(height: 14),
                       Container(
@@ -1971,7 +2028,17 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
     if (isAgencyApproving) {
       // Agency approving an expense:
-      if (targetPaidBy == 'landlord' || isPayerLandlord) {
+      if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
+        targetPaymentStatus = 'pending_payment';
+        detailMsg = targetPaidBy == 'landlord'
+            ? '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})'
+            : '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
+      } else if (request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+        targetPaymentStatus = 'paid';
+        detailMsg = targetPaidBy == 'landlord'
+            ? '${loc.coveredByLandlord} (${loc.financialStatusPaid})'
+            : '${loc.coveredByTenant} (${loc.financialStatusPaid})';
+      } else if (targetPaidBy == 'landlord' || isPayerLandlord) {
         // Landlord covers / tenant gets reimbursed or deducted from rent
         targetPaidBy = 'landlord';
         targetPaymentStatus = 'pending_payment';
@@ -2026,6 +2093,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         paymentDate: request.paymentDate ?? DateTime.now(),
         paymentStatus: targetPaymentStatus,
         invoicePdfUrl: request.invoicePdfUrl,
+        rejectionReason: null,
+        rejectedBy: null,
       );
 
       await ref.read(maintenanceRepositoryProvider).addMessage(
@@ -2125,6 +2194,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     if (confirmed != true) return;
 
     try {
+      final reason = reasonController.text.trim();
+      final user = ref.read(currentUserProvider);
       await ref.read(maintenanceRepositoryProvider).updateFinancialDetails(
         requestId: request.id,
         propertyId: widget.property.id,
@@ -2134,9 +2205,10 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         paymentDate: request.paymentDate,
         paymentStatus: 'rejected',
         invoicePdfUrl: request.invoicePdfUrl,
+        rejectionReason: reason.isNotEmpty ? reason : null,
+        rejectedBy: user?.id,
       );
 
-      final reason = reasonController.text.trim();
       await ref.read(maintenanceRepositoryProvider).addMessage(
         request.id,
         widget.property.id,

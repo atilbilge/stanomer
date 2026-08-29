@@ -256,6 +256,8 @@ ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS paid_by TEXT;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_date TIMESTAMPTZ;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'pending_review';
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS invoice_pdf_url TEXT;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS rejected_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_priority_check;
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_priority_check CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'));

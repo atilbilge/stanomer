@@ -4377,19 +4377,148 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
+                      ),
                     ),
-                  ),
+                ],
               ],
-            ],
-          ],
-        ],
+            ),
+          ),
         ),
+      ],
+    ),
+  ),
+);
+  }
+
+  Future<void> _showRejectMaintenanceDeclarationDialog(
+    BuildContext context,
+    MaintenanceRequest request,
+  ) async {
+    final loc = AppLocalizations.of(context)!;
+    final reasonController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(LucideIcons.alertTriangle, color: Color(0xFFE11D48), size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                loc.rejectExpenseTitle,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],
         ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                loc.rejectExpenseConfirm,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: reasonController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: loc.rejectionReasonOptional,
+                  hintText: loc.rejectionReasonRequired,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return loc.rejectionReasonRequired;
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogCtx, true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE11D48),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(loc.rejectExpenseTitle),
+          ),
+        ],
       ),
     );
+
+    if (confirmed == true) {
+      try {
+        await ref.read(maintenanceRepositoryProvider).rejectMaintenanceFinancialDeclaration(
+          requestId: request.id,
+          propertyId: request.propertyId,
+          reason: reasonController.text.trim(),
+        );
+        ref.invalidate(maintenanceRequestsProvider(request.propertyId));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(loc.expenseRejectedSuccess)),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: const Color(0xFFE11D48),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleApproveMaintenanceDeclaration(
+    BuildContext context,
+    MaintenanceRequest request,
+    String nextStatus,
+  ) async {
+    final loc = AppLocalizations.of(context)!;
+    try {
+      await ref.read(maintenanceRepositoryProvider).approveMaintenanceFinancialDeclaration(
+        requestId: request.id,
+        propertyId: request.propertyId,
+        nextStatus: nextStatus,
+      );
+      ref.invalidate(maintenanceRequestsProvider(request.propertyId));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.expenseApprovedSuccess)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleConfirmReceipt(MaintenanceRequest req) async {
@@ -5491,6 +5620,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isPendingPayment = request.paymentStatus == 'pending_payment';
     final isPaid = request.paymentStatus == 'paid';
     final isPendingReview = request.paymentStatus == 'pending_review';
+    final isPendingAgencyApproval = request.paymentStatus == 'pending_agency_approval';
+    final isPendingOppositeApproval = request.paymentStatus == 'pending_opposite_approval';
+    final isRejected = request.paymentStatus == 'rejected';
 
     final messagesAsync = ref.watch(maintenanceMessagesProvider(request.id));
     final messages = messagesAsync.value ?? [];
@@ -5531,11 +5663,29 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       cardBorderColor = accentColor.withValues(alpha: 0.2);
       badgeText = loc.financialStatusPaid;
       badgeIcon = LucideIcons.checkCircle2;
+    } else if (isPendingAgencyApproval) {
+      accentColor = const Color(0xFFD97706);
+      cardBorderColor = accentColor.withValues(alpha: 0.35);
+      cardBgColor = accentColor.withValues(alpha: 0.02);
+      badgeText = loc.financialStatusPendingAgencyApproval;
+      badgeIcon = LucideIcons.clock;
+    } else if (isPendingOppositeApproval) {
+      accentColor = const Color(0xFF2563EB);
+      cardBorderColor = accentColor.withValues(alpha: 0.35);
+      cardBgColor = accentColor.withValues(alpha: 0.02);
+      badgeText = loc.financialStatusPendingOppositeApproval;
+      badgeIcon = LucideIcons.scale;
     } else if (isPendingReview) {
       accentColor = Colors.orange;
       cardBorderColor = accentColor.withValues(alpha: 0.35);
       badgeText = loc.financialStatusPendingReview;
       badgeIcon = LucideIcons.clock;
+    } else if (isRejected) {
+      accentColor = const Color(0xFFE11D48);
+      cardBorderColor = const Color(0xFFFDA4AF);
+      cardBgColor = const Color(0xFFFFF1F2);
+      badgeText = loc.financialStatusRejected;
+      badgeIcon = LucideIcons.xCircle;
     }
 
     final dateStr = DateFormat('dd MMMM yyyy', loc.localeName).format(request.paymentDate ?? request.createdAt ?? DateTime.now());
@@ -5552,10 +5702,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     bool canTenantPay = isTenant && isAddToRent && isPendingPayment;
     bool canTenantConfirm = isTenant && isDeductFromRent && isPendingReview;
 
+    final bool isAgencyApprovalActionNeeded = isManagedByAgency && isAgencyManager &&
+        (isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview);
+
     final String amountDisplay;
     final String settlementRoleLabel;
 
-    if (isPendingPayment) {
+    if (isPendingPayment || isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview) {
       if (isDeductFromRent) {
         amountDisplay = (isTenant ? '- ' : '') + formattedAmount;
         settlementRoleLabel = isTenant
@@ -5636,7 +5789,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                         style: TextStyle(
                                           fontWeight: FontWeight.w800,
                                           fontSize: 16,
-                                          color: isPendingPayment ? accentColor : StanomerColors.textPrimary,
+                                          color: isPendingPayment ? accentColor : (isRejected ? const Color(0xFFE11D48) : StanomerColors.textPrimary),
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -5710,6 +5863,32 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       ),
                     ),
 
+                    // Rejection info banner if rejected
+                    if (isRejected && request.rejectionReason != null && request.rejectionReason!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFDA4AF)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(LucideIcons.xCircle, size: 14, color: Color(0xFFE11D48)),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${loc.financialStatusRejected}: ${request.rejectionReason}',
+                                style: const TextStyle(fontSize: 11.5, color: Color(0xFF9F1239), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     // Footnote row for offset details under header
                     if (hasPartial) ...[
                       const SizedBox(height: 8),
@@ -5746,146 +5925,157 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       ),
                     ],
 
-                    // Expanded Content Area
+                    // Expanded Section
                     if (isExpanded) ...[
                       const SizedBox(height: 12),
-                      const Divider(height: 1),
-                      const SizedBox(height: 12),
-
-                      if (hasOffset) ...[
-                        Text(
-                          loc.localeName == 'tr' ? 'Mahsuplaşma / İşlem Geçmişi' : 'Settlement / Offset History',
-                          style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        ...offsetMessages.map((m) {
-                          final dateMsgStr = DateFormat('dd.MM.yyyy, HH:mm').format(m.createdAt.toLocal());
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.only(top: 5),
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: StanomerColors.textTertiary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        m.message,
-                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: StanomerColors.textSecondary),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        dateMsgStr,
-                                        style: const TextStyle(fontSize: 10, color: StanomerColors.textTertiary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 8),
-                      ],
-
-                      // Description banner
+                      // Info Note
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: accentColor.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: accentColor.withValues(alpha: 0.2)),
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(isDeductFromRent ? LucideIcons.info : LucideIcons.alertCircle, size: 14, color: accentColor),
+                            Icon(LucideIcons.info, size: 16, color: accentColor),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 isDeductFromRent
                                     ? (loc.localeName == 'tr'
-                                        ? 'Kiracının peşin ödediği demirbaş masrafıdır. Sonraki kiradan düşülür veya ev sahibi tarafından iade edilir.'
+                                        ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
                                         : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
                                     : (loc.localeName == 'tr'
-                                        ? 'Ev sahibinin karşıladığı kiracı kullanım masrafıdır. Kiracı tarafından ödenir veya kiraya eklenir.'
-                                        : 'Tenant-due maintenance expense covered by landlord. To be paid by tenant.'),
-                                style: TextStyle(fontSize: 11.5, color: accentColor, fontWeight: FontWeight.w500, height: 1.3),
+                                        ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
+                                        : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: accentColor.withValues(alpha: 0.9),
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
 
-                      // Date and Document Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            dateStr,
-                            style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
-                          ),
-                          if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty)
-                            GestureDetector(
-                              onTap: () => _openFileOrUrl(context, request.invoicePdfUrl!, mounted: context.mounted),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(LucideIcons.fileText, size: 14, color: StanomerColors.brandPrimary),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    loc.viewInvoice,
-                                    style: const TextStyle(
-                                      color: StanomerColors.brandPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        InkWell(
+                          onTap: () => DocumentUtils.openDocument(context, request.invoicePdfUrl!),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
                             ),
-                        ],
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.fileText, size: 16, color: Color(0xFF2563EB)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    loc.receiptInvoiceDocument,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                                  ),
+                                ),
+                                const Icon(LucideIcons.externalLink, size: 14, color: Color(0xFF64748B)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 12),
+                      Text(
+                        dateStr,
+                        style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 12),
 
                       // Action Buttons Row
                       Row(
                         children: [
+                          // 1. Go to Maintenance Request
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                context.push('/maintenance/detail', extra: {
-                                  'property': property,
+                                context.push('/maintenance/${request.id}', extra: {
                                   'request': request,
+                                  'property': property,
                                 });
                               },
                               icon: const Icon(LucideIcons.externalLink, size: 14),
-                              label: Text(loc.goToMaintenanceRequest, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                              label: Text(
+                                loc.goToMaintenanceRequest,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               style: OutlinedButton.styleFrom(
+                                foregroundColor: StanomerColors.brandPrimary,
+                                side: BorderSide(color: StanomerColors.brandPrimary.withValues(alpha: 0.4)),
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           ),
-                          if (canLandlordSettle) ...[
+
+                          // 2. Agency Approval / Rejection Actions
+                          if (isAgencyApprovalActionNeeded) ...[
+                            const SizedBox(width: 8),
+                            // Reject Button
+                            OutlinedButton.icon(
+                              onPressed: () => _showRejectMaintenanceDeclarationDialog(context, request),
+                              icon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFE11D48),
+                                side: const BorderSide(color: Color(0xFFFDA4AF)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // Approve Button
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  final nextStatus = isPendingOppositeApproval ? 'pending_payment' : 'paid';
+                                  _handleApproveMaintenanceDeclaration(context, request, nextStatus);
+                                },
+                                icon: const Icon(LucideIcons.checkCheck, size: 14),
+                                label: Text(
+                                  loc.approveDeclarationBtn,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF059669),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ),
+                          ] else if (canLandlordSettle) ...[
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () => _showLandlordSettlementSheet(context, request, allPayments, allMaintenanceRequests, formattedAmount, currency, loc),
-                                icon: const Icon(LucideIcons.arrowDownLeft, size: 14),
-                                label: Text(loc.settleExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                onPressed: () => _showMaintenanceSettlementSheet(context, request, allPayments, formattedAmount, currency, loc),
+                                icon: Icon(isDeductFromRent ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight, size: 14),
+                                label: Text(
+                                  loc.settleExpenseTitle,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2563EB),
                                   foregroundColor: Colors.white,
@@ -5895,7 +6085,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (isManagedByAgency && !isAgencyManager && isLandlord && ((isDeductFromRent && isPendingPayment) || (isAddToRent && isPendingReview))) ...[
+                          ] else if (isManagedByAgency && !isAgencyManager && ((isPendingAgencyApproval || isPendingOppositeApproval) || (isLandlord && isDeductFromRent && isPendingPayment))) ...[
                             const SizedBox(width: 8),
                             Expanded(
                               child: Container(
@@ -5922,24 +6112,20 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                               ),
                             ),
-                          ] else if (canTenantPay) ...[
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _showTenantMaintenanceSettlementSheet(context, request, formattedAmount, currency, loc),
-                                icon: const Icon(LucideIcons.upload, size: 14),
-                                label: Text(loc.iPaidBtn, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD97706),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  elevation: 0,
-                                ),
-                              ),
-                            ),
                           ] else if (canTenantConfirm || canLandlordConfirm) ...[
                             const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: () => _showRejectMaintenanceDeclarationDialog(context, request),
+                              icon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFE11D48),
+                                side: const BorderSide(color: Color(0xFFFDA4AF)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () => _handleConfirmReceipt(request),
@@ -5988,7 +6174,11 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       data: (reqs) => reqs.where((r) =>
         r.costAmount != null &&
         r.costAmount! > 0 &&
-        (r.paymentStatus == 'pending_payment' || r.paymentStatus == 'pending_review')
+        (r.paymentStatus == 'pending_payment' ||
+         r.paymentStatus == 'pending_review' ||
+         r.paymentStatus == 'pending_agency_approval' ||
+         r.paymentStatus == 'pending_opposite_approval' ||
+         r.paymentStatus == 'rejected')
       ).toList(),
       orElse: () => <MaintenanceRequest>[],
     );

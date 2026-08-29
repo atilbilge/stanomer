@@ -49,6 +49,8 @@ _MaintenanceRequest _$MaintenanceRequestFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['payment_date'] as String),
       paymentStatus: json['payment_status'] as String? ?? 'pending_review',
       invoicePdfUrl: json['invoice_pdf_url'] as String?,
+      rejectionReason: json['rejection_reason'] as String?,
+      rejectedBy: json['rejected_by'] as String?,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -76,6 +78,8 @@ Map<String, dynamic> _$MaintenanceRequestToJson(_MaintenanceRequest instance) =>
       'payment_date': instance.paymentDate?.toIso8601String(),
       'payment_status': instance.paymentStatus,
       'invoice_pdf_url': instance.invoicePdfUrl,
+      'rejection_reason': instance.rejectionReason,
+      'rejected_by': instance.rejectedBy,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

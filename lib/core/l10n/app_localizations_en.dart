@@ -2149,6 +2149,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get financialStatusPendingReview => 'Pending Review';
 
   @override
+  String get financialStatusPendingAgencyApproval => 'Awaiting Agency Approval';
+
+  @override
+  String get financialStatusPendingOppositeApproval =>
+      'Awaiting Settlement Approval';
+
+  @override
   String get financialStatusPendingPayment => 'Pending Payment';
 
   @override
@@ -2156,6 +2163,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get financialStatusRejected => 'Rejected';
+
+  @override
+  String get rejectionReasonRequired => 'Please enter a rejection reason';
 
   @override
   String get payerTenant => 'Tenant';

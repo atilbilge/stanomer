@@ -271,8 +271,34 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           (isTenant || finalCostAmount == null) ? null : _selectedCurrency;
       final String? finalPaidBy = isTenant ? null : _paidBy;
       final DateTime? finalPaymentDate = isTenant ? null : _paymentDate;
-      final String finalPaymentStatus = isTenant ? 'pending_review' : (_paymentStatus ?? 'pending_review');
       final String? finalInvoicePdfUrl = isTenant ? null : invoicePdfUrl;
+
+      final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+      String finalPaymentStatus = _paymentStatus ?? 'pending_review';
+
+      if (finalCostAmount != null) {
+        if (isAgencyManaged) {
+          if (isAgency) {
+            finalPaymentStatus = _paymentStatus ?? 'pending_payment';
+          } else {
+            // Tenant or Landlord on agency property
+            if (_paymentStatus == 'paid') {
+              finalPaymentStatus = 'pending_agency_approval';
+            } else if (_paymentStatus == 'pending_payment') {
+              finalPaymentStatus = 'pending_opposite_approval';
+            } else {
+              finalPaymentStatus = 'pending_agency_approval';
+            }
+          }
+        } else {
+          // Self-managed property (direct landlord-tenant)
+          if (isTenant) {
+            finalPaymentStatus = 'pending_review';
+          } else {
+            finalPaymentStatus = _paymentStatus ?? 'pending_payment';
+          }
+        }
+      }
 
       await ref.read(maintenanceRepositoryProvider).createRequest(
             propertyId: widget.property.id,

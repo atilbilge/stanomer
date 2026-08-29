@@ -4027,8 +4027,20 @@ abstract class AppLocalizations {
   /// No description provided for @financialStatusPendingReview.
   ///
   /// In sr, this message translates to:
-  /// **'Čeka pregled'**
+  /// **'Na čekanju pregleda'**
   String get financialStatusPendingReview;
+
+  /// No description provided for @financialStatusPendingAgencyApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje agencije'**
+  String get financialStatusPendingAgencyApproval;
+
+  /// No description provided for @financialStatusPendingOppositeApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje poravnanja'**
+  String get financialStatusPendingOppositeApproval;
 
   /// No description provided for @financialStatusPendingPayment.
   ///
@@ -4047,6 +4059,12 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Odbijeno'**
   String get financialStatusRejected;
+
+  /// No description provided for @rejectionReasonRequired.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo unesite razlog odbijanja'**
+  String get rejectionReasonRequired;
 
   /// No description provided for @payerTenant.
   ///

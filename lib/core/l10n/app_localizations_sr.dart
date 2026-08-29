@@ -2143,7 +2143,14 @@ class AppLocalizationsSr extends AppLocalizations {
   String get financialDetails => 'Finansijski Detalji';
 
   @override
-  String get financialStatusPendingReview => 'Čeka pregled';
+  String get financialStatusPendingReview => 'Na čekanju pregleda';
+
+  @override
+  String get financialStatusPendingAgencyApproval => 'Čeka odobrenje agencije';
+
+  @override
+  String get financialStatusPendingOppositeApproval =>
+      'Čeka odobrenje poravnanja';
 
   @override
   String get financialStatusPendingPayment => 'Čeka uplatu';
@@ -2153,6 +2160,9 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get financialStatusRejected => 'Odbijeno';
+
+  @override
+  String get rejectionReasonRequired => 'Molimo unesite razlog odbijanja';
 
   @override
   String get payerTenant => 'Stanar';
@@ -5052,7 +5062,14 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get financialDetails => 'Финансијски Детаљи';
 
   @override
-  String get financialStatusPendingReview => 'Чека преглед';
+  String get financialStatusPendingReview => 'На чекању прегледа';
+
+  @override
+  String get financialStatusPendingAgencyApproval => 'Чека одобрење агенције';
+
+  @override
+  String get financialStatusPendingOppositeApproval =>
+      'Чека одобрење поравнања';
 
   @override
   String get financialStatusPendingPayment => 'Чека уплату';
@@ -5062,6 +5079,9 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get financialStatusRejected => 'Одбијено';
+
+  @override
+  String get rejectionReasonRequired => 'Молимо унесите разлог одбијања';
 
   @override
   String get payerTenant => 'Станар';

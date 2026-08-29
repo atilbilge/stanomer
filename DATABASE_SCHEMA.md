@@ -227,8 +227,10 @@ Bakım ve arıza bildirimlerini ve finansal maliyet kayıtlarını saklar.
 | `currency` | `TEXT` | YES | `NULL` | - | Para birimi (örn: `'EUR'`, `'RSD'`) |
 | `paid_by` | `TEXT` | YES | `NULL` | `CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'))` | Ödemeyi yapan taraf |
 | `payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödeme yapılma tarihi |
-| `payment_status`| `TEXT`               | **NO**    | `'pending_review'`| `CHECK (payment_status IN ('pending_review', 'pending_payment', 'paid', 'rejected'))` | Fatura/Ödeme durumu (`pending_review`, `pending_payment`, `paid`, `rejected`) |
+| `payment_status`| `TEXT`               | **NO**    | `'pending_review'`| `CHECK (payment_status IN ('pending_review', 'pending_agency_approval', 'pending_opposite_approval', 'pending_payment', 'paid', 'rejected'))` | Fatura/Ödeme durumu (`pending_review`, `pending_agency_approval`, `pending_opposite_approval`, `pending_payment`, `paid`, `rejected`) |
 | `invoice_pdf_url`| `TEXT` | YES | `NULL` | - | Fatura PDF/belge dosya URL'i |
+| `rejection_reason`| `TEXT` | YES | `NULL` | - | Masraf beyanı red gerekçesi |
+| `rejected_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES auth.users(id) ON DELETE SET NULL` | Reddeden kullanıcı ID |
 | `resolved_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Çözümlenme tarihi |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncelleme tarihi |

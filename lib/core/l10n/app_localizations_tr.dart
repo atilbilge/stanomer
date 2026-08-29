@@ -2145,6 +2145,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get financialStatusPendingReview => 'İnceleme Bekliyor';
 
   @override
+  String get financialStatusPendingAgencyApproval => 'Acente Onayı Bekliyor';
+
+  @override
+  String get financialStatusPendingOppositeApproval => 'Mahsup Onayı Bekliyor';
+
+  @override
   String get financialStatusPendingPayment => 'Ödeme Bekliyor';
 
   @override
@@ -2152,6 +2158,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get financialStatusRejected => 'Reddedildi';
+
+  @override
+  String get rejectionReasonRequired => 'Lütfen red gerekçesini yazınız';
 
   @override
   String get payerTenant => 'Kiracı';

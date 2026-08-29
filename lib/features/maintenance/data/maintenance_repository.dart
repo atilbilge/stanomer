@@ -291,6 +291,8 @@ class MaintenanceRepository {
     DateTime? paymentDate,
     String? paymentStatus,
     String? invoicePdfUrl,
+    String? rejectionReason,
+    String? rejectedBy,
   }) async {
     final payload = <String, dynamic>{};
     if (costAmount != null) payload['cost_amount'] = costAmount;
@@ -300,6 +302,8 @@ class MaintenanceRepository {
     if (paymentDate != null) payload['payment_date'] = paymentDate.toIso8601String();
     if (paymentStatus != null) payload['payment_status'] = paymentStatus;
     if (invoicePdfUrl != null) payload['invoice_pdf_url'] = invoicePdfUrl;
+    if (rejectionReason != null) payload['rejection_reason'] = rejectionReason;
+    if (rejectedBy != null) payload['rejected_by'] = rejectedBy;
 
     if (payload.isEmpty) return;
 
@@ -319,6 +323,67 @@ class MaintenanceRepository {
       );
     } catch (e) {
       print('Error logging activity: $e');
+    }
+  }
+
+  Future<void> approveMaintenanceFinancialDeclaration({
+    required String requestId,
+    required String propertyId,
+    required String nextStatus,
+    String? messageNote,
+  }) async {
+    final payload = <String, dynamic>{
+      'payment_status': nextStatus,
+      'rejection_reason': null,
+      'rejected_by': null,
+    };
+    if (nextStatus == 'paid') {
+      payload['payment_date'] = DateTime.now().toIso8601String();
+    }
+
+    await _client
+        .from('maintenance_requests')
+        .update(payload)
+        .eq('id', requestId);
+
+    if (messageNote != null && messageNote.isNotEmpty) {
+      try {
+        await addMessage(
+          requestId: requestId,
+          propertyId: propertyId,
+          message: messageNote,
+        );
+      } catch (e) {
+        print('Error posting approval message: $e');
+      }
+    }
+  }
+
+  Future<void> rejectMaintenanceFinancialDeclaration({
+    required String requestId,
+    required String propertyId,
+    required String reason,
+    String? messageNote,
+  }) async {
+    final user = _client.auth.currentUser;
+    await _client
+        .from('maintenance_requests')
+        .update({
+          'payment_status': 'rejected',
+          'rejection_reason': reason,
+          'rejected_by': user?.id,
+        })
+        .eq('id', requestId);
+
+    final note = messageNote ?? '❌ Masraf beyanı reddedildi: $reason';
+    try {
+      await addMessage(
+        requestId: requestId,
+        propertyId: propertyId,
+        message: note,
+      );
+    } catch (e) {
+      print('Error posting rejection message: $e');
     }
   }
 

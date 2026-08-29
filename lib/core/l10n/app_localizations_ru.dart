@@ -2158,7 +2158,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get financialDetails => 'Финансовые детали';
 
   @override
-  String get financialStatusPendingReview => 'На проверке';
+  String get financialStatusPendingReview => 'На рассмотрении';
+
+  @override
+  String get financialStatusPendingAgencyApproval =>
+      'Ожидает подтверждения агентства';
+
+  @override
+  String get financialStatusPendingOppositeApproval =>
+      'Ожидает подтверждения взаимозачета';
 
   @override
   String get financialStatusPendingPayment => 'Ожидает оплаты';
@@ -2168,6 +2176,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get financialStatusRejected => 'Отклонено';
+
+  @override
+  String get rejectionReasonRequired =>
+      'Пожалуйста, укажите причину отклонения';
 
   @override
   String get payerTenant => 'Арендатор';

@@ -29,6 +29,8 @@ extension MaintenanceStatusX on MaintenanceStatus {
 
 enum MaintenancePaymentStatus {
   @JsonValue('pending_review') pendingReview,
+  @JsonValue('pending_agency_approval') pendingAgencyApproval,
+  @JsonValue('pending_opposite_approval') pendingOppositeApproval,
   @JsonValue('pending_payment') pendingPayment,
   @JsonValue('paid') paid,
   @JsonValue('rejected') rejected,
@@ -38,6 +40,8 @@ extension MaintenancePaymentStatusX on MaintenancePaymentStatus {
   String get value {
     switch (this) {
       case MaintenancePaymentStatus.pendingReview: return 'pending_review';
+      case MaintenancePaymentStatus.pendingAgencyApproval: return 'pending_agency_approval';
+      case MaintenancePaymentStatus.pendingOppositeApproval: return 'pending_opposite_approval';
       case MaintenancePaymentStatus.pendingPayment: return 'pending_payment';
       case MaintenancePaymentStatus.paid: return 'paid';
       case MaintenancePaymentStatus.rejected: return 'rejected';
@@ -46,6 +50,8 @@ extension MaintenancePaymentStatusX on MaintenancePaymentStatus {
 
   static MaintenancePaymentStatus fromString(String? val) {
     switch (val) {
+      case 'pending_agency_approval': return MaintenancePaymentStatus.pendingAgencyApproval;
+      case 'pending_opposite_approval': return MaintenancePaymentStatus.pendingOppositeApproval;
       case 'pending_payment': return MaintenancePaymentStatus.pendingPayment;
       case 'paid': return MaintenancePaymentStatus.paid;
       case 'rejected': return MaintenancePaymentStatus.rejected;
@@ -98,6 +104,8 @@ abstract class MaintenanceRequest with _$MaintenanceRequest {
     @JsonKey(name: 'payment_date') DateTime? paymentDate,
     @JsonKey(name: 'payment_status') @Default('pending_review') String paymentStatus,
     @JsonKey(name: 'invoice_pdf_url') String? invoicePdfUrl,
+    @JsonKey(name: 'rejection_reason') String? rejectionReason,
+    @JsonKey(name: 'rejected_by') String? rejectedBy,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _MaintenanceRequest;
