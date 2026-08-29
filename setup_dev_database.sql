@@ -266,7 +266,7 @@ ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_re
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_paid_by_check CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'));
 
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_payment_status_check;
-ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_payment_status_check CHECK (payment_status IN ('pending_review', 'pending_payment', 'paid', 'rejected'));
+ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_payment_status_check CHECK (payment_status IN ('pending_review', 'pending_agency_approval', 'pending_opposite_approval', 'pending_payment', 'paid', 'rejected'));
 
 CREATE TABLE IF NOT EXISTS public.maintenance_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
