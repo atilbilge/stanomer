@@ -223,6 +223,14 @@ Bakım ve arıza bildirimlerini saklar.
 | `priority` | `TEXT` | **NO** | `'normal'` | `CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'))` | Öncelik derecesi |
 | `status` | `TEXT` | **NO** | `'open'` | `CHECK (status IN ('open', 'investigating', 'resolved', 'closed', 'pending', 'in_progress', 'inProgress', 'cancelled'))` | Durumu |
 | `photos_urls` | `TEXT[]` | **NO** | `'{}'` | - | Arıza fotoğrafları URL dizisi |
+| `cost_amount` | `NUMERIC(12,2)` | YES | `NULL` | `CHECK (cost_amount >= 0)` | Toplam bakım masraf tutarı |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi |
+| `paid_by` | `TEXT` | YES | `NULL` | `CHECK (paid_by IN ('tenant', 'landlord', 'agency'))` | Masrafı ödeyen taraf |
+| `payment_date` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödeme / masraf tarihi |
+| `payment_status` | `TEXT` | **NO** | `'pending_review'` | `CHECK (payment_status IN ('pending_review', 'pending_agency_approval', 'pending_opposite_approval', 'pending_payment', 'paid', 'rejected'))` | Finansal onay ve mahsup durumu |
+| `invoice_pdf_url` | `TEXT` | YES | `NULL` | - | Fatura / makbuz dosya URL'i |
+| `rejection_reason` | `TEXT` | YES | `NULL` | - | Varsa ret gerekçesi |
+| `rejected_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES auth.users(id) ON DELETE SET NULL` | Reddeden kullanıcı ID |
 | `resolved_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Çözümlenme tarihi |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncelleme tarihi |

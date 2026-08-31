@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../agency/presentation/agency_dashboard_screen.dart';
+import '../../auth/data/auth_providers.dart';
+import '../../auth/data/auth_repository.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
@@ -81,17 +83,21 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
 
     setState(() => _isProcessing = true);
     try {
-      if (_inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_')) {
+      final isLandlordInvite = _inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_');
+      if (isLandlordInvite) {
         final success = await ref.read(propertyRepositoryProvider).claimLandlordOwnership(token: widget.token);
         if (!success) throw Exception(loc.landlordOwnershipInviteInvalid);
+        await ref.read(authRepositoryProvider).updateProfile(role: 'landlord');
       } else if (_inviteType == 'contract') {
         await ref.read(propertyRepositoryProvider).acceptContract(widget.token);
+        await ref.read(authRepositoryProvider).updateProfile(role: 'tenant');
       } else {
         await ref.read(propertyRepositoryProvider).acceptInvite(widget.token);
+        await ref.read(authRepositoryProvider).updateProfile(role: 'tenant');
       }
 
       if (mounted) {
-        final successMsg = (_inviteType == 'landlord_ownership' || widget.token.startsWith('landlord_'))
+        final successMsg = isLandlordInvite
             ? loc.landlordOwnershipTransferredSuccess
             : loc.invitationAcceptedSuccess;
 
@@ -101,6 +107,8 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
             backgroundColor: StanomerColors.successPrimary,
           ),
         );
+        ref.invalidate(userRoleProvider);
+        ref.invalidate(profileFutureProvider);
         ref.invalidate(propertiesStreamProvider);
         ref.invalidate(propertiesFutureProvider);
         ref.invalidate(agencyPropertiesProvider);

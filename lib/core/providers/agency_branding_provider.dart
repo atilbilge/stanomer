@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/agency/domain/agency_profile.dart';
+import '../../features/agency/domain/agency_color_scheme.dart';
 import '../../features/agency/data/agency_repository.dart';
 import '../../features/property/domain/property.dart';
 import '../../features/auth/data/auth_providers.dart';
@@ -161,4 +162,32 @@ final hasAgencyBrandingProvider = Provider<bool>((ref) {
   final role = ref.watch(userRoleProvider);
   if (role == 'agency') return true;
   return ref.watch(agencyBrandingProvider).hasAgencyBranding;
+});
+
+/// Fetches an AgencyProfile by agency ID with caching
+final agencyProfileByIdProvider = FutureProvider.family<AgencyProfile?, String>((ref, agencyId) async {
+  if (agencyId.trim().isEmpty) return null;
+  final repo = ref.watch(agencyRepositoryProvider);
+  return repo.getAgencyProfile(agencyId.trim());
+});
+
+/// Fetches the managing AgencyProfile for a given Property
+final propertyAgencyProfileProvider = Provider.family<AgencyProfile?, Property>((ref, property) {
+  final agencyId = property.agencyId;
+  if (agencyId != null && agencyId.trim().isNotEmpty) {
+    final profileAsync = ref.watch(agencyProfileByIdProvider(agencyId.trim()));
+    return profileAsync.valueOrNull;
+  }
+  return null;
+});
+
+/// Resolves the effective AgencyColorScheme for a specific Property:
+/// 1. If property is managed by an agency and agency profile exists -> agency's colorScheme
+/// 2. Fallback to global agencyColorSchemeProvider
+final propertyAgencyColorSchemeProvider = Provider.family<AgencyColorScheme, Property>((ref, property) {
+  final agencyProfile = ref.watch(propertyAgencyProfileProvider(property));
+  if (agencyProfile != null) {
+    return agencyProfile.colorScheme;
+  }
+  return ref.watch(agencyColorSchemeProvider);
 });

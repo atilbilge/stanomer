@@ -324,12 +324,34 @@ class MaintenanceRepository {
     if (rejectionReason != null) payload['rejection_reason'] = rejectionReason;
     if (rejectedBy != null) payload['rejected_by'] = rejectedBy;
 
-    if (payload.isEmpty) return;
-
     await _client
         .from('maintenance_requests')
         .update(payload)
         .eq('id', requestId);
+
+    if (paymentStatus != null) {
+      try {
+        final chargeStatus = paymentStatus == 'paid'
+            ? 'paid'
+            : (paymentStatus == 'pending_payment' ? 'approved' : (paymentStatus == 'rejected' ? 'rejected' : 'pending'));
+        final chargePayload = <String, dynamic>{
+          'status': chargeStatus,
+          if (costAmount != null) 'amount': costAmount,
+          if (settledAmount != null) 'settled_amount': settledAmount,
+          if (currency != null) 'currency': currency,
+          if (invoicePdfUrl != null) 'receipt_url': invoicePdfUrl,
+        };
+        if (paymentStatus == 'paid') chargePayload['paid_at'] = DateTime.now().toIso8601String();
+        if (paymentStatus == 'pending_payment') chargePayload['approved_at'] = DateTime.now().toIso8601String();
+
+        await _client
+            .from('maintenance_charges')
+            .update(chargePayload)
+            .eq('maintenance_request_id', requestId);
+      } catch (e) {
+        print('Error syncing maintenance_charges: $e');
+      }
+    }
 
     try {
       await _logActivity(
@@ -343,6 +365,153 @@ class MaintenanceRepository {
     } catch (e) {
       print('Error logging activity: $e');
     }
+  }
+
+  Future<void> deleteFinancialDetailsAndRollbackSettlements({
+    required String requestId,
+    required String propertyId,
+    required MaintenanceRequest request,
+    String? actorRoleName,
+    String? localeName,
+    String? customMessage,
+  }) async {
+    final settledAmt = request.settledAmount;
+    final displayId = request.displayId;
+
+    // 1. Fetch all rent payments for this property and revert offsets
+    try {
+      final paymentsData = await _client
+          .from('rent_payments')
+          .select()
+          .eq('property_id', propertyId);
+      
+      final paymentsList = (paymentsData as List<dynamic>?) ?? [];
+
+      for (final p in paymentsList) {
+        final pMap = p as Map<String, dynamic>;
+        final note = (pMap['owner_note'] as String?) ?? '';
+        final pId = pMap['id'] as String;
+        final currentAmount = (pMap['amount'] as num?)?.toDouble() ?? 0.0;
+        final currentStatus = pMap['status'] as String? ?? 'pending';
+
+        final hasMatch = (displayId.isNotEmpty && note.contains(displayId)) ||
+            note.contains(requestId) ||
+            (request.title.trim().length > 3 && note.contains(request.title.trim()));
+
+        if (hasMatch) {
+          final noteParts = note.split('•').map((s) => s.trim()).toList();
+          final matchingParts = noteParts.where((s) =>
+              (displayId.isNotEmpty && s.contains(displayId)) ||
+              s.contains(requestId) ||
+              (request.title.trim().length > 3 && s.contains(request.title.trim()))).toList();
+
+          double totalOffsetForThisReq = 0.0;
+          for (final part in matchingParts) {
+            final match = RegExp(r'[+-]\s*([0-9]+(?:[.,][0-9]+)?)').firstMatch(part);
+            if (match != null) {
+              final parsed = double.tryParse(match.group(1)!.replaceAll(',', '.'));
+              if (parsed != null && parsed > 0) {
+                totalOffsetForThisReq += parsed;
+              }
+            }
+          }
+
+          if (totalOffsetForThisReq <= 0) {
+            totalOffsetForThisReq = settledAmt > 0 ? settledAmt : (request.costAmount ?? 0.0);
+          }
+
+          final remainingParts = noteParts.where((s) =>
+              !((displayId.isNotEmpty && s.contains(displayId)) ||
+                s.contains(requestId) ||
+                (request.title.trim().length > 3 && s.contains(request.title.trim())))).toList();
+          final cleanedNote = remainingParts.join(' • ').trim();
+
+          if (request.paidBy == 'landlord') {
+            // 'Add to rent' was applied: rent amount was increased -> revert by decreasing
+            final revertedAmount = (currentAmount - totalOffsetForThisReq).clamp(0.0, double.infinity);
+            await _client.from('rent_payments').update({
+              'amount': revertedAmount,
+              'owner_note': cleanedNote.isEmpty ? null : cleanedNote,
+            }).eq('id', pId);
+          } else {
+            // 'Deduct from rent' was applied: rent amount was decreased -> revert by increasing
+            final revertedAmount = currentAmount + totalOffsetForThisReq;
+            final updatePayload = <String, dynamic>{
+              'amount': revertedAmount,
+              'owner_note': cleanedNote.isEmpty ? null : cleanedNote,
+            };
+            if (currentStatus == 'paid' && (pMap['receipt_url'] == null || (pMap['receipt_url'] as String).isEmpty)) {
+              updatePayload['status'] = 'pending';
+              updatePayload['paid_at'] = null;
+            }
+            await _client.from('rent_payments').update(updatePayload).eq('id', pId);
+          }
+        }
+      }
+    } catch (e) {
+      print('Error rolling back rent payments: $e');
+    }
+
+    // 2. Delete / cancel maintenance charges
+    try {
+      await _client
+          .from('maintenance_charges')
+          .delete()
+          .eq('maintenance_request_id', requestId);
+    } catch (e) {
+      print('Error deleting maintenance_charges: $e');
+    }
+
+    // 3. Reset financial columns in maintenance_requests
+    await _client
+        .from('maintenance_requests')
+        .update({
+          'cost_amount': null,
+          'settled_amount': 0.0,
+          'currency': request.currency ?? 'EUR',
+          'paid_by': null,
+          'payment_date': null,
+          'payment_status': 'pending_review',
+          'invoice_pdf_url': null,
+          'rejection_reason': null,
+          'rejected_by': null,
+        })
+        .eq('id', requestId);
+
+    // 4. Add chat notification in maintenance discussion
+    final role = actorRoleName ?? 'Agency';
+    final String defaultMsg;
+    final lang = localeName?.toLowerCase() ?? 'en';
+    if (lang.startsWith('tr')) {
+      defaultMsg = '🗑️ $role: Bakım masraf bilgileri silindi ve bu masrafla ilgili tüm mahsuplaşmalar/kiraya yansıtmalar geri alındı.';
+    } else if (lang.startsWith('ru')) {
+      defaultMsg = '🗑️ $role: Финансовые данные обслуживания удалены, все связанные взаимозачеты/начисления на аренду отменены.';
+    } else if (lang.startsWith('sr')) {
+      defaultMsg = '🗑️ $role: Finansijski podaci održavanja su izbrisani i sva povezana prebijanja/uračunavanja u kiriju su poništena.';
+    } else {
+      defaultMsg = '🗑️ $role: Maintenance financial details deleted and all related rent offsets/settlements were reverted.';
+    }
+    final note = customMessage ?? defaultMsg;
+
+    try {
+      await addMessage(
+        requestId,
+        propertyId,
+        note,
+      );
+    } catch (_) {}
+
+    // 5. Activity log
+    try {
+      await _logActivity(
+        propertyId: propertyId,
+        type: 'maintenance_financials_deleted',
+        metadata: {
+          'request_id': requestId,
+          'reverted_settled_amount': settledAmt,
+        },
+      );
+    } catch (_) {}
   }
 
   Future<void> approveMaintenanceFinancialDeclaration({

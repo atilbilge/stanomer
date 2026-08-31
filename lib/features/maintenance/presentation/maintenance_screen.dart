@@ -6,9 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/theme/colors.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/connection_status_indicator.dart';
+import '../../../core/providers/agency_branding_provider.dart';
 import '../../property/domain/property.dart';
 import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
@@ -127,15 +129,16 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
         (!isLandlord && !isAgency);
 
     final requestsAsync = ref.watch(maintenanceRequestsProvider(widget.property.id));
+    final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(widget.property));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: StanomerColors.bgPage,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await context.push('/maintenance/new', extra: widget.property);
           ref.invalidate(maintenanceRequestsProvider(widget.property.id));
         },
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 4,
         highlightElevation: 8,
@@ -157,6 +160,13 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
             ConnectionStatusIndicator(
               hasError: requestsAsync.hasError,
               onRetry: () => ref.invalidate(maintenanceRequestsProvider(widget.property.id)),
+            ),
+            // Pinned Hero Header (fixed at top, not lost during scroll)
+            _MaintenanceHeroHeader(
+              property: widget.property,
+              isTenant: isTenant,
+              isAgency: isAgency,
+              isEmbedded: widget.isEmbedded,
             ),
             Expanded(
               child: requestsAsync.when(
@@ -190,15 +200,6 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
-                        // 1. Dynamic Hero Header with Back button & Title
-                        SliverToBoxAdapter(
-                          child: _MaintenanceHeroHeader(
-                            property: widget.property,
-                            isTenant: isTenant,
-                            isAgency: isAgency,
-                            isEmbedded: widget.isEmbedded,
-                          ),
-                        ),
 
                         // 2. Interactive KPI Stats Deck (4 metrics)
                         if (allRequests.isNotEmpty)
@@ -317,7 +318,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -506,7 +507,7 @@ class _StatusChipItem {
 }
 
 /// ── Dynamic Hero Header Component ─────────────────────────────
-class _MaintenanceHeroHeader extends StatelessWidget {
+class _MaintenanceHeroHeader extends ConsumerWidget {
   final Property property;
   final bool isTenant;
   final bool isAgency;
@@ -520,19 +521,22 @@ class _MaintenanceHeroHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final topPadding = isEmbedded ? 4.0 : MediaQuery.of(context).padding.top;
+    final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(property));
+    final primaryColor = colorScheme.primary;
+    final gradientColors = [
+      HSLColor.fromColor(primaryColor).withLightness((HSLColor.fromColor(primaryColor).lightness * 0.7).clamp(0.0, 1.0)).toColor(),
+      primaryColor,
+      HSLColor.fromColor(primaryColor).withLightness((HSLColor.fromColor(primaryColor).lightness * 1.15).clamp(0.0, 1.0)).toColor(),
+    ];
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF064E3B),
-            Color(0xFF0F766E),
-            Color(0xFF115E59),
-          ],
+        gradient: LinearGradient(
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -544,7 +548,7 @@ class _MaintenanceHeroHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F766E).withValues(alpha: 0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -734,7 +738,7 @@ class _MaintenanceStatDeck extends StatelessWidget {
             onTap: () => onSelectFilter(_MaintenanceFilter.active),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
 
         // 2. Urgent Issues
         Expanded(
@@ -748,7 +752,7 @@ class _MaintenanceStatDeck extends StatelessWidget {
             onTap: () => onSelectFilter(_MaintenanceFilter.urgent),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
 
         // 3. Resolved
         Expanded(
@@ -761,7 +765,7 @@ class _MaintenanceStatDeck extends StatelessWidget {
             onTap: () => onSelectFilter(_MaintenanceFilter.resolved),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
 
         // 4. Financial Settlements
         Expanded(
@@ -800,57 +804,63 @@ class _StatDeckTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: isSelected ? accentColor.withValues(alpha: 0.12) : Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected ? accentColor : const Color(0xFFE2E8F0),
-              width: isSelected ? 1.5 : 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected ? accentColor.withValues(alpha: 0.12) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+          width: isSelected ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isSelected
+                ? accentColor.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.03),
+            blurRadius: isSelected ? 6 : 4,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(icon, size: 14, color: accentColor),
-                  Text(
-                    count.toString(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: count > 0 ? (isPulsing ? const Color(0xFFE11D48) : accentColor) : const Color(0xFF94A3B8),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(icon, size: 13, color: accentColor),
+                    Text(
+                      count.toString(),
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w900,
+                        color: count > 0 ? (isPulsing ? const Color(0xFFE11D48) : accentColor) : const Color(0xFF94A3B8),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? accentColor : const Color(0xFF64748B),
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? accentColor : const Color(0xFF64748B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -859,7 +869,7 @@ class _StatDeckTile extends StatelessWidget {
 }
 
 /// ── Redesigned Modern Maintenance Card ─────────────────────────
-class _MaintenanceCard extends StatelessWidget {
+class _MaintenanceCard extends StatefulWidget {
   final MaintenanceRequest request;
   final Property property;
   final bool isLandlord;
@@ -876,39 +886,65 @@ class _MaintenanceCard extends StatelessWidget {
   });
 
   @override
+  State<_MaintenanceCard> createState() => _MaintenanceCardState();
+}
+
+class _MaintenanceCardState extends State<_MaintenanceCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isUrgent = request.priority == MaintenancePriority.urgent ||
-        request.priority == MaintenancePriority.high;
+    final isUrgent = widget.request.priority == MaintenancePriority.urgent ||
+        widget.request.priority == MaintenancePriority.high;
 
-    final statusStyle = _getStatusVisuals(request.status, loc);
-    final categoryIcon = _getCategoryIcon(request.category);
-    final categoryName = _getCategoryName(request.category, loc);
+    final statusStyle = _getStatusVisuals(widget.request.status, loc);
+    final categoryIcon = _getCategoryIcon(widget.request.category);
+    final categoryName = _getCategoryName(widget.request.category, loc);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isUrgent ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0),
-          width: isUrgent ? 1.2 : 1.0,
+          color: isUrgent
+              ? (_isHovered ? const Color(0xFFE11D48) : const Color(0xFFFECDD3))
+              : (_isHovered ? const Color(0xFF0F766E).withValues(alpha: 0.6) : const Color(0xFFE2E8F0)),
+          width: isUrgent || _isHovered ? 1.4 : 1.0,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isUrgent
-                ? const Color(0xFFE11D48).withValues(alpha: 0.06)
-                : Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: isUrgent
+            ? [
+                BoxShadow(
+                  color: const Color(0xFFE11D48).withValues(alpha: _isHovered ? 0.16 : 0.08),
+                  blurRadius: _isHovered ? 14 : 8,
+                  offset: Offset(0, _isHovered ? 5 : 2),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: _isHovered
+                      ? const Color(0xFF0F766E).withValues(alpha: 0.09)
+                      : Colors.black.withValues(alpha: 0.04),
+                  blurRadius: _isHovered ? 16 : 8,
+                  offset: Offset(0, _isHovered ? 5 : 2),
+                ),
+              ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: widget.onTap,
+          onHover: (hovered) {
+            if (_isHovered != hovered) {
+              setState(() => _isHovered = hovered);
+            }
+          },
+          hoverColor: Colors.transparent,
+          splashColor: const Color(0xFF0F766E).withValues(alpha: 0.06),
+          highlightColor: Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -926,15 +962,37 @@ class _MaintenanceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. Meta Row: Category Badge + Priority Pill + Status Pill
+                    // 1. Meta Row: Ticket ID + Category Badge + Priority Pill + Status Pill
                     Row(
                       children: [
+                        // Ticket Display ID
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Text(
+                            widget.request.displayId,
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
                         // Category Icon & Label
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -1014,7 +1072,7 @@ class _MaintenanceCard extends StatelessWidget {
 
                     // 2. Request Title
                     Text(
-                      request.title,
+                      widget.request.title,
                       style: const TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w800,
@@ -1026,10 +1084,10 @@ class _MaintenanceCard extends StatelessWidget {
                     ),
 
                     // 3. Description (if available)
-                    if (request.description != null && request.description!.isNotEmpty) ...[
+                    if (widget.request.description != null && widget.request.description!.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        request.description!,
+                        widget.request.description!,
                         style: const TextStyle(
                           fontSize: 12.5,
                           color: Color(0xFF64748B),
@@ -1041,21 +1099,21 @@ class _MaintenanceCard extends StatelessWidget {
                     ],
 
                     // 4. Photo Thumbnails Strip (if attached)
-                    if (request.photosUrls.isNotEmpty) ...[
+                    if (widget.request.photosUrls.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      _buildPhotosPreviewStrip(request.photosUrls, loc),
+                      _buildPhotosPreviewStrip(widget.request.photosUrls, loc),
                     ],
 
                     // 5. 4-Stage Visual Progress Stepper Track
                     const SizedBox(height: 14),
-                    _MaintenanceProgressStepper(status: request.status),
+                    _MaintenanceProgressStepper(status: widget.request.status),
 
                     // 6. Financial Reconciliation Box (if cost / invoice exists)
-                    if (request.costAmount != null || (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty)) ...[
+                    if (widget.request.costAmount != null || (widget.request.invoicePdfUrl != null && widget.request.invoicePdfUrl!.isNotEmpty)) ...[
                       const SizedBox(height: 12),
                       _MaintenanceFinancialBox(
-                        request: request,
-                        property: property,
+                        request: widget.request,
+                        property: widget.property,
                       ),
                     ],
 
@@ -1072,8 +1130,8 @@ class _MaintenanceCard extends StatelessWidget {
                               const SizedBox(width: 5),
                               Flexible(
                                 child: Text(
-                                  request.createdAt != null
-                                      ? DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(request.createdAt!)
+                                  widget.request.createdAt != null
+                                      ? DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(widget.request.createdAt!)
                                       : '-',
                                   style: const TextStyle(
                                     fontSize: 11,
@@ -1314,15 +1372,19 @@ class _MaintenanceFinancialBox extends StatelessWidget {
         finLabel = loc.costPendingReview;
         break;
       case MaintenancePaymentStatus.pendingPayment:
-        finColor = const Color(0xFFD97706);
-        finBg = const Color(0xFFFFFBEB);
         finIcon = LucideIcons.repeat;
-        if (request.paidBy == 'landlord') {
-          finLabel = loc.costDeductFromRent;
-        } else if (request.paidBy == 'tenant') {
-          finLabel = loc.costAddToRent;
+        if (request.paidBy == 'tenant') {
+          finColor = const Color(0xFF2563EB);
+          finBg = const Color(0xFFEFF6FF);
+          finLabel = loc.deductFromRentBadge;
+        } else if (request.paidBy == 'landlord') {
+          finColor = const Color(0xFFD97706);
+          finBg = const Color(0xFFFFFBEB);
+          finLabel = loc.addToRentBadge;
         } else {
-          finLabel = loc.waiting;
+          finColor = const Color(0xFFD97706);
+          finBg = const Color(0xFFFFFBEB);
+          finLabel = loc.financialStatusPendingPayment;
         }
         break;
       case MaintenancePaymentStatus.paid:
@@ -1349,61 +1411,52 @@ class _MaintenanceFinancialBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 1. Amount & Financial Status Badge Row
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (request.costAmount != null) ...[
-                Text(
-                  CurrencyUtils.formatAmount(request.costAmount!, currency, useSymbol: true),
-                  style: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                if (request.hasPartialSettlement) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFBEB),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFDE68A)),
-                    ),
-                    child: Text(
-                      loc.localeName == 'tr'
-                          ? 'Kalan: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
-                          : (loc.localeName == 'ru'
-                              ? 'Остаток: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
-                              : (loc.localeName.startsWith('sr')
-                                  ? 'Preostalo: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
-                                  : 'Rem: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}')),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFB45309),
+              if (request.costAmount != null)
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        CurrencyUtils.formatAmount(request.costAmount!, currency, useSymbol: true),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-                const SizedBox(width: 8),
-              ],
-              if (payerLabel.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    payerLabel,
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF475569),
-                    ),
+                      if (request.hasPartialSettlement) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFFDE68A)),
+                          ),
+                          child: Text(
+                            loc.localeName == 'tr'
+                                ? 'Kalan: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                                : (loc.localeName == 'ru'
+                                    ? 'Остаток: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Preostalo: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}'
+                                        : 'Rem: ${CurrencyUtils.formatAmount(request.remainingAmount, currency, useSymbol: true)}')),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFB45309),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                 decoration: BoxDecoration(
@@ -1429,39 +1482,66 @@ class _MaintenanceFinancialBox extends StatelessWidget {
               ),
             ],
           ),
-          if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) ...[
+
+          // 2. Payer Label & Invoice Action Wrap Row
+          if (payerLabel.isNotEmpty || (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty)) ...[
             const SizedBox(height: 8),
-            InkWell(
-              onTap: () async {
-                final uri = Uri.parse(request.invoicePdfUrl!);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF1F2),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFFECDD3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(LucideIcons.fileText, size: 12, color: Color(0xFFE11D48)),
-                    const SizedBox(width: 5),
-                    Text(
-                      loc.viewInvoiceAction,
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (payerLabel.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Text(
+                      payerLabel,
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFE11D48),
+                        color: Color(0xFF475569),
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                if (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty)
+                  InkWell(
+                    onTap: () async {
+                      final uri = Uri.parse(request.invoicePdfUrl!);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF1F2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFFECDD3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(LucideIcons.fileText, size: 11, color: Color(0xFFE11D48)),
+                          const SizedBox(width: 4),
+                          Text(
+                            loc.viewInvoiceAction,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFE11D48),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ],

@@ -9,7 +9,10 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/theme/colors.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../../core/services/document_storage_service.dart';
+import '../../../core/providers/agency_branding_provider.dart';
 import '../../property/domain/property.dart';
 import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
@@ -41,6 +44,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   MaintenanceCategory? _selectedCategory;
   MaintenancePriority _selectedPriority = MaintenancePriority.normal;
   bool _isLoading = false;
+  bool _showFinancialSection = false;
   List<PlatformFile> _selectedFiles = [];
 
   @override
@@ -48,9 +52,9 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     super.initState();
     final initialCur = widget.property.currency.isNotEmpty ? widget.property.currency : 'EUR';
     _selectedCurrency = (initialCur.toUpperCase() == 'RSD') ? 'RSD' : 'EUR';
-    _paidBy = 'landlord';
-    _paymentStatus = 'paid';
-    _paymentDate = DateTime.now();
+    _paidBy = null;
+    _paymentStatus = null;
+    _paymentDate = null;
   }
 
   @override
@@ -96,7 +100,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   Future<void> _pickInvoicePdf() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic'],
       allowMultiple: false,
       withData: true,
     );
@@ -151,22 +155,6 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       return;
     }
 
-    // Validate cost amount if entered
-    double? costAmount;
-    final costText = _costController.text.trim().replaceAll(',', '.');
-    if (costText.isNotEmpty) {
-      costAmount = double.tryParse(costText);
-      if (costAmount == null || costAmount < 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.errorWithDetails('Invalid cost amount')),
-            backgroundColor: const Color(0xFFE11D48),
-          ),
-        );
-        return;
-      }
-    }
-
     final user = ref.read(currentUserProvider);
     final userProfileAsync = user?.id != null
         ? ref.read(profileProvider(user!.id))
@@ -179,9 +167,72 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
     final isTenant = widget.property.tenantId == user?.id ||
         profileRole == 'tenant' ||
         (!isLandlord && !isAgency);
+    final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final isTenantOrLandlordInAgencyProperty = isAgencyManaged && !isAgency;
+    final isPayerLocked = !isAgencyManaged || !isAgency;
+    final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : _paidBy;
 
-    if (!isTenant && costAmount != null && costAmount > 0) {
-      if (_paidBy == null) {
+    // Validate Financial Section: Optional, but if ANY field is entered, ALL fields & document are mandatory
+    final costText = _costController.text.trim().replaceAll(',', '.');
+    final hasCostEntered = costText.isNotEmpty;
+    final hasInvoiceUploaded = _selectedInvoiceFile != null;
+    final hasDateSelected = _paymentDate != null;
+    final hasStatusSelected = _paymentStatus != null;
+    final hasFinancialInput = (!isTenantOrLandlordInAgencyProperty || _showFinancialSection) &&
+        (hasCostEntered || hasInvoiceUploaded || hasDateSelected || hasStatusSelected);
+
+    double? costAmount;
+    if (hasFinancialInput) {
+      if (!hasCostEntered) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.localeName == 'tr'
+                ? 'Lütfen masraf tutarını giriniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Пожалуйста, укажите сумму расхода.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Unesite iznos troška.'
+                        : 'Please enter the cost amount.'))),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
+
+      costAmount = double.tryParse(costText);
+      if (costAmount == null || costAmount <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.localeName == 'tr'
+                ? 'Lütfen geçerli ve 0\'dan büyük bir masraf tutarı giriniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Укажите корректную сумму расхода больше 0.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Unesite ispravan iznos veći od 0.'
+                        : 'Please enter a valid cost amount greater than 0.'))),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
+
+      if (_paymentDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.localeName == 'tr'
+                ? 'Lütfen ödeme tarihini seçiniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Пожалуйста, выберите дату оплаты.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Izaberite datum plaćanja.'
+                        : 'Please select the payment date.'))),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
+
+      if (!isPayerLocked && _paidBy == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.pleaseSelectCostPayer),
@@ -190,10 +241,21 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         );
         return;
       }
+
       if (_paymentStatus == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.pleaseSelectDeclarationIntent),
+            backgroundColor: const Color(0xFFE11D48),
+          ),
+        );
+        return;
+      }
+
+      if (_selectedInvoiceFile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.pleaseUploadReceipt),
             backgroundColor: const Color(0xFFE11D48),
           ),
         );
@@ -256,22 +318,6 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       }
 
       // 3. Create the request with financial fields
-      final user = ref.read(currentUserProvider);
-      final userProfileAsync = user?.id != null
-          ? ref.read(profileProvider(user!.id))
-          : const AsyncValue<Map<String, dynamic>?>.data(null);
-      final profileRole = userProfileAsync.value?['role'] as String? ??
-          user?.userMetadata?['role'] as String?;
-
-      final isLandlord = widget.property.landlordId == user?.id || profileRole == 'landlord';
-      final isAgency = widget.property.agencyId == user?.id || profileRole == 'agency';
-      final isTenant = widget.property.tenantId == user?.id ||
-          profileRole == 'tenant' ||
-          (!isLandlord && !isAgency);
-      final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
-      final isPayerLocked = !isAgencyManaged || !isAgency;
-      final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : (_paidBy ?? 'landlord');
-
       final double? finalCostAmount = costAmount;
       final String? finalCurrency = (finalCostAmount == null) ? null : _selectedCurrency;
       final String? finalPaidBy = (finalCostAmount == null) ? null : effectivePaidBy;
@@ -283,7 +329,11 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       if (finalCostAmount != null && finalCostAmount > 0) {
         if (isAgencyManaged) {
           if (isAgency) {
-            finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_payment';
+            if (effectivePaidBy == 'agency') {
+              finalPaymentStatus = (_paymentStatus == 'pending_review') ? 'pending_review' : 'pending_payment';
+            } else {
+              finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_payment';
+            }
           } else if (isLandlord) {
             finalPaymentStatus = (_paymentStatus == 'paid')
                 ? 'pending_agency_approval'
@@ -322,16 +372,31 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           );
 
       if (finalCostAmount != null && finalCostAmount > 0) {
-        final chargeType = effectivePaidBy == 'tenant'
-            ? (_paymentStatus == 'paid' ? 'direct_charge' : 'reimbursement')
-            : 'direct_charge';
-        final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
-        final debtorId = effectivePaidBy == 'landlord'
-            ? (_paymentStatus == 'paid' ? widget.property.landlordId : widget.property.tenantId)
-            : (_paymentStatus == 'paid' ? widget.property.tenantId : widget.property.landlordId);
-        final creditorId = effectivePaidBy == 'landlord'
-            ? widget.property.landlordId
-            : widget.property.tenantId;
+        final String chargeType;
+        final String approverRole = isAgencyManaged ? 'agency' : 'counterparty';
+        final String? debtorId;
+        final String? creditorId;
+
+        if (effectivePaidBy == 'agency') {
+          chargeType = 'agency_advance';
+          if (_paymentStatus == 'pending_payment') {
+            // Agency paid for fixture -> Landlord is debtor
+            debtorId = widget.property.landlordId;
+            creditorId = widget.property.agencyId ?? user?.id;
+          } else {
+            // Agency paid for tenant damage/usage -> Tenant is debtor
+            debtorId = widget.property.tenantId;
+            creditorId = widget.property.agencyId ?? user?.id;
+          }
+        } else if (effectivePaidBy == 'tenant') {
+          chargeType = _paymentStatus == 'paid' ? 'direct_charge' : 'reimbursement';
+          debtorId = _paymentStatus == 'paid' ? widget.property.tenantId : widget.property.landlordId;
+          creditorId = widget.property.tenantId;
+        } else {
+          chargeType = 'direct_charge';
+          debtorId = _paymentStatus == 'paid' ? widget.property.landlordId : widget.property.tenantId;
+          creditorId = widget.property.landlordId;
+        }
 
         final chargeStatus = finalPaymentStatus == 'paid'
             ? 'paid'
@@ -362,6 +427,32 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
               updatedAt: DateTime.now(),
             ),
           );
+
+          try {
+            final String initialMsg;
+            if (effectivePaidBy == 'agency') {
+              if (_paymentStatus == 'pending_payment') {
+                initialMsg = '📄 Acente: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Mülk Demirbaşı - Ev Sahibi Karşılayacak).';
+              } else {
+                initialMsg = '📄 Acente: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Kiracı Kullanımı / Hasarı - Kiracıya Yansıt).';
+              }
+            } else if (effectivePaidBy == 'tenant') {
+              initialMsg = (_paymentStatus == 'paid')
+                  ? '📄 Kiracı: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Kendi Kullanımı - Ödendi).'
+                  : '📄 Kiracı: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Demirbaş - Kiradan Mahsup Talebi).';
+            } else {
+              initialMsg = (_paymentStatus == 'paid')
+                  ? '📄 Ev Sahibi: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Demirbaş - Ödendi).'
+                  : '📄 Ev Sahibi: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Kiracı Kullanımı - Kiraya Eklenecek).';
+            }
+
+            await ref.read(maintenanceRepositoryProvider).addMessage(
+              newRequest.id,
+              widget.property.id,
+              initialMsg,
+              photoUrl: finalInvoicePdfUrl,
+            );
+          } catch (_) {}
         } catch (e) {
           debugPrint('Error inserting initial maintenance charge: $e');
         }
@@ -408,24 +499,24 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         profileRole == 'tenant' ||
         (!isLandlord && !isAgency);
     final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final isTenantOrLandlordInAgencyProperty = isAgencyManaged && !isAgency;
     final isPayerLocked = !isAgencyManaged || !isAgency;
-    final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : (_paidBy ?? 'landlord');
+    final effectivePaidBy = isPayerLocked ? (isTenant ? 'tenant' : 'landlord') : _paidBy;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: StanomerColors.bgPage,
       body: SafeArea(
         top: false,
         child: Column(
           children: [
+            // Pinned Hero Header (fixed at top, not lost during scroll)
+            _CreateMaintenanceHeader(
+              property: widget.property,
+            ),
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  // 1. Dynamic Hero Header with Back Button and Property Context
-                  SliverToBoxAdapter(
-                    child: _CreateMaintenanceHeader(
-                      property: widget.property,
-                    ),
-                  ),
+                  // Form Body
 
                   // 2. Form Body
                   SliverToBoxAdapter(
@@ -497,25 +588,124 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
 
                             // ── E. Financial Section (Available to Landlord, Agency & Tenant) ──
                             const SizedBox(height: 28),
-                            _CreateMaintenanceFinancialCard(
-                              costController: _costController,
-                              selectedCurrency: _selectedCurrency,
-                              onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
-                              paidBy: effectivePaidBy,
-                              isPayerLocked: isPayerLocked,
-                              onPaidByChanged: (payer) => setState(() {
-                                _paidBy = payer;
-                                _paymentStatus = null;
-                              }),
-                              paymentStatus: _paymentStatus,
-                              onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
-                              paymentDate: _paymentDate,
-                              onSelectPaymentDate: () => _selectPaymentDate(context),
-                              onClearPaymentDate: () => setState(() => _paymentDate = null),
-                              selectedInvoiceFile: _selectedInvoiceFile,
-                              onPickInvoicePdf: _pickInvoicePdf,
-                              onRemoveInvoiceFile: _removeInvoiceFile,
-                            ),
+                            if (isTenantOrLandlordInAgencyProperty && !_showFinancialSection) ...[
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0F766E).withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(LucideIcons.receipt, size: 17, color: Color(0xFF0F766E)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            loc.localeName == 'tr'
+                                                ? 'Masraf / Ödeme Dekontu Bildir'
+                                                : (loc.localeName == 'ru'
+                                                    ? 'Заявить о расходах / чеке'
+                                                    : (loc.localeName.startsWith('sr')
+                                                        ? 'Prijavi trošak / račun'
+                                                        : 'Declare Expense / Receipt')),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 13.5,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            loc.localeName == 'tr'
+                                                ? 'Bu bakım için tarafınızca yapılmış bir harcama veya ödeme varsa bildirmek için açın.'
+                                                : (loc.localeName == 'ru'
+                                                    ? 'Включите, если вы понесли расходы или оплатили этот ремонт.'
+                                                    : (loc.localeName.startsWith('sr')
+                                                        ? 'Uključite ako ste platili ili imali trošak za ovo održavanje.'
+                                                        : 'Enable if you have incurred expenses or made a payment for this maintenance.')),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF64748B),
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    OutlinedButton.icon(
+                                      onPressed: () => setState(() => _showFinancialSection = true),
+                                      icon: const Icon(LucideIcons.plus, size: 14),
+                                      label: Text(
+                                        loc.localeName == 'tr'
+                                            ? 'Masraf Ekle'
+                                            : (loc.localeName == 'ru'
+                                                ? 'Добавить'
+                                                : (loc.localeName.startsWith('sr')
+                                                    ? 'Dodaj trošak'
+                                                    : 'Add Cost')),
+                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFF0F766E),
+                                        side: const BorderSide(color: Color(0xFF0F766E)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ] else ...[
+                              _CreateMaintenanceFinancialCard(
+                                costController: _costController,
+                                selectedCurrency: _selectedCurrency,
+                                onCurrencyChanged: (cur) => setState(() => _selectedCurrency = cur),
+                                paidBy: effectivePaidBy,
+                                isPayerLocked: isPayerLocked,
+                                onPaidByChanged: (payer) => setState(() {
+                                  _paidBy = payer;
+                                  _paymentStatus = null;
+                                }),
+                                paymentStatus: _paymentStatus,
+                                onPaymentStatusChanged: (status) => setState(() => _paymentStatus = status),
+                                paymentDate: _paymentDate,
+                                onSelectPaymentDate: () => _selectPaymentDate(context),
+                                onClearPaymentDate: () => setState(() => _paymentDate = null),
+                                selectedInvoiceFile: _selectedInvoiceFile,
+                                onPickInvoicePdf: _pickInvoicePdf,
+                                onRemoveInvoiceFile: _removeInvoiceFile,
+                                showAgencyApprovalNotice: isTenantOrLandlordInAgencyProperty,
+                                onToggleCollapse: isTenantOrLandlordInAgencyProperty
+                                    ? () => setState(() {
+                                          _showFinancialSection = false;
+                                          _costController.clear();
+                                          _paymentDate = null;
+                                          _paymentStatus = null;
+                                          _selectedInvoiceFile = null;
+                                        })
+                                    : null,
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -656,6 +846,8 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
   }
 
   Widget _buildBottomSubmitBar(AppLocalizations loc) {
+    final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(widget.property));
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -677,11 +869,11 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           child: ElevatedButton(
             onPressed: _isLoading ? null : _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: colorScheme.primary,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              disabledBackgroundColor: const Color(0xFF0F766E).withValues(alpha: 0.6),
+              disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.6),
             ),
             child: _isLoading
                 ? const SizedBox(
@@ -713,7 +905,7 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
 }
 
 /// ── Dynamic Hero Header Component ─────────────────────────────
-class _CreateMaintenanceHeader extends StatelessWidget {
+class _CreateMaintenanceHeader extends ConsumerWidget {
   final Property property;
 
   const _CreateMaintenanceHeader({
@@ -721,19 +913,22 @@ class _CreateMaintenanceHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
+    final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(property));
+    final primaryColor = colorScheme.primary;
+    final gradientColors = [
+      HSLColor.fromColor(primaryColor).withLightness((HSLColor.fromColor(primaryColor).lightness * 0.7).clamp(0.0, 1.0)).toColor(),
+      primaryColor,
+      HSLColor.fromColor(primaryColor).withLightness((HSLColor.fromColor(primaryColor).lightness * 1.15).clamp(0.0, 1.0)).toColor(),
+    ];
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF064E3B),
-            Color(0xFF0F766E),
-            Color(0xFF115E59),
-          ],
+        gradient: LinearGradient(
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -743,7 +938,7 @@ class _CreateMaintenanceHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F766E).withValues(alpha: 0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -1283,6 +1478,8 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
   final PlatformFile? selectedInvoiceFile;
   final VoidCallback onPickInvoicePdf;
   final VoidCallback onRemoveInvoiceFile;
+  final bool showAgencyApprovalNotice;
+  final VoidCallback? onToggleCollapse;
 
   const _CreateMaintenanceFinancialCard({
     required this.costController,
@@ -1299,6 +1496,8 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
     required this.selectedInvoiceFile,
     required this.onPickInvoicePdf,
     required this.onRemoveInvoiceFile,
+    this.showAgencyApprovalNotice = false,
+    this.onToggleCollapse,
   });
 
   @override
@@ -1309,14 +1508,22 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 600;
 
+        final hasInput = costController.text.trim().isNotEmpty ||
+            paymentDate != null ||
+            paymentStatus != null ||
+            selectedInvoiceFile != null;
+
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF0F766E).withValues(alpha: 0.25), width: 1.2),
+            border: Border.all(
+              color: hasInput ? const Color(0xFF0F766E).withValues(alpha: 0.5) : const Color(0xFFE2E8F0),
+              width: hasInput ? 1.4 : 1.0,
+            ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F766E).withValues(alpha: 0.04),
+                color: (hasInput ? const Color(0xFF0F766E) : Colors.black).withValues(alpha: hasInput ? 0.06 : 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -1351,11 +1558,156 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: hasInput ? const Color(0xFFFFFBEB) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: hasInput ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Text(
+                      hasInput
+                          ? (loc.localeName == 'tr'
+                              ? 'Tüm Alanlar & Belge Zorunlu'
+                              : (loc.localeName == 'ru'
+                                  ? 'Все поля и документ обязательны'
+                                  : (loc.localeName.startsWith('sr')
+                                      ? 'Sva polja i dokument obavezni'
+                                      : 'All Fields & File Required')))
+                          : (loc.localeName == 'tr'
+                              ? 'İsteğe Bağlı'
+                              : (loc.localeName == 'ru'
+                                  ? 'Необязательно'
+                                  : (loc.localeName.startsWith('sr') ? 'Opciono' : 'Optional'))),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: hasInput ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                  if (onToggleCollapse != null) ...[
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: onToggleCollapse,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(LucideIcons.x, size: 14, color: Color(0xFF64748B)),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
               const SizedBox(height: 12),
+
+              // Agency Approval Warning Notice (Shown when tenant/landlord in agency-managed property)
+              if (showAgencyApprovalNotice) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD97706).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(LucideIcons.shieldAlert, size: 14, color: Color(0xFFD97706)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.localeName == 'tr'
+                                  ? 'Acente Onayı Gereklidir'
+                                  : (loc.localeName == 'ru'
+                                      ? 'Требуется одобрение агентства'
+                                      : (loc.localeName.startsWith('sr')
+                                          ? 'Potrebno je odobrenje agencije'
+                                          : 'Agency Approval Required')),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF92400E),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              loc.localeName == 'tr'
+                                  ? 'Gireceğiniz masraf ve ödeme bilgileri, yalnızca acente onayladığında geçerli olacaktır. Acente onaylayana kadar bu bildirim inceleme aşamasında kalır.'
+                                  : (loc.localeName == 'ru'
+                                      ? 'Введенные вами данные о расходах и оплате вступят в силу только после одобрения агентством. До одобрения запись будет на рассмотрении.'
+                                      : (loc.localeName.startsWith('sr')
+                                          ? 'Podaci o troškovima i plaćanju koje unesete postaće važeći tek nakon što ih agencija odobri. Do odobrenja, ovaj unos ostaje na pregledu.'
+                                          : 'The expense and payment details you enter will only take effect once approved by the agency. This submission will remain pending review until approved.')),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF78350F),
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              if (hasInput) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.info, size: 14, color: Color(0xFF2563EB)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          loc.localeName == 'tr'
+                              ? 'Masraf bildirimi yapıldığında tutar, ödeme tarihi, ödeyen, amaç ve fatura/fiş belgesi eksiksiz girilmelidir.'
+                              : (loc.localeName == 'ru'
+                                  ? 'При указании расхода необходимо заполнить сумму, дату, плательщика, цель и прикрепить документ счета/чека.'
+                                  : (loc.localeName.startsWith('sr')
+                                      ? 'Prilikom unosa troška obavezno je uneti iznos, datum, platioca, svrhu i priložiti račun/uplatnicu.'
+                                      : 'When entering financial details, amount, payment date, payer, purpose, and invoice file must all be provided.')),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1E40AF),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // 1. Tutar & Para Birimi ve 2. Ödeme Tarihi
               if (isWide)
@@ -1430,7 +1782,93 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              if (paidBy == 'tenant') ...[
+              if (paidBy == null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.helpCircle, size: 15, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          loc.localeName == 'tr'
+                              ? 'Lütfen önce masrafı kimin ödediğini seçiniz.'
+                              : (loc.localeName == 'ru'
+                                  ? 'Сначала выберите, кто оплатил расход.'
+                                  : (loc.localeName.startsWith('sr')
+                                      ? 'Prvo izaberite ko je platio trošak.'
+                                      : 'Please select who paid the cost first.')),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (paidBy == 'agency') ...[
+                // Agency Option 1 (Property Fixture / To be Covered by Landlord)
+                _buildPurposeOptionCard(
+                  title: loc.localeName == 'tr'
+                      ? 'Mülk Demirbaşı (Ev Sahibi Karşılayacak)'
+                      : (loc.localeName == 'ru'
+                          ? 'Оборудование объекта (Возмещает собственник)'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Oprema stana (Pokriva vlasnik)'
+                              : 'Property Fixture (To be Covered by Landlord)')),
+                  subtitle: loc.localeName == 'tr'
+                      ? 'Acente ödedi. Tutar ev sahibine borç olarak yansıtılır (Ev sahibinden tahsil edilir / kira aktarımından düşülür).'
+                      : (loc.localeName == 'ru'
+                          ? 'Агентство оплатило. Сумма начисляется собственнику как долг (удерживается с него / из аренды).'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Agencija je platila. Iznos se tereti vlasniku (naplaćuje od njega / prebija od kirije).'
+                              : 'Agency paid. The amount will be charged to the landlord (collected / deducted from rent payout).')),
+                  badgeLabel: loc.localeName == 'tr'
+                      ? 'Ev Sahibi Borçlu'
+                      : (loc.localeName == 'ru'
+                          ? 'Долг собственника'
+                          : (loc.localeName.startsWith('sr') ? 'Dug vlasnika' : 'Landlord Due')),
+                  badgeColor: const Color(0xFF2563EB),
+                  icon: LucideIcons.building2,
+                  isSelected: paymentStatus == 'pending_payment' || paymentStatus == null,
+                  onTap: () => onPaymentStatusChanged('pending_payment'),
+                ),
+                const SizedBox(height: 8),
+                // Agency Option 2 (Tenant Usage/Damage / Charge to Tenant)
+                _buildPurposeOptionCard(
+                  title: loc.localeName == 'tr'
+                      ? 'Kiracı Kullanımı / Hasar (Kiracıya Yansıt)'
+                      : (loc.localeName == 'ru'
+                          ? 'Использование/ущерб арендатора (Начислить арендатору)'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Upotreba/šteta stanara (Naplati stanaru)'
+                              : 'Tenant Usage / Damage (Charge to Tenant)')),
+                  subtitle: loc.localeName == 'tr'
+                      ? 'Acente ödedi. Tutar kiracıya borç olarak yansıtılır (Kiracıdan tahsil edilir / kiraya eklenir).'
+                      : (loc.localeName == 'ru'
+                          ? 'Агентство оплатило. Сумма начисляется арендатору как долг (взимается с него / добавляется к аренде).'
+                          : (loc.localeName.startsWith('sr')
+                              ? 'Agencija je platila. Iznos se tereti stanaru (naplaćuje od njega / dodaje na kiriju).'
+                              : 'Agency paid. The amount will be charged to the tenant (collected / added to rent).')),
+                  badgeLabel: loc.localeName == 'tr'
+                      ? 'Kiracı Borçlu'
+                      : (loc.localeName == 'ru'
+                          ? 'Долг арендатора'
+                          : (loc.localeName.startsWith('sr') ? 'Dug stanara' : 'Tenant Due')),
+                  badgeColor: const Color(0xFFD97706),
+                  icon: LucideIcons.user,
+                  isSelected: paymentStatus == 'pending_review',
+                  onTap: () => onPaymentStatusChanged('pending_review'),
+                ),
+              ] else if (paidBy == 'tenant') ...[
                 // Tenant Option 1 (Self Usage)
                 _buildPurposeOptionCard(
                   title: loc.intentTenantSelfTitle,
@@ -1603,6 +2041,19 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
               onTap: () {
                 onPaidByChanged('landlord');
                 onPaymentStatusChanged('paid');
+              },
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.localeName == 'tr' ? 'Acente' : (loc.localeName == 'ru' ? 'Агентство' : (loc.localeName.startsWith('sr') ? 'Agencija' : 'Agency')),
+              icon: LucideIcons.building2,
+              isSelected: currentPayer == 'agency',
+              activeColor: const Color(0xFF7C3AED),
+              onTap: () {
+                onPaidByChanged('agency');
+                onPaymentStatusChanged('pending_payment');
               },
             ),
           ),
@@ -1801,6 +2252,8 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
 
   Widget _buildInvoiceUploader(AppLocalizations loc) {
     if (selectedInvoiceFile != null) {
+      final ext = selectedInvoiceFile!.name.split('.').last.toLowerCase();
+      final isImage = ['jpg', 'jpeg', 'png', 'webp', 'heic'].contains(ext);
       return Container(
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1811,7 +2264,7 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(LucideIcons.fileText, size: 16, color: Color(0xFFE11D48)),
+            Icon(isImage ? LucideIcons.image : LucideIcons.fileText, size: 16, color: const Color(0xFFE11D48)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -1848,7 +2301,13 @@ class _CreateMaintenanceFinancialCard extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                loc.uploadPdfTitle,
+                loc.localeName == 'tr'
+                    ? 'Fatura / Fiş Yükle (PDF veya Resim)'
+                    : (loc.localeName == 'ru'
+                        ? 'Загрузить счет / чек (PDF или фото)'
+                        : (loc.localeName.startsWith('sr')
+                            ? 'Otpremi račun / uplatnicu (PDF ili slika)'
+                            : 'Upload Invoice / Receipt (PDF or Image)')),
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF0F766E)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

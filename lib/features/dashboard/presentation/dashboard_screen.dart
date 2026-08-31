@@ -67,9 +67,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           return;
         }
 
-        final effectiveRole = dbRole ?? metaRole;
+        String? effectiveRole = dbRole ?? metaRole;
+
+        // If user has no active DB role yet (first login after signup),
+        // determine default role based on prior agency invitations
+        if (dbRole == null || dbRole.isEmpty) {
+          final userEmail = user.email?.trim().toLowerCase();
+          if (userEmail != null && userEmail.isNotEmpty) {
+            final supabase = Supabase.instance.client;
+
+            // 1. Check for landlord invitations / property ownership by email
+            final landlordInvites = await supabase
+                .from('invitations')
+                .select('id, target_role, token')
+                .eq('invitee_email', userEmail)
+                .eq('status', 'pending')
+                .limit(10);
+
+            final landlordProperties = await supabase
+                .from('properties')
+                .select('id')
+                .eq('landlord_email', userEmail)
+                .limit(1);
+
+            final hasLandlordInvite = landlordProperties.isNotEmpty ||
+                landlordInvites.any((inv) {
+                  final targetRole = inv['target_role'] as String?;
+                  final token = inv['token'] as String? ?? '';
+                  return targetRole == 'landlord' || token.startsWith('landlord_');
+                });
+
+            if (hasLandlordInvite) {
+              effectiveRole = 'landlord';
+            } else {
+              // 2. Check for tenant contracts / tenant invitations
+              final tenantContracts = await supabase
+                  .from('contracts')
+                  .select('id')
+                  .eq('invitee_email', userEmail)
+                  .inFilter('status', ['pending', 'negotiating', 'revision_requested'])
+                  .limit(1);
+
+              final hasTenantInvite = tenantContracts.isNotEmpty ||
+                  landlordInvites.any((inv) {
+                    final targetRole = inv['target_role'] as String?;
+                    final token = inv['token'] as String? ?? '';
+                    return targetRole != 'landlord' && !token.startsWith('landlord_');
+                  });
+
+              if (hasTenantInvite) {
+                effectiveRole = 'tenant';
+              }
+            }
+          }
+        }
+
         if (effectiveRole != null) {
-          ref.read(authRepositoryProvider)
+          await ref.read(authRepositoryProvider)
             .updateProfile(role: effectiveRole, fullName: fullName)
             .catchError((e) {
               if (mounted) {
@@ -79,6 +133,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ));
               }
             });
+          ref.invalidate(userRoleProvider);
+          ref.invalidate(profileFutureProvider);
         }
       } catch (_) {}
     });
@@ -210,10 +266,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             
             final property = tenantProperties.first;
             final requestsAsync = ref.watch(maintenanceRequestsProvider(property.id));
+            final hasRequests = requestsAsync.value != null && requestsAsync.value!.isNotEmpty;
             
             return FloatingActionButton.extended(
               onPressed: () {
-                final hasRequests = requestsAsync.value != null && requestsAsync.value!.isNotEmpty;
                 if (hasRequests) {
                   context.push('/maintenance', extra: property);
                 } else {
@@ -227,9 +283,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 1),
               ),
-              icon: const Icon(LucideIcons.wrench, color: Colors.white, size: 20),
+              icon: Icon(
+                hasRequests ? LucideIcons.wrench : LucideIcons.plus,
+                color: Colors.white,
+                size: 20,
+              ),
               label: Text(
-                loc.reportIssue,
+                hasRequests ? loc.maintenance : loc.reportIssue,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -385,15 +445,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // ── Pending invitations (if any) ──────────────────────
-                        if (pendingInvitesAsync.hasValue && pendingInvitesAsync.value!.isNotEmpty) ...[
-                          ...pendingInvitesAsync.value!.map((invite) {
-                            final p = invite['properties'] as Map<String, dynamic>?;
-                            if (p == null) return const SizedBox.shrink();
-                            return _InvitationCard(invite: invite, propertyData: p);
-                          }),
-                          const SizedBox(height: 12),
-                        ],
+                        // ── Pending Landlord Ownership invitations (if any) ──────────────────────
+                        () {
+                          final landlordInvites = (pendingInvitesAsync.value ?? [])
+                              .where((invite) => invite['target_role'] == 'landlord')
+                              .toList();
+                          if (landlordInvites.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ...landlordInvites.map((invite) {
+                                final p = invite['properties'] as Map<String, dynamic>?;
+                                if (p == null) return const SizedBox.shrink();
+                                return _InvitationCard(invite: invite, propertyData: p);
+                              }),
+                              const SizedBox(height: 12),
+                            ],
+                          );
+                        }(),
                         _LandlordHero(
                           statsAsync: statsAsync,
                           totalUnits: totalUnits,
@@ -487,11 +556,12 @@ else if (propertiesAsync.hasError) ...[
                 // ─── Tenant Dashboard: Landlord-mirrored layout ───────────────
                 () {
                   if (pendingInvitesAsync.hasValue && propertiesAsync.hasValue) {
-                    final invites = pendingInvitesAsync.value!;
+                    final allInvites = pendingInvitesAsync.value!;
+                    final tenantInvites = allInvites.where((invite) => invite['target_role'] != 'landlord').toList();
                     final properties = propertiesAsync.value!;
                     final tenantProperties = properties.where((p) => p.tenantId == user?.id).toList();
 
-                    if (invites.isEmpty && tenantProperties.isEmpty) {
+                    if (tenantInvites.isEmpty && tenantProperties.isEmpty) {
                       return _TenantEmptyState(
                         onRefresh: () async {
                           await Future.wait([
@@ -510,8 +580,8 @@ else if (propertiesAsync.hasError) ...[
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // ── 0. Pending invitations (if any) ──────────────────
-                        ...invites.map((invite) {
+                        // ── 0. Pending tenant invitations (if any) ──────────────────
+                        ...tenantInvites.map((invite) {
                           final p = invite['properties'] as Map<String, dynamic>?;
                           if (p == null) return const SizedBox.shrink();
                           return _InvitationCard(invite: invite, propertyData: p);
@@ -1337,9 +1407,9 @@ class _KpiGrid extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.5,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.30,
           children: items,
         );
       },
@@ -1371,7 +1441,7 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1397,13 +1467,13 @@ class _KpiCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: surfaceColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 18, color: accentColor),
+                child: Icon(icon, size: 16, color: accentColor),
               ),
               if (isAlert)
                 Container(
@@ -1423,7 +1493,7 @@ class _KpiCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1433,7 +1503,7 @@ class _KpiCard extends StatelessWidget {
                 child: Text(
                   value,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 19,
                     fontWeight: FontWeight.w800,
                     color: isAlert ? accentColor : const Color(0xFF0F172A),
                     letterSpacing: -0.5,
@@ -1545,16 +1615,20 @@ class _LandlordActionCenter extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                '${stats.awaitingApprovalCount} ${loc.awaitingApproval}',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF92400E),
+                              Flexible(
+                                child: Text(
+                                  '${stats.awaitingApprovalCount} ${loc.awaitingApproval}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF92400E),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (property != null) ...[
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
                                     '(${property.name})',
@@ -1641,22 +1715,26 @@ class _LandlordActionCenter extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                loc.localeName == 'tr'
-                                    ? '${stats.unenteredBillsCount} faturanın tutarı girilmedi'
-                                    : loc.localeName == 'ru'
-                                        ? '${stats.unenteredBillsCount} счет(а) ждут ввода суммы'
-                                        : loc.localeName.startsWith('sr')
-                                            ? '${stats.unenteredBillsCount} računa čeka unos iznosa'
-                                            : '${stats.unenteredBillsCount} bill(s) need amount entered',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E40AF),
+                              Flexible(
+                                child: Text(
+                                  loc.localeName == 'tr'
+                                      ? '${stats.unenteredBillsCount} faturanın tutarı girilmedi'
+                                      : loc.localeName == 'ru'
+                                          ? '${stats.unenteredBillsCount} счет(а) ждут ввода суммы'
+                                          : loc.localeName.startsWith('sr')
+                                              ? '${stats.unenteredBillsCount} računa čeka unos iznosa'
+                                              : '${stats.unenteredBillsCount} bill(s) need amount entered',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E40AF),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (unenteredProperty != null) ...[
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
                                     '(${unenteredProperty.name})',
@@ -3643,22 +3721,30 @@ class _TenantPropertyOverviewCard extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(LucideIcons.calendar, size: 13, color: Color(0xFF64748B)),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${formatDate(contract.startDate)} - ${formatDate(contract.endDate)}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF334155),
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.calendar, size: 13, color: Color(0xFF64748B)),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    '${formatDate(contract.startDate)} - ${formatDate(contract.endDate)}',
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF334155),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(6),
@@ -3666,10 +3752,11 @@ class _TenantPropertyOverviewCard extends ConsumerWidget {
                             child: Text(
                               '${loc.dueDayOfMonth}: ${contract.dueDay}',
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF475569),
                               ),
+                              maxLines: 1,
                             ),
                           ),
                         ],

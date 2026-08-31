@@ -1,5 +1,6 @@
 import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
@@ -211,11 +212,55 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     }
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B0F17) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? const Color(0xFF0B0F17) : StanomerColors.bgPage,
       appBar: AppBar(
-        title: Text(
-          liveRequest.title.isNotEmpty ? liveRequest.title : loc.issueDetails,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                liveRequest.title.isNotEmpty ? liveRequest.title : loc.issueDetails,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Tooltip(
+              message: '${liveRequest.displayId} (Kopyalamak için tıkla)',
+              child: InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: liveRequest.displayId));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('ID kopyalandı: ${liveRequest.displayId}'),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: Text(
+                    liveRequest.displayId,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         leading: Navigator.canPop(context)
             ? BackButton(onPressed: () => Navigator.maybePop(context))
@@ -463,30 +508,21 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       m.message.contains('prebijen')
     ).toList();
 
-    double offsetSumFromMessages = 0.0;
-    for (final msg in offsetMessages) {
-      final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(?:EUR|RSD|USD|TRY|TL|€|\$|₽|din|dinar)').firstMatch(msg.message);
-      if (match != null) {
-        final raw = match.group(1)?.replaceAll(',', '.') ?? '0';
-        offsetSumFromMessages += double.tryParse(raw) ?? 0.0;
-      }
-    }
-
-    final double effectiveSettled = request.settledAmount > 0 ? request.settledAmount : offsetSumFromMessages;
-    final double effectiveRemaining = request.settledAmount > 0
+    final double originalTotalCost = request.costAmount ?? 0.0;
+    final double effectiveSettled = request.settledAmount;
+    final double effectiveRemaining = request.remainingAmount > 0
         ? request.remainingAmount
-        : (request.costAmount ?? 0.0);
-    final double effectiveOriginal = request.settledAmount > 0
-        ? (request.costAmount ?? 0.0)
-        : (effectiveRemaining + effectiveSettled);
+        : (effectiveSettled > 0 ? (originalTotalCost - effectiveSettled).clamp(0.0, originalTotalCost) : originalTotalCost);
+    final double effectiveOriginal = originalTotalCost;
     final bool hasPartial = effectiveSettled > 0 && effectiveRemaining > 0;
 
     final formattedCost = request.costAmount != null
-        ? CurrencyUtils.formatAmount(hasPartial && request.financialStatus == MaintenancePaymentStatus.pendingPayment ? effectiveRemaining : effectiveOriginal, currency, useSymbol: true)
+        ? CurrencyUtils.formatAmount(hasPartial && request.financialStatus == MaintenancePaymentStatus.pendingPayment ? effectiveRemaining : originalTotalCost, currency, useSymbol: true)
         : null;
 
     final isPayerTenant = request.paidBy == 'tenant';
     final isPayerLandlord = request.paidBy == 'landlord';
+    final isPayerAgency = request.paidBy == 'agency';
 
     final lastDeclarationMsg = messagesAsync?.maybeWhen(
       data: (msgs) => msgs.cast<MaintenanceMessage?>().lastWhere(
@@ -498,13 +534,6 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     final bool isLastDeclaredByTenant = lastDeclarationMsg != null && lastDeclarationMsg.userId.isNotEmpty
         ? lastDeclarationMsg.userId == widget.property.tenantId
         : (request.reporterId == widget.property.tenantId);
-
-    String payerLabel = loc.unassigned;
-    if (isPayerTenant) {
-      payerLabel = loc.payerTenantPaidOrWillPay;
-    } else if (isPayerLandlord) {
-      payerLabel = loc.payerLandlordWillCover;
-    }
 
     String finStatusLabel = '';
     Color finStatusColor = const Color(0xFF64748B);
@@ -532,19 +561,20 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         break;
       case MaintenancePaymentStatus.pendingPayment:
         if (isPayerTenant) {
-          finStatusLabel = loc.localeName == 'tr'
-              ? 'Mahsup Bekliyor'
-              : (loc.localeName == 'ru' ? 'К зачету' : (loc.localeName.startsWith('sr') ? 'Za prebijanje' : 'Ready for Offset'));
+          finStatusLabel = loc.deductFromRentBadge;
           finStatusColor = const Color(0xFF2563EB);
           finStatusBg = const Color(0xFFEFF6FF);
-          finStatusIcon = LucideIcons.repeat;
+          finStatusIcon = LucideIcons.arrowDownLeft;
+        } else if (isPayerAgency) {
+          finStatusLabel = loc.localeName == 'tr' ? 'Tahsilat Bekliyor' : (loc.localeName == 'ru' ? 'Ожидает взыскания' : (loc.localeName.startsWith('sr') ? 'Čeka naplatu' : 'Pending Collection'));
+          finStatusColor = const Color(0xFF7C3AED);
+          finStatusBg = const Color(0xFFF5F3FF);
+          finStatusIcon = LucideIcons.arrowDownLeft;
         } else {
-          finStatusLabel = loc.localeName == 'tr'
-              ? 'Ödeme Bekliyor'
-              : (loc.localeName == 'ru' ? 'Ожидает оплаты' : (loc.localeName.startsWith('sr') ? 'Čeka uplatu' : 'Pending Payment'));
+          finStatusLabel = loc.addToRentBadge;
           finStatusColor = const Color(0xFFB45309);
           finStatusBg = const Color(0xFFFFFBEB);
-          finStatusIcon = LucideIcons.clock;
+          finStatusIcon = LucideIcons.arrowUpRight;
         }
         break;
       case MaintenancePaymentStatus.paid:
@@ -561,17 +591,31 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         break;
     }
 
-    final allMessages = messagesAsync?.value ?? [];
-    final hasPaymentSubmission = allMessages.any((m) =>
-      m.message.contains('dekont') ||
-      m.message.contains('receipt') ||
-      m.message.contains('квитанция') ||
-      m.message.contains('uplatnic') ||
-      m.message.contains('nakit') ||
-      m.message.contains('cash') ||
-      m.message.contains('наличными') ||
-      m.message.contains('gotovin')
+    final chargesAsync = ref.watch(maintenanceChargesProvider(widget.request.id));
+    final latestCharge = chargesAsync.maybeWhen(
+      data: (charges) => charges.isNotEmpty ? charges.last : null,
+      orElse: () => null,
     );
+
+    final bool isTenantSelfDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.tenantId) ||
+        (request.paidBy == 'tenant' && request.paymentStatus == 'paid');
+
+    final bool isTenantReimburseDeclared = (latestCharge != null && latestCharge.chargeType == 'reimbursement') ||
+        (request.paidBy == 'tenant' && request.paymentStatus != 'paid');
+
+    final bool isLandlordSelfDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.landlordId) ||
+        (request.paidBy == 'landlord' && request.paymentStatus == 'paid');
+
+    final bool isLandlordTenantDueDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.tenantId) ||
+        (request.paidBy == 'landlord' && request.paymentStatus != 'paid');
+
+    final bool isAgencyTenantDamage = isPayerAgency && (latestCharge != null && latestCharge.chargeType == 'agency_advance' && latestCharge.debtorId == widget.property.tenantId);
+
+    // Pure state-driven check: active receipt/payment submission under review
+    final bool hasPaymentSubmission = (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) &&
+        (request.financialStatus == MaintenancePaymentStatus.pendingReview ||
+         request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval ||
+         request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval);
 
     final hasFinancials = request.costAmount != null || (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty);
     final canAgencyEdit = isAgency;
@@ -587,10 +631,55 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
     if (hasAgency) {
       canApproveExpense = isAgency;
-      approvalTitle = loc.agencyExpenseApproval;
-      approvalSubtitle = isLastDeclaredByTenant
-          ? loc.tenantDeclaredExpenseSubtitle(formattedCost ?? '')
-          : loc.landlordDeclaredExpenseSubtitle(formattedCost ?? '');
+      if (hasPaymentSubmission) {
+        approvalTitle = (loc.localeName == 'tr')
+            ? 'Ödeme Bildirimi Onayı'
+            : (loc.localeName == 'ru'
+                ? 'Подтверждение оплаты'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Potvrda plaćanja'
+                    : 'Payment Submission Approval'));
+        final bool isLandlordDebtorSubmission = isPayerAgency || isPayerLandlord;
+        approvalSubtitle = (loc.localeName == 'tr')
+            ? (isLandlordDebtorSubmission
+                ? 'Ev sahibi ${formattedCost ?? ''} tutarındaki masraf borcu için ödeme bildirimi sundu. Dekontu inceleyip onaylayabilir veya reddedebilirsiniz.'
+                : 'Kiracı ${formattedCost ?? ''} tutarındaki masraf borcu için ödeme bildirimi sundu. Dekontu inceleyip onaylayabilir veya reddedebilirsiniz.')
+            : (loc.localeName == 'ru'
+                ? (isLandlordDebtorSubmission
+                    ? 'Собственник предоставил подтверждение оплаты ${formattedCost ?? ''}. Проверьте квитанцию и подтвердите или отклоните.'
+                    : 'Арендатор предоставил подтверждение оплаты ${formattedCost ?? ''}. Проверьте квитанцию и подтвердите или отклоните.')
+                : (loc.localeName.startsWith('sr')
+                    ? (isLandlordDebtorSubmission
+                        ? 'Vlasnik je priložio potvrdu o uplati ${formattedCost ?? ''}. Pregledajte uplatnicu i odobrite ili odbijte.'
+                        : 'Stanar je priložio potvrdu o uplati ${formattedCost ?? ''}. Pregledajte uplatnicu i odobrite ili odbijte.')
+                    : (isLandlordDebtorSubmission
+                        ? 'The landlord submitted payment proof for ${formattedCost ?? ''}. Review the receipt and approve or reject.'
+                        : 'The tenant submitted payment proof for ${formattedCost ?? ''}. Review the receipt and approve or reject.')));
+      } else if (isLastDeclaredByTenant) {
+        approvalTitle = loc.agencyExpenseApproval;
+        approvalSubtitle = isTenantSelfDeclared
+            ? (loc.localeName == 'tr'
+                ? 'Kiracı ${formattedCost ?? ''} tutarındaki masrafı kendi karşıladığını bildirdi (Mahsuplaşma talep edilmiyor). Fatura ve tutar uygunsa onaylayabilirsiniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Арендатор сообщил об оплате ${formattedCost ?? ''} за свой счет (возмещение не требуется). Проверьте счет и подтвердите.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Stanar je prijavio trošak od ${formattedCost ?? ''} na svoj teret (ne traži se refundacija). Pregledajte račun i odobrite.'
+                        : 'The tenant reported paying ${formattedCost ?? ''} for own usage (no rent offset requested). Review the invoice and approve.')))
+            : (loc.localeName == 'tr'
+                ? 'Kiracı ${formattedCost ?? ''} tutarında demirbaş masrafı bildirdi ve kiradan mahsup edilmesini talep etti. Faturayı inceleyip onaylayabilirsiniz.'
+                : loc.tenantDeclaredExpenseSubtitle(formattedCost ?? ''));
+      } else {
+        approvalTitle = loc.agencyExpenseApproval;
+        approvalSubtitle = isLandlordSelfDeclared
+            ? (loc.localeName == 'tr'
+                ? 'Ev sahibi ${formattedCost ?? ''} tutarındaki demirbaş masrafını kendi karşıladığını bildirdi. Fatura ve tutar uygunsa onaylayabilirsiniz.'
+                : (loc.localeName == 'ru'
+                    ? 'Владелец сообщил об оплате ${formattedCost ?? ''} за свой счет (расходы на имущество). Проверьте счет и подтвердите.'
+                    : (loc.localeName.startsWith('sr')
+                        ? 'Vlasnik je prijavio trošak od ${formattedCost ?? ''} na svoj teret. Pregledajte račun i odobrite.'
+                        : 'The landlord reported paying ${formattedCost ?? ''} for fixture repairs. Review the invoice and approve.')))
+            : loc.landlordDeclaredExpenseSubtitle(formattedCost ?? '');
+      }
       approvalButtonLabel = loc.approve;
       if (!isAgency) {
         waitingOnText = loc.propertyManagedByAgencyNotice;
@@ -693,31 +782,65 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                   ],
                 ),
                 if (canAgencyEdit)
-                  InkWell(
-                    onTap: () => _showEditFinancialsSheet(context, request),
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF5E6AD2).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(LucideIcons.pencil, size: 11, color: Color(0xFF5E6AD2)),
-                          const SizedBox(width: 4),
-                          Text(
-                            hasFinancials ? loc.edit : loc.add,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF5E6AD2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasFinancials) ...[
+                        InkWell(
+                          onTap: () => _handleDeleteFinancialDetails(request),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDC2626).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.trash2, size: 11, color: Color(0xFFDC2626)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  loc.delete,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      InkWell(
+                        onTap: () => _showEditFinancialsSheet(context, request),
+                        borderRadius: BorderRadius.circular(6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF5E6AD2).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.pencil, size: 11, color: Color(0xFF5E6AD2)),
+                              const SizedBox(width: 4),
+                              Text(
+                                hasFinancials ? loc.edit : loc.add,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF5E6AD2),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   )
                 else if (canLandlordEdit && hasFinancials)
                   InkWell(
@@ -875,55 +998,26 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 6,
                         children: [
-                          Flexible(
-                            child: Text(
-                              formattedCost ?? loc.unassigned,
-                              style: TextStyle(
-                                fontSize: formattedCost != null ? 24 : 16,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
-                              ),
+                          Text(
+                            formattedCost ?? loc.unassigned,
+                            style: TextStyle(
+                              fontSize: formattedCost != null ? 24 : 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              if (hasPartial && request.financialStatus == MaintenancePaymentStatus.pendingPayment) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFFBEB),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: const Color(0xFFFDE68A)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(LucideIcons.scissors, size: 10, color: Color(0xFFB45309)),
-                                      const SizedBox(width: 3.5),
-                                      Text(
-                                        loc.localeName == 'tr'
-                                            ? 'Kalan'
-                                            : (loc.localeName == 'ru'
-                                                ? 'Остаток'
-                                                : (loc.localeName.startsWith('sr') ? 'Preostalo' : 'Remaining')),
-                                        style: const TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFFB45309),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                              ],
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                                 decoration: BoxDecoration(
@@ -989,137 +1083,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                   const SizedBox(height: 12),
 
                   // Financial Settlement Resolution Banner
-                  if (request.financialStatus == MaintenancePaymentStatus.pendingPayment && request.costAmount != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB45309).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFB45309).withValues(alpha: 0.25)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFB45309).withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(LucideIcons.repeat, size: 13, color: Color(0xFFB45309)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isPayerLandlord
-                                      ? loc.landlordReimbursement
-                                      : loc.tenantToPay,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF92400E)),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  isPayerLandlord
-                                      ? loc.landlordReimburseDesc
-                                      : loc.tenantToPayDesc,
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF78350F), height: 1.35),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ] else if (request.financialStatus == MaintenancePaymentStatus.paid && request.costAmount != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF059669).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.25)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF059669).withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(LucideIcons.checkCircle2, size: 13, color: Color(0xFF059669)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isPayerLandlord
-                                      ? loc.coveredByLandlord
-                                      : loc.coveredByTenant,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF065F46)),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  isPayerLandlord
-                                      ? loc.coveredByLandlordClosedDesc
-                                      : loc.coveredByTenantClosedDesc,
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF047857), height: 1.35),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ] else if (request.financialStatus == MaintenancePaymentStatus.rejected && request.costAmount != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE11D48).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.25)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE11D48).withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(LucideIcons.xCircle, size: 13, color: Color(0xFFE11D48)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  loc.financialStatusRejected,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF9F1239)),
-                                ),
-                                if (request.rejectionReason != null && request.rejectionReason!.isNotEmpty) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    request.rejectionReason!,
-                                    style: const TextStyle(fontSize: 11, color: Color(0xFFBE123C), height: 1.35),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                  if (_buildFinancialResolutionBanner(loc, request, isPayerAgency, isPayerLandlord, isAgencyTenantDamage: isAgencyTenantDamage) != null)
+                    _buildFinancialResolutionBanner(loc, request, isPayerAgency, isPayerLandlord, isAgencyTenantDamage: isAgencyTenantDamage)!,
 
                   // Details Grid Container
                   Container(
@@ -1132,47 +1097,122 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                     child: Column(
                       children: [
                         // Row 1: Payer
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Icon(LucideIcons.userCheck, size: 13, color: Color(0xFF64748B)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  loc.costPayerLabel,
-                                  style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(LucideIcons.userCheck, size: 13, color: Color(0xFF64748B)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      loc.costPayerLabel,
+                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: isPayerTenant
+                                        ? const Color(0xFF059669).withValues(alpha: 0.1)
+                                        : (isPayerLandlord
+                                            ? const Color(0xFF2563EB).withValues(alpha: 0.1)
+                                            : (isPayerAgency
+                                                ? const Color(0xFF7C3AED).withValues(alpha: 0.1)
+                                                : const Color(0xFF64748B).withValues(alpha: 0.1))),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        isPayerTenant
+                                            ? LucideIcons.user
+                                            : (isPayerLandlord
+                                                ? LucideIcons.home
+                                                : (isPayerAgency ? LucideIcons.building2 : LucideIcons.helpCircle)),
+                                        size: 11,
+                                        color: isPayerTenant
+                                            ? const Color(0xFF059669)
+                                            : (isPayerLandlord
+                                                ? const Color(0xFF2563EB)
+                                                : (isPayerAgency ? const Color(0xFF7C3AED) : const Color(0xFF64748B))),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        isPayerTenant
+                                            ? loc.payerTenant
+                                            : (isPayerLandlord
+                                                ? loc.payerLandlord
+                                                : (isPayerAgency
+                                                    ? (loc.localeName == 'tr' ? 'Acente' : (loc.localeName == 'ru' ? 'Агентство' : (loc.localeName.startsWith('sr') ? 'Agencija' : 'Agency')))
+                                                    : loc.unassigned)),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: isPayerTenant
+                                              ? const Color(0xFF059669)
+                                              : (isPayerLandlord
+                                                  ? const Color(0xFF2563EB)
+                                                  : (isPayerAgency ? const Color(0xFF7C3AED) : const Color(0xFF64748B))),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: isPayerTenant
-                                    ? const Color(0xFF059669).withValues(alpha: 0.1)
-                                    : (isPayerLandlord ? const Color(0xFF2563EB).withValues(alpha: 0.1) : const Color(0xFF64748B).withValues(alpha: 0.1)),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isPayerTenant ? LucideIcons.user : (isPayerLandlord ? LucideIcons.home : LucideIcons.helpCircle),
-                                    size: 11,
-                                    color: isPayerTenant ? const Color(0xFF059669) : (isPayerLandlord ? const Color(0xFF2563EB) : const Color(0xFF64748B)),
+                            if (isPayerTenant || isPayerLandlord || isPayerAgency) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    payerLabel,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: isPayerTenant ? const Color(0xFF059669) : (isPayerLandlord ? const Color(0xFF2563EB) : const Color(0xFF64748B)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      LucideIcons.info,
+                                      size: 12,
+                                      color: isPayerTenant
+                                          ? const Color(0xFF059669)
+                                          : (isPayerLandlord ? const Color(0xFF2563EB) : const Color(0xFF7C3AED)),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        _getPayerDescription(
+                                          request,
+                                          isPayerTenant,
+                                          isPayerLandlord,
+                                          isTenantSelfDeclared,
+                                          isTenantReimburseDeclared,
+                                          isLandlordSelfDeclared,
+                                          isLandlordTenantDueDeclared,
+                                          loc,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
 
@@ -1377,6 +1417,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                                       isLandlordApproving: isLandlord,
                                       isAgencyApproving: isAgency,
                                       isLastDeclaredByTenant: isLastDeclaredByTenant,
+                                      isTenantSelfDeclared: isTenantSelfDeclared,
+                                      isTenantReimburseDeclared: isTenantReimburseDeclared,
                                       hasPaymentSubmission: hasPaymentSubmission,
                                     ),
                                     icon: const Icon(LucideIcons.check, size: 14),
@@ -1400,6 +1442,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                                       isTenantRejecting: isTenant,
                                       isLandlordRejecting: isLandlord,
                                       isAgencyRejecting: isAgency,
+                                      hasPaymentSubmission: hasPaymentSubmission,
                                     ),
                                     icon: const Icon(LucideIcons.x, size: 14),
                                     label: Text(loc.reject),
@@ -2064,6 +2107,8 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     required bool isLandlordApproving,
     required bool isAgencyApproving,
     required bool isLastDeclaredByTenant,
+    required bool isTenantSelfDeclared,
+    required bool isTenantReimburseDeclared,
     required bool hasPaymentSubmission,
   }) async {
     final loc = AppLocalizations.of(context)!;
@@ -2087,38 +2132,37 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
     if (isAgencyApproving) {
       // Agency approving an expense:
-      if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
-        targetPaymentStatus = 'pending_payment';
-        detailMsg = targetPaidBy == 'landlord'
-            ? '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})'
-            : '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
-      } else if (request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+      if (isTenantSelfDeclared) {
+        targetPaidBy = 'tenant';
         targetPaymentStatus = 'paid';
-        detailMsg = targetPaidBy == 'landlord'
-            ? '${loc.coveredByLandlord} (${loc.financialStatusPaid})'
-            : '${loc.coveredByTenant} (${loc.financialStatusPaid})';
-      } else if (targetPaidBy == 'landlord' || isPayerLandlord) {
-        // Landlord covers / tenant gets reimbursed or deducted from rent
-        targetPaidBy = 'landlord';
+        detailMsg = '${loc.coveredByTenant} (${loc.financialStatusPaid})';
+      } else if (isTenantReimburseDeclared || isPayerTenant || targetPaidBy == 'tenant') {
+        // Tenant declared fixture expense and requests rent reimbursement -> Ready for offset
+        targetPaidBy = 'tenant';
         targetPaymentStatus = 'pending_payment';
-        detailMsg = '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})';
-      } else {
-        // Tenant responsibility
-        if (isLastDeclaredByTenant) {
-          targetPaidBy = 'tenant';
-          targetPaymentStatus = 'paid';
-          detailMsg = '${loc.coveredByTenant} (${loc.financialStatusPaid})';
-        } else {
-          targetPaidBy = 'tenant';
+        detailMsg = '${loc.landlordReimbursement} (${loc.deductFromRentBadge})';
+      } else if (targetPaidBy == 'landlord' || isPayerLandlord) {
+        if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval ||
+            request.financialStatus == MaintenancePaymentStatus.pendingReview) {
+          // Landlord charged tenant for usage damage -> moves to pending_payment for tenant to pay / add to rent
+          targetPaidBy = 'landlord';
           targetPaymentStatus = 'pending_payment';
-          detailMsg = '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
+          detailMsg = '${loc.tenantToPay} (${loc.addToRentBadge})';
+        } else {
+          // Landlord covered own fixture -> paid
+          targetPaidBy = 'landlord';
+          targetPaymentStatus = 'paid';
+          detailMsg = '${loc.coveredByLandlord} (${loc.financialStatusPaid})';
         }
+      } else {
+        targetPaymentStatus = 'pending_payment';
+        detailMsg = loc.financialStatusPendingPayment;
       }
     } else if (isPayerTenant || targetPaidBy == 'tenant') {
       // Tenant declared fixture reimbursement claim -> Landlord approves -> moves to pending_payment for rent offset
       targetPaidBy = 'tenant';
       targetPaymentStatus = 'pending_payment';
-      detailMsg = '${loc.landlordReimbursement} (${loc.financialStatusPendingPayment})';
+      detailMsg = '${loc.landlordReimbursement} (${loc.deductFromRentBadge})';
     } else {
       // Landlord declared damage claim (paidBy == 'landlord')
       if (hasPaymentSubmission) {
@@ -2130,7 +2174,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         // Tenant accepts initial damage charge -> moves to pending_payment for tenant to pay
         targetPaidBy = 'landlord';
         targetPaymentStatus = 'pending_payment';
-        detailMsg = '${loc.tenantToPay} (${loc.financialStatusPendingPayment})';
+        detailMsg = '${loc.tenantToPay} (${loc.addToRentBadge})';
       }
     }
 
@@ -2189,6 +2233,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     required bool isTenantRejecting,
     required bool isLandlordRejecting,
     required bool isAgencyRejecting,
+    bool hasPaymentSubmission = false,
   }) async {
     final loc = AppLocalizations.of(context)!;
     String approverRoleName;
@@ -2200,6 +2245,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       approverRoleName = loc.payerTenant;
     }
 
+    final bool isAddToRent = request.paidBy == 'landlord';
+    final String statusBadgeName = isAddToRent ? loc.addToRentBadge : loc.deductFromRentBadge;
+    final bool hasCost = request.costAmount != null && request.costAmount! > 0;
+    final String targetStatus = hasCost ? 'pending_payment' : 'pending_review';
+
     final reasonController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
@@ -2209,7 +2259,10 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
           children: [
             const Icon(LucideIcons.xCircle, color: Color(0xFFDC2626), size: 20),
             const SizedBox(width: 8),
-            Text(loc.rejectExpenseTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
           ],
         ),
         content: Column(
@@ -2217,7 +2270,13 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              loc.rejectExpenseConfirm,
+              loc.localeName == 'tr'
+                  ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
+                  : (loc.localeName == 'ru'
+                      ? 'Подтверждение оплаты будет отклонено, статус вернется к "$statusBadgeName".'
+                      : (loc.localeName.startsWith('sr')
+                          ? 'Potvrda plaćanja biće odbijena, status se vraća na "$statusBadgeName".'
+                          : 'Payment submission will be rejected and status will revert to "$statusBadgeName".')),
               style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
@@ -2247,6 +2306,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     try {
       final reason = reasonController.text.trim();
       final user = ref.read(currentUserProvider);
+
       await ref.read(maintenanceRepositoryProvider).updateFinancialDetails(
         requestId: request.id,
         propertyId: widget.property.id,
@@ -2254,16 +2314,24 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         currency: request.currency,
         paidBy: request.paidBy,
         paymentDate: request.paymentDate,
-        paymentStatus: 'rejected',
-        invoicePdfUrl: request.invoicePdfUrl,
+        paymentStatus: targetStatus,
+        invoicePdfUrl: null,
         rejectionReason: reason.isNotEmpty ? reason : null,
         rejectedBy: user?.id,
       );
 
+      final rejectionMsg = (loc.localeName == 'tr')
+          ? '❌ $approverRoleName: Ödeme bildirimi / dekont reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf "$statusBadgeName" statüsüne geri alındı.'
+          : (loc.localeName == 'ru'
+              ? '❌ $approverRoleName: Подтверждение оплаты отклонено.${reason.isNotEmpty ? '\n📝 Причина: "$reason"' : ''}\n📌 Статус возвращен к "$statusBadgeName".'
+              : (loc.localeName.startsWith('sr')
+                  ? '❌ $approverRoleName: Potvrda plaćanja je odbijena.${reason.isNotEmpty ? '\n📝 Razlog: "$reason"' : ''}\n📌 Status je vraćen na "$statusBadgeName".'
+                  : '❌ $approverRoleName: Payment submission was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Status reverted to "$statusBadgeName".'));
+
       await ref.read(maintenanceRepositoryProvider).addMessage(
         request.id,
         widget.property.id,
-        '${loc.agencyExpenseRejectedMsg(approverRoleName)}${reason.isNotEmpty ? '\n${loc.reasonLabel(reason)}' : ''}',
+        rejectionMsg,
       );
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
@@ -2292,6 +2360,529 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         );
       }
     }
+  }
+
+  Future<void> _handleDeleteFinancialDetails(MaintenanceRequest request) async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(LucideIcons.alertTriangle, color: Color(0xFFDC2626), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              loc.localeName == 'tr' ? 'Masraf Bilgilerini Sil' : 'Delete Financial Details',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Text(
+          loc.localeName == 'tr'
+              ? 'Bu bakım talebine ait masraf bilgileri silinecek ve bu masrafla ilişkili yapılmış olan tüm mahsuplaşmalar (kiraya ekleme / kiradan düşme) geri alınacaktır. Devam etmek istiyor musunuz?'
+              : 'This will delete the financial details for this maintenance request and revert all rent offsets/settlements associated with it. Do you wish to continue?',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white),
+            child: Text(loc.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final roleName = loc.agencyManager;
+      await ref.read(maintenanceRepositoryProvider).deleteFinancialDetailsAndRollbackSettlements(
+        requestId: request.id,
+        propertyId: widget.property.id,
+        request: request,
+        actorRoleName: roleName,
+        localeName: loc.localeName,
+      );
+
+      ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(maintenanceMessagesProvider(request.id));
+      ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+      ref.invalidate(rentPaymentsProvider(widget.property.id));
+      ref.invalidate(propertiesStreamProvider);
+      ref.invalidate(propertiesFutureProvider);
+      ref.invalidate(agencyPropertiesProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.localeName == 'tr'
+                  ? 'Masraf bilgileri silindi ve mahsuplaşmalar geri alındı.'
+                  : 'Financial details deleted and offsets reverted.',
+            ),
+            backgroundColor: const Color(0xFF059669),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: const Color(0xFFDC2626)),
+        );
+      }
+    }
+  }
+
+  Widget? _buildFinancialResolutionBanner(
+    AppLocalizations loc,
+    MaintenanceRequest request,
+    bool isPayerAgency,
+    bool isPayerLandlord, {
+    bool isAgencyTenantDamage = false,
+  }) {
+    if (request.costAmount == null) return null;
+
+    if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
+      final Color themeColor = isPayerAgency
+          ? (isAgencyTenantDamage ? const Color(0xFFD97706) : const Color(0xFF7C3AED))
+          : const Color(0xFFB45309);
+      final Color textColor = isPayerAgency
+          ? (isAgencyTenantDamage ? const Color(0xFF92400E) : const Color(0xFF5B21B6))
+          : const Color(0xFF92400E);
+      final Color subColor = isPayerAgency
+          ? (isAgencyTenantDamage ? const Color(0xFF78350F) : const Color(0xFF6B21A8))
+          : const Color(0xFF78350F);
+      final IconData icon = isPayerAgency
+          ? (isAgencyTenantDamage ? LucideIcons.user : LucideIcons.building2)
+          : LucideIcons.repeat;
+
+      final String title;
+      final String desc;
+
+      if (isPayerAgency) {
+        if (isAgencyTenantDamage) {
+          title = loc.localeName == 'tr'
+              ? 'Kiracı Borcu (Acenteye Ödenecek / Kiraya Eklenecek)'
+              : (loc.localeName == 'ru'
+                  ? 'Долг арендатора (Оплата агентству / Добавление к аренде)'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Dug stanara (Plaćanje agenciji / Dodavanje na kiriju)'
+                      : 'Tenant Due (Pay Agency / Add to Rent)'));
+          desc = loc.localeName == 'tr'
+              ? 'Acente masrafı kiracı kullanımı/hasarı için ödedi. Tutar kiracıdan tahsil edilecek veya sonraki kiraya eklenecektir.'
+              : (loc.localeName == 'ru'
+                  ? 'Агентство оплатило ущерб/использование арендатора. Сумма будет взыскана с арендатора или добавлена к следующей аренде.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Agencija je platila štetu/upotrebu stanara. Iznos će se naplatiti od stanara ili dodati na sledeću kiriju.'
+                      : 'Agency paid for tenant usage/damage. Amount will be collected from tenant or added to next rent.'));
+        } else {
+          title = loc.localeName == 'tr'
+              ? 'Ev Sahibi Borcu (Acenteye İade / Aktarımdan Düşülecek)'
+              : (loc.localeName == 'ru'
+                  ? 'Долг собственника (Возврат агентству / Вычет из аренды)'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Dug vlasnika (Povraćaj agenciji / Odbitak od isplate)'
+                      : 'Landlord Due (Reimburse Agency / Deduct from Rent)'));
+          desc = loc.localeName == 'tr'
+              ? 'Acente masrafı mülk demirbaşı için ödedi. Tutar ev sahibinden tahsil edilecek veya sonraki kira aktarımından düşülecektir.'
+              : (loc.localeName == 'ru'
+                  ? 'Агентство оплатило расходы на оборудование. Сумма будет удержана с собственника или вычтена из следующей выплаты аренды.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Agencija je platila troškove opreme stana. Iznos će biti naplaćen od vlasnika ili odbijen od sledeće isplate kirije.'
+                      : 'Agency paid for property fixture. Amount will be collected from landlord or deducted from next rent payout.'));
+        }
+      } else if (isPayerLandlord) {
+        title = loc.landlordReimbursement;
+        desc = loc.landlordReimburseDesc;
+      } else {
+        title = loc.tenantToPay;
+        desc = loc.tenantToPayDesc;
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: themeColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: themeColor.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 13, color: themeColor),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textColor)),
+                  const SizedBox(height: 2),
+                  Text(desc, style: TextStyle(fontSize: 11, color: subColor, height: 1.35)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isPayerAgency && (request.financialStatus == MaintenancePaymentStatus.pendingReview || request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval)) {
+      final bool hasSubmission = request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty;
+      final String title;
+      final String desc;
+      final IconData icon;
+
+      if (hasSubmission) {
+        title = loc.localeName == 'tr'
+            ? 'Acente Onayı Bekleniyor (Ödeme Bildirimi Yapıldı)'
+            : (loc.localeName == 'ru'
+                ? 'Ожидает одобрения агентства (Уведомление об оплате)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Čeka odobrenje agencije (Obaveštenje o uplati)'
+                    : 'Awaiting Agency Approval (Payment Declared)'));
+        desc = loc.localeName == 'tr'
+            ? 'Ödeme bildirimi (dekont / nakit beyanı) yapıldı. Acentenin ödemeyi inceleyip tahsilatı onaylaması beklenmektedir.'
+            : (loc.localeName == 'ru'
+                ? 'Подано уведомление об оплате (квитанция/наличные). Ожидается подтверждение агентством.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Priložena je potvrda o uplati. Čeka se pregled i potvrda agencije.'
+                    : 'Payment declaration submitted. Awaiting agency review and confirmation.'));
+        icon = LucideIcons.clock;
+      } else if (isAgencyTenantDamage) {
+        title = loc.localeName == 'tr'
+            ? 'Kiracı Borcu (Acenteye Ödenecek / Kiraya Eklenecek)'
+            : (loc.localeName == 'ru'
+                ? 'Долг арендатора (Оплата агентству / Добавление к аренде)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Dug stanara (Plaćanje agenciji / Dodavanje na kiriju)'
+                    : 'Tenant Due (Pay Agency / Add to Rent)'));
+        desc = loc.localeName == 'tr'
+            ? 'Acente masrafı kiracı kullanımı/hasarı için ödedi. Tutar kiracıdan tahsil edilecek veya sonraki kiraya eklenecektir.'
+            : (loc.localeName == 'ru'
+                ? 'Агентство оплатило ущерб/использование арендатора. Сумма будет взыскана с арендатора или добавлена к следующей аренде.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Agencija je platila štetu/upotrebu stanara. Iznos će se naplatiti od stanara ili dodati na sledeću kiriju.'
+                    : 'Agency paid for tenant usage/damage. Amount will be collected from tenant or added to next rent.'));
+        icon = LucideIcons.user;
+      } else {
+        title = loc.localeName == 'tr'
+            ? 'Ev Sahibi Borcu (Acenteye İade / Aktarımdan Düşülecek)'
+            : (loc.localeName == 'ru'
+                ? 'Долг собственника (Возврат агентству / Вычет из аренды)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Dug vlasnika (Povraćaj agenciji / Odbitak od isplate)'
+                    : 'Landlord Due (Reimburse Agency / Deduct from Rent)'));
+        desc = loc.localeName == 'tr'
+            ? 'Acente masrafı mülk demirbaşı için ödedi. Tutar ev sahibinden tahsil edilecek veya sonraki kira aktarımından düşülecektir.'
+            : (loc.localeName == 'ru'
+                ? 'Агентство оплатило расходы на оборудование. Сумма будет удержана с собственника или вычтена из следующей выплаты аренды.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Agencija je platila troškove opreme stana. Iznos će biti naplaćen od vlasnika ili odbijen od sledeće isplate kirije.'
+                    : 'Agency paid for property fixture. Amount will be collected from landlord or deducted from next rent payout.'));
+        icon = LucideIcons.building2;
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD97706).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD97706).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 13, color: const Color(0xFFD97706)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF92400E))),
+                  const SizedBox(height: 2),
+                  Text(desc, style: const TextStyle(fontSize: 11, color: Color(0xFF78350F), height: 1.35)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (request.financialStatus == MaintenancePaymentStatus.paid) {
+      final String title;
+      final String desc;
+
+      if (isPayerAgency) {
+        title = loc.localeName == 'tr'
+            ? 'Acente Tarafından Karşılandı (Tahsil Edildi / Kapatıldı)'
+            : (loc.localeName == 'ru'
+                ? 'Оплачено агентством (Взыскано / Закрыто)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Plaćeno od strane agencije (Naplaćeno / Zatvoreno)'
+                    : 'Covered by Agency (Collected / Closed)'));
+        desc = loc.localeName == 'tr'
+            ? 'Acente tarafından karşılanan bu masrafın tahsilatı tamamlandı ve süreç kapatıldı.'
+            : (loc.localeName == 'ru'
+                ? 'Расходы, оплаченные агентством, были взысканы и процесс закрыт.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Troškovi koje je platila agencija su naplaćeni i proces je zatvoren.'
+                    : 'The expense covered by the agency has been collected and the process is closed.'));
+      } else if (isPayerLandlord) {
+        title = loc.coveredByLandlord;
+        desc = loc.coveredByLandlordClosedDesc;
+      } else {
+        title = loc.coveredByTenant;
+        desc = loc.coveredByTenantClosedDesc;
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF059669).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF059669).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(LucideIcons.checkCircle2, size: 13, color: Color(0xFF059669)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF065F46))),
+                  const SizedBox(height: 2),
+                  Text(desc, style: const TextStyle(fontSize: 11, color: Color(0xFF047857), height: 1.35)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (request.financialStatus == MaintenancePaymentStatus.rejected) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE11D48).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE11D48).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(LucideIcons.xCircle, size: 13, color: Color(0xFFE11D48)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.financialStatusRejected, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF9F1239))),
+                  if (request.rejectionReason != null && request.rejectionReason!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(request.rejectionReason!, style: const TextStyle(fontSize: 11, color: Color(0xFFBE123C), height: 1.35)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return null;
+  }
+
+  String _getPayerDescription(
+    MaintenanceRequest request,
+    bool isPayerTenant,
+    bool isPayerLandlord,
+    bool isTenantSelfDeclared,
+    bool isTenantReimburseDeclared,
+    bool isLandlordSelfDeclared,
+    bool isLandlordTenantDueDeclared,
+    AppLocalizations loc,
+  ) {
+    if (isPayerTenant) {
+      if (isTenantSelfDeclared || request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+        if (request.financialStatus == MaintenancePaymentStatus.paid) {
+          return loc.localeName == 'tr'
+              ? 'Kiracı masrafı kendi karşıladı (Mahsuplaşma talep edilmedi, kapatıldı).'
+              : (loc.localeName == 'ru'
+                  ? 'Арендатор оплатил за свой счет (Возмещение не требовалось, закрыто).'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Stanar je platio trošak za sopstvenu upotrebu (Zatvoreno).'
+                      : 'Tenant paid for own usage (No reimbursement requested, closed).'));
+        }
+        return loc.localeName == 'tr'
+            ? 'Kiracı masrafı kendi karşıladı — ev sahibinden mahsup talep etmiyor. Acente fatura kontrolü ve onayını bekliyor.'
+            : (loc.localeName == 'ru'
+                ? 'Арендатор оплатил за свой счет — возмещение не требуется. Ожидает проверки и одобрения счета агентством.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Stanar je platio trošak — ne traži refundaciju. Čeka pregled računa i odobrenje agencije.'
+                    : 'Tenant paid for own usage — no rent offset requested. Awaiting agency invoice review & approval.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingPayment || isTenantReimburseDeclared) {
+        return loc.localeName == 'tr'
+            ? 'Kiracı demirbaş masrafını ödedi — sonraki kira ödemesinden mahsup edilecek.'
+            : (loc.localeName == 'ru'
+                ? 'Арендатор оплатил ремонт — будет зачтено из следующей аренды.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Stanar je platio popravku — biće odbijeno od sledeće kirije.'
+                    : 'Tenant paid for repairs — will be deducted from upcoming rent.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
+        return loc.localeName == 'tr'
+            ? 'Kiracı masraf bildirdi — ev sahibi onayının ardından kiradan mahsup edilecek.'
+            : (loc.localeName == 'ru'
+                ? 'Заявлено арендатором — ожидает одобрения владельца для зачета.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Prijavio zakupac — čeka potvrdu vlasnika za prebijanje.'
+                    : 'Reported by tenant — awaiting landlord approval for offset.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.paid) {
+        return loc.localeName == 'tr'
+            ? 'Masraf kiracı tarafından karşılandı ve kapatıldı.'
+            : (loc.localeName == 'ru'
+                ? 'Расходы покрыты и закрыты арендатором.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Troškove pokrio i zatvorio zakupac.'
+                    : 'Cost covered and settled by tenant.'));
+      }
+      return loc.localeName == 'tr'
+          ? 'Masraf kiracı sorumluluğundadır.'
+          : (loc.localeName == 'ru'
+              ? 'Расходы возлагаются на арендатора.'
+              : (loc.localeName.startsWith('sr')
+                  ? 'Troškovi su na teret zakupca.'
+                  : 'Cost is the tenant\'s responsibility.'));
+    } else if (isPayerLandlord) {
+      if (isLandlordSelfDeclared || request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+        if (request.financialStatus == MaintenancePaymentStatus.paid) {
+          return loc.localeName == 'tr'
+              ? 'Masraf ev sahibi tarafından karşılandı ve kapatıldı.'
+              : (loc.localeName == 'ru'
+                  ? 'Расходы покрыты и закрыты владельцем.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Troškove pokrio i zatvorio vlasnik.'
+                      : 'Cost covered and settled by landlord.'));
+        }
+        return loc.localeName == 'tr'
+            ? 'Ev sahibi demirbaş masrafını ödedi — Acente fatura kontrolü ve onayını bekliyor.'
+            : (loc.localeName == 'ru'
+                ? 'Владелец оплатил расходы на имущество — ожидает проверки и одобрения счета агентством.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Vlasnik je platio trošak — čeka pregled računa i odobrenje agencije.'
+                    : 'Landlord paid for fixture — Awaiting agency invoice review & approval.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval || isLandlordTenantDueDeclared) {
+        return loc.localeName == 'tr'
+            ? 'Ev sahibi masraf bildirdi — kiracıya / kiraya yansıtılmak üzere onay bekliyor.'
+            : (loc.localeName == 'ru'
+                ? 'Владелец заявил расход — ожидает одобрения для добавления к аренде.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Vlasnik je prijavio trošak — čeka potvrdu za dodavanje na zakup.'
+                    : 'Landlord reported expense — awaiting approval to add to tenant\'s rent/charges.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
+        return loc.localeName == 'tr'
+            ? 'Masraf onaylandı — sonraki kiraya eklenecek veya kiracıdan tahsil edilecek.'
+            : (loc.localeName == 'ru'
+                ? 'Расход одобрен — будет добавлен к следующей аренде или взыскан с арендатора.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak odobren — biće dodat na sledeći zakup ili naplaćen od stanara.'
+                    : 'Expense approved — will be added to upcoming rent or collected from tenant.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingReview) {
+        return loc.localeName == 'tr'
+            ? 'Ev sahibi masraf bildirdi — onay ve inceleme bekliyor.'
+            : (loc.localeName == 'ru'
+                ? 'Владелец заявил расход — ожидает проверки и одобрения.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Vlasnik je prijavio trošak — čeka pregled i potvrdu.'
+                    : 'Landlord reported expense — awaiting review & approval.'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.paid) {
+        return loc.localeName == 'tr'
+            ? 'Masraf ev sahibi tarafından karşılandı ve ödendi.'
+            : (loc.localeName == 'ru'
+                ? 'Расходы покрыты и оплачены владельцем.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Troškove pokrio i platio vlasnik.'
+                    : 'Cost covered and settled by landlord.'));
+      }
+      return loc.localeName == 'tr'
+          ? 'Masraf ev sahibi tarafından karşılanacaktır.'
+          : (loc.localeName == 'ru'
+              ? 'Расходы покрываются владельцем.'
+              : (loc.localeName.startsWith('sr')
+                  ? 'Troškove snosi vlasnik.'
+                  : 'Cost will be covered by landlord.'));
+    } else if (request.paidBy == 'agency') {
+      if (request.financialStatus == MaintenancePaymentStatus.paid) {
+        return loc.localeName == 'tr'
+            ? 'Masraf acente tarafından ödendi ve tahsilatı tamamlandı (Kapatıldı).'
+            : (loc.localeName == 'ru'
+                ? 'Расход оплачен агентством и расчет завершен (Закрыто).'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak je platila agencija i naplata je završena (Zatvoreno).'
+                    : 'Expense was paid by agency and settled (Closed).'));
+      }
+      if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
+        return loc.localeName == 'tr'
+            ? 'Masraf acente tarafından karşılandı — mülk demirbaşı kapsamında ev sahibine yansıtıldı (Tahsilat / Kira aktarımından düşme bekliyor).'
+            : (loc.localeName == 'ru'
+                ? 'Расход оплачен агентством — начислен собственнику за оборудование объекта (Ожидает оплаты/зачета).'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak je platila agencija — tereti se vlasniku za opremu stana (Čeka naplatu/prebijanje).'
+                    : 'Paid by agency for property fixture — charged to landlord (Pending collection / rent deduction).'));
+      }
+      return loc.localeName == 'tr'
+          ? 'Masraf acente tarafından karşılandı — kiracı kullanım/hasar kapsamında kiracıya yansıtıldı (Tahsilat / Kiraya ekleme bekliyor).'
+          : (loc.localeName == 'ru'
+              ? 'Расход оплачен агентством — начислен арендатору за использование/ущерб (Ожидает оплаты/добавления к аренде).'
+              : (loc.localeName.startsWith('sr')
+                  ? 'Trošak je platila agencija — tereti se stanaru za upotrebu/štetu (Čeka naplatu/dodavanje na kiriju).'
+                  : 'Paid by agency — charged to tenant for usage/damage (Pending collection / rent addition).'));
+    }
+    return loc.unassigned;
   }
 }
 
@@ -2373,9 +2964,46 @@ class _IssueHeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Category & Priority
+          // Row 1: Category & Priority & ID
           Row(
             children: [
+              Tooltip(
+                message: '${request.displayId} (Kopyalamak için tıkla)',
+                child: InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: request.displayId));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('ID kopyalandı: ${request.displayId}'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: Text(
+                      request.displayId,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -2880,17 +3508,25 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
     if (widget.isLandlordDeclaration) {
       _declarationIntent = null;
-      _paidBy = null;
+      _paidBy = 'landlord';
       _paymentStatus = 'pending_review';
     } else if (widget.isTenantDeclaration) {
       _declarationIntent = null;
-      _paidBy = null;
+      _paidBy = 'tenant';
       _paymentStatus = 'pending_review';
     } else {
-      _declarationIntent = null;
       _paidBy = widget.request.paidBy;
-      _paymentStatus = widget.request.paymentStatus == 'pending'
-          ? 'pending_review'
+      if (_paidBy == 'tenant') {
+        _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'reimburse';
+      } else if (_paidBy == 'landlord') {
+        _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'tenant_due';
+      } else if (_paidBy == 'agency') {
+        _declarationIntent = (widget.request.paymentStatus == 'pending_review') ? 'damage_tenant' : 'fixture_landlord';
+      } else {
+        _declarationIntent = null;
+      }
+      _paymentStatus = (widget.request.paymentStatus == 'pending' || widget.request.paymentStatus == 'rejected')
+          ? 'pending_payment'
           : widget.request.paymentStatus;
     }
     _paymentDate = widget.request.paymentDate ?? (_isDeclaration ? DateTime.now() : null);
@@ -2909,7 +3545,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
     _clearValidationError();
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic'],
       allowMultiple: false,
       withData: true,
     );
@@ -2951,55 +3587,58 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
       costAmount = double.tryParse(costText);
     }
 
-    if (_isDeclaration) {
-      if (costAmount == null || costAmount <= 0) {
-        setState(() => _validationError = loc.pleaseEnterValidCost);
-        return;
-      }
-      if (_declarationIntent == null) {
-        setState(() => _validationError = loc.pleaseSelectDeclarationIntent);
-        return;
-      }
-      if (_selectedInvoiceFile == null && (_existingInvoiceUrl == null || _existingInvoiceUrl!.isEmpty)) {
-        setState(() => _validationError = loc.pleaseUploadReceipt);
-        return;
-      }
-    } else {
-      if (costText.isNotEmpty && (costAmount == null || costAmount < 0)) {
-        setState(() => _validationError = loc.errorWithDetails('Invalid cost amount'));
-        return;
-      }
+    if (costAmount == null || costAmount <= 0) {
+      setState(() => _validationError = loc.pleaseEnterValidCost);
+      return;
     }
 
-    final String? finalPaidBy = widget.isLandlordDeclaration
-        ? 'landlord'
-        : (widget.isTenantDeclaration
-            ? 'tenant'
-            : _paidBy);
+    if (_paidBy == null) {
+      setState(() => _validationError = loc.pleaseSelectCostPayer);
+      return;
+    }
 
+    if (_declarationIntent == null) {
+      setState(() => _validationError = loc.pleaseSelectDeclarationIntent);
+      return;
+    }
+
+    if (_isDeclaration && _selectedInvoiceFile == null && (_existingInvoiceUrl == null || _existingInvoiceUrl!.isEmpty)) {
+      setState(() => _validationError = loc.pleaseUploadReceipt);
+      return;
+    }
+
+    final String? finalPaidBy = _paidBy;
     final bool isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final user = ref.read(currentUserProvider);
+    final isAgency = user?.id != null && widget.property.agencyId == user!.id;
+
     final String finalPaymentStatus;
-    if (_isDeclaration) {
-      if (isAgencyManaged) {
-        if (widget.isTenantDeclaration) {
-          finalPaymentStatus = (_declarationIntent == 'reimburse')
-              ? 'pending_opposite_approval'
-              : 'pending_agency_approval';
-        } else {
-          finalPaymentStatus = (_declarationIntent == 'tenant_due')
-              ? 'pending_opposite_approval'
-              : 'pending_agency_approval';
-        }
+    if (_declarationIntent == 'self') {
+      finalPaymentStatus = 'paid';
+    } else if (_paidBy == 'agency') {
+      if (_declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due') {
+        finalPaymentStatus = 'pending_payment';
+      } else {
+        finalPaymentStatus = 'pending_review';
+      }
+    } else if (_paidBy == 'tenant' && _declarationIntent == 'reimburse') {
+      if (isAgency) {
+        finalPaymentStatus = 'pending_payment';
+      } else if (isAgencyManaged) {
+        finalPaymentStatus = 'pending_agency_approval';
+      } else {
+        finalPaymentStatus = 'pending_review';
+      }
+    } else if (_paidBy == 'landlord' && _declarationIntent == 'tenant_due') {
+      if (isAgency) {
+        finalPaymentStatus = 'pending_payment';
+      } else if (isAgencyManaged) {
+        finalPaymentStatus = 'pending_agency_approval';
       } else {
         finalPaymentStatus = 'pending_review';
       }
     } else {
       finalPaymentStatus = _paymentStatus;
-    }
-
-    if (!_isDeclaration && costAmount != null && costAmount > 0 && finalPaidBy == null) {
-      setState(() => _validationError = loc.pleaseSelectCostPayer);
-      return;
     }
 
     setState(() {
@@ -3027,21 +3666,25 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
         requestId: widget.request.id,
         propertyId: widget.property.id,
         costAmount: costAmount,
-        currency: costAmount != null ? _selectedCurrency : null,
+        currency: _selectedCurrency,
         paidBy: finalPaidBy,
         paymentDate: _paymentDate,
         paymentStatus: finalPaymentStatus,
         invoicePdfUrl: invoicePdfUrl,
       );
 
-      // If user declared payment, log an activity message into discussion thread
-      if (_isDeclaration && costAmount != null) {
+      // If user declared payment or updated financials, log an activity message
+      if (costAmount > 0) {
         final declarantName = widget.isLandlordDeclaration
             ? loc.payerLandlord
-            : loc.payerTenant;
-        final String intentBadge = widget.isLandlordDeclaration
-            ? (_declarationIntent == 'tenant_due' ? loc.intentLandlordTenantDueBadge : loc.intentLandlordSelfBadge)
-            : (_declarationIntent == 'reimburse' ? loc.intentTenantReimburseBadge : loc.intentTenantSelfBadge);
+            : (widget.isTenantDeclaration ? loc.payerTenant : (isAgency ? loc.agencyManager : loc.roleYou));
+        final String intentBadge = _paidBy == 'agency'
+            ? (_declarationIntent == 'damage_tenant' || _declarationIntent == 'tenant_due'
+                ? (loc.localeName == 'tr' ? 'Kiracı Borçlu (Kullanım/Hasar)' : 'Tenant Due')
+                : (loc.localeName == 'tr' ? 'Ev Sahibi Borçlu (Demirbaş)' : 'Landlord Due'))
+            : (_paidBy == 'landlord'
+                ? (_declarationIntent == 'tenant_due' ? loc.intentLandlordTenantDueBadge : loc.intentLandlordSelfBadge)
+                : (_declarationIntent == 'reimburse' ? loc.intentTenantReimburseBadge : loc.intentTenantSelfBadge));
         final note = _noteController.text.trim();
         final noteSection = note.isNotEmpty
             ? '\n\n📝 ${loc.noteLabel}: "$note"'
@@ -3061,14 +3704,30 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
         } catch (_) {}
       }
 
-      if (costAmount != null && costAmount > 0) {
-        final isAgencyManaged = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
-        final chargeType = finalPaidBy == 'tenant'
-            ? 'reimbursement'
-            : 'direct_charge';
-        final approverRole = isAgencyManaged ? 'agency' : 'counterparty';
-        final debtorId = finalPaidBy == 'landlord' ? widget.property.tenantId : widget.property.landlordId;
-        final creditorId = finalPaidBy == 'landlord' ? widget.property.landlordId : widget.property.tenantId;
+      if (costAmount > 0) {
+        final String chargeType;
+        final String approverRole = isAgencyManaged ? 'agency' : 'counterparty';
+        final String? debtorId;
+        final String? creditorId;
+
+        if (finalPaidBy == 'agency') {
+          chargeType = 'agency_advance';
+          if (_declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due') {
+            debtorId = widget.property.landlordId;
+            creditorId = widget.property.agencyId ?? user?.id;
+          } else {
+            debtorId = widget.property.tenantId;
+            creditorId = widget.property.agencyId ?? user?.id;
+          }
+        } else if (finalPaidBy == 'tenant') {
+          chargeType = 'reimbursement';
+          debtorId = widget.property.landlordId;
+          creditorId = widget.property.tenantId;
+        } else {
+          chargeType = 'direct_charge';
+          debtorId = widget.property.tenantId;
+          creditorId = widget.property.landlordId;
+        }
 
         try {
           await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
@@ -3076,7 +3735,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               id: '',
               maintenanceRequestId: widget.request.id,
               propertyId: widget.property.id,
-              createdBy: ref.read(currentUserProvider)?.id,
+              createdBy: user?.id,
               title: widget.request.title,
               chargeType: chargeType,
               approverRole: approverRole,
@@ -3095,7 +3754,6 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
             ),
           );
         } catch (e) {
-          // Log non-fatal error during dual-write transition
           debugPrint('Error inserting maintenance charge: $e');
         }
       }
@@ -3140,6 +3798,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final loc = AppLocalizations.of(context)!;
+    final isPayerLocked = widget.isTenantDeclaration || widget.isLandlordDeclaration;
 
     return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
@@ -3186,19 +3845,17 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                                 : loc.editFinancialDetails),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                       ),
-                      if (_isDeclaration) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.isLandlordDeclaration
-                              ? (loc.localeName == 'tr'
-                                  ? 'Masraf tutarını ve sorumluluk detayını belirleyin'
-                                  : (loc.localeName == 'ru'
-                                      ? 'Укажите сумму расхода и распределение ответственности'
-                                      : (loc.localeName.startsWith('sr') ? 'Navedite iznos i odgovornost za trošak' : 'Specify the expense amount and responsibility')))
-                              : loc.enterAmountAttachReceipt,
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                        ),
-                      ],
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.isLandlordDeclaration
+                            ? (loc.localeName == 'tr'
+                                ? 'Masraf tutarını ve sorumluluk detayını belirleyin'
+                                : (loc.localeName == 'ru'
+                                    ? 'Укажите сумму расхода и распределение ответственности'
+                                    : (loc.localeName.startsWith('sr') ? 'Navedite iznos i odgovornost za trošak' : 'Specify the expense amount and responsibility')))
+                            : loc.enterAmountAttachReceipt,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                      ),
                     ],
                   ),
                 ),
@@ -3209,371 +3866,226 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-            // Cost & Currency
-            Text(
-              _isDeclaration
-                  ? '${loc.amountPaid} *'
-                  : loc.costAmount,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextFormField(
-                    controller: _costController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      hintText: '0.00',
-                      prefixIcon: const Icon(LucideIcons.circleDollarSign, size: 16),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedCurrency,
-                    items: const [
-                      DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
-                      DropdownMenuItem(value: 'RSD', child: Text('RSD')),
+            // 1. Tutar & Para Birimi ve Ödeme Tarihi
+            LayoutBuilder(
+              builder: (ctx, constraints) {
+                final isWide = constraints.maxWidth > 340;
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${loc.amountPaid} *',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 5),
+                            _buildCostInput(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.paymentDate,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                            ),
+                            const SizedBox(height: 5),
+                            _buildDateSelector(loc),
+                          ],
+                        ),
+                      ),
                     ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedCurrency = val);
-                    },
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                ),
-              ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${loc.amountPaid} *',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                      ),
+                      const SizedBox(height: 5),
+                      _buildCostInput(),
+                      const SizedBox(height: 10),
+                      Text(
+                        loc.paymentDate,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
+                      ),
+                      const SizedBox(height: 5),
+                      _buildDateSelector(loc),
+                    ],
+                  );
+                }
+              },
             ),
             const SizedBox(height: 16),
 
-            // Declaration Intent Cards (Only for I Paid flow)
-            if (_isDeclaration) ...[
-              Text(
-                '${loc.settlementIntentTitle} *',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
+            // 2. Masrafı Kim Ödedi? (Who Paid the Cost?)
+            Text(
+              '${loc.whoPaidTheCost} *',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+            ),
+            const SizedBox(height: 8),
+            _buildPayerSelector(loc, _paidBy, isPayerLocked),
+            const SizedBox(height: 16),
+
+            // 3. Masrafın Niteliği & Amacı (Payment Purpose based on Payer)
+            Text(
+              '${loc.settlementIntentTitle} *',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF334155)),
+            ),
+            const SizedBox(height: 8),
+
+            if (_paidBy == null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.helpCircle, size: 15, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loc.localeName == 'tr'
+                            ? 'Lütfen önce masrafı kimin ödediğini seçiniz.'
+                            : (loc.localeName == 'ru'
+                                ? 'Сначала выберите, кто оплатил расход.'
+                                : (loc.localeName.startsWith('sr')
+                                    ? 'Prvo izaberite ko je platio trošak.'
+                                    : 'Please select who paid the cost first.')),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else if (_paidBy == 'agency') ...[
+              // Agency Option 1 (Property Fixture / To be Covered by Landlord)
+              _buildPurposeOptionCard(
+                title: loc.localeName == 'tr'
+                    ? 'Mülk Demirbaşı (Ev Sahibi Karşılayacak)'
+                    : (loc.localeName == 'ru'
+                        ? 'Оборудование объекта (Возмещает собственник)'
+                        : (loc.localeName.startsWith('sr')
+                            ? 'Oprema stana (Pokriva vlasnik)'
+                            : 'Property Fixture (To be Covered by Landlord)')),
+                subtitle: loc.localeName == 'tr'
+                    ? 'Acente ödedi. Tutar ev sahibine borç olarak yansıtılır (Ev sahibinden tahsil edilir / kira aktarımından düşülür).'
+                    : (loc.localeName == 'ru'
+                        ? 'Агентство оплатило. Сумма начисляется собственнику как долг (удерживается с него / из аренды).'
+                        : (loc.localeName.startsWith('sr')
+                            ? 'Agencija je platila. Iznos se tereti vlasniku (naplaćuje od njega / prebija od kirije).'
+                            : 'Agency paid. The amount will be charged to the landlord (collected / deducted from rent payout).')),
+                badgeLabel: loc.localeName == 'tr'
+                    ? 'Ev Sahibi Borçlu'
+                    : (loc.localeName == 'ru'
+                        ? 'Долг собственника'
+                        : (loc.localeName.startsWith('sr') ? 'Dug vlasnika' : 'Landlord Due')),
+                badgeColor: const Color(0xFF2563EB),
+                icon: LucideIcons.building2,
+                isSelected: _declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due',
+                onTap: () => setState(() => _declarationIntent = 'fixture_landlord'),
               ),
               const SizedBox(height: 8),
-              if (widget.isTenantDeclaration) ...[
-                _buildIntentCard(
-                  title: loc.intentTenantSelfTitle,
-                  subtitle: loc.intentTenantSelfSub,
-                  badge: loc.intentTenantSelfBadge,
-                  icon: LucideIcons.user,
-                  isSelected: _declarationIntent == 'self',
-                  color: const Color(0xFF059669),
-                  onTap: () => setState(() => _declarationIntent = 'self'),
-                ),
-                const SizedBox(height: 8),
-                _buildIntentCard(
-                  title: loc.intentTenantReimburseTitle,
-                  subtitle: loc.intentTenantReimburseSub,
-                  badge: loc.intentTenantReimburseBadge,
-                  icon: LucideIcons.home,
-                  isSelected: _declarationIntent == 'reimburse',
-                  color: const Color(0xFF2563EB),
-                  onTap: () => setState(() => _declarationIntent = 'reimburse'),
-                ),
-              ] else if (widget.isLandlordDeclaration) ...[
-                _buildIntentCard(
-                  title: loc.intentLandlordSelfTitle,
-                  subtitle: loc.intentLandlordSelfSub,
-                  badge: loc.intentLandlordSelfBadge,
-                  icon: LucideIcons.home,
-                  isSelected: _declarationIntent == 'self',
-                  color: const Color(0xFF059669),
-                  onTap: () => setState(() => _declarationIntent = 'self'),
-                ),
-                const SizedBox(height: 8),
-                _buildIntentCard(
-                  title: loc.intentLandlordTenantDueTitle,
-                  subtitle: loc.intentLandlordTenantDueSub,
-                  badge: loc.intentLandlordTenantDueBadge,
-                  icon: LucideIcons.user,
-                  isSelected: _declarationIntent == 'tenant_due',
-                  color: const Color(0xFFB45309),
-                  onTap: () => setState(() => _declarationIntent = 'tenant_due'),
-                ),
-              ],
-              const SizedBox(height: 16),
+              // Agency Option 2 (Tenant Usage/Damage / Charge to Tenant)
+              _buildPurposeOptionCard(
+                title: loc.localeName == 'tr'
+                    ? 'Kiracı Kullanımı / Hasar (Kiracıya Yansıt)'
+                    : (loc.localeName == 'ru'
+                        ? 'Использование/ущерб арендатора (Начислить арендатору)'
+                        : (loc.localeName.startsWith('sr')
+                            ? 'Upotreba/šteta stanara (Naplati stanaru)'
+                            : 'Tenant Usage / Damage (Charge to Tenant)')),
+                subtitle: loc.localeName == 'tr'
+                    ? 'Acente ödedi. Tutar kiracıya borç olarak yansıtılır (Kiracıdan tahsil edilir / kiraya eklenir).'
+                    : (loc.localeName == 'ru'
+                        ? 'Агентство оплатило. Сумма начисляется арендатору как долг (взимается с него / добавляется к аренде).'
+                        : (loc.localeName.startsWith('sr')
+                            ? 'Agencija je platila. Iznos se tereti stanaru (naplaćuje od njega / dodaje na kiriju).'
+                            : 'Agency paid. The amount will be charged to the tenant (collected / added to rent).')),
+                badgeLabel: loc.localeName == 'tr'
+                    ? 'Kiracı Borçlu'
+                    : (loc.localeName == 'ru'
+                        ? 'Долг арендатора'
+                        : (loc.localeName.startsWith('sr') ? 'Dug stanara' : 'Tenant Due')),
+                badgeColor: const Color(0xFFD97706),
+                icon: LucideIcons.user,
+                isSelected: _declarationIntent == 'damage_tenant' || _declarationIntent == 'tenant_due',
+                onTap: () => setState(() => _declarationIntent = 'damage_tenant'),
+              ),
+            ] else if (_paidBy == 'tenant') ...[
+              _buildPurposeOptionCard(
+                title: loc.intentTenantSelfTitle,
+                subtitle: loc.intentTenantSelfSub,
+                badgeLabel: loc.intentTenantSelfBadge,
+                badgeColor: const Color(0xFF059669),
+                icon: LucideIcons.user,
+                isSelected: _declarationIntent == 'self',
+                onTap: () => setState(() => _declarationIntent = 'self'),
+              ),
+              const SizedBox(height: 8),
+              _buildPurposeOptionCard(
+                title: loc.intentTenantReimburseTitle,
+                subtitle: loc.intentTenantReimburseSub,
+                badgeLabel: loc.intentTenantReimburseBadge,
+                badgeColor: const Color(0xFF2563EB),
+                icon: LucideIcons.home,
+                isSelected: _declarationIntent == 'reimburse',
+                onTap: () => setState(() => _declarationIntent = 'reimburse'),
+              ),
+            ] else ...[
+              _buildPurposeOptionCard(
+                title: loc.intentLandlordSelfTitle,
+                subtitle: loc.intentLandlordSelfSub,
+                badgeLabel: loc.intentLandlordSelfBadge,
+                badgeColor: const Color(0xFF059669),
+                icon: LucideIcons.home,
+                isSelected: _declarationIntent == 'self',
+                onTap: () => setState(() => _declarationIntent = 'self'),
+              ),
+              const SizedBox(height: 8),
+              _buildPurposeOptionCard(
+                title: loc.intentLandlordTenantDueTitle,
+                subtitle: loc.intentLandlordTenantDueSub,
+                badgeLabel: loc.intentLandlordTenantDueBadge,
+                badgeColor: const Color(0xFFD97706),
+                icon: LucideIcons.user,
+                isSelected: _declarationIntent == 'tenant_due',
+                onTap: () => setState(() => _declarationIntent = 'tenant_due'),
+              ),
             ],
-
-            // Payer (Only visible when not declaring)
-            if (!_isDeclaration) ...[
-              Text(
-                '${loc.whoPaidTheCost} *',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPayerChip(
-                      label: loc.payerTenant,
-                      icon: LucideIcons.user,
-                      isSelected: _paidBy == 'tenant',
-                      activeColor: const Color(0xFF059669),
-                      onTap: () => setState(() => _paidBy = 'tenant'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildPayerChip(
-                      label: loc.payerLandlord,
-                      icon: LucideIcons.home,
-                      isSelected: _paidBy == 'landlord',
-                      activeColor: const Color(0xFF2563EB),
-                      onTap: () => setState(() => _paidBy = 'landlord'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Payment Status (Only when not declaring)
-              Text(
-                loc.paymentInvoiceStatus,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
-              ),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                initialValue: [
-                  'pending_agency_approval',
-                  'pending_opposite_approval',
-                  'pending_review',
-                  'pending_payment',
-                  'paid',
-                  'rejected',
-                ].contains(_paymentStatus)
-                    ? _paymentStatus
-                    : 'pending_review',
-                isExpanded: true,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'pending_agency_approval',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.clock, size: 15, color: Color(0xFFD97706)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusPendingAgencyApproval,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFFD97706)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'pending_opposite_approval',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.scale, size: 15, color: Color(0xFF2563EB)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusPendingOppositeApproval,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'pending_review',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.fileSearch, size: 15, color: Color(0xFF1D4ED8)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusPendingReview,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFF1D4ED8)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'pending_payment',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.clock, size: 15, color: Color(0xFFB45309)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusPendingPayment,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFFB45309)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'paid',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.checkCircle2, size: 15, color: Color(0xFF059669)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusPaid,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFF059669)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'rejected',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.xCircle, size: 15, color: Color(0xFFDC2626)),
-                        const SizedBox(width: 8),
-                        Text(
-                          loc.financialStatusRejected,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFFDC2626)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _paymentStatus = val);
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // Payment Date
-            Text(
-              _isDeclaration
-                  ? loc.paymentDate
-                  : loc.paymentDueDate,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              onTap: () => _selectPaymentDate(context),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                height: 44,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFCBD5E1)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(LucideIcons.calendar, size: 15, color: Color(0xFF64748B)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _paymentDate != null ? DateFormat('dd MMMM yyyy').format(_paymentDate!) : loc.noDate,
-                        style: const TextStyle(fontSize: 12.5),
-                      ),
-                    ),
-                    if (_paymentDate != null)
-                      GestureDetector(
-                        onTap: () => setState(() => _paymentDate = null),
-                        child: const Icon(LucideIcons.x, size: 14, color: Color(0xFF94A3B8)),
-                      ),
-                  ],
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
 
-            // Invoice / Receipt Upload
+            // 4. Upload Invoice / Receipt
             Text(
-              _isDeclaration
-                  ? '${loc.receiptInvoiceDocument} *'
-                  : loc.uploadReceiptInvoice,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
+              _isDeclaration ? '${loc.invoicePdfLabel} *' : loc.invoicePdfLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
             ),
             const SizedBox(height: 6),
-            if (_selectedInvoiceFile != null)
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5E6AD2).withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF5E6AD2).withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(LucideIcons.fileText, size: 18, color: Color(0xFFDC2626)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _selectedInvoiceFile!.name,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: _removeSelectedInvoice,
-                      icon: const Icon(LucideIcons.trash2, size: 16, color: Color(0xFFDC2626)),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ],
-                ),
-              )
-            else if (_existingInvoiceUrl != null && _existingInvoiceUrl!.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF059669).withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(LucideIcons.fileCheck2, size: 18, color: Color(0xFF059669)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        loc.existingDocument,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    TextButton(onPressed: _pickInvoicePdf, child: Text(loc.change)),
-                    IconButton(
-                      onPressed: _removeExistingInvoice,
-                      icon: const Icon(LucideIcons.trash2, size: 16, color: Color(0xFFDC2626)),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ],
-                ),
-              )
-            else
-              OutlinedButton.icon(
-                onPressed: _pickInvoicePdf,
-                icon: const Icon(LucideIcons.uploadCloud, size: 15),
-                label: Text(
-                  _isDeclaration
-                      ? loc.uploadReceiptInvoice
-                      : loc.uploadInvoiceDoc,
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-
+            _buildInvoiceUploader(loc),
             const SizedBox(height: 16),
 
-            // Description / Note field
+            // 5. Description / Note field
             Text(
               loc.descriptionOrNoteOptional,
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B)),
@@ -3628,10 +4140,10 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isDeclaration
                     ? (widget.isLandlordDeclaration ? const Color(0xFF2563EB) : const Color(0xFF059669))
-                    : const Color(0xFF5E6AD2),
+                    : const Color(0xFF0F766E),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
               child: _isSaving
@@ -3640,11 +4152,240 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
                       _isDeclaration
                           ? loc.submitExpenseReview
                           : loc.saveChanges,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                     ),
             ),
+            if (widget.request.costAmount != null && widget.request.costAmount! > 0) ...[
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: _isSaving
+                    ? null
+                    : () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Row(
+                              children: [
+                                const Icon(LucideIcons.alertTriangle, color: Color(0xFFDC2626), size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  loc.localeName == 'tr' ? 'Masraf Bilgilerini Sil' : 'Delete Financial Details',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            content: Text(
+                              loc.localeName == 'tr'
+                                  ? 'Bu bakım talebine ait masraf bilgileri silinecek ve bu masrafla ilişkili yapılmış olan tüm mahsuplaşmalar (kiraya ekleme / kiradan düşme) geri alınacaktır. Devam etmek istiyor musunuz?'
+                                  : 'This will delete the financial details for this maintenance request and revert all rent offsets/settlements associated with it. Do you wish to continue?',
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white),
+                                child: Text(loc.delete),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirmed != true) return;
+
+                        setState(() => _isSaving = true);
+                        try {
+                          await ref.read(maintenanceRepositoryProvider).deleteFinancialDetailsAndRollbackSettlements(
+                            requestId: widget.request.id,
+                            propertyId: widget.property.id,
+                            request: widget.request,
+                            actorRoleName: loc.agencyManager,
+                            localeName: loc.localeName,
+                          );
+
+                          ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+                          ref.invalidate(maintenanceMessagesProvider(widget.request.id));
+                          ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+                          ref.invalidate(rentPaymentsProvider(widget.property.id));
+                          ref.invalidate(propertiesStreamProvider);
+                          ref.invalidate(propertiesFutureProvider);
+                          ref.invalidate(agencyPropertiesProvider);
+
+                          if (mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  loc.localeName == 'tr'
+                                      ? 'Masraf bilgileri silindi ve mahsuplaşmalar geri alındı.'
+                                      : 'Financial details deleted and offsets reverted.',
+                                ),
+                                backgroundColor: const Color(0xFF059669),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            setState(() {
+                              _isSaving = false;
+                              _validationError = e.toString();
+                            });
+                          }
+                        }
+                      },
+                icon: const Icon(LucideIcons.trash2, size: 15, color: Color(0xFFDC2626)),
+                label: Text(
+                  loc.localeName == 'tr' ? 'Masraf Bilgilerini Sil ve Mahsupları Geri Al' : 'Delete Financial Details & Revert Offsets',
+                  style: const TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w700, fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFFFCA5A5)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCostInput() {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Icon(LucideIcons.circleDollarSign, size: 15, color: Color(0xFF64748B)),
+          ),
+          Expanded(
+            child: TextFormField(
+              controller: _costController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              decoration: const InputDecoration(
+                hintText: '0.00',
+                hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+          Container(width: 1, height: 22, color: const Color(0xFFE2E8F0)),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedCurrency,
+              items: const [
+                DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                DropdownMenuItem(value: 'RSD', child: Text('RSD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+              ],
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedCurrency = val);
+              },
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayerSelector(AppLocalizations loc, String? currentPayer, bool isPayerLocked) {
+    if (isPayerLocked) {
+      final isTenant = currentPayer == 'tenant';
+      final activeColor = isTenant ? const Color(0xFF059669) : const Color(0xFF2563EB);
+      final label = isTenant ? loc.payerTenant : loc.payerLandlord;
+      final icon = isTenant ? LucideIcons.user : LucideIcons.home;
+
+      return Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: activeColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: activeColor.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: activeColor),
+            const SizedBox(width: 8),
+            Text(
+              '$label (${loc.roleYou})',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: activeColor,
+              ),
+            ),
+            const Spacer(),
+            Icon(LucideIcons.lock, size: 13, color: activeColor.withValues(alpha: 0.6)),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.tenant,
+              icon: LucideIcons.user,
+              isSelected: currentPayer == 'tenant',
+              activeColor: const Color(0xFF059669),
+              onTap: () {
+                setState(() {
+                  _paidBy = 'tenant';
+                  _declarationIntent = 'reimburse';
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.landlord,
+              icon: LucideIcons.home,
+              isSelected: currentPayer == 'landlord',
+              activeColor: const Color(0xFF2563EB),
+              onTap: () {
+                setState(() {
+                  _paidBy = 'landlord';
+                  _declarationIntent = 'self';
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildPayerChip(
+              label: loc.localeName == 'tr' ? 'Acente' : (loc.localeName == 'ru' ? 'Агентство' : (loc.localeName.startsWith('sr') ? 'Agencija' : 'Agency')),
+              icon: LucideIcons.building2,
+              isSelected: currentPayer == 'agency',
+              activeColor: const Color(0xFF7C3AED),
+              onTap: () {
+                setState(() {
+                  _paidBy = 'agency';
+                  _declarationIntent = 'fixture_landlord';
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -3656,28 +4397,40 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
     required Color activeColor,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.1) : Colors.transparent,
-          border: Border.all(color: isSelected ? activeColor : const Color(0xFFCBD5E1)),
+          color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 15, color: isSelected ? activeColor : const Color(0xFF64748B)),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? activeColor : const Color(0xFF64748B),
+            Icon(icon, size: 13, color: isSelected ? activeColor : const Color(0xFF64748B)),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? activeColor : const Color(0xFF64748B),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -3685,45 +4438,167 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
     );
   }
 
-  Widget _buildIntentCard({
+  Widget _buildDateSelector(AppLocalizations loc) {
+    return InkWell(
+      onTap: () => _selectPaymentDate(context),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.calendar, size: 14, color: Color(0xFF64748B)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                _paymentDate != null
+                    ? DateFormat('dd MMM yyyy').format(_paymentDate!)
+                    : loc.selectDate,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: _paymentDate != null ? FontWeight.w600 : FontWeight.normal,
+                  color: _paymentDate != null ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (_paymentDate != null)
+              GestureDetector(
+                onTap: () => setState(() => _paymentDate = null),
+                child: const Icon(LucideIcons.x, size: 14, color: Color(0xFF94A3B8)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPurposeOptionCard({
     required String title,
     required String subtitle,
-    required String badge,
+    required String badgeLabel,
+    required Color badgeColor,
     required IconData icon,
     required bool isSelected,
-    required Color color,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: isDark ? 0.15 : 0.06)
-              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
+          color: isSelected ? badgeColor.withValues(alpha: 0.04) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            color: isSelected ? badgeColor : const Color(0xFFE2E8F0),
             width: isSelected ? 1.5 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: badgeColor.withValues(alpha: 0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: isSelected ? color.withValues(alpha: 0.15) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                color: isSelected
+                    ? badgeColor.withValues(alpha: 0.12)
+                    : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                isSelected ? LucideIcons.checkCircle2 : icon,
-                color: isSelected ? color : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
-                size: 16,
+                icon,
+                size: 17,
+                color: isSelected ? badgeColor : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF64748B),
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: badgeColor.withValues(alpha: 0.25)),
+              ),
+              child: Text(
+                badgeLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: badgeColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceUploader(AppLocalizations loc) {
+    if (_selectedInvoiceFile != null) {
+      final isPdf = _selectedInvoiceFile!.name.toLowerCase().endsWith('.pdf');
+      final sizeKb = (_selectedInvoiceFile!.size / 1024).toStringAsFixed(0);
+
+      return Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isPdf ? const Color(0xFFFEF2F2) : const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                isPdf ? LucideIcons.fileText : LucideIcons.image,
+                size: 20,
+                color: isPdf ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
               ),
             ),
             const SizedBox(width: 10),
@@ -3731,42 +4606,105 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected ? color : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          badge,
-                          style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: color),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
                   Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      height: 1.35,
+                    _selectedInvoiceFile!.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '$sizeKb KB',
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: _removeSelectedInvoice,
+              icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_existingInvoiceUrl != null && _existingInvoiceUrl!.isNotEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0FDF4),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFBBF7D0)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCFCE7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                LucideIcons.fileCheck2,
+                size: 20,
+                color: Color(0xFF059669),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    loc.existingDocument,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF14532D)),
+                  ),
+                  InkWell(
+                    onTap: () => launchUrl(Uri.parse(_existingInvoiceUrl!), mode: LaunchMode.externalApplication),
+                    child: Text(
+                      loc.viewReceipt,
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF059669), decoration: TextDecoration.underline),
                     ),
                   ),
                 ],
               ),
+            ),
+            TextButton(
+              onPressed: _pickInvoicePdf,
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact, padding: const EdgeInsets.symmetric(horizontal: 8)),
+              child: Text(loc.change, style: const TextStyle(fontSize: 12)),
+            ),
+            IconButton(
+              onPressed: _removeExistingInvoice,
+              icon: const Icon(LucideIcons.trash2, size: 16, color: Color(0xFFDC2626)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return InkWell(
+      onTap: _pickInvoicePdf,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(LucideIcons.uploadCloud, size: 18, color: Color(0xFF64748B)),
+            const SizedBox(width: 8),
+            Text(
+              loc.uploadReceiptInvoice,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF334155)),
             ),
           ],
         ),

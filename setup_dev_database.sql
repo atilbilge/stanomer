@@ -263,7 +263,7 @@ ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_re
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_priority_check CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'));
 
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_paid_by_check;
-ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_paid_by_check CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord'));
+ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_paid_by_check CHECK (paid_by IS NULL OR paid_by IN ('tenant', 'landlord', 'agency'));
 
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_payment_status_check;
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_payment_status_check CHECK (payment_status IN ('pending_review', 'pending_agency_approval', 'pending_opposite_approval', 'pending_payment', 'paid', 'rejected'));

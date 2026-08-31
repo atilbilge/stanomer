@@ -1569,6 +1569,7 @@ class PropertyRepository {
     return pendingRows.map((item) => {
       ...item,
       'type': 'contract',
+      'target_role': 'tenant',
       'properties': propsMap[item['property_id']],
     }).toList();
   }
@@ -1603,10 +1604,16 @@ class PropertyRepository {
     final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
     final propsMap = {for (var p in propsResponse) p['id'] as String: p};
 
-    return pendingRows.map((item) => {
-      ...item,
-      'type': 'invitation',
-      'properties': propsMap[item['property_id']],
+    return pendingRows.map((item) {
+      final token = item['token'] as String? ?? '';
+      final dbRole = item['target_role'] as String?;
+      final targetRole = dbRole ?? (token.startsWith('landlord_') ? 'landlord' : 'tenant');
+      return {
+        ...item,
+        'type': 'invitation',
+        'target_role': targetRole,
+        'properties': propsMap[item['property_id']],
+      };
     }).toList();
   }
 
@@ -1800,20 +1807,33 @@ class PropertyRepository {
     }
   }
 
-  Future<void> setPaymentInvoice(String paymentId, String propertyId, String monthName, DateTime dueDate, double amount, String? invoiceUrl, {String currency = 'RSD', String? ownerNote, String? title}) async {
+  Future<void> setPaymentInvoice(
+    String paymentId,
+    String propertyId,
+    String monthName,
+    DateTime dueDate,
+    double amount,
+    String? invoiceUrl, {
+    String currency = 'RSD',
+    String? ownerNote,
+    String? title,
+    String? status,
+    bool isAgencyApprovalPending = false,
+  }) async {
     final isZero = amount == 0;
-    final newStatus = isZero ? 'paid' : 'pending';
+    final newStatus = status ?? (isZero ? 'paid' : (isAgencyApprovalPending ? 'declared' : 'pending'));
 
     // 1. Get payment details by paymentId
     final currentPayment = await _client.from('rent_payments').select('id, title, due_date').eq('id', paymentId).maybeSingle();
 
     final targetTitle = title ?? currentPayment?['title'] as String?;
     final targetDueDateStr = currentPayment?['due_date'] as String?;
-    final targetDueDate = targetDueDateStr != null ? DateTime.parse(targetDueDateStr) : dueDate;
+    final originalDueDate = targetDueDateStr != null ? DateTime.parse(targetDueDateStr) : dueDate;
 
     if (currentPayment != null) {
       // 2. Direct Update target record
       await _client.from('rent_payments').update({
+        'due_date': dueDate.toIso8601String(),
         'amount': amount,
         'currency': currency,
         'invoice_url': invoiceUrl,
@@ -1827,7 +1847,7 @@ class PropertyRepository {
         'id': paymentId,
         'property_id': propertyId,
         'title': targetTitle ?? 'Aidat',
-        'due_date': targetDueDate.toIso8601String(),
+        'due_date': dueDate.toIso8601String(),
         'amount': amount,
         'currency': currency,
         'invoice_url': invoiceUrl,
@@ -1838,10 +1858,11 @@ class PropertyRepository {
 
     // 3. Update ALL matching records for this property, title & month
     if (targetTitle != null && targetTitle.trim().isNotEmpty) {
-      final startOfMonth = DateTime(targetDueDate.year, targetDueDate.month, 1).toIso8601String();
-      final endOfMonth = DateTime(targetDueDate.year, targetDueDate.month + 1, 0, 23, 59, 59).toIso8601String();
+      final startOfMonth = DateTime(originalDueDate.year, originalDueDate.month, 1).toIso8601String();
+      final endOfMonth = DateTime(originalDueDate.year, originalDueDate.month + 1, 0, 23, 59, 59).toIso8601String();
 
       await _client.from('rent_payments').update({
+        'due_date': dueDate.toIso8601String(),
         'amount': amount,
         'currency': currency,
         'invoice_url': invoiceUrl,
@@ -1864,20 +1885,144 @@ class PropertyRepository {
       'amount': amount,
       'currency': currency,
       'due_date': dueDate.toIso8601String(),
+      'is_agency_approval_pending': isAgencyApprovalPending,
+    });
+
+    if (isAgencyApprovalPending) {
+      final agencyId = await _getAgencyId(propertyId);
+      if (agencyId != null) {
+        await _createNotification(
+          userId: agencyId,
+          title: 'Fatura Onayı Bekliyor',
+          body: '$monthName dönemi için ${targetTitle ?? "fatura"} tutarı girildi ($amount $currency). Onayınız bekleniyor.',
+          type: 'rent',
+          relatedId: propertyId,
+        );
+      }
+    } else {
+      final tenantId = await _getTenantId(propertyId);
+      if (tenantId != null) {
+        await _createNotification(
+          userId: tenantId,
+          title: isZero ? 'Month Settled (0 Cost)' : 'New Bill Entered',
+          body: isZero ? 'The costs for $monthName have been settled as 0.' : 'A new bill has been entered for $monthName. Amount: $amount $currency',
+          type: 'rent',
+          relatedId: propertyId,
+        );
+      }
+    }
+  }
+
+  Future<void> approvePaymentInvoice(
+    String paymentId,
+    String propertyId,
+    String monthName,
+    DateTime dueDate, {
+    String? title,
+    double? amount,
+    String? currency,
+  }) async {
+    await _client.from('rent_payments').update({
+      'status': 'pending',
+      'dispute_reason': null,
+    }).eq('id', paymentId);
+
+    if (title != null && title.trim().isNotEmpty) {
+      final startOfMonth = DateTime(dueDate.year, dueDate.month, 1).toIso8601String();
+      final endOfMonth = DateTime(dueDate.year, dueDate.month + 1, 0, 23, 59, 59).toIso8601String();
+
+      await _client.from('rent_payments').update({
+        'status': 'pending',
+        'dispute_reason': null,
+      })
+      .eq('property_id', propertyId)
+      .ilike('title', title.trim())
+      .gte('due_date', startOfMonth)
+      .lte('due_date', endOfMonth);
+    }
+
+    await _logActivity(propertyId, 'invoice_approved', {
+      'payment_id': paymentId,
+      'month': monthName,
+      'amount': amount,
+      'currency': currency ?? 'RSD',
+      'due_date': dueDate.toIso8601String(),
     });
 
     final tenantId = await _getTenantId(propertyId);
     if (tenantId != null) {
       await _createNotification(
         userId: tenantId,
-        title: isZero ? 'Month Settled (0 Cost)' : 'New Bill Entered',
-        body: isZero ? 'The costs for $monthName have been settled as 0.' : 'A new bill has been entered for $monthName. Amount: $amount $currency',
+        title: 'New Bill Entered',
+        body: '$monthName dönemi için ${title ?? "fatura"} tutarı onaylandı ($amount ${currency ?? "RSD"}). Ödeme yapabilirsiniz.',
+        type: 'rent',
+        relatedId: propertyId,
+      );
+    }
+
+    final landlordId = await _getLandlordId(propertyId);
+    if (landlordId != null) {
+      await _createNotification(
+        userId: landlordId,
+        title: 'Fatura Onaylandı',
+        body: '$monthName dönemi için girdiğiniz ${title ?? "fatura"} acente tarafından onaylandı ve kiracıya borç olarak yansıtıldı.',
         type: 'rent',
         relatedId: propertyId,
       );
     }
   }
 
+  Future<void> rejectPaymentInvoice(
+    String paymentId,
+    String propertyId,
+    String monthName,
+    DateTime dueDate, {
+    String? reason,
+    String? title,
+  }) async {
+    await _client.from('rent_payments').update({
+      'amount': 0,
+      'invoice_url': null,
+      'status': 'pending',
+      'dispute_reason': reason,
+      'owner_note': null,
+    }).eq('id', paymentId);
+
+    if (title != null && title.trim().isNotEmpty) {
+      final startOfMonth = DateTime(dueDate.year, dueDate.month, 1).toIso8601String();
+      final endOfMonth = DateTime(dueDate.year, dueDate.month + 1, 0, 23, 59, 59).toIso8601String();
+
+      await _client.from('rent_payments').update({
+        'amount': 0,
+        'invoice_url': null,
+        'status': 'pending',
+        'dispute_reason': reason,
+        'owner_note': null,
+      })
+      .eq('property_id', propertyId)
+      .ilike('title', title.trim())
+      .gte('due_date', startOfMonth)
+      .lte('due_date', endOfMonth);
+    }
+
+    await _logActivity(propertyId, 'invoice_rejected', {
+      'payment_id': paymentId,
+      'month': monthName,
+      'reason': reason,
+      'due_date': dueDate.toIso8601String(),
+    });
+
+    final landlordId = await _getLandlordId(propertyId);
+    if (landlordId != null) {
+      await _createNotification(
+        userId: landlordId,
+        title: 'Fatura Reddedildi',
+        body: '$monthName dönemi için girdiğiniz ${title ?? "fatura"} acente tarafından reddedildi.${reason != null && reason.trim().isNotEmpty ? " Gerekçe: $reason" : ""}',
+        type: 'rent',
+        relatedId: propertyId,
+      );
+    }
+  }
 
   Future<void> addAdditionalDocument(String contractId, String name, String url) async {
     final data = await _client.from('contracts').select('additional_documents').eq('id', contractId).single();
@@ -2014,6 +2159,15 @@ class PropertyRepository {
       'type': type,
       'related_id': relatedId,
     });
+  }
+
+  Future<String?> _getAgencyId(String propertyId) async {
+    try {
+      final data = await _client.from('properties').select('agency_id').eq('id', propertyId).maybeSingle();
+      return data?['agency_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> _getLandlordId(String propertyId) async {

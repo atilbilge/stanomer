@@ -125,5 +125,12 @@ extension MaintenanceRequestMapX on MaintenanceRequest {
 
   double get remainingAmount => (costAmount != null ? (costAmount! - settledAmount).clamp(0.0, double.infinity) : 0.0);
   bool get hasPartialSettlement => settledAmount > 0 && remainingAmount > 0;
+
+  /// User-friendly ticket number for UI display (e.g. #MR-10482)
+  String get displayId {
+    if (id.isEmpty) return '#MR-00000';
+    final numCode = (id.hashCode.abs() % 90000) + 10000;
+    return '#MR-$numCode';
+  }
 }
 
