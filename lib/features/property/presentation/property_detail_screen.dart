@@ -4220,9 +4220,15 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isDisputed = status == 'disputed';
     // An expense row is "awaiting invoice" when landlord hasn't set the amount yet (amount == 0)
     final isOwnerExpense = payment.receiverType == 'owner' && payment.title != 'Kira';
-    final isAwaitingInvoice = isOwnerExpense && payment.amount == 0;
-    final isInvoiceAwaitingAgencyApproval = isOwnerExpense && payment.amount > 0 && payment.status == 'declared' && (payment.receiptUrl == null || payment.receiptUrl!.isEmpty);
-    final isTenantPaymentAwaitingApproval = payment.status == 'declared' && !isInvoiceAwaitingAgencyApproval;
+    final isIncludedExpense = payment.receiverType == 'included'; // Ev sahibi kendi öder
+    final isLandlordExpense = isOwnerExpense || isIncludedExpense; // Ortak guard
+    final isAwaitingInvoice = isLandlordExpense && payment.amount == 0;
+    // Fatura onayı: tutar girilmiş, declared, dekont yok → acente fatura onaylayacak
+    final isInvoiceAwaitingAgencyApproval = isLandlordExpense && payment.amount > 0 && payment.status == 'declared' && (payment.receiptUrl == null || payment.receiptUrl!.isEmpty);
+    // Kiracı ödeme onayı: declared ama fatura onayı değil, included de değil
+    final isTenantPaymentAwaitingApproval = payment.status == 'declared' && !isInvoiceAwaitingAgencyApproval && !isIncludedExpense;
+    // Ev sahibi ödeme onayı (included + declared + dekont var → acente onaylayacak)
+    final isIncludedPaymentAwaitingAgencyApproval = isIncludedExpense && payment.amount > 0 && payment.status == 'declared' && payment.receiptUrl != null && payment.receiptUrl!.isNotEmpty;
     final isCash = payment.receiptUrl == 'CASH';
     final monthName = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
     final catColor = colorForTitle(payment.title);
@@ -4236,7 +4242,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     Color borderColor = StanomerColors.borderDefault;
     Color bgColor = Theme.of(context).cardColor;
     
-    if (isInvoiceAwaitingAgencyApproval) {
+    if (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval) {
       borderColor = Colors.amber.shade700;
       bgColor = Colors.amber.withValues(alpha: 0.04);
     } else if (isDeclared) {
@@ -4248,6 +4254,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       bgColor = StanomerColors.alertPrimary.withValues(alpha: 0.02);
     }
     if (isAwaitingInvoice && isLandlord) borderColor = StanomerColors.brandPrimary.withValues(alpha: 0.4);
+    if (isIncludedExpense && !isAwaitingInvoice && !isDeclared && !isPaid) {
+      borderColor = Colors.purple.shade200;
+    }
 
     final isExpanded = _expandedPaymentIds.contains(payment.id);
     final paymentLogs = _getPaymentActivityLogs(payment, allLogs, loc.localeName);
@@ -4255,7 +4264,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     // Accent stripe color: status-driven left edge
     final Color stripeColor = isPaid
         ? const Color(0xFF16A34A)  // green
-        : isInvoiceAwaitingAgencyApproval
+        : (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval)
             ? const Color(0xFFD97706) // amber
             : isDeclared
                 ? const Color(0xFFD97706) // amber
@@ -4263,7 +4272,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     ? StanomerColors.alertPrimary
                     : isAwaitingInvoice
                         ? StanomerColors.brandPrimary
-                        : const Color(0xFFCBD5E1); // slate-300 for pending
+                        : isIncludedExpense
+                            ? Colors.purple.shade300 // mor — kiraya dahil, ödeme bekliyor
+                            : const Color(0xFFCBD5E1); // slate-300 for pending
 
     return Container(
       decoration: BoxDecoration(
@@ -4339,15 +4350,36 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       const SizedBox(height: 2),
-                      Text(
-                        ExpenseUtils.getLocalizedExpenseName(payment.title, loc),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          color: StanomerColors.textTertiary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              ExpenseUtils.getLocalizedExpenseName(payment.title, loc),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                color: StanomerColors.textTertiary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isIncludedExpense) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.shade50,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(color: Colors.purple.shade200),
+                              ),
+                              child: Text(
+                                loc.localeName == 'tr' ? 'Kira İçi' : 'In Rent',
+                                style: TextStyle(fontSize: 9, color: Colors.purple.shade700, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -4365,10 +4397,19 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         : (loc.localeName == 'tr' ? 'Acente Onayı Bekleniyor' : (loc.localeName == 'ru' ? 'Ожидает одобрения агентства' : (loc.localeName.startsWith('sr') ? 'Čeka odobrenje agencije' : 'Awaiting Agency Approval'))),
                     color: Colors.amber.shade700,
                   )
+                else if (isIncludedPaymentAwaitingAgencyApproval)
+                  _StatusBadge(
+                    label: isAgencyManager
+                        ? (loc.localeName == 'tr' ? 'Ödeme Onayı Bekliyor' : 'Awaiting Payment Approval')
+                        : (loc.localeName == 'tr' ? 'Acente Onayı Bekleniyor' : 'Awaiting Agency Approval'),
+                    color: Colors.amber.shade700,
+                  )
                 else if (isDeclared)
                   _StatusBadge(label: isLandlord ? (loc.localeName == 'tr' ? 'Onay Bekliyor' : 'Awaiting Approval') : loc.awaitingHeader, color: Colors.orange)
                 else if (isDisputed)
                   _StatusBadge(label: loc.disputedHeader, color: StanomerColors.alertPrimary)
+                else if (isPending && isIncludedExpense)
+                  _StatusBadge(label: loc.localeName == 'tr' ? (payment.amount == 0 ? 'Tutar Girilmedi' : 'Ödeme Bekliyor') : (payment.amount == 0 ? 'No Amount' : 'Payment Due'), color: payment.amount == 0 ? StanomerColors.brandPrimary : Colors.purple.shade600)
                 else if (isPending)
                   _StatusBadge(label: loc.localeName == 'tr' ? 'Bekliyor' : 'Pending', color: Colors.grey),
                 const SizedBox(width: 8),
@@ -4605,7 +4646,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             ],
             
             // Actions Section
-            if (isLandlord || (isTenant && isPending && !isAwaitingInvoice && !isDisputed) || (isTenant && isInvoiceAwaitingAgencyApproval)) ...[
+            // included satırları kiracıya gösterilmez — her zaman erken çık
+            if (isIncludedExpense && isTenant) ...[]
+            else if (isLandlord || (isTenant && isPending && !isAwaitingInvoice && !isDisputed) || (isTenant && isInvoiceAwaitingAgencyApproval)) ...[
               const SizedBox(height: 16),
               if (isInvoiceAwaitingAgencyApproval) ...[
                 if (isAgencyManager)
@@ -4872,6 +4915,149 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         ),
                       ],
                     ),
+                ]
+                // ── Included Expense: Ev sahibi fatura girişi ve ödeme akışı ──
+                else if (isIncludedExpense && isLandlord) ...[
+                  // isIncludedPaymentAwaitingAgencyApproval: ev sahibi ödedi, acente onaylayacak
+                  if (isIncludedPaymentAwaitingAgencyApproval) ...[
+                    if (isAgencyManager)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final confirmed = await _showConfirmDialog(
+                                  title: loc.localeName == 'tr' ? 'Ödemeyi Onayla' : 'Approve Payment',
+                                  message: loc.localeName == 'tr'
+                                      ? '${payment.title} için ev sahibinin bildirdiği ödemeyi onaylamak istiyor musunuz?'
+                                      : 'Do you want to approve the landlord\'s payment declaration for ${payment.title}?',
+                                );
+                                if (confirmed) {
+                                  await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
+                                  ref.invalidate(rentPaymentsProvider(property.id));
+                                }
+                              },
+                              icon: const Icon(LucideIcons.checkCircle, size: 16),
+                              label: Text(loc.localeName == 'tr' ? 'Ödemeyi Onayla' : 'Approve Payment'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              final confirmed = await _showConfirmDialog(
+                                title: loc.localeName == 'tr' ? 'Ödemeyi Reddet' : 'Reject Payment',
+                                message: loc.localeName == 'tr'
+                                    ? 'Ödeme bildirimini reddetmek istiyor musunuz? Ev sahibi bilgilendirilecek.'
+                                    : 'Do you want to reject this payment declaration? The landlord will be notified.',
+                              );
+                              if (confirmed) {
+                                await ref.read(propertyRepositoryProvider).rejectRentPayment(payment.id, property.id, monthName, payment.dueDate);
+                                ref.invalidate(rentPaymentsProvider(property.id));
+                              }
+                            },
+                            icon: const Icon(LucideIcons.xCircle, size: 16),
+                            label: Text(loc.reject),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      // Ev sahibi: acente onayı bekliyor bilgisi
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFDBEAFE)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(LucideIcons.clock, size: 16, color: Color(0xFF2563EB)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                loc.localeName == 'tr'
+                                    ? 'Ödeme bildiriminiz acente onayına sunulmuştur.'
+                                    : 'Your payment declaration is awaiting agency approval.',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E40AF)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ] else if (isPending && payment.amount > 0) ...[
+                    // Fatura onaylandı, ev sahibi ödeme bildirecek
+                    if (property.agencyId != null && property.agencyId!.isNotEmpty && !isAgencyManager)
+                      // Acenteli: ev sahibi ödeme declare eder (dekont yükleme sheet'i)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
+                          icon: const Icon(LucideIcons.upload, size: 16),
+                          label: Text(loc.localeName == 'tr' ? 'Ödemeyi Bildir' : 'Declare Payment'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      )
+                    else
+                      // Acentesiz / acente yöneticisi: direkt "Ödendi İşaretle"
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final confirmed = await _showConfirmDialog(
+                              title: loc.localeName == 'tr' ? 'Ödendi Olarak İşaretle' : 'Mark as Paid',
+                              message: loc.localeName == 'tr'
+                                  ? '${payment.title} faturasini kendiniz ödediğinizi onaylamak istiyor musunuz?'
+                                  : 'Do you want to mark ${payment.title} as paid by you?',
+                            );
+                            if (confirmed) {
+                              await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
+                              ref.invalidate(rentPaymentsProvider(property.id));
+                            }
+                          },
+                          icon: const Icon(LucideIcons.checkCircle, size: 16),
+                          label: Text(loc.localeName == 'tr' ? 'Ödendi Olarak İşaretle' : 'Mark as Paid'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                  ] else if (isPending && payment.amount == 0 || isAwaitingInvoice) ...[
+                    // Fatura henüz girilmedi — tutar giriş butonu
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _handleInvoiceUpload(payment, monthName),
+                        icon: const Icon(LucideIcons.filePlus, size: 16),
+                        label: Text(loc.localeName == 'tr' ? 'Fatura Tutarını Gir' : 'Enter Bill Amount'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: StanomerColors.brandPrimary,
+                          side: const BorderSide(color: StanomerColors.brandPrimary),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
                 ]
                 else if ((isOwnerExpense || (payment.title == 'Kira' && isDisputed)) && (isPending || isDisputed || (isPaid && isOwnerExpense && payment.receiptUrl == null)))
                   Row(
@@ -8120,7 +8306,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               } else if (_selectedStatusFilter == 'paid') {
                 if (p.status != 'paid') return false;
               } else if (_selectedStatusFilter == 'unentered') {
-                if (p.amount != 0 || p.receiverType != 'owner' || p.title == 'Kira') return false;
+                // Hem 'owner' hem 'included' kalemlerin girilmemiş faturası
+                if (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira') return false;
               }
 
               return true;
@@ -8172,12 +8359,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
             // ── Dynamic Filtered Summary Counters ─────────────────────
             final totalPropertyUnenteredCount = allDeduplicatedPayments
-                .where((p) => p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0)
+                .where((p) => (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0)
                 .length;
 
             final unenteredCount = allDeduplicatedPayments.where((p) {
               if (!matchesPaymentType(p) || !matchesPaymentDueDate(p)) return false;
-              return p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0;
+              return (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0;
             }).length;
 
             final pendingCount = allDeduplicatedPayments.where((p) {
@@ -8234,7 +8421,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               final t = p.title.toLowerCase();
               if (t == 'kira' || t == 'rent') return false;
               if (!matchesPaymentDueDate(p)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || p.receiverType != 'owner' || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid' && p.status != 'paid') return false;
@@ -8264,7 +8451,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               if (!matchesPaymentType(p)) return false;
               if (p.status == 'paid') return false;
               if (!p.dueDate.isBefore(todayStart)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || p.receiverType != 'owner' || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid') return false;
@@ -8290,7 +8477,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             final upcomingRentBillsCount = allDeduplicatedPayments.where((p) {
               if (!matchesPaymentType(p)) return false;
               if (p.dueDate.isBefore(todayStart)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || p.receiverType != 'owner' || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid' && p.status != 'paid') return false;
@@ -8710,17 +8897,16 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           int completedCount = monthPaidMaintenance.length;
 
                           for (final p in monthPayments) {
-                            final isAwaitingInv = p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0;
-                            final isIncluded = p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0 && !isAwaitingInv;
+                            final isIncludedInRent = p.receiverType == 'included';
+                            final isAwaitingInv = (p.receiverType == 'owner' || isIncludedInRent) && p.title != 'Kira' && p.amount == 0;
                             if (p.status == 'pending' && p.amount > 0) pendingCountM++;
                             if (p.status == 'declared') awaitingCountM++;
                             if (p.status == 'paid') paidCountM++;
 
-                            if (!isIncluded) {
-                               totalPayableCount++;
-                               if (p.status == 'declared' || p.status == 'paid') {
-                                  completedCount++;
-                               }
+                            // included artık aksiyonlu — totalPayableCount'a dahil edilir
+                            totalPayableCount++;
+                            if (p.status == 'declared' || p.status == 'paid') {
+                              completedCount++;
                             }
                           }
 

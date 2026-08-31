@@ -1221,11 +1221,14 @@ BEGIN
   END IF;
 
   -- AUTO-APPROVE: Mark 'declared' as 'paid' after 5 days
+  -- NOTE: Only applies to tenant-declared payments (receiver_type = 'owner').
+  --       'included' (landlord-pays) rows are NOT auto-approved.
   FOR v_approved_row IN
     UPDATE public.rent_payments
     SET status = 'paid', paid_at = (declared_at + interval '5 days')
     WHERE contract_id = v_contract_id
       AND status = 'declared'
+      AND receiver_type = 'owner'
       AND declared_at < (now() - interval '5 days')
     RETURNING id, due_date
   LOOP
@@ -1258,7 +1261,7 @@ BEGIN
       tenant_id = COALESCE(EXCLUDED.tenant_id, rent_payments.tenant_id)
     WHERE rent_payments.status = 'pending';
 
-    -- B. Masraf kalemleri: sadece receiver = 'owner' (kiracı → ev sahibi) olanlar
+    -- B+C. Masraf kalemleri
     IF jsonb_array_length(v_expenses_cfg) > 0 THEN
       FOR v_expense IN SELECT jsonb_array_elements(v_expenses_cfg)
       LOOP
@@ -1266,27 +1269,48 @@ BEGIN
         v_exp_amount   := COALESCE((v_expense->>'amount')::numeric, 0);
         v_exp_receiver := v_expense->>'receiver';
 
-        IF v_exp_name IS NOT NULL AND v_exp_receiver = 'owner' THEN
+        IF v_exp_name IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        -- B. receiver = 'owner': Kiracı → ev sahibine öder (mevcut davranış)
+        IF v_exp_receiver = 'owner' THEN
           INSERT INTO public.rent_payments
             (property_id, contract_id, tenant_id, amount, currency, due_date, status, title, receiver_type)
           VALUES
             (p_property_id, v_contract_id, v_tenant_id, v_exp_amount, v_currency, v_current_date, 'pending', v_exp_name, 'owner')
           ON CONFLICT (contract_id, due_date, title)
           DO UPDATE SET
-            -- If an invoice was uploaded OR the amount is manually set (> 0), DO NOT overwrite it!
-            amount    = CASE 
-                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.amount 
-                          WHEN rent_payments.amount > 0 THEN rent_payments.amount 
-                          ELSE EXCLUDED.amount 
+            -- Fatura yüklendi veya tutar girildi ise dokunma
+            amount    = CASE
+                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.amount
+                          WHEN rent_payments.amount > 0              THEN rent_payments.amount
+                          ELSE EXCLUDED.amount
                         END,
-            currency  = CASE 
-                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.currency 
-                          WHEN rent_payments.amount > 0 THEN rent_payments.currency 
-                          ELSE EXCLUDED.currency 
+            currency  = CASE
+                          WHEN rent_payments.invoice_url IS NOT NULL THEN rent_payments.currency
+                          WHEN rent_payments.amount > 0              THEN rent_payments.currency
+                          ELSE EXCLUDED.currency
                         END,
             tenant_id = COALESCE(EXCLUDED.tenant_id, rent_payments.tenant_id)
           WHERE rent_payments.status = 'pending';
+
+        -- C. receiver = 'included': Ev sahibi kendi öder, kira içinde gizli
+        --    Tutulmamış (amount=0, pending) satırlara dokunur; girilmiş satıra hayır.
+        ELSIF v_exp_receiver = 'included' THEN
+          INSERT INTO public.rent_payments
+            (property_id, contract_id, tenant_id, amount, currency, due_date, status, title, receiver_type)
+          VALUES
+            (p_property_id, v_contract_id, v_tenant_id,
+             0,              -- Tutar girilmedi; ev sahibi daha sonra girer
+             v_currency, v_current_date, 'pending', v_exp_name, 'included')
+          ON CONFLICT (contract_id, due_date, title)
+          DO UPDATE SET
+            tenant_id = COALESCE(EXCLUDED.tenant_id, rent_payments.tenant_id)
+          WHERE rent_payments.status = 'pending'
+            AND rent_payments.amount = 0;   -- Girilmiş tutara dokunma
         END IF;
+
       END LOOP;
     END IF;
 

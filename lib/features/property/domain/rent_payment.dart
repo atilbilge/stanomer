@@ -29,3 +29,12 @@ abstract class RentPayment with _$RentPayment {
   factory RentPayment.fromJson(Map<String, dynamic> json) => _$RentPaymentFromJson(json);
 }
 
+/// Convenience getters — extension kullanıyoruz çünkü freezed sınıfına
+/// doğrudan getter eklemek private constructor (_) gerektirir.
+extension RentPaymentX on RentPayment {
+  /// Ev sahibinin kendi ödediği, kira bedeline dahil giderler (kiracıya görünmez)
+  bool get isIncludedExpense => receiverType == 'included';
+
+  /// Kiracının ev sahibine ödediği fatura kalemleri
+  bool get isOwnerExpense => receiverType == 'owner' && title != 'Kira';
+}
