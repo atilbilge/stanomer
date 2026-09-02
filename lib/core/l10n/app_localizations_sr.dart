@@ -1805,6 +1805,47 @@ class AppLocalizationsSr extends AppLocalizations {
   String get financePaidThisMonth => 'Odobreno ovog meseca';
 
   @override
+  String get financeRentCollected => 'Kirija naplaćena od zakupaca';
+
+  @override
+  String get financeBillsCollected => 'Racuni naplaceni od zakupaca';
+
+  @override
+  String get financeBillsToInstitutions => 'Racuni placeni institucijama';
+
+  @override
+  String get financeBillsToInstitutionsTooltip =>
+      'Racuni naplaceni od zakupaca smatraju se placenim institucijama.';
+
+  @override
+  String get financeMaintenancePaid => 'Placeni troskovi odrzavanja';
+
+  @override
+  String get financeMaintenanceOwedToAgency => 'Dug agenciji za odrzavanje';
+
+  @override
+  String get financeMaintenanceOwedToAgencyTooltip =>
+      'Racuni naplaceni od zakupaca smatraju se placenim agenciji.';
+
+  @override
+  String get periodThisMonth => 'Ovaj mesec';
+
+  @override
+  String get periodLastMonth => 'Prošli mesec';
+
+  @override
+  String get periodThisYear => 'Ova godina';
+
+  @override
+  String get periodLastYear => 'Prošla godina';
+
+  @override
+  String get periodAllTime => 'Od početka';
+
+  @override
+  String get periodCustom => 'Posebno';
+
+  @override
   String get financeUpcoming7Days => 'Nadolazeća (7 dana)';
 
   @override
@@ -4818,6 +4859,47 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get financePaidThisMonth => 'Одобрено овог месеца';
+
+  @override
+  String get financeRentCollected => 'Кирија наплаћена од закупаца';
+
+  @override
+  String get financeBillsCollected => 'Рачуни наплаћени од закупаца';
+
+  @override
+  String get financeBillsToInstitutions => 'Рачуни плаћени институцијама';
+
+  @override
+  String get financeBillsToInstitutionsTooltip =>
+      'Рачуни наплаћени од закупаца сматрају се плаћеним институцијама.';
+
+  @override
+  String get financeMaintenancePaid => 'Плаћени трошкови одржавања';
+
+  @override
+  String get financeMaintenanceOwedToAgency => 'Дуг агенцији за одржавање';
+
+  @override
+  String get financeMaintenanceOwedToAgencyTooltip =>
+      'Рачуни наплаћени од закупаца сматрају се плаћеним агенцији.';
+
+  @override
+  String get periodThisMonth => 'Овај месец';
+
+  @override
+  String get periodLastMonth => 'Протекли месец';
+
+  @override
+  String get periodThisYear => 'Ова година';
+
+  @override
+  String get periodLastYear => 'Протекла година';
+
+  @override
+  String get periodAllTime => 'Од почетка';
+
+  @override
+  String get periodCustom => 'Посебно';
 
   @override
   String get financeUpcoming7Days => 'Надолазећа (7 дана)';

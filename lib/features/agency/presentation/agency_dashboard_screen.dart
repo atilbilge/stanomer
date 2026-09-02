@@ -208,8 +208,9 @@ final agencyAllPaymentsProvider =
             m.paymentStatus == 'pending_review' ||
             m.paymentStatus == 'pending_opposite_approval';
         final isPaid = m.paymentStatus == 'paid';
+        final isPendingPayment = m.paymentStatus == 'pending_payment';
 
-        if (isPendingApproval || isPaid) {
+        if (isPendingApproval || isPaid || isPendingPayment) {
           final propObj = propertiesMap[m.propertyId];
           if (propObj == null) continue;
           final propMap = propObj.toJson();
@@ -224,7 +225,7 @@ final agencyAllPaymentsProvider =
             'settled_amount': m.settledAmount,
             'currency': m.currency ?? (propObj.currency.isNotEmpty ? propObj.currency : 'EUR'),
             'due_date': (m.paymentDate ?? m.createdAt ?? DateTime.now()).toIso8601String(),
-            'status': isPendingApproval ? 'declared' : 'paid',
+            'status': isPendingApproval ? 'declared' : (isPendingPayment ? 'pending_payment' : 'paid'),
             'receiver_type': m.paidBy == 'tenant' ? 'landlord' : 'tenant',
             'receipt_url': m.invoicePdfUrl,
             'is_maintenance': true,
@@ -1445,11 +1446,17 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
   String _sortBy = 'newest'; // 'newest', 'oldest', 'amount_desc', 'amount_asc', 'name_asc', 'landlord_asc'
   String? _viewMode; // null = auto (mobile: grid, desktop: table)
   bool _isFilterExpanded = false;
+  DateTime? _periodStartDate;
+  DateTime? _periodEndDate;
+  String _selectedPeriodPreset = 'this_month'; // 'this_month', 'last_month', 'this_year', 'last_year', 'all_time', 'custom'
+  int _financeSubTab = 0; // 0: Müdahale Gerekenler, 1: Rapor
+  int _expandedCardIndex = 0; // Hangi kart açık (sadece 0. sekmede)
 
   @override
   void initState() {
     super.initState();
     _selectedSegment = widget.initialSegment ?? 0;
+    _applyPeriodPreset('all_time');
   }
 
   @override
@@ -1702,6 +1709,294 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     );
   }
 
+  void _applyPeriodPreset(String preset) {
+    final now = DateTime.now();
+    switch (preset) {
+      case 'this_month':
+        _periodStartDate = DateTime(now.year, now.month, 1);
+        _periodEndDate = DateTime(now.year, now.month + 1, 0); // last day of month
+        break;
+      case 'last_month':
+        _periodStartDate = DateTime(now.year, now.month - 1, 1);
+        _periodEndDate = DateTime(now.year, now.month, 0);
+        break;
+      case 'this_year':
+        _periodStartDate = DateTime(now.year, 1, 1);
+        _periodEndDate = DateTime(now.year, 12, 31);
+        break;
+      case 'last_year':
+        _periodStartDate = DateTime(now.year - 1, 1, 1);
+        _periodEndDate = DateTime(now.year - 1, 12, 31);
+        break;
+      case 'all_time':
+        _periodStartDate = null;
+        _periodEndDate = null;
+        break;
+      case 'custom':
+        // Keep existing dates, user will pick via date range picker
+        break;
+    }
+  }
+
+  String _getPeriodPresetLabel(String preset) {
+    final loc = AppLocalizations.of(context)!;
+    switch (preset) {
+      case 'this_month':
+        return loc.periodThisMonth;
+      case 'last_month':
+        return loc.periodLastMonth;
+      case 'this_year':
+        return loc.periodThisYear;
+      case 'last_year':
+        return loc.periodLastYear;
+      case 'all_time':
+        return loc.periodAllTime;
+      case 'custom':
+        return loc.periodCustom;
+      default:
+        return loc.periodThisMonth;
+    }
+  }
+
+  // Build expandable KPI row for Tab 0
+  Widget _buildExpandableKpiRow({
+    required BuildContext context,
+    required bool isMobile,
+    required List<({int index, String title, int count, Map<String, double> totals, Color color, IconData icon, String? directionLabel})> cards,
+  }) {
+    final loc = AppLocalizations.of(context)!;
+    if (isMobile) {
+      // Mobile: 2 rows x 3 columns
+      final row1 = cards.take(3).toList();
+      final row2 = cards.skip(3).toList();
+      return Column(
+        children: [
+          Row(
+            children: row1.asMap().entries.map((entry) {
+              final card = entry.value;
+              final isExpanded = _expandedCardIndex == card.index;
+              return Expanded(
+                flex: isExpanded ? 24 : 10,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: _ExpandableKpiCard(
+                    isExpanded: isExpanded,
+                    title: card.title,
+                    count: card.count,
+                    totals: card.totals,
+                    color: card.color,
+                    icon: card.icon,
+                    directionLabel: card.directionLabel,
+                    onTap: () => setState(() {
+                      _expandedCardIndex = card.index;
+                      _selectedSegment = card.index;
+                    }),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          if (row2.isNotEmpty)
+            Row(
+              children: row2.asMap().entries.map((entry) {
+                final card = entry.value;
+                final isExpanded = _expandedCardIndex == card.index;
+                return Expanded(
+                  flex: isExpanded ? 24 : 10,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: _ExpandableKpiCard(
+                      isExpanded: isExpanded,
+                      title: card.title,
+                      count: card.count,
+                      totals: card.totals,
+                      color: card.color,
+                      icon: card.icon,
+                      directionLabel: card.directionLabel,
+                      onTap: () => setState(() {
+                        _expandedCardIndex = card.index;
+                        _selectedSegment = card.index;
+                      }),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      );
+    }
+    // Desktop: single row
+    return Row(
+      children: cards.map((card) {
+        final isExpanded = _expandedCardIndex == card.index;
+        return Expanded(
+          flex: isExpanded ? 30 : 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: _ExpandableKpiCard(
+              isExpanded: isExpanded,
+              title: card.title,
+              count: card.count,
+              totals: card.totals,
+              color: card.color,
+              icon: card.icon,
+              directionLabel: card.directionLabel,
+              onTap: () => setState(() {
+                _expandedCardIndex = card.index;
+                _selectedSegment = card.index;
+              }),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  final GlobalKey _periodButtonKey = GlobalKey();
+
+  Widget _buildPeriodSelectorButton() {
+    final isDefault = _selectedPeriodPreset == 'this_month';
+    final loc = AppLocalizations.of(context)!;
+    final formatter = DateFormat('dd/MM/yyyy');
+
+    String label = _getPeriodPresetLabel(_selectedPeriodPreset);
+    if (_selectedPeriodPreset == 'custom' && _periodStartDate != null && _periodEndDate != null) {
+      label = '${formatter.format(_periodStartDate!)} - ${formatter.format(_periodEndDate!)}';
+    }
+
+    return InkWell(
+      key: _periodButtonKey,
+      onTap: () async {
+        final RenderBox? button = _periodButtonKey.currentContext?.findRenderObject() as RenderBox?;
+        if (button == null) return;
+        final buttonGlobalPos = button.localToGlobal(Offset.zero);
+        final position = RelativeRect.fromLTRB(
+          buttonGlobalPos.dx,
+          buttonGlobalPos.dy + button.size.height + 4,
+          buttonGlobalPos.dx + button.size.width,
+          buttonGlobalPos.dy - 4,
+        );
+
+        final presets = ['this_month', 'last_month', 'this_year', 'last_year', 'all_time', 'custom'];
+
+        final selected = await showMenu<String>(
+          context: context,
+          position: position,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 8,
+          items: presets.map((p) {
+            final isSelected = p == _selectedPeriodPreset;
+            return PopupMenuItem<String>(
+              value: p,
+              child: Row(
+                children: [
+                  if (isSelected)
+                    Icon(LucideIcons.check, size: 14, color: widget.colors.primary)
+                  else
+                    const SizedBox(width: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _getPeriodPresetLabel(p),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? widget.colors.primary : const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+
+        if (selected == null) return;
+
+        if (selected == 'custom') {
+          final now = DateTime.now();
+          final picked = await showDateRangePicker(
+            context: context,
+            firstDate: DateTime(2020),
+            lastDate: DateTime(now.year + 2),
+            initialDateRange: _periodStartDate != null && _periodEndDate != null
+                ? DateTimeRange(start: _periodStartDate!, end: _periodEndDate!)
+                : null,
+            locale: Locale(loc.localeName),
+            builder: (context, child) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: ColorScheme.light(
+                    primary: widget.colors.primary,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: const Color(0xFF0F172A),
+                  ),
+                ),
+                child: child!,
+              );
+            },
+          );
+          if (picked != null) {
+            setState(() {
+              _selectedPeriodPreset = 'custom';
+              _periodStartDate = picked.start;
+              _periodEndDate = picked.end;
+            });
+          }
+        } else {
+          setState(() {
+            _selectedPeriodPreset = selected;
+            _applyPeriodPreset(selected);
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: !isDefault
+              ? widget.colors.primary.withValues(alpha: 0.06)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: !isDefault ? widget.colors.primary : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              LucideIcons.calendarDays,
+              size: 16,
+              color: !isDefault ? widget.colors.primary : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: !isDefault ? widget.colors.primary : const Color(0xFF475569),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              LucideIcons.chevronDown,
+              size: 14,
+              color: !isDefault ? widget.colors.primary : const Color(0xFF94A3B8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMultiSelectDropdownButton({
     required String label,
     required String title,
@@ -1922,7 +2217,31 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         if (!typeMatched) return false;
       }
 
-      // 4. Search Query
+      // 4. Period (Date Range) Filter
+      if (_periodStartDate != null || _periodEndDate != null) {
+        final dateStr = payment['due_date'] as String? ??
+            payment['declared_at'] as String? ??
+            payment['created_at'] as String?;
+        if (dateStr != null) {
+          final dt = DateTime.tryParse(dateStr);
+          if (dt != null) {
+            if (_periodStartDate != null && dt.isBefore(_periodStartDate!)) {
+              return false;
+            }
+            if (_periodEndDate != null) {
+              final endOfDay = DateTime(
+                _periodEndDate!.year,
+                _periodEndDate!.month,
+                _periodEndDate!.day,
+                23, 59, 59,
+              );
+              if (dt.isAfter(endOfDay)) return false;
+            }
+          }
+        }
+      }
+
+      // 5. Search Query
       final query = _searchQuery.trim().toLowerCase();
       if (query.isEmpty) return true;
 
@@ -1987,19 +2306,126 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final overdueCount = overdueList.length;
     final overdueTotals = calcTotals(overdueList);
 
-    // 4. Bu Ay Onaylanan (Paid this month)
-    final paidThisMonthList = filteredAllPayments.where((item) {
+    // Helper: check if item is a rent payment (title == 'Kira')
+    bool isRent(Map<String, dynamic> item) {
+      final title = item['title'] as String? ?? '';
+      return title == 'Kira';
+    }
+
+    // Helper: check if item is a maintenance expense
+    bool isMaintenance(Map<String, dynamic> item) =>
+        item['is_maintenance'] == true;
+
+    // 4a. Kiracıdan tahsil edilen kira tutarı
+    final rentCollectedList = filteredAllPayments.where((item) {
       final status = item['status'] as String?;
       if (status != 'paid') return false;
-      final dateStr = item['declared_at'] as String? ??
-          item['updated_at'] as String? ??
-          item['created_at'] as String?;
-      if (dateStr == null) return false;
-      final dt = DateTime.tryParse(dateStr);
-      return dt != null && dt.month == now.month && dt.year == now.year;
+      if (!isRent(item)) return false;
+      return true;
     }).toList();
-    final paidCount = paidThisMonthList.length;
-    final paidTotals = calcTotals(paidThisMonthList);
+    final rentCollectedCount = rentCollectedList.length;
+    final rentCollectedTotals = calcTotals(rentCollectedList);
+
+    // 4b. Kiracıdan tahsil edilen fatura tutarı
+    final billsCollectedList = filteredAllPayments.where((item) {
+      final status = item['status'] as String?;
+      if (status != 'paid') return false;
+      if (isRent(item)) return false;
+      if (isMaintenance(item)) return false;
+      final receiverType = item['receiver_type'] as String? ?? 'owner';
+      if (receiverType != 'owner') return false;
+      return true;
+    }).toList();
+    final billsCollectedCount = billsCollectedList.length;
+    final billsCollectedTotals = calcTotals(billsCollectedList);
+
+    // 4c. Kurumlara ödenen fatura tutarı (kiraya dahil, ev sahibinin kuruma ödediği)
+    final billsToInstitutionsList = filteredAllPayments.where((item) {
+      final status = item['status'] as String?;
+      if (status != 'paid') return false;
+      if (isRent(item)) return false;
+      if (isMaintenance(item)) return false;
+      final receiverType = item['receiver_type'] as String? ?? 'owner';
+      if (receiverType != 'included') return false;
+      return true;
+    }).toList();
+    final billsToInstitutionsCount = billsToInstitutionsList.length;
+    final billsToInstitutionsTotals = calcTotals(billsToInstitutionsList);
+
+    // 4d. Ödenen bakım masraf tutarı (ev sahibinin ödemeyi tamamladığı)
+    final maintenancePaidList = filteredAllPayments.where((item) {
+      if (!isMaintenance(item)) return false;
+      final status = item['status'] as String?;
+      if (status != 'paid') return false;
+      final payerRole = item['payer_role'] as String? ?? '';
+      if (payerRole != 'landlord') return false;
+      return true;
+    }).toList();
+    final maintenancePaidCount = maintenancePaidList.length;
+    final maintenancePaidTotals = calcTotals(maintenancePaidList);
+
+    // 4e. Acenteye yapılacak masraf ödemesi tutarı (henüz ödenmemiş)
+    final maintenanceOwedToAgencyList = filteredAllPayments.where((item) {
+      if (!isMaintenance(item)) return false;
+      final status = item['status'] as String?;
+      if (status == 'paid') return false;
+      final costAmount =
+          (item['cost_amount'] as num?)?.toDouble() ?? 0.0;
+      final settledAmount =
+          (item['settled_amount'] as num?)?.toDouble() ?? 0.0;
+      final unpaidAmount = costAmount - settledAmount;
+      if (unpaidAmount <= 0) return false;
+      return true;
+    }).toList();
+    final maintenanceOwedToAgencyCount =
+        maintenanceOwedToAgencyList.length;    final maintenanceOwedToAgencyTotals = calcTotals(maintenanceOwedToAgencyList);
+
+    // 4f. Ödenmemiş bakım masrafları (kiracı beyan etti, henüz ödenmedi)
+    final unpaidMaintenanceList = filteredAllPayments.where((item) {
+      if (!isMaintenance(item)) return false;
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'paid') return false;
+      final costAmount = (item['cost_amount'] as num?)?.toDouble() ??
+          (item['amount'] as num?)?.toDouble() ?? 0.0;
+      if (costAmount <= 0) return false;
+      return true;
+    }).toList();
+    final unpaidMaintenanceCount = unpaidMaintenanceList.length;
+    final unpaidMaintenanceTotals = calcTotals(unpaidMaintenanceList);
+
+    // 4g. Kurumlara ödenmemiş faturalar (included, henüz ödenmedi)
+    final unpaidBillsToInstitutionsList = filteredAllPayments.where((item) {
+      if (isRent(item)) return false;
+      if (isMaintenance(item)) return false;
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'paid') return false;
+      final receiverType = item['receiver_type'] as String? ?? 'owner';
+      if (receiverType != 'included') return false;
+      final amt = (item['amount'] as num?)?.toDouble() ?? 0.0;
+      return amt > 0; // Tutar girilmiş ama henüz ödenmemiş
+    }).toList();
+    final unpaidBillsToInstitutionsCount = unpaidBillsToInstitutionsList.length;
+    final unpaidBillsToInstitutionsTotals = calcTotals(unpaidBillsToInstitutionsList);
+
+    // 4h. Kiracıya ödenecek mahsup borçları (maintenance offset credits)
+    final tenantOffsetList = filteredAllPayments.where((item) {
+      if (!isMaintenance(item)) return false;
+      final status = item['status'] as String? ?? 'pending';
+      if (status == 'paid') return false;
+      final paymentStatus = item['payment_status'] as String? ?? '';
+      // Mahsup onayı bekleyen veya ödenmemiş bakım masrafları
+      if (paymentStatus == 'pending_agency_approval' || paymentStatus == 'pending_opposite_approval') return true;
+      // Ev sahibinin kiracıya borçlu olduğu durumlar
+      final paidBy = item['paid_by'] as String? ?? '';
+      if (paidBy == 'tenant' && status == 'declared') return true;
+      return false;
+    }).toList();
+    final tenantOffsetCount = tenantOffsetList.length;
+    final tenantOffsetTotals = calcTotals(tenantOffsetList);
+
+    // Check if any property has included expenses (for card visibility)
+    final hasIncludedExpenses = propertiesList.any((p) =>
+        p.expensesTemplate.any((e) => e.receiver == PaymentReceiver.included));
 
     // Active Segment Raw List
     List<Map<String, dynamic>> rawList;
@@ -2009,8 +2435,24 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       rawList = unenteredBillsList;
     } else if (_selectedSegment == 2) {
       rawList = overdueList;
+    } else if (_selectedSegment == 3) {
+      rawList = rentCollectedList;
+    } else if (_selectedSegment == 4) {
+      rawList = billsCollectedList;
+    } else if (_selectedSegment == 5) {
+      rawList = billsToInstitutionsList;
+    } else if (_selectedSegment == 6) {
+      rawList = maintenancePaidList;
+    } else if (_selectedSegment == 7) {
+      rawList = maintenanceOwedToAgencyList;
+    } else if (_selectedSegment == 8) {
+      rawList = unpaidMaintenanceList;
+    } else if (_selectedSegment == 9) {
+      rawList = unpaidBillsToInstitutionsList;
+    } else if (_selectedSegment == 10) {
+      rawList = tenantOffsetList;
     } else {
-      rawList = filteredAllPayments.where((p) => p['status'] == 'paid').toList();
+      rawList = [];
     }
 
     var filtered = List<Map<String, dynamic>>.from(rawList);
@@ -2092,6 +2534,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         _selectedLandlords.isNotEmpty ||
         _selectedPropertyIds.isNotEmpty ||
         _selectedTypes.isNotEmpty ||
+        _selectedPeriodPreset != 'this_month' ||
         _groupBy != 'none' ||
         _sortBy != 'newest';
 
@@ -2099,6 +2542,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         (_selectedLandlords.isNotEmpty ? 1 : 0) +
         (_selectedPropertyIds.isNotEmpty ? 1 : 0) +
         (_selectedTypes.isNotEmpty ? 1 : 0) +
+        (_selectedPeriodPreset != 'this_month' ? 1 : 0) +
         (_groupBy != 'none' ? 1 : 0) +
         (_sortBy != 'newest' ? 1 : 0);
 
@@ -2137,7 +2581,106 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // Finance Sub-Tab Selector
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _financeSubTab = 0;
+                      _selectedSegment = 0;
+                      _applyPeriodPreset('all_time');
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _financeSubTab == 0 ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: _financeSubTab == 0 ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ] : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            LucideIcons.alertCircle,
+                            size: 14,
+                            color: _financeSubTab == 0 ? const Color(0xFFD97706) : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            loc.localeName == 'tr' ? 'Müdahale Gerekenler' : 'Action Required',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _financeSubTab == 0 ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _financeSubTab = 1;
+                      _selectedSegment = 3;
+                      _applyPeriodPreset('this_month');
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _financeSubTab == 1 ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: _financeSubTab == 1 ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ] : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            LucideIcons.fileBarChart,
+                            size: 14,
+                            color: _financeSubTab == 1 ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            loc.localeName == 'tr' ? 'Rapor' : 'Report',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _financeSubTab == 1 ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
 
           // Collapsible Search & Detailed Filters Panel Toggle
           InkWell(
@@ -2227,35 +2770,115 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Search Input
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                    decoration: InputDecoration(
-                      hintText: loc.searchPlaceholder,
-                      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
+                  // Search + Period Selector (responsive: side by side on desktop, stacked on mobile)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isNarrow = constraints.maxWidth < 500;
+                      if (isNarrow) {
+                        return Column(
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              onChanged: (val) => setState(() => _searchQuery = val),
+                              decoration: InputDecoration(
+                                hintText: loc.searchPlaceholder,
+                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                                prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() => _searchQuery = '');
+                                        },
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: double.infinity,
+                              child: _buildPeriodSelectorButton(),
+                            ),
+                          ],
+                        );
+                      }
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (val) => setState(() => _searchQuery = val),
+                              decoration: InputDecoration(
+                                hintText: loc.searchPlaceholder,
+                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                                prefixIcon: const Icon(LucideIcons.search, size: 16, color: Color(0xFF64748B)),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFF64748B)),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() => _searchQuery = '');
+                                        },
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          if (_financeSubTab == 0)
+                            // Tab 0: Sabit "Bu Ay" etiketi
+                            Container(
+                              key: _periodButtonKey,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(LucideIcons.calendar, size: 15, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    loc.periodAllTime,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             )
-                          : null,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: widget.colors.primary, width: 1.5),
-                      ),
-                    ),
+                          else
+                            _buildPeriodSelectorButton(),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
 
@@ -2414,6 +3037,8 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                             _selectedLandlords.clear();
                             _selectedPropertyIds.clear();
                             _selectedTypes.clear();
+                            _selectedPeriodPreset = 'this_month';
+                            _applyPeriodPreset('this_month');
                             _groupBy = 'none';
                             _sortBy = 'newest';
                           });
@@ -2437,66 +3062,86 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
           ],
           const SizedBox(height: 8),
 
-          // 4 Bento KPI Summary Cards (Interactive Segment Selector - under filters and reactive to them)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              final crossAxisCount = width > 850 ? 4 : 2;
-              final cardWidth = (width - ((crossAxisCount - 1) * 12)) / crossAxisCount;
+          // KPI Summary Cards
+          if (_financeSubTab == 0) ...[
+            // Tab 0: Expandable cards
+            _buildExpandableKpiRow(
+              context: context,
+              isMobile: isMobile,
+              cards: [
+                (index: 0, title: loc.financePendingApprovals, count: pendingCount, totals: pendingTotals, color: const Color(0xFFD97706), icon: LucideIcons.clock, directionLabel: null),
+                (index: 1, title: loc.unenteredBillsTitle, count: unenteredCount, totals: const {}, color: const Color(0xFFEA580C), icon: LucideIcons.fileQuestion, directionLabel: null),
+                (index: 2, title: loc.financeOverduePayments, count: overdueCount, totals: overdueTotals, color: const Color(0xFFE11D48), icon: LucideIcons.alertTriangle, directionLabel: null),
+                (index: 8, title: loc.localeName == 'tr' ? 'Ödenmemiş Bakım' : 'Unpaid Maintenance', count: unpaidMaintenanceCount, totals: unpaidMaintenanceTotals, color: const Color(0xFFDC2626), icon: LucideIcons.wrench, directionLabel: null),
+                if (hasIncludedExpenses)
+                  (index: 9, title: loc.localeName == 'tr' ? 'Ödenmemiş Kurum Faturaları' : 'Unpaid Institution Bills', count: unpaidBillsToInstitutionsCount, totals: unpaidBillsToInstitutionsTotals, color: const Color(0xFF6D28D9), icon: LucideIcons.building2, directionLabel: loc.localeName == 'tr' ? 'Ev Sahibi → Kurum' : 'Landlord → Institution'),
+                (index: 10, title: loc.localeName == 'tr' ? 'Kiracıya Mahsup' : 'Tenant Offsets', count: tenantOffsetCount, totals: tenantOffsetTotals, color: const Color(0xFF0D9488), icon: LucideIcons.arrowLeftRight, directionLabel: loc.localeName == 'tr' ? 'Ev Sahibi → Kiracı' : 'Landlord → Tenant'),
+              ],
+            ),
+          ] else ...[
+            // Tab 1: Normal cards (Wrap)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final crossAxisCount = width > 850 ? 4 : 2;
+                final cardWidth = (width - ((crossAxisCount - 1) * 12)) / crossAxisCount;
 
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                      // Tab 1: Rapor
+                      _FinanceKpiCard(
+                        width: cardWidth,
+                        title: loc.financeRentCollected,
+                        count: rentCollectedCount,
+                        totals: rentCollectedTotals,
+                        color: const Color(0xFF059669),
+                        icon: LucideIcons.home,
+                        isSelected: _selectedSegment == 3,
+                        onTap: () => setState(() => _selectedSegment = 3),
+                        colors: widget.colors,
+                      ),
+                  if (hasIncludedExpenses)
+                    _FinanceKpiCard(
+                      width: cardWidth,
+                      title: loc.financeBillsToInstitutions,
+                      count: billsToInstitutionsCount,
+                      totals: billsToInstitutionsTotals,
+                      color: const Color(0xFF7C3AED),
+                      icon: LucideIcons.building2,
+                      isSelected: _selectedSegment == 5,
+                      onTap: () => setState(() => _selectedSegment = 5),
+                      colors: widget.colors,
+                      tooltip: loc.financeBillsToInstitutionsTooltip,
+                    ),
                   _FinanceKpiCard(
                     width: cardWidth,
-                    title: loc.financePendingApprovals,
-                    count: pendingCount,
-                    totals: pendingTotals,
-                    color: const Color(0xFFD97706),
-                    icon: LucideIcons.clock,
-                    isSelected: _selectedSegment == 0,
-                    onTap: () => setState(() => _selectedSegment = 0),
+                    title: loc.financeMaintenancePaid,
+                    count: maintenancePaidCount,
+                    totals: maintenancePaidTotals,
+                    color: const Color(0xFF16A34A),
+                    icon: LucideIcons.wrench,
+                    isSelected: _selectedSegment == 6,
+                    onTap: () => setState(() => _selectedSegment = 6),
                     colors: widget.colors,
                   ),
                   _FinanceKpiCard(
                     width: cardWidth,
-                    title: loc.unenteredBillsTitle,
-                    count: unenteredCount,
-                    customHeroValue: '$unenteredCount ${loc.localeName == 'tr' ? 'Fatura' : (loc.localeName == 'ru' ? 'Счетов' : (loc.localeName.startsWith('sr') ? 'Računa' : 'Bills'))}',
-                    totals: const {},
-                    color: const Color(0xFFEA580C),
-                    icon: LucideIcons.fileQuestion,
-                    isSelected: _selectedSegment == 1,
-                    onTap: () => setState(() => _selectedSegment = 1),
+                    title: loc.financeMaintenanceOwedToAgency,
+                    count: maintenanceOwedToAgencyCount,
+                    totals: maintenanceOwedToAgencyTotals,
+                    color: const Color(0xFFF59E0B),
+                    icon: LucideIcons.handCoins,
+                    isSelected: _selectedSegment == 7,
+                    onTap: () => setState(() => _selectedSegment = 7),
                     colors: widget.colors,
                   ),
-                  _FinanceKpiCard(
-                    width: cardWidth,
-                    title: loc.financeOverduePayments,
-                    count: overdueCount,
-                    totals: overdueTotals,
-                    color: const Color(0xFFE11D48),
-                    icon: LucideIcons.alertTriangle,
-                    isSelected: _selectedSegment == 2,
-                    onTap: () => setState(() => _selectedSegment = 2),
-                    colors: widget.colors,
-                  ),
-                  _FinanceKpiCard(
-                    width: cardWidth,
-                    title: loc.financePaidThisMonth,
-                    count: paidCount,
-                    totals: paidTotals,
-                    color: const Color(0xFF059669),
-                    icon: LucideIcons.checkCircle2,
-                    isSelected: _selectedSegment == 3,
-                    onTap: () => setState(() => _selectedSegment = 3),
-                    colors: widget.colors,
-                  ),
-                ],
-              );
-            },
-          ),
+                  ],
+                );
+              },
+            ),
+          ],
           const SizedBox(height: 16),
 
           // View Mode & Counter Toolbar (Between Filter Card and List)
@@ -2668,6 +3313,7 @@ class _FinanceKpiCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final AgencyColorScheme colors;
+  final String? tooltip;
 
   const _FinanceKpiCard({
     required this.width,
@@ -2680,6 +3326,7 @@ class _FinanceKpiCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     required this.colors,
+    this.tooltip,
   });
 
   @override
@@ -2747,15 +3394,44 @@ class _FinanceKpiCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
-              ),
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+                if (tooltip != null)
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(tooltip!),
+                          duration: const Duration(seconds: 3),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 13,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
@@ -2771,6 +3447,189 @@ class _FinanceKpiCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Expandable KPI Card (for Action Required tab)
+// ---------------------------------------------------------------------------
+
+class _ExpandableKpiCard extends StatelessWidget {
+  final bool isExpanded;
+  final String title;
+  final int count;
+  final Map<String, double> totals;
+  final Color color;
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? directionLabel; // e.g. "Ev sahibi → Kurum"
+
+  const _ExpandableKpiCard({
+    required this.isExpanded,
+    required this.title,
+    required this.count,
+    required this.totals,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+    this.directionLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String heroValue = totals.isNotEmpty
+        ? CurrencyUtils.formatCurrencyMap(
+            totals,
+            useSymbols: true,
+            separator: ' + ',
+          )
+        : '$count';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.all(isExpanded ? 14 : 10),
+        decoration: BoxDecoration(
+          color: isExpanded ? color.withValues(alpha: 0.06) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isExpanded ? color : const Color(0xFFE2E8F0),
+            width: isExpanded ? 1.5 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isExpanded ? 0.04 : 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: isExpanded ? _buildExpanded() : _buildCollapsed(),
+      ),
+    );
+  }
+
+  Widget _buildCollapsed() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpanded() {
+    final String heroValue = totals.isNotEmpty
+        ? CurrencyUtils.formatCurrencyMap(
+            totals,
+            useSymbols: true,
+            separator: ' + ',
+          )
+        : '$count';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 14,
+              color: const Color(0xFF94A3B8),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF64748B),
+          ),
+        ),
+        if (directionLabel != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            directionLabel!,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: color.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+        const SizedBox(height: 6),
+        Text(
+          heroValue,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: totals.length > 1 ? 12 : 16,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -3165,7 +4024,7 @@ class _FinanceCompactRow extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    status == 'paid' ? loc.filterActiveLabel : (isOverdue ? loc.statusOverdue : loc.statusPending),
+                    status == 'paid' ? loc.filterActiveLabel : (status == 'pending_payment' ? loc.financialStatusPendingPayment : (isOverdue ? loc.statusOverdue : loc.statusPending)),
                     style: TextStyle(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
@@ -3522,6 +4381,19 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                         child: Text(
                           widget.loc.statusOverdue,
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFE11D48)),
+                        ),
+                      );
+                    } else if (status == 'pending_payment') {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF6E8),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Text(
+                          widget.loc.financialStatusPendingPayment,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
                         ),
                       );
                     } else if (amount == 0 && receiverType == 'owner' && rawTitle != 'Kira') {
@@ -4381,22 +5253,22 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: status == 'paid'
                                 ? const Color(0xFFECFDF5)
-                                : (status == 'declared' ? const Color(0xFFFFFBEB) : const Color(0xFFF1F5F9)),
+                                : (status == 'declared' ? const Color(0xFFFFFBEB) : (status == 'pending_payment' ? const Color(0xFFFEF6E8) : const Color(0xFFF1F5F9))),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: status == 'paid'
                                   ? const Color(0xFFA7F3D0)
-                                  : (status == 'declared' ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0)),
+                                  : (status == 'declared' ? const Color(0xFFFDE68A) : (status == 'pending_payment' ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0))),
                             ),
                           ),
                           child: Text(
-                            status.toUpperCase(),
+                            status == 'pending_payment' ? loc.financialStatusPendingPayment : status.toUpperCase(),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: status == 'paid'
                                   ? const Color(0xFF065F46)
-                                  : (status == 'declared' ? const Color(0xFFB45309) : const Color(0xFF64748B)),
+                                  : (status == 'declared' ? const Color(0xFFB45309) : (status == 'pending_payment' ? const Color(0xFFB45309) : const Color(0xFF64748B))),
                             ),
                           ),
                         ),

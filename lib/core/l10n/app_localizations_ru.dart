@@ -1820,6 +1820,47 @@ class AppLocalizationsRu extends AppLocalizations {
   String get financePaidThisMonth => 'Оплачено в этом месяце';
 
   @override
+  String get financeRentCollected => 'Арендная плата от арендаторов';
+
+  @override
+  String get financeBillsCollected => 'Счета от арендаторов';
+
+  @override
+  String get financeBillsToInstitutions => 'Счета оплачены организациям';
+
+  @override
+  String get financeBillsToInstitutionsTooltip =>
+      'Счета, собранные с арендаторов, считаются оплаченными организациям.';
+
+  @override
+  String get financeMaintenancePaid => 'Оплаченные расходы на обслуживание';
+
+  @override
+  String get financeMaintenanceOwedToAgency => 'Задолженность агентству';
+
+  @override
+  String get financeMaintenanceOwedToAgencyTooltip =>
+      'Счета, собранные с арендаторов, считаются оплаченными агентству.';
+
+  @override
+  String get periodThisMonth => 'Этот месяц';
+
+  @override
+  String get periodLastMonth => 'Прошлый месяц';
+
+  @override
+  String get periodThisYear => 'Этот год';
+
+  @override
+  String get periodLastYear => 'Прошлый год';
+
+  @override
+  String get periodAllTime => 'За всё время';
+
+  @override
+  String get periodCustom => 'Произвольный';
+
+  @override
   String get financeUpcoming7Days => 'Предстоящие (7 дней)';
 
   @override

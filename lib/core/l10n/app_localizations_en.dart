@@ -1806,6 +1806,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get financePaidThisMonth => 'Paid This Month';
 
   @override
+  String get financeRentCollected => 'Rent Collected from Tenants';
+
+  @override
+  String get financeBillsCollected => 'Bills Collected from Tenants';
+
+  @override
+  String get financeBillsToInstitutions => 'Bills Paid to Institutions';
+
+  @override
+  String get financeBillsToInstitutionsTooltip =>
+      'Bills collected from tenants are assumed to have been paid to the institutions.';
+
+  @override
+  String get financeMaintenancePaid => 'Maintenance Costs Paid';
+
+  @override
+  String get financeMaintenanceOwedToAgency => 'Maintenance Owed to Agency';
+
+  @override
+  String get financeMaintenanceOwedToAgencyTooltip =>
+      'Bills collected from tenants are assumed to have been paid to the agency.';
+
+  @override
+  String get periodThisMonth => 'This Month';
+
+  @override
+  String get periodLastMonth => 'Last Month';
+
+  @override
+  String get periodThisYear => 'This Year';
+
+  @override
+  String get periodLastYear => 'Last Year';
+
+  @override
+  String get periodAllTime => 'All Time';
+
+  @override
+  String get periodCustom => 'Custom';
+
+  @override
   String get financeUpcoming7Days => 'Upcoming (7 Days)';
 
   @override

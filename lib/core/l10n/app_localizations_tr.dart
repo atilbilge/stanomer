@@ -1804,6 +1804,47 @@ class AppLocalizationsTr extends AppLocalizations {
   String get financePaidThisMonth => 'Bu Ay Onaylanan';
 
   @override
+  String get financeRentCollected => 'Kiracıdan Tahsil Edilen Kira';
+
+  @override
+  String get financeBillsCollected => 'Kiracıdan Tahsil Edilen Fatura';
+
+  @override
+  String get financeBillsToInstitutions => 'Kurumlara Ödenen Fatura';
+
+  @override
+  String get financeBillsToInstitutionsTooltip =>
+      'Kiracıdan tahsil edilen faturaların kurumlara ödendiği varsayılmıştır.';
+
+  @override
+  String get financeMaintenancePaid => 'Ödenen Bakım Masrafı';
+
+  @override
+  String get financeMaintenanceOwedToAgency => 'Acenteye Yapılacak Ödeme';
+
+  @override
+  String get financeMaintenanceOwedToAgencyTooltip =>
+      'Kiracıdan tahsil edilen faturaların kuruma ödendiği varsayılmıştır.';
+
+  @override
+  String get periodThisMonth => 'Bu Ay';
+
+  @override
+  String get periodLastMonth => 'Geçen Ay';
+
+  @override
+  String get periodThisYear => 'Bu Yıl';
+
+  @override
+  String get periodLastYear => 'Geçen Yıl';
+
+  @override
+  String get periodAllTime => 'En Başından Beri';
+
+  @override
+  String get periodCustom => 'Özel';
+
+  @override
   String get financeUpcoming7Days => 'Yaklaşan (7 Gün)';
 
   @override

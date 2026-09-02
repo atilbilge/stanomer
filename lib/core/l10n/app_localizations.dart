@@ -3415,6 +3415,84 @@ abstract class AppLocalizations {
   /// **'Odobreno ovog meseca'**
   String get financePaidThisMonth;
 
+  /// No description provided for @financeRentCollected.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kirija naplaćena od zakupaca'**
+  String get financeRentCollected;
+
+  /// No description provided for @financeBillsCollected.
+  ///
+  /// In sr, this message translates to:
+  /// **'Racuni naplaceni od zakupaca'**
+  String get financeBillsCollected;
+
+  /// No description provided for @financeBillsToInstitutions.
+  ///
+  /// In sr, this message translates to:
+  /// **'Racuni placeni institucijama'**
+  String get financeBillsToInstitutions;
+
+  /// No description provided for @financeBillsToInstitutionsTooltip.
+  ///
+  /// In sr, this message translates to:
+  /// **'Racuni naplaceni od zakupaca smatraju se placenim institucijama.'**
+  String get financeBillsToInstitutionsTooltip;
+
+  /// No description provided for @financeMaintenancePaid.
+  ///
+  /// In sr, this message translates to:
+  /// **'Placeni troskovi odrzavanja'**
+  String get financeMaintenancePaid;
+
+  /// No description provided for @financeMaintenanceOwedToAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dug agenciji za odrzavanje'**
+  String get financeMaintenanceOwedToAgency;
+
+  /// No description provided for @financeMaintenanceOwedToAgencyTooltip.
+  ///
+  /// In sr, this message translates to:
+  /// **'Racuni naplaceni od zakupaca smatraju se placenim agenciji.'**
+  String get financeMaintenanceOwedToAgencyTooltip;
+
+  /// No description provided for @periodThisMonth.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ovaj mesec'**
+  String get periodThisMonth;
+
+  /// No description provided for @periodLastMonth.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prošli mesec'**
+  String get periodLastMonth;
+
+  /// No description provided for @periodThisYear.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ova godina'**
+  String get periodThisYear;
+
+  /// No description provided for @periodLastYear.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prošla godina'**
+  String get periodLastYear;
+
+  /// No description provided for @periodAllTime.
+  ///
+  /// In sr, this message translates to:
+  /// **'Od početka'**
+  String get periodAllTime;
+
+  /// No description provided for @periodCustom.
+  ///
+  /// In sr, this message translates to:
+  /// **'Posebno'**
+  String get periodCustom;
+
   /// No description provided for @financeUpcoming7Days.
   ///
   /// In sr, this message translates to:
