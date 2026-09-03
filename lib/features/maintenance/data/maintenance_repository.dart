@@ -341,6 +341,15 @@ class MaintenanceRepository {
           if (currency != null) 'currency': currency,
           if (invoicePdfUrl != null) 'receipt_url': invoicePdfUrl,
         };
+        if (paidBy == 'tenant') {
+          if (paymentStatus == 'paid') {
+            chargePayload['charge_type'] = 'direct_charge';
+            chargePayload['settlement_method'] = 'separate_payment';
+          } else {
+            chargePayload['charge_type'] = 'reimbursement';
+            chargePayload['settlement_method'] = 'rent_offset';
+          }
+        }
         if (paymentStatus == 'paid') chargePayload['paid_at'] = DateTime.now().toIso8601String();
         if (paymentStatus == 'pending_payment') chargePayload['approved_at'] = DateTime.now().toIso8601String();
 
@@ -562,6 +571,18 @@ class MaintenanceRepository {
           'rejected_by': user?.id,
         })
         .eq('id', requestId);
+
+    try {
+      await _client
+          .from('maintenance_charges')
+          .update({
+            'status': 'rejected',
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('maintenance_request_id', requestId);
+    } catch (e) {
+      print('Error updating maintenance_charges to rejected: $e');
+    }
 
     final note = messageNote ?? '❌ Masraf beyanı reddedildi: $reason';
     try {
@@ -854,6 +875,21 @@ class MaintenanceRepository {
     }
 
     return created;
+  }
+
+  Future<List<MaintenanceCharge>> getMaintenanceCharges(String requestId) async {
+    final response = await _client
+        .from('maintenance_charges')
+        .select()
+        .eq('maintenance_request_id', requestId)
+        .order('created_at', ascending: true);
+    return (response as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> updateMaintenanceCharge(MaintenanceCharge charge) async {
+    final payload = charge.toJson();
+    payload['updated_at'] = DateTime.now().toIso8601String();
+    await _client.from('maintenance_charges').update(payload).eq('id', charge.id);
   }
 
   Future<void> updateMaintenanceChargeStatus({

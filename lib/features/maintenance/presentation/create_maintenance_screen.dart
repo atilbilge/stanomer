@@ -19,6 +19,7 @@ import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../domain/maintenance_charge.dart';
 import '../data/maintenance_repository.dart';
+import '../../agency/presentation/agency_dashboard_screen.dart';
 
 class CreateMaintenanceRequestScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -330,19 +331,15 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         if (isAgencyManaged) {
           if (isAgency) {
             if (effectivePaidBy == 'agency') {
-              finalPaymentStatus = (_paymentStatus == 'pending_review') ? 'pending_review' : 'pending_payment';
+              finalPaymentStatus = 'pending_payment';
             } else {
               finalPaymentStatus = (_paymentStatus == 'paid') ? 'paid' : 'pending_payment';
             }
           } else if (isLandlord) {
-            finalPaymentStatus = (_paymentStatus == 'paid')
-                ? 'pending_agency_approval'
-                : 'pending_opposite_approval';
+            finalPaymentStatus = 'pending_agency_approval';
           } else {
             // Tenant on agency property
-            finalPaymentStatus = (_paymentStatus == 'paid')
-                ? 'paid'
-                : 'pending_agency_approval';
+            finalPaymentStatus = 'pending_agency_approval';
           }
         } else {
           // Self-managed property (direct landlord-tenant)
@@ -377,15 +374,18 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
         final String? debtorId;
         final String? creditorId;
 
+        final bool isAgencyTenantDamage = (effectivePaidBy == 'agency') && (_paymentStatus == 'pending_review');
+
         if (effectivePaidBy == 'agency') {
           chargeType = 'agency_advance';
-          if (_paymentStatus == 'pending_payment') {
-            // Agency paid for fixture -> Landlord is debtor
-            debtorId = widget.property.landlordId;
+          if (isAgencyTenantDamage) {
+            // Agency paid for tenant damage/usage -> Tenant is debtor
+            final activeContract = ref.read(activeContractProvider(widget.property.id)).value;
+            debtorId = widget.property.tenantId ?? activeContract?.tenantId;
             creditorId = widget.property.agencyId ?? user?.id;
           } else {
-            // Agency paid for tenant damage/usage -> Tenant is debtor
-            debtorId = widget.property.tenantId;
+            // Agency paid for fixture -> Landlord is debtor (default)
+            debtorId = widget.property.landlordId;
             creditorId = widget.property.agencyId ?? user?.id;
           }
         } else if (effectivePaidBy == 'tenant') {
@@ -431,10 +431,10 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
           try {
             final String initialMsg;
             if (effectivePaidBy == 'agency') {
-              if (_paymentStatus == 'pending_payment') {
-                initialMsg = '📄 Acente: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Mülk Demirbaşı - Ev Sahibi Karşılayacak).';
-              } else {
+              if (isAgencyTenantDamage) {
                 initialMsg = '📄 Acente: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Kiracı Kullanımı / Hasarı - Kiracıya Yansıt).';
+              } else {
+                initialMsg = '📄 Acente: ${CurrencyUtils.formatAmount(finalCostAmount, finalCurrency ?? 'EUR', useSymbol: true)} tutarında masraf bildirdi (Mülk Demirbaşı - Ev Sahibi Karşılayacak).';
               }
             } else if (effectivePaidBy == 'tenant') {
               initialMsg = (_paymentStatus == 'paid')
@@ -462,6 +462,8 @@ class _CreateMaintenanceRequestScreenState extends ConsumerState<CreateMaintenan
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
       ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
 
       if (mounted) {
         context.pop();

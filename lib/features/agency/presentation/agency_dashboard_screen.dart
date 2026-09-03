@@ -35,6 +35,7 @@ import '../../notifications/presentation/widgets/notification_badge.dart';
 import '../data/agency_repository.dart';
 import '../domain/agency_color_scheme.dart';
 import '../../maintenance/domain/maintenance_request.dart';
+import '../../maintenance/domain/maintenance_charge.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 
 // ---------------------------------------------------------------------------
@@ -178,6 +179,9 @@ final agencyAllPaymentsProvider =
   final properties = propertiesAsync.value ?? [];
   final maintenanceAsync = ref.watch(agencyMaintenanceRequestsProvider);
   final maintenanceList = maintenanceAsync.value ?? [];
+  final chargesAsync = ref.watch(agencyMaintenanceChargesProvider);
+  final charges = chargesAsync.value ?? [];
+  final chargesByRequestId = {for (var c in charges) c.maintenanceRequestId: c};
 
   if (properties.isEmpty) return Stream.value([]);
 
@@ -215,22 +219,36 @@ final agencyAllPaymentsProvider =
           if (propObj == null) continue;
           final propMap = propObj.toJson();
 
+          final effectiveAmount = (m.remainingAmount > 0) ? m.remainingAmount : cost;
+
+          final matchingCharge = chargesByRequestId[m.id];
+          final isTenantDebtor = (m.paidBy == 'agency' && matchingCharge != null && matchingCharge.debtorId != propObj.landlordId);
+          final isLandlordDebtor = (m.paidBy == 'agency' && !isTenantDebtor) ||
+              (m.paidBy == 'tenant');
+
           final mJson = {
             'id': m.id,
             'property_id': m.propertyId,
             'property': propMap,
             'title': '🛠️ ${m.title}',
-            'amount': cost,
+            'amount': effectiveAmount,
             'cost_amount': cost,
+            'remaining_amount': m.remainingAmount,
             'settled_amount': m.settledAmount,
             'currency': m.currency ?? (propObj.currency.isNotEmpty ? propObj.currency : 'EUR'),
-            'due_date': (m.paymentDate ?? m.createdAt ?? DateTime.now()).toIso8601String(),
+            'due_date': (m.paymentDate ?? m.updatedAt ?? m.createdAt ?? DateTime.now()).toIso8601String(),
             'status': isPendingApproval ? 'declared' : (isPendingPayment ? 'pending_payment' : 'paid'),
-            'receiver_type': m.paidBy == 'tenant' ? 'landlord' : 'tenant',
+            'payment_status': m.paymentStatus,
+            'receiver_type': isTenantDebtor ? 'tenant' : 'landlord',
+            'paid_by': m.paidBy,
             'receipt_url': m.invoicePdfUrl,
             'is_maintenance': true,
             'maintenance_request': m,
-            'payer_role': m.paidBy == 'tenant' ? 'tenant' : 'landlord',
+            'maintenance_charge': matchingCharge,
+            'debtor_id': matchingCharge?.debtorId,
+            'is_tenant_debtor': isTenantDebtor,
+            'is_landlord_debtor': isLandlordDebtor,
+            'payer_role': m.paidBy ?? 'landlord',
             'created_at': m.createdAt?.toIso8601String(),
           };
           result.add(mJson);
@@ -254,7 +272,7 @@ final agencyPendingPaymentsProvider =
     StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
   final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
   final payments = allPaymentsAsync.value ?? [];
-  return Stream.value(payments.where((item) => item['status'] == 'declared').toList());
+  return Stream.value(payments.where((item) => item['status'] == 'declared' || item['status'] == 'disputed').toList());
 });
 
 final agencyContractsMapProvider = StreamProvider.autoDispose<Map<String, Contract?>>((ref) {
@@ -2218,7 +2236,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       }
 
       // 4. Period (Date Range) Filter
-      if (_periodStartDate != null || _periodEndDate != null) {
+      if (_financeSubTab != 0 && (_periodStartDate != null || _periodEndDate != null)) {
         final dateStr = payment['due_date'] as String? ??
             payment['declared_at'] as String? ??
             payment['created_at'] as String?;
@@ -2271,13 +2289,13 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final pendingCount = filteredPendingPayments.length;
     final pendingTotals = calcTotals(filteredPendingPayments);
 
-    // 2. Girilmeyen Faturalar (Unentered / Awaiting Bills where amount == 0 for owner expense)
+    // 2. Girilmeyen Faturalar (Unentered / Awaiting Bills where amount == 0 for owner or included expense)
     final unenteredBillsList = filteredAllPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
-      if (status == 'paid' || status == 'declared') return false;
+      if (status == 'paid' || status == 'declared' || status == 'disputed') return false;
       final receiverType = item['receiver_type'] as String? ?? 'owner';
       final title = item['title'] as String? ?? 'Kira';
-      final isOwnerExpense = receiverType == 'owner' && title != 'Kira';
+      final isOwnerExpense = (receiverType == 'owner' || receiverType == 'included') && title != 'Kira';
       if (!isOwnerExpense) return false;
 
       final amt = (item['amount'] as num?)?.toDouble() ?? 0.0;
@@ -2288,7 +2306,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     // 3. Gecikmedeki Borçlar (Overdue / pending with due_date < today)
     final overdueList = filteredAllPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
-      if (status == 'declared' || status == 'paid') return false;
+      if (status == 'declared' || status == 'disputed' || status == 'paid') return false;
       final amt = (item['amount'] as num?)?.toDouble() ??
           (item['total_amount'] as num?)?.toDouble() ??
           (item['rent_amount'] as num?)?.toDouble() ??
@@ -2352,39 +2370,81 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final billsToInstitutionsCount = billsToInstitutionsList.length;
     final billsToInstitutionsTotals = calcTotals(billsToInstitutionsList);
 
-    // 4d. Ödenen bakım masraf tutarı (ev sahibinin ödemeyi tamamladığı)
+    // 4d. Ödenen bakım masraf tutarı (ev sahibinin ödemeyi tamamladığı veya acentenin peşin ödeyip ev sahibine rücu ettiği ve tahsilatı tamamlanan masraflar)
     final maintenancePaidList = filteredAllPayments.where((item) {
       if (!isMaintenance(item)) return false;
       final status = item['status'] as String?;
-      if (status != 'paid') return false;
-      final payerRole = item['payer_role'] as String? ?? '';
-      if (payerRole != 'landlord') return false;
-      return true;
+      final paymentStatus = item['payment_status'] as String?;
+      if (status != 'paid' && paymentStatus != 'paid') return false;
+
+      final isLandlordDebtor = item['is_landlord_debtor'] == true;
+      final isTenantDebtor = item['is_tenant_debtor'] == true;
+      final mReq = item['maintenance_request'] as MaintenanceRequest?;
+      final paidBy = item['paid_by'] as String? ?? mReq?.paidBy ?? item['payer_role'] as String? ?? '';
+
+      // 1) Ev sahibinin doğrudan ödediği masraflar
+      if (paidBy == 'landlord') return true;
+
+      // 2) Acentenin peşin ödeyip ev sahibine rücu ettiği ve ödemesi/mahsubu tamamlanan masraflar
+      if (paidBy == 'agency') {
+        // Kiracıya yansıtılan kullanım hasarları bu kutuda yer almaz
+        if (isTenantDebtor) return false;
+        // Ev sahibine rücu edilen veya borçlusu ev sahibi olan masraflar
+        if (isLandlordDebtor) return true;
+        // Charge kaydı yoksa varsayılan mülk masrafıdır (ev sahibi)
+        return true;
+      }
+
+      return false;
     }).toList();
     final maintenancePaidCount = maintenancePaidList.length;
     final maintenancePaidTotals = calcTotals(maintenancePaidList);
 
-    // 4e. Acenteye yapılacak masraf ödemesi tutarı (henüz ödenmemiş)
+    // 4e. Acenteye yapılacak masraf ödemesi tutarı (henüz ödenmemiş, acente tarafından karşılanan EV SAHİBİ BORÇLARI)
     final maintenanceOwedToAgencyList = filteredAllPayments.where((item) {
       if (!isMaintenance(item)) return false;
+      final mReq = item['maintenance_request'] as MaintenanceRequest?;
+      final paidBy = item['paid_by'] as String? ?? mReq?.paidBy ?? item['payer_role'] as String? ?? '';
+      // Yalnızca acentenin peşin ödediği ve acenteye borçlu olunan masraflar
+      if (paidBy != 'agency') return false;
+
+      // Kullanıcı kuralı: Bu kutu YALNIZCA ev sahibinin acenteye olan borçlarını göstermelidir.
+      // Kiracıya yansıtılan (kiracı kullanım/hasar) borçlar bu kutuda yer almaz.
+      if (item['is_tenant_debtor'] == true) return false;
+      final charge = item['maintenance_charge'] as MaintenanceCharge?;
+      final propMap = item['property'] as Map<String, dynamic>?;
+      if (charge != null && propMap != null) {
+        final tenantId = propMap['tenant_id'] as String?;
+        if (tenantId != null && charge.debtorId == tenantId) return false;
+      }
+
       final status = item['status'] as String?;
-      if (status == 'paid') return false;
+      final paymentStatus = item['payment_status'] as String? ?? mReq?.paymentStatus ?? '';
+      if (status == 'paid' || paymentStatus == 'paid' || paymentStatus == 'rejected') return false;
       final costAmount =
-          (item['cost_amount'] as num?)?.toDouble() ?? 0.0;
+          (item['cost_amount'] as num?)?.toDouble() ?? mReq?.costAmount ?? 0.0;
       final settledAmount =
-          (item['settled_amount'] as num?)?.toDouble() ?? 0.0;
-      final unpaidAmount = costAmount - settledAmount;
+          (item['settled_amount'] as num?)?.toDouble() ?? mReq?.settledAmount ?? 0.0;
+      final unpaidAmount = (item['remaining_amount'] as num?)?.toDouble() ??
+          mReq?.remainingAmount ??
+          (costAmount - settledAmount);
       if (unpaidAmount <= 0) return false;
       return true;
     }).toList();
-    final maintenanceOwedToAgencyCount =
-        maintenanceOwedToAgencyList.length;    final maintenanceOwedToAgencyTotals = calcTotals(maintenanceOwedToAgencyList);
+    final maintenanceOwedToAgencyCount = maintenanceOwedToAgencyList.length;
+    final maintenanceOwedToAgencyTotals = calcTotals(maintenanceOwedToAgencyList);
 
-    // 4f. Ödenmemiş bakım masrafları (kiracı beyan etti, henüz ödenmedi)
+    // 4f. Ödenmemiş bakım masrafları (onaylanmış, henüz ödenmedi)
     final unpaidMaintenanceList = filteredAllPayments.where((item) {
       if (!isMaintenance(item)) return false;
       final status = item['status'] as String? ?? 'pending';
-      if (status == 'paid') return false;
+      if (status == 'paid' || status == 'declared') return false;
+      final paymentStatus = item['payment_status'] as String? ?? '';
+      if (paymentStatus == 'pending_agency_approval' ||
+          paymentStatus == 'pending_review' ||
+          paymentStatus == 'pending_opposite_approval') {
+        return false;
+      }
       final costAmount = (item['cost_amount'] as num?)?.toDouble() ??
           (item['amount'] as num?)?.toDouble() ?? 0.0;
       if (costAmount <= 0) return false;
@@ -2408,17 +2468,26 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final unpaidBillsToInstitutionsTotals = calcTotals(unpaidBillsToInstitutionsList);
 
     // 4h. Kiracıya ödenecek mahsup borçları (maintenance offset credits)
+    // Koşul: paidBy='tenant' (kiracı demirbaş masrafını peşin ödedi) ve henüz mahsup/iade edilmedi.
     final tenantOffsetList = filteredAllPayments.where((item) {
       if (!isMaintenance(item)) return false;
-      final status = item['status'] as String? ?? 'pending';
-      if (status == 'paid') return false;
-      final paymentStatus = item['payment_status'] as String? ?? '';
-      // Mahsup onayı bekleyen veya ödenmemiş bakım masrafları
-      if (paymentStatus == 'pending_agency_approval' || paymentStatus == 'pending_opposite_approval') return true;
-      // Ev sahibinin kiracıya borçlu olduğu durumlar
-      final paidBy = item['paid_by'] as String? ?? '';
-      if (paidBy == 'tenant' && status == 'declared') return true;
-      return false;
+      final mReq = item['maintenance_request'] as MaintenanceRequest?;
+      final paidBy = item['paid_by'] as String? ?? mReq?.paidBy ?? item['payer_role'] as String? ?? '';
+      if (paidBy != 'tenant') return false; // Sadece kiracının peşin ödediği durumlar
+      final paymentStatus = item['payment_status'] as String? ?? mReq?.paymentStatus ?? '';
+      // Kapatılmış veya reddedilmiş kayıtları çıkar
+      if (paymentStatus == 'paid' || paymentStatus == 'rejected') return false;
+      // Kalan tutarı hesapla
+      final remainingAmount = (item['remaining_amount'] as num?)?.toDouble() ??
+          mReq?.remainingAmount ??
+          0.0;
+      final costAmount = (item['cost_amount'] as num?)?.toDouble() ??
+          (item['amount'] as num?)?.toDouble() ??
+          mReq?.costAmount ??
+          0.0;
+      final effectiveCost = remainingAmount > 0 ? remainingAmount : costAmount;
+      if (effectiveCost <= 0) return false;
+      return true;
     }).toList();
     final tenantOffsetCount = tenantOffsetList.length;
     final tenantOffsetTotals = calcTotals(tenantOffsetList);
@@ -2519,7 +2588,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         final String key;
         if (st == 'paid') {
           key = loc.filterActiveLabel;
-        } else if (st == 'declared') {
+        } else if (st == 'declared' || st == 'disputed') {
           key = loc.financePendingApprovals;
         } else if (st == 'overdue') {
           key = loc.financeOverduePayments;
@@ -3136,6 +3205,9 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                     isSelected: _selectedSegment == 7,
                     onTap: () => setState(() => _selectedSegment = 7),
                     colors: widget.colors,
+                    tooltip: loc.localeName == 'tr'
+                        ? 'Acentenin peşin ödediği ev sahibi demirbaş masraf borçları.'
+                        : 'Property fixture expenses paid upfront by agency (owed by landlord).',
                   ),
                   ],
                 );
@@ -4146,6 +4218,10 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
     final daysOverdue = dueDate != null && dueDate.isBefore(today) ? today.difference(dueDate).inDays : 0;
 
     final targetProperty = pObj ?? (propertyData != null && propertyData['id'] != null ? Property.fromJson(propertyData) : null);
+    final userRole = ref.watch(userRoleProvider) ?? 'landlord';
+    final isLandlord = userRole == 'landlord';
+    final agencyId = pObj?.agencyId ?? propertyData?['agency_id'] as String?;
+    final bool isAgencyManaged = agencyId != null && agencyId.trim().isNotEmpty;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -4357,17 +4433,37 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF065F46)),
                         ),
                       );
-                    } else if (status == 'declared') {
+                    } else if (status == 'disputed') {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFBEB),
+                          color: const Color(0xFFFFF1F2),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
+                          border: Border.all(color: const Color(0xFFFDA4AF)),
                         ),
                         child: Text(
-                          widget.loc.financePendingApprovals,
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
+                          widget.loc.disputedHeader.toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFE11D48)),
+                        ),
+                      );
+                    } else if (status == 'declared') {
+                      final isWaitingAgency = isLandlord && isAgencyManaged;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isWaitingAgency ? const Color(0xFFEFF6FF) : const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: isWaitingAgency ? const Color(0xFFDBEAFE) : const Color(0xFFFDE68A)),
+                        ),
+                        child: Text(
+                          isWaitingAgency
+                              ? widget.loc.waitingForAgencyApproval.toUpperCase()
+                              : widget.loc.financePendingApprovals,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: isWaitingAgency ? const Color(0xFF1E40AF) : const Color(0xFFB45309),
+                          ),
                         ),
                       );
                     } else if (isOverdue) {
@@ -4396,7 +4492,7 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFFB45309)),
                         ),
                       );
-                    } else if (amount == 0 && receiverType == 'owner' && rawTitle != 'Kira') {
+                    } else if (amount == 0 && (receiverType == 'owner' || receiverType == 'included') && rawTitle != 'Kira') {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
@@ -4467,14 +4563,49 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                       const SizedBox(width: 4),
                     ],
 
-                    // Quick Approve for Declared
-                    if (widget.segment == 0 || status == 'declared') ...[
+                    // Quick Actions
+                    if (status == 'disputed') ...[
                       IconButton(
-                        icon: const Icon(LucideIcons.check, size: 15, color: Color(0xFF059669)),
-                        tooltip: widget.loc.approvePayment,
+                        icon: const Icon(LucideIcons.alertCircle, size: 15, color: Color(0xFFE11D48)),
+                        tooltip: widget.loc.disputedHeader,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                        onPressed: () async {
+                        onPressed: () {
+                          final targetProperty = widget.propertiesMap[propertyId];
+                          if (targetProperty != null) {
+                            context.push(
+                              '/property-detail',
+                              extra: {
+                                'property': targetProperty,
+                                'initialTabIndex': 1,
+                                'initialExpandedPaymentId': id,
+                              },
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                    ] else if (widget.segment == 0 || status == 'declared') ...[
+                      if (isLandlord && isAgencyManaged) ...[
+                        Tooltip(
+                          message: widget.loc.waitingForAgencyApproval,
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(LucideIcons.clock, size: 14, color: Color(0xFF2563EB)),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ] else ...[
+                        IconButton(
+                          icon: const Icon(LucideIcons.check, size: 15, color: Color(0xFF059669)),
+                          tooltip: widget.loc.approvePayment,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          onPressed: () async {
                           try {
                             if (widget.payment['is_maintenance'] == true) {
                               final mRepo = ref.read(maintenanceRepositoryProvider);
@@ -4537,6 +4668,7 @@ class _FinanceTableRowState extends ConsumerState<_FinanceTableRow> {
                           }
                         },
                       ),
+                    ],
                     ],
 
                     // Chevron Detail button
@@ -4608,6 +4740,11 @@ class _FinancePaymentItemCard extends ConsumerWidget {
     final propertyName = propertyData?['name'] as String? ?? pObj?.name ?? loc.managedProperties;
     final propertyAddress = propertyData?['address'] as String? ?? pObj?.address ?? '';
     final cityName = propertyData?['city'] as String? ?? pObj?.city ?? '';
+
+    final userRole = ref.watch(userRoleProvider) ?? 'landlord';
+    final isLandlord = userRole == 'landlord';
+    final agencyId = pObj?.agencyId ?? propertyData?['agency_id'] as String?;
+    final bool isAgencyManaged = agencyId != null && agencyId.trim().isNotEmpty;
 
     // Landlord & Tenant info extraction
     final landlordData = propertyData?['landlord'] as Map<String, dynamic>?;
@@ -4900,6 +5037,58 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 6),
                     ],
+                    if (status == 'disputed') ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFDA4AF)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.alertCircle, size: 11, color: Color(0xFFE11D48)),
+                            const SizedBox(width: 4),
+                            Text(
+                              loc.disputedHeader,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFE11D48),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    if (status == 'declared' && isLandlord && isAgencyManaged) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFDBEAFE)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.clock, size: 11, color: Color(0xFF2563EB)),
+                            const SizedBox(width: 4),
+                            Text(
+                              loc.waitingForAgencyApproval,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E40AF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                     if (daysOverdue > 0 && status != 'paid')
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -4986,7 +5175,33 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                   ],
                 ),
 
-                const SizedBox(height: 10),
+                if (status == 'disputed' && (payment['dispute_reason'] as String?)?.isNotEmpty == true) ...[
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFFE4E6)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(LucideIcons.alertCircle, size: 14, color: Color(0xFFE11D48)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${loc.dispute}: ${payment['dispute_reason']}',
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF9F1239), fontWeight: FontWeight.w500),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // Action Buttons Section
                 Align(
@@ -4997,9 +5212,69 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     alignment: WrapAlignment.end,
                     children: [
-                      // Segment 0: Approve / Reject Actions
-                      if (segment == 0 || status == 'declared') ...[
-                        ElevatedButton(
+                      // Segment 0: Approve / Reject or Dispute Review Actions
+                      if (status == 'disputed') ...[
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final targetProperty = propertiesMap[propertyId];
+                            if (targetProperty != null) {
+                              context.push(
+                                '/property-detail',
+                                extra: {
+                                  'property': targetProperty,
+                                  'initialTabIndex': 1,
+                                  'initialExpandedPaymentId': id,
+                                },
+                              );
+                            }
+                          },
+                          icon: const Icon(LucideIcons.edit3, size: 14),
+                          label: Text(
+                            loc.localeName == 'tr'
+                                ? 'İtirazı İncele'
+                                : (loc.localeName == 'ru'
+                                    ? 'Рассмотреть'
+                                    : (loc.localeName.startsWith('sr')
+                                        ? 'Pregledaj'
+                                        : 'Review Dispute')),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFF1F2),
+                            foregroundColor: const Color(0xFFE11D48),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ] else if (segment == 0 || status == 'declared') ...[
+                        if (isLandlord && isAgencyManaged) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFDBEAFE)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.clock, size: 13, color: Color(0xFF2563EB)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  loc.waitingForAgencyApproval,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E40AF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          ElevatedButton(
                           onPressed: () async {
                             try {
                               if (payment['is_maintenance'] == true) {
@@ -5076,16 +5351,16 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                               if (payment['is_maintenance'] == true) {
                                 final mRepo = ref.read(maintenanceRepositoryProvider);
                                 final mReq = payment['maintenance_request'] as MaintenanceRequest?;
-                                final payerRole = (payment['payer_role'] as String?) ?? mReq?.paidBy ?? 'landlord';
-                                final isLandlordResponsibility = payerRole == 'landlord';
-                                final targetStatus = isLandlordResponsibility ? 'pending_payment' : 'paid';
+                                final payerRole = (payment['payer_role'] as String?) ?? (payment['paid_by'] as String?) ?? mReq?.paidBy ?? 'tenant';
+                                final isReimbursement = payerRole == 'tenant';
+                                final targetStatus = isReimbursement ? 'pending_payment' : 'paid';
                                 final resolvedAmount = mReq?.costAmount ?? (payment['cost_amount'] as num?)?.toDouble() ?? (payment['amount'] as num?)?.toDouble();
 
                                 await mRepo.updateFinancialDetails(
                                   requestId: id,
                                   propertyId: propertyId,
                                   costAmount: resolvedAmount,
-                                  settledAmount: isLandlordResponsibility ? 0.0 : (resolvedAmount ?? 0.0),
+                                  settledAmount: isReimbursement ? 0.0 : (resolvedAmount ?? 0.0),
                                   currency: (payment['currency'] as String?) ?? mReq?.currency,
                                   paidBy: payerRole,
                                   paymentDate: DateTime.now(),
@@ -5093,7 +5368,7 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                                   invoicePdfUrl: (payment['receipt_url'] as String?) ?? mReq?.invoicePdfUrl,
                                 );
                                 try {
-                                  final msg = isLandlordResponsibility
+                                  final msg = isReimbursement
                                       ? '💰 ${payment['amount']} ${payment['currency']} tutarındaki masraf acente tarafından onaylandı. Kiradan düşülebilir / mahsup edilebilir.'
                                       : '💰 ${payment['amount']} ${payment['currency']} tutarındaki bakım ödemesi acente tarafından onaylandı ve kapatıldı.';
                                   await mRepo.addMessage(
@@ -5150,9 +5425,10 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                         ),
-                      ]
-                      // Segment 1: Girilmeyen Faturalar (Fatura Gir Butonu)
-                      else if (segment == 1 || (amount == 0 && receiverType == 'owner' && rawTitle != 'Kira')) ...[
+                      ],
+                    ]
+                    // Segment 1: Girilmeyen Faturalar (Fatura Gir Butonu)
+                    else if (segment == 1 || (amount == 0 && (receiverType == 'owner' || receiverType == 'included') && rawTitle != 'Kira')) ...[
                         ElevatedButton.icon(
                           onPressed: () {
                             final targetProperty = propertiesMap[propertyId];

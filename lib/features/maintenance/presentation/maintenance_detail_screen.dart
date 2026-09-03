@@ -533,7 +533,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     );
     final bool isLastDeclaredByTenant = lastDeclarationMsg != null && lastDeclarationMsg.userId.isNotEmpty
         ? lastDeclarationMsg.userId == widget.property.tenantId
-        : (request.reporterId == widget.property.tenantId);
+        : (request.reporterId == widget.property.tenantId || request.paidBy == 'tenant');
 
     String finStatusLabel = '';
     Color finStatusColor = const Color(0xFF64748B);
@@ -554,10 +554,17 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         finStatusIcon = LucideIcons.scale;
         break;
       case MaintenancePaymentStatus.pendingReview:
-        finStatusLabel = loc.financialStatusPendingReview;
-        finStatusColor = const Color(0xFF1D4ED8);
-        finStatusBg = const Color(0xFFEFF6FF);
-        finStatusIcon = LucideIcons.fileSearch;
+        if (isPayerAgency) {
+          finStatusLabel = loc.localeName == 'tr' ? 'Tahsilat Bekliyor' : (loc.localeName == 'ru' ? 'Ожидает взыскания' : (loc.localeName.startsWith('sr') ? 'Čeka naplatu' : 'Pending Collection'));
+          finStatusColor = const Color(0xFF7C3AED);
+          finStatusBg = const Color(0xFFF5F3FF);
+          finStatusIcon = LucideIcons.arrowDownLeft;
+        } else {
+          finStatusLabel = loc.financialStatusPendingReview;
+          finStatusColor = const Color(0xFF1D4ED8);
+          finStatusBg = const Color(0xFFEFF6FF);
+          finStatusIcon = LucideIcons.fileSearch;
+        }
         break;
       case MaintenancePaymentStatus.pendingPayment:
         if (isPayerTenant) {
@@ -597,21 +604,21 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       orElse: () => null,
     );
 
-    final bool isTenantSelfDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.tenantId) ||
-        (request.paidBy == 'tenant' && request.paymentStatus == 'paid');
+    final bool isTenantSelfDeclared = (request.paidBy == 'tenant' &&
+        (latestCharge != null ? (latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.tenantId) : request.paymentStatus == 'paid'));
 
-    final bool isTenantReimburseDeclared = (latestCharge != null && latestCharge.chargeType == 'reimbursement') ||
-        (request.paidBy == 'tenant' && request.paymentStatus != 'paid');
+    final bool isTenantReimburseDeclared = (request.paidBy == 'tenant' && !isTenantSelfDeclared);
 
-    final bool isLandlordSelfDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.landlordId) ||
-        (request.paidBy == 'landlord' && request.paymentStatus == 'paid');
+    final bool isLandlordSelfDeclared = (request.paidBy == 'landlord' &&
+        (latestCharge != null ? (latestCharge.debtorId == widget.property.landlordId) : request.paymentStatus == 'paid'));
 
-    final bool isLandlordTenantDueDeclared = (latestCharge != null && latestCharge.chargeType == 'direct_charge' && latestCharge.debtorId == widget.property.tenantId) ||
-        (request.paidBy == 'landlord' && request.paymentStatus != 'paid');
+    final bool isLandlordTenantDueDeclared = (request.paidBy == 'landlord' && !isLandlordSelfDeclared);
 
-    final bool isAgencyTenantDamage = isPayerAgency && (latestCharge != null && latestCharge.chargeType == 'agency_advance' && latestCharge.debtorId == widget.property.tenantId);
+    final bool isAgencyTenantDamage = isPayerAgency &&
+        (latestCharge != null && latestCharge.chargeType == 'agency_advance' && latestCharge.debtorId != widget.property.landlordId);
 
     // Pure state-driven check: active receipt/payment submission under review
+    // When debtor submits payment receipt, financialStatus moves to pendingReview/pendingAgencyApproval.
     final bool hasPaymentSubmission = (request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty) &&
         (request.financialStatus == MaintenancePaymentStatus.pendingReview ||
          request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval ||
@@ -630,7 +637,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     String waitingOnText = '';
 
     if (hasAgency) {
-      canApproveExpense = isAgency;
+      canApproveExpense = isAgency && (hasPaymentSubmission || !isPayerAgency);
       if (hasPaymentSubmission) {
         approvalTitle = (loc.localeName == 'tr')
             ? 'Ödeme Bildirimi Onayı'
@@ -639,7 +646,9 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                 : (loc.localeName.startsWith('sr')
                     ? 'Potvrda plaćanja'
                     : 'Payment Submission Approval'));
-        final bool isLandlordDebtorSubmission = isPayerAgency || isPayerLandlord;
+        final bool isLandlordDebtorSubmission = isPayerAgency
+            ? (latestCharge?.debtorId == widget.property.landlordId)
+            : isPayerLandlord;
         approvalSubtitle = (loc.localeName == 'tr')
             ? (isLandlordDebtorSubmission
                 ? 'Ev sahibi ${formattedCost ?? ''} tutarındaki masraf borcu için ödeme bildirimi sundu. Dekontu inceleyip onaylayabilir veya reddedebilirsiniz.'
@@ -1083,8 +1092,26 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                   const SizedBox(height: 12),
 
                   // Financial Settlement Resolution Banner
-                  if (_buildFinancialResolutionBanner(loc, request, isPayerAgency, isPayerLandlord, isAgencyTenantDamage: isAgencyTenantDamage) != null)
-                    _buildFinancialResolutionBanner(loc, request, isPayerAgency, isPayerLandlord, isAgencyTenantDamage: isAgencyTenantDamage)!,
+                  if (_buildFinancialResolutionBanner(
+                        loc,
+                        request,
+                        isPayerAgency,
+                        isPayerLandlord,
+                        isAgencyTenantDamage: isAgencyTenantDamage,
+                        isTenantReimburseDeclared: isTenantReimburseDeclared,
+                        isTenantSelfDeclared: isTenantSelfDeclared,
+                        isLandlordSelfDeclared: isLandlordSelfDeclared,
+                      ) != null)
+                    _buildFinancialResolutionBanner(
+                      loc,
+                      request,
+                      isPayerAgency,
+                      isPayerLandlord,
+                      isAgencyTenantDamage: isAgencyTenantDamage,
+                      isTenantReimburseDeclared: isTenantReimburseDeclared,
+                      isTenantSelfDeclared: isTenantSelfDeclared,
+                      isLandlordSelfDeclared: isLandlordSelfDeclared,
+                    )!,
 
                   // Details Grid Container
                   Container(
@@ -1200,6 +1227,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                                           isLandlordSelfDeclared,
                                           isLandlordTenantDueDeclared,
                                           loc,
+                                          isAgencyTenantDamage: isAgencyTenantDamage,
                                         ),
                                         style: TextStyle(
                                           fontSize: 11,
@@ -2137,10 +2165,15 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         targetPaymentStatus = 'paid';
         detailMsg = '${loc.coveredByTenant} (${loc.financialStatusPaid})';
       } else if (isTenantReimburseDeclared || isPayerTenant || targetPaidBy == 'tenant') {
-        // Tenant declared fixture expense and requests rent reimbursement -> Ready for offset
+        // Tenant declared fixture expense and requests rent reimbursement -> Ready for rent offset
         targetPaidBy = 'tenant';
         targetPaymentStatus = 'pending_payment';
         detailMsg = '${loc.landlordReimbursement} (${loc.deductFromRentBadge})';
+      } else if (hasPaymentSubmission) {
+        // Counterparty submitted payment proof to agency for an existing debt -> Agency confirms receipt and marks paid!
+        targetPaidBy = request.paidBy ?? (isPayerTenant ? 'tenant' : 'landlord');
+        targetPaymentStatus = 'paid';
+        detailMsg = '${loc.confirmReceiptBtn} (${loc.financialStatusPaid})';
       } else if (targetPaidBy == 'landlord' || isPayerLandlord) {
         if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval ||
             request.financialStatus == MaintenancePaymentStatus.pendingReview) {
@@ -2192,6 +2225,25 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         rejectedBy: null,
       );
 
+      // Sync maintenance_charges record if present
+      try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(request.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          final nextChargeStatus = targetPaymentStatus == 'paid' ? 'paid' : (targetPaymentStatus == 'pending_payment' ? 'approved' : 'pending');
+          final user = ref.read(currentUserProvider);
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeStatus(
+            chargeId: charge.id,
+            propertyId: widget.property.id,
+            status: nextChargeStatus,
+            approvedBy: user?.id,
+            paidAt: targetPaymentStatus == 'paid' ? DateTime.now() : null,
+          );
+        }
+      } catch (e) {
+        debugPrint('Error syncing maintenance_charge status in _handleApproveExpense: $e');
+      }
+
       await ref.read(maintenanceRepositoryProvider).addMessage(
         request.id,
         widget.property.id,
@@ -2200,6 +2252,10 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       );
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(maintenanceMessagesProvider(request.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(rentPaymentsProvider(widget.property.id));
@@ -2247,10 +2303,40 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
 
     final bool isAddToRent = request.paidBy == 'landlord';
     final String statusBadgeName = isAddToRent ? loc.addToRentBadge : loc.deductFromRentBadge;
-    final bool hasCost = request.costAmount != null && request.costAmount! > 0;
-    final String targetStatus = hasCost ? 'pending_payment' : 'pending_review';
+
+    final chargesAsync = ref.read(maintenanceChargesProvider(request.id));
+    final latestCharge = chargesAsync.value?.isNotEmpty == true ? chargesAsync.value!.last : null;
+
+    // Only revert to pending_payment if this was a payment proof rejection on an ALREADY approved debt!
+    // If it is an initial expense declaration (e.g. tenant fixture reimbursement), rejecting it MUST mark it 'rejected'!
+    final bool isPaymentReceiptRejection = hasPaymentSubmission &&
+        ((request.paidBy == 'agency') ||
+         (latestCharge != null && latestCharge.status == 'approved' && latestCharge.chargeType != 'reimbursement'));
+
+    final String targetStatus = isPaymentReceiptRejection ? 'pending_payment' : 'rejected';
+    final String targetChargeStatus = isPaymentReceiptRejection ? 'approved' : 'rejected';
 
     final reasonController = TextEditingController();
+
+    final dialogTitle = isPaymentReceiptRejection
+        ? (loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission')
+        : (loc.localeName == 'tr' ? 'Masraf Beyanını Reddet' : loc.rejectExpenseTitle);
+
+    final dialogDesc = isPaymentReceiptRejection
+        ? (loc.localeName == 'tr'
+            ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
+            : (loc.localeName == 'ru'
+                ? 'Подтверждение оплаты будет отклонено, статус вернется к "$statusBadgeName".'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Potvrda plaćanja biće odbijena, status se vraća na "$statusBadgeName".'
+                    : 'Payment submission will be rejected and status will revert to "$statusBadgeName".')))
+        : (loc.localeName == 'tr'
+            ? 'Bu masraf beyanı reddedilecek ve mülk mali planına / kiraya yansıtılmayacaktır.'
+            : (loc.localeName == 'ru'
+                ? 'Это заявление о расходах будет отклонено и не повлияет на аренду.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Ova prijava troškova biće odbijena i neće uticati na kiriju.'
+                    : 'This expense declaration will be rejected and will not affect the rent or financial plan.')));
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -2260,7 +2346,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
             const Icon(LucideIcons.xCircle, color: Color(0xFFDC2626), size: 20),
             const SizedBox(width: 8),
             Text(
-              loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission',
+              dialogTitle,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ],
@@ -2270,13 +2356,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              loc.localeName == 'tr'
-                  ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
-                  : (loc.localeName == 'ru'
-                      ? 'Подтверждение оплаты будет отклонено, статус вернется к "$statusBadgeName".'
-                      : (loc.localeName.startsWith('sr')
-                          ? 'Potvrda plaćanja biće odbijena, status se vraća na "$statusBadgeName".'
-                          : 'Payment submission will be rejected and status will revert to "$statusBadgeName".')),
+              dialogDesc,
               style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
@@ -2320,13 +2400,21 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         rejectedBy: user?.id,
       );
 
-      final rejectionMsg = (loc.localeName == 'tr')
-          ? '❌ $approverRoleName: Ödeme bildirimi / dekont reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf "$statusBadgeName" statüsüne geri alındı.'
-          : (loc.localeName == 'ru'
-              ? '❌ $approverRoleName: Подтверждение оплаты отклонено.${reason.isNotEmpty ? '\n📝 Причина: "$reason"' : ''}\n📌 Статус возвращен к "$statusBadgeName".'
-              : (loc.localeName.startsWith('sr')
-                  ? '❌ $approverRoleName: Potvrda plaćanja je odbijena.${reason.isNotEmpty ? '\n📝 Razlog: "$reason"' : ''}\n📌 Status je vraćen na "$statusBadgeName".'
-                  : '❌ $approverRoleName: Payment submission was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Status reverted to "$statusBadgeName".'));
+      final rejectionMsg = isPaymentReceiptRejection
+          ? ((loc.localeName == 'tr')
+              ? '❌ $approverRoleName: Ödeme bildirimi / dekont reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf "$statusBadgeName" statüsüne geri alındı.'
+              : (loc.localeName == 'ru'
+                  ? '❌ $approverRoleName: Подтверждение оплаты отклонено.${reason.isNotEmpty ? '\n📝 Причина: "$reason"' : ''}\n📌 Статус возвращен к "$statusBadgeName".'
+                  : (loc.localeName.startsWith('sr')
+                      ? '❌ $approverRoleName: Potvrda plaćanja je odbijena.${reason.isNotEmpty ? '\n📝 Razlog: "$reason"' : ''}\n📌 Status je vraćen na "$statusBadgeName".'
+                      : '❌ $approverRoleName: Payment submission was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Status reverted to "$statusBadgeName".')))
+          : ((loc.localeName == 'tr')
+              ? '❌ $approverRoleName: Masraf beyanı reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf talebi reddedildi olarak kapatıldı (mali plana yansıtılmaz).'
+              : (loc.localeName == 'ru'
+                  ? '❌ $approverRoleName: Заявление о расходах отклонено.${reason.isNotEmpty ? '\n📝 Причина: "$reason"' : ''}\n📌 Запрос закрыт как отклоненный (без влияния на аренду).'
+                  : (loc.localeName.startsWith('sr')
+                      ? '❌ $approverRoleName: Prijava troškova je odbijena.${reason.isNotEmpty ? '\n📝 Razlog: "$reason"' : ''}\n📌 Zahtev je zatvoren kao odbijen (bez uticaja na kiriju).'
+                      : '❌ $approverRoleName: Expense declaration was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Expense request marked as rejected (no rent impact).')));
 
       await ref.read(maintenanceRepositoryProvider).addMessage(
         request.id,
@@ -2334,7 +2422,26 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         rejectionMsg,
       );
 
+      // Sync maintenance_charges record on rejection
+      try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(request.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceCharge(
+            charge.copyWith(
+              status: targetChargeStatus,
+              receiptUrl: null,
+              settlementMethod: isPaymentReceiptRejection ? charge.settlementMethod : null,
+              updatedAt: DateTime.now(),
+            ),
+          );
+        }
+      } catch (_) {}
+
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(maintenanceMessagesProvider(request.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(rentPaymentsProvider(widget.property.id));
@@ -2441,22 +2548,25 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     bool isPayerAgency,
     bool isPayerLandlord, {
     bool isAgencyTenantDamage = false,
+    bool isTenantReimburseDeclared = false,
+    bool isTenantSelfDeclared = false,
+    bool isLandlordSelfDeclared = false,
   }) {
     if (request.costAmount == null) return null;
 
     if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
       final Color themeColor = isPayerAgency
           ? (isAgencyTenantDamage ? const Color(0xFFD97706) : const Color(0xFF7C3AED))
-          : const Color(0xFFB45309);
+          : const Color(0xFF2563EB);
       final Color textColor = isPayerAgency
           ? (isAgencyTenantDamage ? const Color(0xFF92400E) : const Color(0xFF5B21B6))
-          : const Color(0xFF92400E);
+          : const Color(0xFF1E40AF);
       final Color subColor = isPayerAgency
           ? (isAgencyTenantDamage ? const Color(0xFF78350F) : const Color(0xFF6B21A8))
-          : const Color(0xFF78350F);
+          : const Color(0xFF1E3A8A);
       final IconData icon = isPayerAgency
           ? (isAgencyTenantDamage ? LucideIcons.user : LucideIcons.building2)
-          : LucideIcons.repeat;
+          : (isPayerLandlord ? LucideIcons.arrowUpRight : LucideIcons.arrowDownLeft);
 
       final String title;
       final String desc;
@@ -2494,11 +2604,11 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                       : 'Agency paid for property fixture. Amount will be collected from landlord or deducted from next rent payout.'));
         }
       } else if (isPayerLandlord) {
-        title = loc.landlordReimbursement;
-        desc = loc.landlordReimburseDesc;
-      } else {
         title = loc.tenantToPay;
         desc = loc.tenantToPayDesc;
+      } else {
+        title = loc.landlordReimbursement;
+        desc = loc.landlordReimburseDesc;
       }
 
       return Container(
@@ -2536,13 +2646,114 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
       );
     }
 
+    if (request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+      final String title;
+      final String desc;
+
+      if (isTenantSelfDeclared) {
+        title = loc.localeName == 'tr'
+            ? 'Acente Onayı Bekleniyor (Kiracı Kullanım Masrafı)'
+            : (loc.localeName == 'ru'
+                ? 'Ожидает одобрения агентства (Личный расход арендатора)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Čeka odobrenje agencije (Trošak stanara)'
+                    : 'Awaiting Agency Approval (Tenant Usage Expense)'));
+        desc = loc.localeName == 'tr'
+            ? 'Kiracının kendi kullanım masrafı olarak bildirdiği tutar acente incelemesindedir. Onaylandığında ödendi olarak kapatılacaktır (Kira etkisi yoktur).'
+            : (loc.localeName == 'ru'
+                ? 'Расход за счет арендатора ожидает проверки агентством. После одобрения будет закрыт как оплаченный (без влияния на аренду).'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak stanara čeka proveru agencije. Nakon odobrenja biće zatvoren kao plaćen (bez uticaja na kiriju).'
+                    : 'Tenant usage expense declared is awaiting agency review. Once approved, it will be closed as paid (no rent impact).'));
+      } else if (isTenantReimburseDeclared || request.paidBy == 'tenant') {
+        title = loc.localeName == 'tr'
+            ? 'Acente Onayı Bekleniyor (Kiradan Mahsup Talebi)'
+            : (loc.localeName == 'ru'
+                ? 'Ожидает одобрения агентства (Зачет из аренды)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Čeka odobrenje agencije (Odbitak od kirije)'
+                    : 'Awaiting Agency Approval (Rent Offset Request)'));
+        desc = loc.localeName == 'tr'
+            ? 'Kiracının bildirdiği demirbaş masrafı acente incelemesindedir. Onaylandıktan sonra kiradan mahsup edilecektir.'
+            : (loc.localeName == 'ru'
+                ? 'Заявленный арендатором расход на оборудование ожидает проверки агентством. После одобрения будет вычтен из аренды.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak za opremu koji je prijavio stanar čeka odobrenje agencije. Nakon odobrenja biće odbijen od kirije.'
+                    : 'Fixture expense declared by tenant is awaiting agency approval. Once approved, it will be deducted from rent.'));
+      } else if (isLandlordSelfDeclared) {
+        title = loc.localeName == 'tr'
+            ? 'Acente Onayı Bekleniyor (Ev Sahibi Demirbaş Masrafı)'
+            : (loc.localeName == 'ru'
+                ? 'Ожидает одобрения агентства (Расход собственника)'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Čeka odobrenje agencije (Trošak vlasnika)'
+                    : 'Awaiting Agency Approval (Landlord Fixture Expense)'));
+        desc = loc.localeName == 'tr'
+            ? 'Ev sahibinin mülk demirbaşı olarak bildirdiği tutar acente incelemesindedir. Onaylandığında ödendi olarak kapatılacaktır (Kira etkisi yoktur).'
+            : (loc.localeName == 'ru'
+                ? 'Расход на оборудование за счет собственника ожидает проверки агентством. После одобрения будет закрыт как оплаченный.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak opreme koji plaća vlasnik čeka odobrenje agencije. Nakon odobrenja biće zatvoren kao plaćen.'
+                    : 'Landlord fixture expense is awaiting agency review. Once approved, it will be closed as paid (no rent impact).'));
+      } else {
+        title = loc.localeName == 'tr'
+            ? 'Acente Onayı Bekleniyor'
+            : (loc.localeName == 'ru'
+                ? 'Ожидает одобрения агентства'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Čeka odobrenje agencije'
+                    : 'Awaiting Agency Approval'));
+        desc = loc.localeName == 'tr'
+            ? 'Masraf bildirimi yapıldı. Acentenin onaylaması veya reddetmesi beklenmektedir.'
+            : (loc.localeName == 'ru'
+                ? 'Подано уведомление о расходах. Ожидается подтверждение или отклонение агентством.'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Trošak je prijavljen. Čeka se pregled i potvrda agencije.'
+                    : 'Expense declared. Awaiting agency confirmation or rejection.'));
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD97706).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD97706).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(LucideIcons.clock, size: 13, color: Color(0xFFD97706)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF92400E))),
+                  const SizedBox(height: 2),
+                  Text(desc, style: const TextStyle(fontSize: 11, color: Color(0xFF78350F), height: 1.35)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (isPayerAgency && (request.financialStatus == MaintenancePaymentStatus.pendingReview || request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval)) {
-      final bool hasSubmission = request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty;
+      final bool hasPaymentSubmission = request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty;
       final String title;
       final String desc;
       final IconData icon;
 
-      if (hasSubmission) {
+      if (hasPaymentSubmission) {
         title = loc.localeName == 'tr'
             ? 'Acente Onayı Bekleniyor (Ödeme Bildirimi Yapıldı)'
             : (loc.localeName == 'ru'
@@ -2551,9 +2762,9 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                     ? 'Čeka odobrenje agencije (Obaveštenje o uplati)'
                     : 'Awaiting Agency Approval (Payment Declared)'));
         desc = loc.localeName == 'tr'
-            ? 'Ödeme bildirimi (dekont / nakit beyanı) yapıldı. Acentenin ödemeyi inceleyip tahsilatı onaylaması beklenmektedir.'
+            ? 'Kiracı tarafından ödeme bildirimi yapıldı. Acentenin dekontu inceleyip tahsilatı onaylaması veya reddetmesi beklenmektedir.'
             : (loc.localeName == 'ru'
-                ? 'Подано уведомление об оплате (квитанция/наличные). Ожидается подтверждение агентством.'
+                ? 'Подано уведомление об оплате. Ожидается проверка агентством для подтверждения или отклонения.'
                 : (loc.localeName.startsWith('sr')
                     ? 'Priložena je potvrda o uplati. Čeka se pregled i potvrda agencije.'
                     : 'Payment declaration submitted. Awaiting agency review and confirmation.'));
@@ -2650,8 +2861,26 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
         title = loc.coveredByLandlord;
         desc = loc.coveredByLandlordClosedDesc;
       } else {
-        title = loc.coveredByTenant;
-        desc = loc.coveredByTenantClosedDesc;
+        // Tenant paid
+        if (isTenantReimburseDeclared) {
+          title = loc.localeName == 'tr'
+              ? 'Ev Sahibi Tarafından Karşılandı (Kiradan Mahsup Edildi)'
+              : (loc.localeName == 'ru'
+                  ? 'Возмещено собственником (Зачтено из аренды)'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Pokrio vlasnik (Prebijeno sa kirijom)'
+                      : 'Covered by Landlord (Deducted from Rent)'));
+          desc = loc.localeName == 'tr'
+              ? 'Kiracı demirbaş masrafını peşin ödedi, ev sahibi kirasından mahsup edilerek kapatıldı.'
+              : (loc.localeName == 'ru'
+                  ? 'Арендатор оплатил ремонт оборудования, сумма была зачтена из арендной платы (закрыто).'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Stanar je platio popravku opreme, iznos je prebijen sa kirijom (zatvoreno).'
+                      : 'Tenant paid for property fixture, reimbursed by deducting from rent (closed).'));
+        } else {
+          title = loc.coveredByTenant;
+          desc = loc.coveredByTenantClosedDesc;
+        }
       }
 
       return Container(
@@ -2738,10 +2967,53 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     bool isTenantReimburseDeclared,
     bool isLandlordSelfDeclared,
     bool isLandlordTenantDueDeclared,
-    AppLocalizations loc,
-  ) {
+    AppLocalizations loc, {
+    bool isAgencyTenantDamage = false,
+  }) {
     if (isPayerTenant) {
-      if (isTenantSelfDeclared || request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+      if (isTenantReimburseDeclared ||
+          request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval ||
+          request.financialStatus == MaintenancePaymentStatus.pendingPayment ||
+          request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
+        if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
+          return loc.localeName == 'tr'
+              ? 'Kiracı masraf bildirdi — ev sahibi onayının ardından kiradan mahsup edilecek.'
+              : (loc.localeName == 'ru'
+                  ? 'Заявлено арендатором — ожидает одобрения владельца для зачета.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Prijavio zakupac — čeka potvrdu vlasnika za prebijanje.'
+                      : 'Reported by tenant — awaiting landlord approval for offset.'));
+        }
+        if (request.financialStatus == MaintenancePaymentStatus.pendingAgencyApproval) {
+          return loc.localeName == 'tr'
+              ? 'Kiracı demirbaş masrafını ödedi — acente onayı sonrası kiradan mahsup edilecek.'
+              : (loc.localeName == 'ru'
+                  ? 'Арендатор оплатил ремонт — после одобрения агентством будет зачтено из аренды.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Stanar je platio popravku — nakon odobrenja agencije biće odbijeno od kirije.'
+                      : 'Tenant paid for property fixture — awaiting agency approval for rent deduction.'));
+        }
+        if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
+          return loc.localeName == 'tr'
+              ? 'Kiracı demirbaş masrafını ödedi — sonraki kira ödemesinden mahsup edilecek.'
+              : (loc.localeName == 'ru'
+                  ? 'Арендатор оплатил ремонт — будет зачтено из следующей аренды.'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Stanar je platio popravku — biće odbijeno od sledeće kirije.'
+                      : 'Tenant paid for repairs — will be deducted from upcoming rent.'));
+        }
+        if (request.financialStatus == MaintenancePaymentStatus.paid) {
+          return loc.localeName == 'tr'
+              ? 'Kiracı demirbaş masrafını peşin ödedi — ev sahibinden mahsup edildi / ödendi (kapatıldı).'
+              : (loc.localeName == 'ru'
+                  ? 'Арендатор оплатил ремонт — возмещено владельцем / зачтено из аренды (закрыто).'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Stanar platio popravku — prebijeno sa vlasnikom (zatvoreno).'
+                      : 'Tenant paid for fixture — reimbursed by landlord / deducted from rent (closed).'));
+        }
+      }
+
+      if (isTenantSelfDeclared || request.paymentStatus == 'paid') {
         if (request.financialStatus == MaintenancePaymentStatus.paid) {
           return loc.localeName == 'tr'
               ? 'Kiracı masrafı kendi karşıladı (Mahsuplaşma talep edilmedi, kapatıldı).'
@@ -2758,33 +3030,6 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                 : (loc.localeName.startsWith('sr')
                     ? 'Stanar je platio trošak — ne traži refundaciju. Čeka pregled računa i odobrenje agencije.'
                     : 'Tenant paid for own usage — no rent offset requested. Awaiting agency invoice review & approval.'));
-      }
-      if (request.financialStatus == MaintenancePaymentStatus.pendingPayment || isTenantReimburseDeclared) {
-        return loc.localeName == 'tr'
-            ? 'Kiracı demirbaş masrafını ödedi — sonraki kira ödemesinden mahsup edilecek.'
-            : (loc.localeName == 'ru'
-                ? 'Арендатор оплатил ремонт — будет зачтено из следующей аренды.'
-                : (loc.localeName.startsWith('sr')
-                    ? 'Stanar je platio popravku — biće odbijeno od sledeće kirije.'
-                    : 'Tenant paid for repairs — will be deducted from upcoming rent.'));
-      }
-      if (request.financialStatus == MaintenancePaymentStatus.pendingOppositeApproval) {
-        return loc.localeName == 'tr'
-            ? 'Kiracı masraf bildirdi — ev sahibi onayının ardından kiradan mahsup edilecek.'
-            : (loc.localeName == 'ru'
-                ? 'Заявлено арендатором — ожидает одобрения владельца для зачета.'
-                : (loc.localeName.startsWith('sr')
-                    ? 'Prijavio zakupac — čeka potvrdu vlasnika za prebijanje.'
-                    : 'Reported by tenant — awaiting landlord approval for offset.'));
-      }
-      if (request.financialStatus == MaintenancePaymentStatus.paid) {
-        return loc.localeName == 'tr'
-            ? 'Masraf kiracı tarafından karşılandı ve kapatıldı.'
-            : (loc.localeName == 'ru'
-                ? 'Расходы покрыты и закрыты арендатором.'
-                : (loc.localeName.startsWith('sr')
-                    ? 'Troškove pokrio i zatvorio zakupac.'
-                    : 'Cost covered and settled by tenant.'));
       }
       return loc.localeName == 'tr'
           ? 'Masraf kiracı sorumluluğundadır.'
@@ -2865,22 +3110,23 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                     ? 'Trošak je platila agencija i naplata je završena (Zatvoreno).'
                     : 'Expense was paid by agency and settled (Closed).'));
       }
-      if (request.financialStatus == MaintenancePaymentStatus.pendingPayment) {
+      final bool isTenantDebtor = isAgencyTenantDamage;
+      if (isTenantDebtor) {
         return loc.localeName == 'tr'
-            ? 'Masraf acente tarafından karşılandı — mülk demirbaşı kapsamında ev sahibine yansıtıldı (Tahsilat / Kira aktarımından düşme bekliyor).'
+            ? 'Masraf acente tarafından karşılandı — kiracı kullanım/hasar kapsamında kiracıya yansıtıldı (Tahsilat / Kiraya ekleme bekliyor).'
             : (loc.localeName == 'ru'
-                ? 'Расход оплачен агентством — начислен собственнику за оборудование объекта (Ожидает оплаты/зачета).'
+                ? 'Расход оплачен агентством — начислен арендатору за использование/ущерб (Ожидает оплаты/добавления к аренде).'
                 : (loc.localeName.startsWith('sr')
-                    ? 'Trošak je platila agencija — tereti se vlasniku za opremu stana (Čeka naplatu/prebijanje).'
-                    : 'Paid by agency for property fixture — charged to landlord (Pending collection / rent deduction).'));
+                    ? 'Trošak je platila agencija — tereti se stanaru za upotrebu/štetu (Čeka naplatu/dodavanje na kiriju).'
+                    : 'Paid by agency — charged to tenant for usage/damage (Pending collection / rent addition).'));
       }
       return loc.localeName == 'tr'
-          ? 'Masraf acente tarafından karşılandı — kiracı kullanım/hasar kapsamında kiracıya yansıtıldı (Tahsilat / Kiraya ekleme bekliyor).'
+          ? 'Masraf acente tarafından karşılandı — mülk demirbaşı kapsamında ev sahibine yansıtıldı (Tahsilat / Kira aktarımından düşme bekliyor).'
           : (loc.localeName == 'ru'
-              ? 'Расход оплачен агентством — начислен арендатору за использование/ущерб (Ожидает оплаты/добавления к аренде).'
+              ? 'Расход оплачен агентством — начислен собственнику за оборудование объекта (Ожидает оплаты/зачета).'
               : (loc.localeName.startsWith('sr')
-                  ? 'Trošak je platila agencija — tereti se stanaru za upotrebu/štetu (Čeka naplatu/dodavanje na kiriju).'
-                  : 'Paid by agency — charged to tenant for usage/damage (Pending collection / rent addition).'));
+                  ? 'Trošak je platila agencija — tereti se vlasniku za opremu stana (Čeka naplatu/prebijanje).'
+                  : 'Paid by agency for property fixture — charged to landlord (Pending collection / rent deduction).'));
     }
     return loc.unassigned;
   }
@@ -3516,20 +3762,25 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
       _paymentStatus = 'pending_review';
     } else {
       _paidBy = widget.request.paidBy;
-      if (_paidBy == 'tenant') {
-        _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'reimburse';
-      } else if (_paidBy == 'landlord') {
-        _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'tenant_due';
-      } else if (_paidBy == 'agency') {
-        _declarationIntent = (widget.request.paymentStatus == 'pending_review') ? 'damage_tenant' : 'fixture_landlord';
-      } else {
+      // Yeni masraf girilirken veya borçlu önceden belirlenmemişse seçim zorunlu olsun (boş gelsin)
+      if (widget.request.costAmount == null || widget.request.costAmount! <= 0) {
         _declarationIntent = null;
+      } else {
+        if (_paidBy == 'tenant') {
+          _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'reimburse';
+        } else if (_paidBy == 'landlord') {
+          _declarationIntent = (widget.request.paymentStatus == 'paid') ? 'self' : 'tenant_due';
+        } else if (_paidBy == 'agency') {
+          _declarationIntent = (widget.request.paymentStatus == 'pending_review') ? 'damage_tenant' : 'fixture_landlord';
+        } else {
+          _declarationIntent = null;
+        }
       }
       _paymentStatus = (widget.request.paymentStatus == 'pending' || widget.request.paymentStatus == 'rejected')
           ? 'pending_payment'
           : widget.request.paymentStatus;
     }
-    _paymentDate = widget.request.paymentDate ?? (_isDeclaration ? DateTime.now() : null);
+    _paymentDate = widget.request.paymentDate ?? DateTime.now();
   }
 
   @override
@@ -3614,13 +3865,13 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
     final String finalPaymentStatus;
     if (_declarationIntent == 'self') {
-      finalPaymentStatus = 'paid';
-    } else if (_paidBy == 'agency') {
-      if (_declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due') {
-        finalPaymentStatus = 'pending_payment';
+      if (!isAgency && isAgencyManaged) {
+        finalPaymentStatus = 'pending_agency_approval';
       } else {
-        finalPaymentStatus = 'pending_review';
+        finalPaymentStatus = 'paid';
       }
+    } else if (_paidBy == 'agency') {
+      finalPaymentStatus = 'pending_payment';
     } else if (_paidBy == 'tenant' && _declarationIntent == 'reimburse') {
       if (isAgency) {
         finalPaymentStatus = 'pending_payment';
@@ -3690,15 +3941,21 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
             ? '\n\n📝 ${loc.noteLabel}: "$note"'
             : '';
 
-        final String statusNote = widget.isLandlordDeclaration && widget.request.paymentStatus == 'rejected'
-            ? (loc.localeName == 'tr' ? 'Yeni Masraf Belirlendi' : 'New Expense Entered')
-            : loc.receiptInvoiceDocument;
+        final String statusNote = finalPaymentStatus == 'paid'
+            ? loc.financialStatusPaid
+            : (finalPaymentStatus == 'pending_payment'
+                ? (_paidBy == 'agency'
+                    ? (loc.localeName == 'tr' ? 'Tahsilat Bekliyor' : 'Pending Collection')
+                    : (_paidBy == 'tenant' ? loc.deductFromRentBadge : loc.addToRentBadge))
+                : (widget.isLandlordDeclaration && widget.request.paymentStatus == 'rejected'
+                    ? (loc.localeName == 'tr' ? 'Yeni Masraf Belirlendi' : 'New Expense Entered')
+                    : loc.receiptInvoiceDocument));
 
         try {
           await ref.read(maintenanceRepositoryProvider).addMessage(
             widget.request.id,
             widget.property.id,
-            '📄 $declarantName: ${costAmount.toStringAsFixed(2)} $_selectedCurrency\n📌 ${loc.settlementIntentTitle}: $intentBadge\n($statusNote • ${loc.financialStatusPendingReview})$noteSection',
+            '📄 $declarantName: ${costAmount.toStringAsFixed(2)} $_selectedCurrency\n📌 ${loc.settlementIntentTitle}: $intentBadge\n($statusNote • ${finalPaymentStatus == 'pending_payment' ? (loc.localeName == 'tr' ? 'Tahsilat Bekliyor' : 'Pending Collection') : loc.financialStatusPendingReview})$noteSection',
             photoUrl: invoicePdfUrl,
           );
         } catch (_) {}
@@ -3712,16 +3969,17 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
 
         if (finalPaidBy == 'agency') {
           chargeType = 'agency_advance';
-          if (_declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due') {
+          if (_declarationIntent == 'fixture_landlord' || _declarationIntent == 'landlord_due' || _declarationIntent == null) {
             debtorId = widget.property.landlordId;
             creditorId = widget.property.agencyId ?? user?.id;
           } else {
-            debtorId = widget.property.tenantId;
+            final activeContract = ref.read(activeContractProvider(widget.property.id)).value;
+            debtorId = widget.property.tenantId ?? activeContract?.tenantId ?? widget.request.reporterId;
             creditorId = widget.property.agencyId ?? user?.id;
           }
         } else if (finalPaidBy == 'tenant') {
-          chargeType = 'reimbursement';
-          debtorId = widget.property.landlordId;
+          chargeType = (_declarationIntent == 'self') ? 'direct_charge' : 'reimbursement';
+          debtorId = (_declarationIntent == 'self') ? widget.property.tenantId : widget.property.landlordId;
           creditorId = widget.property.tenantId;
         } else {
           chargeType = 'direct_charge';
@@ -3730,37 +3988,64 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
         }
 
         try {
-          await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
-            MaintenanceCharge(
-              id: '',
-              maintenanceRequestId: widget.request.id,
-              propertyId: widget.property.id,
-              createdBy: user?.id,
-              title: widget.request.title,
-              chargeType: chargeType,
-              approverRole: approverRole,
-              debtorId: debtorId,
-              creditorId: creditorId,
-              amount: costAmount,
-              settledAmount: 0.0,
-              currency: _selectedCurrency,
-              status: finalPaymentStatus == 'paid' ? 'paid' : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending'),
-              settlementMethod: finalPaymentStatus == 'paid' ? 'separate_payment' : 'rent_offset',
-              receiptUrl: invoicePdfUrl,
-              declaredAt: _paymentDate ?? DateTime.now(),
-              paidAt: finalPaymentStatus == 'paid' ? (_paymentDate ?? DateTime.now()) : null,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            ),
-          );
+          final existingCharges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(widget.request.id);
+          final chargeStatus = finalPaymentStatus == 'paid' ? 'paid' : (finalPaymentStatus == 'pending_payment' ? 'approved' : 'pending');
+          final settlementMethod = (_declarationIntent == 'self') ? 'separate_payment' : 'rent_offset';
+
+          if (existingCharges.isNotEmpty) {
+            final charge = existingCharges.last;
+            await ref.read(maintenanceRepositoryProvider).updateMaintenanceCharge(
+              charge.copyWith(
+                title: widget.request.title,
+                chargeType: chargeType,
+                approverRole: approverRole,
+                debtorId: debtorId,
+                creditorId: creditorId,
+                amount: costAmount,
+                currency: _selectedCurrency,
+                status: chargeStatus,
+                settlementMethod: settlementMethod,
+                receiptUrl: invoicePdfUrl,
+                declaredAt: _paymentDate ?? charge.declaredAt,
+                paidAt: finalPaymentStatus == 'paid' ? (_paymentDate ?? DateTime.now()) : null,
+                updatedAt: DateTime.now(),
+              ),
+            );
+          } else {
+            await ref.read(maintenanceRepositoryProvider).createMaintenanceCharge(
+              MaintenanceCharge(
+                id: '',
+                maintenanceRequestId: widget.request.id,
+                propertyId: widget.property.id,
+                createdBy: user?.id,
+                title: widget.request.title,
+                chargeType: chargeType,
+                approverRole: approverRole,
+                debtorId: debtorId,
+                creditorId: creditorId,
+                amount: costAmount,
+                settledAmount: 0.0,
+                currency: _selectedCurrency,
+                status: chargeStatus,
+                settlementMethod: settlementMethod,
+                receiptUrl: invoicePdfUrl,
+                declaredAt: _paymentDate ?? DateTime.now(),
+                paidAt: finalPaymentStatus == 'paid' ? (_paymentDate ?? DateTime.now()) : null,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
+            );
+          }
         } catch (e) {
-          debugPrint('Error inserting maintenance charge: $e');
+          debugPrint('Error inserting or updating maintenance charge: $e');
         }
       }
 
       ref.invalidate(maintenanceChargesProvider(widget.request.id));
       ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
       ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(maintenanceMessagesProvider(widget.request.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
@@ -4350,7 +4635,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               onTap: () {
                 setState(() {
                   _paidBy = 'tenant';
-                  _declarationIntent = 'reimburse';
+                  _declarationIntent = null;
                 });
               },
             ),
@@ -4365,7 +4650,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               onTap: () {
                 setState(() {
                   _paidBy = 'landlord';
-                  _declarationIntent = 'self';
+                  _declarationIntent = null;
                 });
               },
             ),
@@ -4380,7 +4665,7 @@ class _EditFinancialsSheetState extends ConsumerState<_EditFinancialsSheet> {
               onTap: () {
                 setState(() {
                   _paidBy = 'agency';
-                  _declarationIntent = 'fixture_landlord';
+                  _declarationIntent = null;
                 });
               },
             ),

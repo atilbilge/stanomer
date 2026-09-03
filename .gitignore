@@ -55,3 +55,5 @@ website/.next/
 website/node_modules/
 scratch/
 website/out/
+graphify-out/
+.freebuff/

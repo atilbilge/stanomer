@@ -8,6 +8,7 @@ import 'package:stanomer/features/property/data/property_repository.dart';
 import 'package:stanomer/features/auth/data/auth_providers.dart';
 import 'package:stanomer/features/maintenance/data/maintenance_repository.dart';
 import 'package:stanomer/features/maintenance/domain/maintenance_request.dart';
+import 'package:stanomer/features/maintenance/domain/maintenance_charge.dart';
 import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
 import 'package:stanomer/features/property/domain/contract.dart';
 import 'package:stanomer/features/property/domain/activity_log.dart';
@@ -75,6 +76,7 @@ void main() {
             propertyContractsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<Contract>[])),
             activityLogsProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockActivities)),
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
+            propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
@@ -95,8 +97,8 @@ void main() {
       expect(find.text('Luxury Residence 10A'), findsWidgets);
       expect(find.text('Terazije 25, Belgrade'), findsWidgets);
 
-      // Check only Overview (Info) action button is present in mobile header
-      expect(find.byIcon(LucideIcons.info), findsOneWidget);
+      // Check only Overview action button is present in mobile header
+      expect(find.byIcon(LucideIcons.fileText), findsOneWidget);
     });
 
     testWidgets('tapping info button opens Overview Modal Sheet with contract info on mobile', (tester) async {
@@ -117,6 +119,7 @@ void main() {
             propertyContractsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<Contract>[])),
             activityLogsProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockActivities)),
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
+            propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
@@ -134,7 +137,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Tap on Overview Action Icon Button
-      await tester.tap(find.byIcon(LucideIcons.info));
+      await tester.tap(find.byIcon(LucideIcons.fileText));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -160,6 +163,7 @@ void main() {
             propertyContractsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<Contract>[])),
             activityLogsProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockActivities)),
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
+            propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
@@ -177,7 +181,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Tap on Info Action Icon Button on mobile
-      await tester.tap(find.byIcon(LucideIcons.info));
+      await tester.tap(find.byIcon(LucideIcons.fileText));
       await tester.pumpAndSettle();
 
       // Switch to Activity Tab inside modal sheet
@@ -207,6 +211,7 @@ void main() {
             propertyContractsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<Contract>[])),
             activityLogsProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockActivities)),
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
+            propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),

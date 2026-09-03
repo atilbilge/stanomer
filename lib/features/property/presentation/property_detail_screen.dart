@@ -2987,6 +2987,374 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     return result ?? false;
   }
 
+  Future<String?> _uploadReceiptFile(PlatformFile file) async {
+    List<int>? fileBytes = file.bytes?.toList();
+    if (fileBytes == null && !kIsWeb && file.path != null) {
+      fileBytes = await io.File(file.path!).readAsBytes();
+    }
+    if (fileBytes == null) return null;
+
+    if (ref.read(cloudUploadAllowedProvider)) {
+      return await ref.read(propertyRepositoryProvider).uploadReceipt(
+        file.name,
+        bytes: Uint8List.fromList(fileBytes),
+      );
+    } else {
+      final io.File localFile;
+      if (!kIsWeb && file.path != null) {
+        localFile = io.File(file.path!);
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        localFile = io.File('${tempDir.path}/${file.name}');
+        await localFile.writeAsBytes(fileBytes);
+      }
+      return await ref.read(documentStorageServiceProvider).saveDocument(localFile);
+    }
+  }
+
+  Future<void> _showMarkAsPaidModal(RentPayment payment, String monthName) async {
+    final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isRu = loc.localeName == 'ru';
+    final isSr = loc.localeName.startsWith('sr');
+
+    final localizedTitle = ExpenseUtils.getLocalizedExpenseName(payment.title, loc);
+    final formattedAmount = CurrencyUtils.formatAmount(payment.amount, payment.currency, useSymbol: true);
+
+    final titleStr = isTr
+        ? 'Ödendi Olarak İşaretle'
+        : (isRu
+            ? 'Отметить как оплачено'
+            : (isSr
+                ? 'Označi kao plaćeno'
+                : 'Mark as Paid'));
+
+    final subtitleStr = isTr
+        ? '$localizedTitle ($monthName) için ödeme onayı'
+        : (isRu
+            ? 'Подтверждение оплаты за $localizedTitle ($monthName)'
+            : (isSr
+                ? 'Potvrda plaćanja za $localizedTitle ($monthName)'
+                : 'Payment confirmation for $localizedTitle ($monthName)'));
+
+    PlatformFile? pickedReceiptFile;
+    final noteController = TextEditingController();
+    bool isSubmitting = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF059669).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(LucideIcons.checkCircle2, color: Color(0xFF059669), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(titleStr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 2),
+                      Text(subtitleStr, style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Debt Info Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.property.name,
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  localizedTitle,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (monthName.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    monthName,
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF059669).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              formattedAmount,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF059669),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Receipt / Document Upload Area
+                    Text(
+                      isTr
+                          ? 'Dekont / Görsel (İsteğe Bağlı)'
+                          : (isRu
+                              ? 'Квитанция / Документ (Опционально)'
+                              : (isSr
+                                  ? 'Uplatnica / Dokument (Opciono)'
+                                  : 'Receipt / Document (Optional)')),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                    ),
+                    const SizedBox(height: 6),
+                    InkWell(
+                      onTap: isSubmitting
+                          ? null
+                          : () async {
+                              final result = await _pickReceiptFile();
+                              if (result != null && result.files.isNotEmpty) {
+                                setDialogState(() {
+                                  pickedReceiptFile = result.files.first;
+                                });
+                              }
+                            },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: pickedReceiptFile != null ? const Color(0xFF059669) : const Color(0xFFCBD5E1),
+                            width: pickedReceiptFile != null ? 1.5 : 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          color: pickedReceiptFile != null
+                              ? const Color(0xFF059669).withValues(alpha: 0.05)
+                              : const Color(0xFFF8FAFC),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              pickedReceiptFile != null ? LucideIcons.fileCheck2 : LucideIcons.fileUp,
+                              size: 20,
+                              color: pickedReceiptFile != null ? const Color(0xFF059669) : const Color(0xFF64748B),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    pickedReceiptFile != null
+                                        ? pickedReceiptFile!.name
+                                        : (isTr
+                                            ? 'Dekont veya görsel yükleyin'
+                                            : (isRu
+                                                ? 'Загрузить квитанцию или фото'
+                                                : (isSr
+                                                    ? 'Priložite uplatnicu ili sliku'
+                                                    : 'Upload receipt or photo'))),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: pickedReceiptFile != null ? FontWeight.w600 : FontWeight.w500,
+                                      color: pickedReceiptFile != null ? const Color(0xFF059669) : const Color(0xFF334155),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (pickedReceiptFile == null) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      isTr
+                                          ? 'PDF, PNG, JPG veya kamera görseli seçin'
+                                          : (isRu
+                                              ? 'PDF, PNG, JPG или фото'
+                                              : (isSr
+                                                  ? 'PDF, PNG, JPG ili fotografija'
+                                                  : 'Choose PDF, PNG, JPG or camera photo')),
+                                      style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (pickedReceiptFile != null)
+                              IconButton(
+                                icon: const Icon(LucideIcons.x, size: 16, color: Color(0xFFEF4444)),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                tooltip: loc.cancel,
+                                onPressed: () => setDialogState(() => pickedReceiptFile = null),
+                              )
+                            else
+                              const Icon(LucideIcons.chevronRight, size: 16, color: Color(0xFF94A3B8)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Note Text Field
+                    Text(
+                      isTr
+                          ? 'Açıklama / Not (İsteğe Bağlı)'
+                          : (isRu
+                              ? 'Примечание (Опционально)'
+                              : (isSr
+                                  ? 'Napomena (Opciono)'
+                                  : 'Note (Optional)')),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: noteController,
+                      maxLines: 2,
+                      enabled: !isSubmitting,
+                      decoration: InputDecoration(
+                        hintText: isTr
+                            ? 'Örn: Elden nakit teslim alındı / Dekont eklendi'
+                            : (isRu
+                                ? 'Напр: Получено наличными / Квитанция прикреплена'
+                                : (isSr
+                                    ? 'Npr: Gotovinski plaćeno / Uplatnica priložena'
+                                    : 'E.g. Paid in cash / Receipt attached')),
+                        hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting ? null : () => Navigator.pop(dialogCtx),
+                child: Text(loc.cancel),
+              ),
+              ElevatedButton.icon(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        setDialogState(() => isSubmitting = true);
+                        try {
+                          String? uploadedReceiptUrl;
+                          if (pickedReceiptFile != null) {
+                            uploadedReceiptUrl = await _uploadReceiptFile(pickedReceiptFile!);
+                          }
+
+                          await ref.read(propertyRepositoryProvider).approveRentPayment(
+                            payment.id,
+                            widget.property.id,
+                            monthName,
+                            payment.dueDate,
+                            receiptUrl: uploadedReceiptUrl,
+                            note: noteController.text.trim().isEmpty ? null : noteController.text.trim(),
+                          );
+
+                          if (mounted) {
+                            ref.invalidate(rentPaymentsProvider(widget.property.id));
+                            ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+                            ref.invalidate(propertiesStreamProvider);
+                            ref.invalidate(agencyPropertiesProvider);
+                            Navigator.pop(dialogCtx);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isTr
+                                      ? 'Ödeme başarıyla ödendi olarak işaretlendi.'
+                                      : (isRu
+                                          ? 'Платеж успешно отмечен как оплаченный.'
+                                          : (isSr
+                                              ? 'Plaćanje je uspešno označeno kao plaćeno.'
+                                              : 'Payment successfully marked as paid.')),
+                                ),
+                                backgroundColor: const Color(0xFF059669),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          setDialogState(() => isSubmitting = false);
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Hata: $e'),
+                              backgroundColor: StanomerColors.alertPrimary,
+                            ),
+                          );
+                        }
+                      },
+                icon: isSubmitting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(LucideIcons.checkCircle, size: 16),
+                label: Text(
+                  isSubmitting
+                      ? (isTr ? 'Kaydediliyor...' : 'Saving...')
+                      : (isTr ? 'Ödendi Olarak Kaydet' : 'Save as Paid'),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _handlePaymentDeclaration(RentPayment payment, String monthName, FilePickerResult? result, {bool isCash = false}) async {
     final messenger = ScaffoldMessenger.of(context);
     final loc = AppLocalizations.of(context)!;
@@ -3289,7 +3657,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final loc = AppLocalizations.of(context)!;
     final amountController = TextEditingController(text: payment.amount > 0 ? payment.amount.toStringAsFixed(2) : '');
     final noteController = TextEditingController(text: payment.ownerNote ?? '');
-    String selectedCurrency = payment.currency.isNotEmpty ? payment.currency : 'RSD';
+    final bool isRent = payment.title == 'Kira' || payment.title.toLowerCase() == 'rent';
+    String selectedCurrency = (payment.amount > 0 && payment.currency.isNotEmpty)
+        ? payment.currency
+        : (isRent ? (payment.currency.isNotEmpty ? payment.currency : 'EUR') : 'RSD');
     DateTime selectedDueDate = payment.dueDate;
     FilePickerResult? selectedFile;
     bool isExistingRemoved = false;
@@ -3466,7 +3837,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               labelText: loc.currency,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                             ),
-                            items: ['EUR', 'RSD'].map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 13)))).toList(),
+                            items: ['RSD', 'EUR'].map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 13)))).toList(),
                             onChanged: (val) {
                               if (val != null) setDialogState(() => selectedCurrency = val);
                             },
@@ -5019,18 +5390,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final confirmed = await _showConfirmDialog(
-                              title: loc.localeName == 'tr' ? 'Ödendi Olarak İşaretle' : 'Mark as Paid',
-                              message: loc.localeName == 'tr'
-                                  ? '${payment.title} faturasini kendiniz ödediğinizi onaylamak istiyor musunuz?'
-                                  : 'Do you want to mark ${payment.title} as paid by you?',
-                            );
-                            if (confirmed) {
-                              await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
-                              ref.invalidate(rentPaymentsProvider(property.id));
-                            }
-                          },
+                          onPressed: () => _showMarkAsPaidModal(payment, monthName),
                           icon: const Icon(LucideIcons.checkCircle, size: 16),
                           label: Text(loc.localeName == 'tr' ? 'Ödendi Olarak İşaretle' : 'Mark as Paid'),
                           style: ElevatedButton.styleFrom(
@@ -5101,32 +5461,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       if (!(property.agencyId != null && property.agencyId!.isNotEmpty) || isAgencyManager)
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () async {
-                              final titleStr = loc.localeName == 'tr' 
-                                  ? 'Ödendi Olarak İşaretle' 
-                                  : (loc.localeName == 'ru'
-                                      ? 'Отметить как оплачено'
-                                      : (loc.localeName.startsWith('sr')
-                                          ? 'Označi kao plaćeno'
-                                          : 'Mark as Paid'));
-                              
-                              final messageStr = loc.localeName == 'tr'
-                                  ? 'Kira ödemesini doğrudan almış olarak ödendi olarak işaretlemek istiyor musunuz?'
-                                  : (loc.localeName == 'ru'
-                                      ? 'Вы хотите отметить этот платеж за аренду как оплаченный?'
-                                      : (loc.localeName.startsWith('sr')
-                                          ? 'Da li želite da označite ovo plaćanje zakupnine kao plaćeno?'
-                                          : 'Do you want to mark this rent payment as paid?'));
-
-                              final confirmed = await _showConfirmDialog(
-                                title: titleStr,
-                                message: messageStr,
-                              );
-                              if (confirmed) {
-                                await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
-                                ref.invalidate(rentPaymentsProvider(property.id));
-                              }
-                            },
+                            onPressed: () => _showMarkAsPaidModal(payment, monthName),
                             icon: const Icon(LucideIcons.checkCircle, size: 16),
                             label: Text(
                               loc.localeName == 'tr' 
@@ -5201,13 +5536,34 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     MaintenanceRequest request,
   ) async {
     final loc = AppLocalizations.of(context)!;
+    final chargesAsync = ref.read(propertyMaintenanceChargesProvider(request.propertyId));
+    final matchingCharge = chargesAsync.value?.where((c) => c.maintenanceRequestId == request.id).firstOrNull;
+
+    final bool hasPaymentSubmission = request.invoicePdfUrl != null && request.invoicePdfUrl!.isNotEmpty;
+    final bool isPaymentReceiptRejection = hasPaymentSubmission &&
+        ((request.paidBy == 'agency') ||
+         (matchingCharge != null && matchingCharge.status == 'approved' && matchingCharge.chargeType != 'reimbursement'));
+
+    final String targetStatus = isPaymentReceiptRejection ? 'pending_payment' : 'rejected';
+    final String targetChargeStatus = isPaymentReceiptRejection ? 'approved' : 'rejected';
+
     final isAddToRent = request.paidBy == 'landlord';
     final String statusBadgeName = isAddToRent ? loc.addToRentBadge : loc.deductFromRentBadge;
-    final bool hasCost = request.costAmount != null && request.costAmount! > 0;
-    final String targetStatus = hasCost ? 'pending_payment' : 'open';
 
     final reasonController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+
+    final dialogTitle = isPaymentReceiptRejection
+        ? (loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission')
+        : (loc.localeName == 'tr' ? 'Masraf Beyanını Reddet' : loc.rejectExpenseTitle);
+
+    final dialogDesc = isPaymentReceiptRejection
+        ? (loc.localeName == 'tr'
+            ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
+            : 'Payment submission will be rejected and status will revert to "$statusBadgeName".')
+        : (loc.localeName == 'tr'
+            ? 'Bu masraf beyanı reddedilecek ve mülk mali planına / kiraya yansıtılmayacaktır.'
+            : 'This expense declaration will be rejected and will not affect rent or property finances.');
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -5219,7 +5575,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission',
+                dialogTitle,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -5232,9 +5588,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                loc.localeName == 'tr'
-                    ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
-                    : 'Payment submission will be rejected and status will revert to "$statusBadgeName".',
+                dialogDesc,
                 style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
               ),
               const SizedBox(height: 12),
@@ -5272,7 +5626,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text(loc.localeName == 'tr' ? 'Ödemeyi Reddet' : 'Reject Payment'),
+            child: Text(loc.reject),
           ),
         ],
       ),
@@ -5296,9 +5650,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           rejectedBy: user?.id,
         );
 
-        final msg = (loc.localeName == 'tr')
-            ? '❌ Ödeme bildirimi / dekont reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf "$statusBadgeName" statüsüne geri alındı.'
-            : '❌ Payment submission was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Status reverted to "$statusBadgeName".';
+        final msg = isPaymentReceiptRejection
+            ? ((loc.localeName == 'tr')
+                ? '❌ Ödeme bildirimi / dekont reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf "$statusBadgeName" statüsüne geri alındı.'
+                : '❌ Payment submission was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Status reverted to "$statusBadgeName".')
+            : ((loc.localeName == 'tr')
+                ? '❌ Masraf beyanı reddedildi.${reason.isNotEmpty ? '\n📝 Red Nedeni: "$reason"' : ''}\n📌 Masraf talebi reddedildi olarak kapatıldı (mali plana yansıtılmaz).'
+                : '❌ Expense declaration was rejected.${reason.isNotEmpty ? '\n📝 Reason: "$reason"' : ''}\n📌 Expense request marked as rejected (no rent impact).');
 
         await ref.read(maintenanceRepositoryProvider).addMessage(
           request.id,
@@ -5306,7 +5664,26 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           msg,
         );
 
+        // Sync maintenance_charges record on rejection
+        try {
+          final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(request.id);
+          if (charges.isNotEmpty) {
+            final charge = charges.last;
+            await ref.read(maintenanceRepositoryProvider).updateMaintenanceCharge(
+              charge.copyWith(
+                status: targetChargeStatus,
+                receiptUrl: null,
+                settlementMethod: isPaymentReceiptRejection ? charge.settlementMethod : null,
+                updatedAt: DateTime.now(),
+              ),
+            );
+          }
+        } catch (_) {}
+
         ref.invalidate(maintenanceRequestsProvider(request.propertyId));
+        ref.invalidate(agencyMaintenanceRequestsProvider);
+        ref.invalidate(agencyMaintenanceChargesProvider);
+        ref.invalidate(agencyAllPaymentsProvider);
         ref.invalidate(maintenanceMessagesProvider(request.id));
         ref.invalidate(propertyFinancialStatusProvider(request.propertyId));
         ref.invalidate(rentPaymentsProvider(request.propertyId));
@@ -5344,7 +5721,28 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         propertyId: request.propertyId,
         nextStatus: nextStatus,
       );
+
+      try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(request.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          final nextChargeStatus = nextStatus == 'paid' ? 'paid' : (nextStatus == 'pending_payment' ? 'approved' : 'pending');
+          final user = ref.read(currentUserProvider);
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeStatus(
+            chargeId: charge.id,
+            propertyId: request.propertyId,
+            status: nextChargeStatus,
+            approvedBy: user?.id,
+            paidAt: nextStatus == 'paid' ? DateTime.now() : null,
+          );
+        }
+      } catch (_) {}
+
       ref.invalidate(maintenanceRequestsProvider(request.propertyId));
+      ref.invalidate(propertyMaintenanceChargesProvider(request.propertyId));
+      ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(loc.expenseApprovedSuccess)),
@@ -5443,6 +5841,20 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       );
 
       try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(req.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeSettlement(
+            chargeId: charge.id,
+            propertyId: widget.property.id,
+            settledAmount: charge.amount,
+            status: 'paid',
+            settlementMethod: charge.settlementMethod ?? 'separate_payment',
+          );
+        }
+      } catch (_) {}
+
+      try {
         await ref.read(maintenanceRepositoryProvider).addMessage(
           req.id,
           widget.property.id,
@@ -5452,6 +5864,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       } catch (_) {}
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(rentPaymentsProvider(widget.property.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
 
@@ -5490,7 +5906,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final isManagedByAgency = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
     if (isManagedByAgency && !isAgencyManager) return;
 
-    final isAddToRent = req.paidBy == 'landlord';
+    final chargesAsync = ref.read(propertyMaintenanceChargesProvider(widget.property.id));
+    final matchingCharge = chargesAsync.value?.where((c) => c.maintenanceRequestId == req.id).firstOrNull;
+    final isAddToRent = req.paidBy == 'landlord' || (req.paidBy == 'agency' && matchingCharge?.debtorId == widget.property.tenantId);
 
     showModalBottomSheet(
       context: context,
@@ -5825,6 +6243,23 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             invoicePdfUrl: uploadedUrl,
                           );
 
+                          try {
+                            final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(req.id);
+                            if (charges.isNotEmpty) {
+                              final charge = charges.last;
+                              final methodStr = selectedMethod == 'payout_deduction' ? 'rent_offset' : 'separate_payment';
+                              await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeSettlement(
+                                chargeId: charge.id,
+                                propertyId: widget.property.id,
+                                settledAmount: charge.amount,
+                                status: 'paid',
+                                settlementMethod: methodStr,
+                              );
+                            }
+                          } catch (e) {
+                            debugPrint('Error syncing maintenance charge in _showAgencyCollectSettlementDialog: $e');
+                          }
+
                           final String methodLabel;
                           if (selectedMethod == 'cash') {
                             methodLabel = isTr ? 'Nakit' : (isRu ? 'Наличные' : (isSr ? 'Gotovina' : 'Cash'));
@@ -5856,6 +6291,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
                           ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
                           ref.invalidate(agencyMaintenanceChargesProvider);
+                          ref.invalidate(agencyMaintenanceRequestsProvider);
+                          ref.invalidate(agencyAllPaymentsProvider);
 
                           if (dialogCtx.mounted) Navigator.pop(dialogCtx);
 
@@ -6103,21 +6540,30 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     String currency,
     AppLocalizations loc,
   ) {
-    final isAddToRent = req.paidBy == 'landlord';
+    final chargesAsync = ref.read(propertyMaintenanceChargesProvider(widget.property.id));
+    final matchingCharge = chargesAsync.value?.where((c) => c.maintenanceRequestId == req.id).firstOrNull;
+    final isAddToRent = req.paidBy == 'landlord' || (req.paidBy == 'agency' && matchingCharge?.debtorId == widget.property.tenantId);
     final reqCurrency = (req.currency ?? widget.property.currency).toUpperCase();
-    final eligiblePayments = allPayments.where((p) =>
-      p.status == 'pending' &&
-      p.amount > 0 &&
-      p.currency.toUpperCase() == reqCurrency
-    ).toList();
+    final eligiblePayments = allPayments.where((p) {
+      if (p.status == 'paid' || p.status == 'declared') return false;
+      if (p.paidAt != null) return false;
+      if (p.isIncludedExpense) return false;
+      if (p.amount <= 0) return false;
+      return p.status == 'pending' && p.currency.toUpperCase() == reqCurrency;
+    }).toList();
 
-    final eligibleCounterpartyMaintenance = allMaintenanceRequests.where((m) =>
-      m.id != req.id &&
-      (isAddToRent ? m.paidBy == 'tenant' : m.paidBy == 'landlord') &&
-      m.paymentStatus == 'pending_payment' &&
-      (m.costAmount ?? 0) > 0 &&
-      (m.currency ?? widget.property.currency).toUpperCase() == reqCurrency
-    ).toList();
+    final eligibleCounterpartyMaintenance = allMaintenanceRequests.where((m) {
+      if (m.id == req.id) return false;
+      if (m.paymentStatus == 'paid' || m.paymentStatus == 'rejected') return false;
+      final mRemaining = (m.costAmount != null)
+          ? ((m.costAmount! - m.settledAmount).clamp(0.0, double.infinity))
+          : 0.0;
+      if (mRemaining <= 0) return false;
+      final mCurrency = (m.currency ?? widget.property.currency).toUpperCase();
+      if (mCurrency != reqCurrency) return false;
+      if (m.paymentStatus != 'pending_payment') return false;
+      return isAddToRent ? m.paidBy == 'tenant' : m.paidBy == 'landlord';
+    }).toList();
 
     if (eligiblePayments.isEmpty && eligibleCounterpartyMaintenance.isEmpty) {
       showDialog(
@@ -6177,7 +6623,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   ],
                   ...eligiblePayments.map((p) {
                     final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(p.dueDate);
-                    final costAmt = req.remainingAmount > 0 ? req.remainingAmount : (req.costAmount ?? 0);
+                    final costAmt = (req.costAmount != null)
+                        ? ((req.costAmount! - req.settledAmount).clamp(0.0, double.infinity))
+                        : 0.0;
 
                     if (isAddToRent) {
                       // ── ADD TO RENT ──
@@ -6384,8 +6832,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     ),
                   ),
                   ...eligibleCounterpartyMaintenance.map((m) {
-                    final costAmt = req.remainingAmount > 0 ? req.remainingAmount : (req.costAmount ?? 0);
-                    final otherAmt = m.remainingAmount > 0 ? m.remainingAmount : (m.costAmount ?? 0);
+                    final costAmt = (req.costAmount != null)
+                        ? ((req.costAmount! - req.settledAmount).clamp(0.0, double.infinity))
+                        : 0.0;
+                    final otherAmt = (m.costAmount != null)
+                        ? ((m.costAmount! - m.settledAmount).clamp(0.0, double.infinity))
+                        : 0.0;
                     final mCurrency = m.currency ?? reqCurrency;
                     final offsetAmt = costAmt < otherAmt ? costAmt : otherAmt;
                     final remainingCredit = (costAmt - offsetAmt).clamp(0.0, double.infinity);
@@ -6561,6 +7013,22 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         invoicePdfUrl: req.invoicePdfUrl,
       );
 
+      try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(req.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeSettlement(
+            chargeId: charge.id,
+            propertyId: widget.property.id,
+            settledAmount: isFullySettled ? charge.amount : (charge.settledAmount + offsetAmount),
+            status: isFullySettled ? 'paid' : 'approved',
+            settlementMethod: 'rent_offset',
+          );
+        }
+      } catch (e) {
+        debugPrint('Error syncing maintenance charge in _applyAddToRentOffset: $e');
+      }
+
       // 3. Post chat message in maintenance discussion
       try {
         final remainingMsg = remainingDebt > 0
@@ -6579,6 +7047,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
       ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
       ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(propertiesStreamProvider);
       ref.invalidate(propertiesFutureProvider);
@@ -6676,6 +7146,22 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         invoicePdfUrl: req.invoicePdfUrl,
       );
 
+      try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(req.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceChargeSettlement(
+            chargeId: charge.id,
+            propertyId: widget.property.id,
+            settledAmount: isFullySettled ? charge.amount : (charge.settledAmount + offsetAmount),
+            status: isFullySettled ? 'paid' : 'approved',
+            settlementMethod: 'rent_offset',
+          );
+        }
+      } catch (e) {
+        debugPrint('Error syncing maintenance charge in _applyRentOffset: $e');
+      }
+
       // 3. Post chat message in maintenance discussion
       try {
         final remainingMsg = remainingCredit > 0
@@ -6702,6 +7188,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       } catch (_) {}
 
       ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
       ref.invalidate(rentPaymentsProvider(widget.property.id));
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(propertiesStreamProvider);
@@ -6911,6 +7400,20 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       );
 
       try {
+        final charges = await ref.read(maintenanceRepositoryProvider).getMaintenanceCharges(req.id);
+        if (charges.isNotEmpty) {
+          final charge = charges.last;
+          await ref.read(maintenanceRepositoryProvider).updateMaintenanceCharge(
+            charge.copyWith(
+              receiptUrl: uploadedUrl,
+              settlementMethod: 'separate_payment',
+              updatedAt: DateTime.now(),
+            ),
+          );
+        }
+      } catch (_) {}
+
+      try {
         await ref.read(maintenanceRepositoryProvider).addMessage(
           req.id,
           widget.property.id,
@@ -6924,6 +7427,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
       ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -6986,6 +7491,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
       ref.invalidate(propertyMaintenanceChargesProvider(widget.property.id));
       ref.invalidate(agencyMaintenanceChargesProvider);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+      ref.invalidate(agencyAllPaymentsProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -7112,7 +7619,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final formattedAmount = CurrencyUtils.formatAmount(activeCost, currency);
     final originalCost = request.costAmount ?? 0;
     final formattedOriginalCost = CurrencyUtils.formatAmount(originalCost, currency);
-    final isDeductFromRent = request.paidBy == 'tenant';
+    // Tenant self-declared ('self' intent → paymentStatus='paid') is NOT a rent offset.
+    // Only 'reimburse' intent (paymentStatus != 'paid' when paidBy='tenant') creates a deductFromRent.
+    final isDeductFromRent = request.paidBy == 'tenant' && request.paymentStatus != 'paid';
     final isAddToRent = request.paidBy == 'landlord';
     final isAgencyPaid = request.paidBy == 'agency';
     final isPendingPayment = request.paymentStatus == 'pending_payment';
@@ -7130,14 +7639,14 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final chargesLoaded = chargesAsync.hasValue;
 
     final bool isAgencyTenantDamage = isAgencyPaid && chargesLoaded &&
-        (matchingCharge != null && matchingCharge.chargeType == 'agency_advance' && matchingCharge.debtorId == property.tenantId);
+        (matchingCharge != null && matchingCharge.chargeType == 'agency_advance' && matchingCharge.debtorId != property.landlordId);
 
     // For non-agency payments, paidBy is enough. For agency-paid, we need matchingCharge.
     final bool isLandlordDebtor = isAgencyPaid
-        ? (chargesLoaded && matchingCharge != null && matchingCharge.debtorId == property.landlordId)
+        ? (chargesLoaded && matchingCharge != null ? matchingCharge.debtorId == property.landlordId : true)
         : (request.paidBy == 'tenant'); // tenant paid → landlord is debtor (reimbursement flow)
     final bool isTenantDebtor = isAgencyPaid
-        ? (chargesLoaded && matchingCharge != null && matchingCharge.debtorId == property.tenantId)
+        ? (chargesLoaded && matchingCharge != null && matchingCharge.debtorId != property.landlordId)
         : false;
 
     final bool hasPartial = request.settledAmount > 0 && request.remainingAmount > 0;
@@ -7227,8 +7736,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
     // Role-based action button permissions
     final bool canLandlordSettle = isManagedByAgency
-        ? isAgencyManager && (isDeductFromRent || isAddToRent) && isPendingPayment
-        : (isLandlord || isAgencyManager) && (isDeductFromRent || isAddToRent) && isPendingPayment;
+        ? isAgencyManager && !hasPaymentSubmission && (isDeductFromRent || isAddToRent || (isAgencyPaid && isTenantDebtor)) && (isPendingPayment || isPendingReview)
+        : (isLandlord || isAgencyManager) && !hasPaymentSubmission && (isDeductFromRent || isAddToRent) && (isPendingPayment || isPendingReview);
 
     // Landlord can pay their debt to agency when agency paid for fixture
     final bool canLandlordPayAgencyDebt = isLandlord && !isAgencyManager && isAgencyPaid && isLandlordDebtor && isPendingPayment && !hasPaymentSubmission;
@@ -7253,17 +7762,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         (isPendingReview || isPendingOppositeApproval) && hasPaymentSubmission;
 
     final bool isAgencyApprovalActionNeeded = isManagedByAgency && isAgencyManager &&
+        (!isAgencyPaid || (isAgencyPaid && hasPaymentSubmission)) &&
         (isPendingAgencyApproval || isPendingOppositeApproval || isPendingReview);
 
     final String amountDisplay;
     final String settlementRoleLabel;
 
-    if (isPendingAgencyApproval) {
-      amountDisplay = formattedAmount;
-      settlementRoleLabel = (request.paidBy == 'tenant')
-          ? (loc.localeName == 'tr' ? 'Kiracı Kendi Masrafı (Kullanım)' : (loc.localeName == 'ru' ? 'Собственные расходы арендатора' : (loc.localeName.startsWith('sr') ? 'Lični trošak stanara' : 'Tenant Self Expense')))
-          : (loc.localeName == 'tr' ? 'Ev Sahibi Kendi Masrafı (Demirbaş)' : (loc.localeName == 'ru' ? 'Собственные расходы владельца' : (loc.localeName.startsWith('sr') ? 'Lični trošak vlasnika' : 'Landlord Self Expense')));
-    } else if (isPendingPayment || isPendingOppositeApproval || isPendingReview) {
+    if (isPendingPayment || isPendingOppositeApproval || isPendingReview || isPendingAgencyApproval) {
       if (isAgencyPaid) {
         if (isLandlordDebtor) {
           // Agency paid, Landlord owes agency.
@@ -7301,6 +7806,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         settlementRoleLabel = isTenant
             ? (loc.localeName == 'tr' ? 'Kiracı Alacağı (Kiradan Düşülecek)' : (loc.localeName == 'ru' ? 'Кредит арендатора (к зачету)' : (loc.localeName.startsWith('sr') ? 'Potraživanje stanara (za prebijanje)' : 'Tenant Credit (Deduct from rent)')))
             : (loc.localeName == 'tr' ? 'Ev Sahibi Borcu (Kiracıya Ödenecek / Mahsup)' : (loc.localeName == 'ru' ? 'Долг владельца (к зачету/возврату)' : (loc.localeName.startsWith('sr') ? 'Dug vlasnika (za prebijanje)' : 'Landlord Debt (Reimburse to tenant)')));
+      } else if (request.paidBy == 'tenant') {
+        // paidBy=tenant + paymentStatus=paid → self intent, no rent offset.
+        amountDisplay = formattedAmount;
+        settlementRoleLabel = isTenant
+            ? (loc.localeName == 'tr' ? 'Kiracı Kendi Masrafı (Kira Etkisi Yok)' : (loc.localeName == 'ru' ? 'Оплачено арендатором за свой счет' : (loc.localeName.startsWith('sr') ? 'Stanar platio za sopstvenu upotrebu' : 'Tenant Self-Expense (No rent impact)')))
+            : (loc.localeName == 'tr' ? 'Kiracı Özel Masraf (Kira Etkisi Yok)' : (loc.localeName == 'ru' ? 'Личные расходы арендатора' : (loc.localeName.startsWith('sr') ? 'Lični trošak stanara' : 'Tenant Private Expense (No rent impact)')));
       } else {
         // AddToRent: tenant owes landlord.
         // Tenant perspective:    + (debt)
@@ -7332,11 +7843,18 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   ? (loc.localeName == 'tr' ? 'Acente Alacağı (Tahsil Edildi)' : (loc.localeName == 'ru' ? 'Кредит агентства (получен)' : (loc.localeName.startsWith('sr') ? 'Potraživanje agencije (naplaćeno)' : 'Agency Credit (Collected)')))
                   : '');
         }
-      } else if (isDeductFromRent) {
+      } else if (matchingCharge?.chargeType == 'reimbursement') {
+        // Tenant paid upfront for landlord's fixture and settlement is complete.
         amountDisplay = '- $formattedOriginalCost';
         settlementRoleLabel = isTenant
             ? (loc.localeName == 'tr' ? 'Kiracı Alacağı (Mahsup Edildi)' : (loc.localeName == 'ru' ? 'Кредит арендатора (зачтен)' : (loc.localeName.startsWith('sr') ? 'Potraživanje stanara (prebijeno)' : 'Tenant Credit (Settled)')))
             : (loc.localeName == 'tr' ? 'Ev Sahibi Borcu (Mahsup Edildi / Ödendi)' : (loc.localeName == 'ru' ? 'Долг владельца (возвращен/зачтен)' : (loc.localeName.startsWith('sr') ? 'Dug vlasnika (prebijeno)' : 'Landlord Debt (Settled)')));
+      } else if (request.paidBy == 'tenant') {
+        // Tenant self-expense — no rent impact, now closed.
+        amountDisplay = formattedOriginalCost;
+        settlementRoleLabel = isTenant
+            ? (loc.localeName == 'tr' ? 'Kiracı Kendi Masrafı (Kapatıldı)' : (loc.localeName == 'ru' ? 'Оплачено арендатором за свой счет (закрыто)' : (loc.localeName.startsWith('sr') ? 'Lični trošak stanara (zatvoreno)' : 'Tenant Self-Expense (Closed)')))
+            : (loc.localeName == 'tr' ? 'Kiracı Özel Masraf (Kapatıldı)' : (loc.localeName == 'ru' ? 'Личные расходы арендатора (закрыто)' : (loc.localeName.startsWith('sr') ? 'Lični trošak stanara (zatvoreno)' : 'Tenant Private Expense (Closed)')));
       } else {
         amountDisplay = '+ $formattedOriginalCost';
         settlementRoleLabel = isTenant
@@ -7535,29 +8053,45 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                isPendingAgencyApproval
-                                    ? (request.paidBy == 'tenant'
+                                isAgencyPaid
+                                    ? (hasPaymentSubmission
                                         ? (loc.localeName == 'tr'
-                                            ? 'Kiracı tarafından kendi kullanım hasarı olarak ödendi. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
-                                            : 'Paid by tenant for self usage damage. Will be closed as paid upon agency approval (no rent impact).')
-                                        : (loc.localeName == 'tr'
-                                            ? 'Ev sahibi tarafından mülk demirbaşı olarak karşılandı. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
-                                            : 'Paid by landlord as property fixture. Will be closed as paid upon agency approval (no rent impact).'))
-                                    : (isPendingOppositeApproval
+                                            ? 'Kiracı tarafından ödeme bildirimi sunuldu. Acentenin dekontu inceleyip tahsilatı onaylaması veya reddetmesi bekleniyor.'
+                                            : 'Payment declaration submitted by tenant. Awaiting agency review to approve or reject.')
+                                        : (isTenantDebtor
+                                            ? (loc.localeName == 'tr'
+                                                ? 'Acente tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
+                                                : 'Tenant usage damage covered by agency upfront. To be added to rent or collected from tenant.')
+                                            : (loc.localeName == 'tr'
+                                                ? 'Acente tarafından karşılanan mülk demirbaş masrafı. Kira aktarımından kesilecek veya ev sahibinden tahsil edilecek.'
+                                                : 'Property fixture expense covered by agency upfront. To be deducted from rent payout or collected from landlord.')))
+                                    : (isPendingAgencyApproval
                                         ? (isDeductFromRent
                                             ? (loc.localeName == 'tr'
                                                 ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.'
                                                 : 'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.')
-                                            : (loc.localeName == 'tr'
-                                                ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Acente onayı sonrası kiraya ilave edilebilir duruma gelecektir.'
-                                                : 'Tenant usage damage covered by landlord upfront. Will be ready to add to rent upon agency approval.'))
-                                        : (isDeductFromRent
-                                            ? (loc.localeName == 'tr'
-                                                ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
-                                                : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
-                                            : (loc.localeName == 'tr'
-                                                ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
-                                                : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.'))),
+                                            : request.paidBy == 'tenant'
+                                                ? (loc.localeName == 'tr'
+                                                    ? 'Kiracı tarafından kendi kullanım hasarı olarak ödendi. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
+                                                    : 'Paid by tenant for self usage damage. Will be closed as paid upon agency approval (no rent impact).')
+                                                : (loc.localeName == 'tr'
+                                                    ? 'Ev sahibi tarafından mülk demirbaşı olarak karşılandı. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
+                                                    : 'Paid by landlord as property fixture. Will be closed as paid upon agency approval (no rent impact).'))
+                                        : (isPendingOppositeApproval
+                                            ? (isDeductFromRent
+                                                ? (loc.localeName == 'tr'
+                                                    ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.'
+                                                    : 'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.')
+                                                : (loc.localeName == 'tr'
+                                                    ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Acente onayı sonrası kiraya ilave edilebilir duruma gelecektir.'
+                                                    : 'Tenant usage damage covered by landlord upfront. Will be ready to add to rent upon agency approval.'))
+                                            : (isDeductFromRent
+                                                ? (loc.localeName == 'tr'
+                                                    ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
+                                                    : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
+                                                : (loc.localeName == 'tr'
+                                                    ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
+                                                    : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.')))),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -7654,7 +8188,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  final nextStatus = isPendingOppositeApproval ? 'pending_payment' : 'paid';
+                                  final isTenantReimburse = request.paidBy == 'tenant' && matchingCharge?.chargeType != 'direct_charge';
+                                  final nextStatus = (isPendingOppositeApproval || isTenantReimburse) ? 'pending_payment' : 'paid';
                                   _handleApproveMaintenanceDeclaration(context, request, nextStatus);
                                 },
                                 icon: const Icon(LucideIcons.checkCheck, size: 14),
@@ -8106,7 +8641,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           if (charge == null) return isAgencyManager;
 
           final debtorIsLandlord = charge.debtorId == property.landlordId;
-          final debtorIsTenant = charge.debtorId == property.tenantId;
+          final debtorIsTenant = charge.debtorId != property.landlordId;
 
           if (isAgencyManager) return true;
           // Tenant: only see agency-paid items where TENANT is the debtor
@@ -8175,7 +8710,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     return activeContractAsync.when(
       data: (activeContract) {
         return paymentsAsync.when(
-          data: (payments) {
+          data: (rawPayments) {
+            // Tenant must NEVER see 'included' (kiraya dahil) expense rows in their payment plan
+            final payments = isTenant
+                ? rawPayments.where((p) => p.receiverType != 'included').toList()
+                : rawPayments;
+
             final hasRecords = payments.isNotEmpty || maintenanceSettlements.isNotEmpty || paidMaintenanceSettlements.isNotEmpty;
             if (!hasRecords) {
               return Center(
@@ -8288,7 +8828,9 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
             bool matchesPaymentDueDate(RentPayment p) {
               if (_selectedDueDateFilter == 'overdue') {
-                return p.status != 'paid' && p.dueDate.isBefore(todayStart);
+                if (p.status == 'paid' || p.status == 'declared') return false;
+                if (p.amount <= 0) return false;
+                return p.dueDate.isBefore(todayStart);
               } else if (_selectedDueDateFilter == 'upcoming') {
                 return !p.dueDate.isBefore(todayStart);
               }
@@ -8307,7 +8849,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 if (p.status != 'paid') return false;
               } else if (_selectedStatusFilter == 'unentered') {
                 // Hem 'owner' hem 'included' kalemlerin girilmemiş faturası
-                if (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira') return false;
+                if (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira' || p.status == 'paid' || p.status == 'declared') return false;
               }
 
               return true;
@@ -8321,7 +8863,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             bool matchesMaintenanceDueDate(MaintenanceRequest r) {
               final d = r.paymentDate ?? r.createdAt;
               if (_selectedDueDateFilter == 'overdue') {
-                return r.paymentStatus != 'paid' && d != null && d.isBefore(todayStart);
+                if (r.paymentStatus != 'pending_payment') return false;
+                return d != null && d.isBefore(todayStart);
               } else if (_selectedDueDateFilter == 'upcoming') {
                 return d == null || !d.isBefore(todayStart);
               }
@@ -8359,12 +8902,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
             // ── Dynamic Filtered Summary Counters ─────────────────────
             final totalPropertyUnenteredCount = allDeduplicatedPayments
-                .where((p) => (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0)
+                .where((p) => (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0 && p.status != 'paid' && p.status != 'declared')
                 .length;
 
             final unenteredCount = allDeduplicatedPayments.where((p) {
               if (!matchesPaymentType(p) || !matchesPaymentDueDate(p)) return false;
-              return (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0;
+              return (p.receiverType == 'owner' || p.receiverType == 'included') && p.title != 'Kira' && p.amount == 0 && p.status != 'paid' && p.status != 'declared';
             }).length;
 
             final pendingCount = allDeduplicatedPayments.where((p) {
@@ -8410,7 +8953,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               final t = p.title.toLowerCase();
               if (t != 'kira' && t != 'rent') return false;
               if (!matchesPaymentDueDate(p)) return false;
-              if (_selectedStatusFilter == 'unentered') return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira' || p.status == 'paid' || p.status == 'declared')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid' && p.status != 'paid') return false;
@@ -8421,7 +8964,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               final t = p.title.toLowerCase();
               if (t == 'kira' || t == 'rent') return false;
               if (!matchesPaymentDueDate(p)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira' || p.status == 'paid' || p.status == 'declared')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid' && p.status != 'paid') return false;
@@ -8449,26 +8992,23 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             // ── Dynamic Due Date Counts (Vade Durumu) ──────────────────
             final overdueRentBillsCount = allDeduplicatedPayments.where((p) {
               if (!matchesPaymentType(p)) return false;
-              if (p.status == 'paid') return false;
+              if (p.status == 'paid' || p.status == 'declared') return false;
+              if (p.amount <= 0) return false;
               if (!p.dueDate.isBefore(todayStart)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered') return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid') return false;
               return true;
             }).length;
 
-            final overdueMaintenanceCount = (_selectedStatusFilter == 'paid' || _selectedStatusFilter == 'unentered')
+            final overdueMaintenanceCount = (_selectedStatusFilter == 'paid' || _selectedStatusFilter == 'unentered' || _selectedStatusFilter == 'awaiting')
                 ? 0
                 : maintenanceSettlements.where((r) {
                     if (!matchesMaintenanceType(r)) return false;
+                    if (r.paymentStatus != 'pending_payment') return false;
                     final d = r.paymentDate ?? r.createdAt;
                     if (d == null || !d.isBefore(todayStart)) return false;
-                    if (_selectedStatusFilter == 'pending' && r.paymentStatus != 'pending_payment') return false;
-                    if (_selectedStatusFilter == 'awaiting' &&
-                        r.paymentStatus != 'pending_review' &&
-                        r.paymentStatus != 'pending_agency_approval' &&
-                        r.paymentStatus != 'pending_opposite_approval') return false;
                     return true;
                   }).length;
 
@@ -8477,7 +9017,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             final upcomingRentBillsCount = allDeduplicatedPayments.where((p) {
               if (!matchesPaymentType(p)) return false;
               if (p.dueDate.isBefore(todayStart)) return false;
-              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira')) return false;
+              if (_selectedStatusFilter == 'unentered' && (p.amount != 0 || (p.receiverType != 'owner' && p.receiverType != 'included') || p.title == 'Kira' || p.status == 'paid' || p.status == 'declared')) return false;
               if (_selectedStatusFilter == 'pending' && (p.status != 'pending' || p.amount == 0)) return false;
               if (_selectedStatusFilter == 'awaiting' && p.status != 'declared') return false;
               if (_selectedStatusFilter == 'paid' && p.status != 'paid') return false;
@@ -8508,10 +9048,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
             final maintenancePendingTenant = maintenanceSettlements.where((r) {
               if (!matchesMaintenanceType(r) || !matchesMaintenanceDueDate(r)) return false;
-              if (r.paymentStatus != 'pending_payment') return false;
+              if (r.paymentStatus != 'pending_payment' && !(r.paidBy == 'agency' && r.paymentStatus == 'pending_review')) return false;
               if (r.paidBy == 'agency') {
                 final charge = allCharges.where((c) => c.maintenanceRequestId == r.id).firstOrNull;
-                return charge?.debtorId == property.tenantId;
+                return charge != null && charge.debtorId != property.landlordId;
               }
               if (r.paidBy == 'landlord') {
                 return true;

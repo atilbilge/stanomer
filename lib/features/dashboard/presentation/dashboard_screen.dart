@@ -42,6 +42,9 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool _roleSelectionLoading = false;
+  bool _isCheckingInitialRole = false;
+  bool _needsRoleSelection = false;
+  bool _hasBothInvites = false;
   int _selectedTenantPropertyIndex = 0;
   int _landlordCurrentTab = 0; // 0: Ana Panel, 1: Mülklerim, 2: Finans, 3: Bakım
   String _landlordPropertyFilter = 'all'; // 'all', 'rented', 'vacant'
@@ -49,94 +52,154 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Ensure database profile exists if role is already in metadata
-    // This fixes users who might be in a "half-created" state due to missing RLS earlier.
+    final initialUser = ref.read(currentUserProvider);
+    if (initialUser != null &&
+        initialUser.userMetadata?['initial_role_set'] != true &&
+        initialUser.userMetadata?['role'] == null) {
+      _isCheckingInitialRole = true;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final loc = AppLocalizations.of(context)!;
       final user = ref.read(currentUserProvider);
-      if (user == null) return;
+      if (user == null) {
+        if (mounted && _isCheckingInitialRole) setState(() => _isCheckingInitialRole = false);
+        return;
+      }
 
       try {
         final profile = await ref.read(profileFutureProvider.future);
         final dbRole = profile?['role'] as String?;
         final metaRole = user.userMetadata?['role'] as String?;
         final fullName = profile?['full_name'] ?? user.userMetadata?['full_name'] as String?;
+        final initialRoleSet = user.userMetadata?['initial_role_set'] == true;
 
         if (dbRole == 'agency' || metaRole == 'agency') {
           if (mounted) context.go('/agency-dashboard');
           return;
         }
 
-        String? effectiveRole = dbRole ?? metaRole;
+        // If user already confirmed an initial role or has explicit role in metadata, no check needed
+        if (initialRoleSet || metaRole != null) {
+          if (mounted && _isCheckingInitialRole) setState(() => _isCheckingInitialRole = false);
+          return;
+        }
 
-        // If user has no active DB role yet (first login after signup),
-        // determine default role based on prior agency invitations
-        if (dbRole == null || dbRole.isEmpty) {
-          final userEmail = user.email?.trim().toLowerCase();
-          if (userEmail != null && userEmail.isNotEmpty) {
-            final supabase = Supabase.instance.client;
+        final supabase = Supabase.instance.client;
 
-            // 1. Check for landlord invitations / property ownership by email
-            final landlordInvites = await supabase
-                .from('invitations')
-                .select('id, target_role, token')
-                .eq('invitee_email', userEmail)
-                .eq('status', 'pending')
-                .limit(10);
+        // Check if existing user has active landlord properties
+        final existingLandlordProps = await supabase
+            .from('properties')
+            .select('id')
+            .eq('landlord_id', user.id)
+            .limit(1);
+        if (existingLandlordProps.isNotEmpty) {
+          await ref.read(authRepositoryProvider).updateProfile(role: 'landlord', fullName: fullName);
+          if (mounted) setState(() => _isCheckingInitialRole = false);
+          return;
+        }
 
-            final landlordProperties = await supabase
-                .from('properties')
-                .select('id')
-                .eq('landlord_email', userEmail)
-                .limit(1);
+        // Check if existing user has active tenant contracts/properties
+        final existingTenantContracts = await supabase
+            .from('contracts')
+            .select('id')
+            .eq('tenant_id', user.id)
+            .limit(1);
+        final existingTenantProps = await supabase
+            .from('properties')
+            .select('id')
+            .eq('tenant_id', user.id)
+            .limit(1);
+        if (existingTenantContracts.isNotEmpty || existingTenantProps.isNotEmpty) {
+          await ref.read(authRepositoryProvider).updateProfile(role: 'tenant', fullName: fullName);
+          if (mounted) setState(() => _isCheckingInitialRole = false);
+          return;
+        }
 
-            final hasLandlordInvite = landlordProperties.isNotEmpty ||
-                landlordInvites.any((inv) {
-                  final targetRole = inv['target_role'] as String?;
-                  final token = inv['token'] as String? ?? '';
-                  return targetRole == 'landlord' || token.startsWith('landlord_');
-                });
+        // New user logging in for the first time: Check invitations by email
+        final userEmail = user.email?.trim().toLowerCase();
+        if (userEmail != null && userEmail.isNotEmpty) {
+          final allPendingInvites = await supabase
+              .from('invitations')
+              .select('id, target_role, token')
+              .eq('invitee_email', userEmail)
+              .eq('status', 'pending');
 
-            if (hasLandlordInvite) {
-              effectiveRole = 'landlord';
-            } else {
-              // 2. Check for tenant contracts / tenant invitations
-              final tenantContracts = await supabase
-                  .from('contracts')
-                  .select('id')
-                  .eq('invitee_email', userEmail)
-                  .inFilter('status', ['pending', 'negotiating', 'revision_requested'])
-                  .limit(1);
+          final landlordProperties = await supabase
+              .from('properties')
+              .select('id')
+              .eq('landlord_email', userEmail);
 
-              final hasTenantInvite = tenantContracts.isNotEmpty ||
-                  landlordInvites.any((inv) {
-                    final targetRole = inv['target_role'] as String?;
-                    final token = inv['token'] as String? ?? '';
-                    return targetRole != 'landlord' && !token.startsWith('landlord_');
-                  });
+          final tenantContracts = await supabase
+              .from('contracts')
+              .select('id')
+              .eq('invitee_email', userEmail)
+              .inFilter('status', ['pending', 'negotiating', 'revision_requested']);
 
-              if (hasTenantInvite) {
-                effectiveRole = 'tenant';
-              }
+          final hasLandlordInvite = landlordProperties.isNotEmpty ||
+              allPendingInvites.any((inv) {
+                final targetRole = inv['target_role'] as String?;
+                final token = inv['token'] as String? ?? '';
+                return targetRole == 'landlord' || token.startsWith('landlord_');
+              });
+
+          final hasTenantInvite = tenantContracts.isNotEmpty ||
+              allPendingInvites.any((inv) {
+                final targetRole = inv['target_role'] as String?;
+                final token = inv['token'] as String? ?? '';
+                return targetRole != 'landlord' && !token.startsWith('landlord_');
+              });
+
+          if (hasTenantInvite && !hasLandlordInvite) {
+            // User was invited ONLY as a tenant -> default role is tenant
+            await ref.read(authRepositoryProvider).updateProfile(role: 'tenant', fullName: fullName);
+            ref.invalidate(userRoleProvider);
+            ref.invalidate(profileFutureProvider);
+            ref.invalidate(pendingInvitesForUserProvider);
+            if (mounted) {
+              setState(() {
+                _isCheckingInitialRole = false;
+                _needsRoleSelection = false;
+                _hasBothInvites = false;
+              });
+            }
+          } else if (hasLandlordInvite && !hasTenantInvite) {
+            // User was invited ONLY as a landlord -> default role is landlord
+            await ref.read(authRepositoryProvider).updateProfile(role: 'landlord', fullName: fullName);
+            ref.invalidate(userRoleProvider);
+            ref.invalidate(profileFutureProvider);
+            ref.invalidate(pendingInvitesForUserProvider);
+            if (mounted) {
+              setState(() {
+                _isCheckingInitialRole = false;
+                _needsRoleSelection = false;
+                _hasBothInvites = false;
+              });
+            }
+          } else {
+            // Both invitations exist OR neither exists -> User selects role
+            if (mounted) {
+              setState(() {
+                _isCheckingInitialRole = false;
+                _needsRoleSelection = true;
+                _hasBothInvites = hasTenantInvite && hasLandlordInvite;
+              });
             }
           }
-        }
-
-        if (effectiveRole != null) {
-          await ref.read(authRepositoryProvider)
-            .updateProfile(role: effectiveRole, fullName: fullName)
-            .catchError((e) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(loc.syncError(e.toString())),
-                  backgroundColor: StanomerColors.alertPrimary,
-                ));
-              }
+        } else {
+          if (mounted) {
+            setState(() {
+              _isCheckingInitialRole = false;
+              _needsRoleSelection = true;
             });
-          ref.invalidate(userRoleProvider);
-          ref.invalidate(profileFutureProvider);
+          }
         }
-      } catch (_) {}
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isCheckingInitialRole = false;
+          });
+        }
+      }
     });
   }
 
@@ -242,8 +305,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       floatingActionButton: () {
-        if (zzplDocumentVersion == null) return null;
-        
+        if (zzplDocumentVersion == null || _needsRoleSelection || _isCheckingInitialRole) return null;
         if (propertiesAsync.hasValue) {
           final properties = propertiesAsync.value!;
           if (isLandlord) {
@@ -403,6 +465,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   },
                                   isLoading: _roleSelectionLoading,
                                 ),
+                              ] else if (_isCheckingInitialRole) ...[
+                                const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 80),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              ] else if (_needsRoleSelection) ...[
+                                _buildRoleSelectionCard(loc),
                               ] else if (isLandlord) ...[
                                 if (propertiesAsync.hasValue) ...[
                                   () {
@@ -519,24 +590,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             }
                             final isDesktop = constraints.maxWidth >= 850;
                             if (isDesktop && filteredProperties.length > 1) {
-                              return GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 16,
-                                  mainAxisExtent: 250,
-                                ),
-                                itemCount: filteredProperties.length,
-                                itemBuilder: (context, index) => _LandlordPropertyCard(property: filteredProperties[index]),
+                              final leftCol = <Property>[];
+                              final rightCol = <Property>[];
+                              for (int i = 0; i < filteredProperties.length; i++) {
+                                if (i.isEven) {
+                                  leftCol.add(filteredProperties[i]);
+                                } else {
+                                  rightCol.add(filteredProperties[i]);
+                                }
+                              }
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: leftCol.map((p) => _LandlordPropertyCard(property: p)).toList(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      children: rightCol.map((p) => _LandlordPropertyCard(property: p)).toList(),
+                                    ),
+                                  ),
+                                ],
                               );
                             }
                             return Column(
-                              children: filteredProperties.map((p) => Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
-                                child: _LandlordPropertyCard(property: p),
-                              )).toList(),
+                              children: filteredProperties.map((p) => _LandlordPropertyCard(property: p)).toList(),
                             );
                           },
                         ),
@@ -741,64 +822,7 @@ else if (propertiesAsync.hasError) ...[
                   }
                 }(),
               ] else ...[
-                // Onboarding Card for Initial Role Selection
-                Center(
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    margin: const EdgeInsets.only(top: 60),
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: StanomerColors.bgCard,
-                      borderRadius: const BorderRadius.all(StanomerRadius.xl),
-                      boxShadow: StanomerShadows.card,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(LucideIcons.userCircle, size: 64, color: StanomerColors.brandPrimary),
-                        const SizedBox(height: 24),
-                        Text(
-                          loc.whatAreYou,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          loc.selectRoleToContinue,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: StanomerColors.textSecondary),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 32),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: RoleCard(
-                                title: loc.tenant,
-                                icon: LucideIcons.user,
-                                isSelected: false,
-                                onTap: _roleSelectionLoading ? null : () => _updateRole('tenant'),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: RoleCard(
-                                title: loc.landlord,
-                                icon: LucideIcons.building,
-                                isSelected: false,
-                                onTap: _roleSelectionLoading ? null : () => _updateRole('landlord'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (_roleSelectionLoading)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 24),
-                            child: CircularProgressIndicator(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildRoleSelectionCard(loc),
               ],
             ],
           ),
@@ -896,7 +920,14 @@ else if (propertiesAsync.hasError) ...[
       await ref.read(authRepositoryProvider).updateProfile(role: role);
       ref.invalidate(profileFutureProvider);
       ref.invalidate(userRoleProvider);
+      ref.invalidate(pendingInvitesForUserProvider);
       ref.read(agencyBrandingProvider.notifier).clear();
+      if (mounted) {
+        setState(() {
+          _needsRoleSelection = false;
+          _hasBothInvites = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -907,6 +938,100 @@ else if (propertiesAsync.hasError) ...[
     } finally {
       if (mounted) setState(() => _roleSelectionLoading = false);
     }
+  }
+
+  Widget _buildRoleSelectionCard(AppLocalizations loc) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        margin: const EdgeInsets.only(top: 40, bottom: 40),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: StanomerColors.bgCard,
+          borderRadius: const BorderRadius.all(StanomerRadius.xl),
+          boxShadow: StanomerShadows.card,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(LucideIcons.userCircle, size: 64, color: StanomerColors.brandPrimary),
+            const SizedBox(height: 24),
+            Text(
+              loc.whatAreYou,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              loc.selectRoleToContinue,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: StanomerColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            if (_hasBothInvites) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.info, size: 16, color: Color(0xFF2563EB)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loc.localeName == 'tr'
+                            ? 'Hem ev sahibi hem kiracı davetiniz bulunmaktadır. Lütfen devam etmek istediğiniz rolü seçin.'
+                            : (loc.localeName.startsWith('sr')
+                                ? 'Imate poziv i kao stanar i kao vlasnik. Izaberite ulogu za nastavak.'
+                                : (loc.localeName == 'ru'
+                                    ? 'У вас есть приглашения как арендатора, так и владельца. Выберите роль для продолжения.'
+                                    : 'You have invitations both as a tenant and a landlord. Please select a role to continue.')),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E40AF),
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: RoleCard(
+                    title: loc.tenant,
+                    icon: LucideIcons.user,
+                    isSelected: false,
+                    onTap: _roleSelectionLoading ? null : () => _updateRole('tenant'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: RoleCard(
+                    title: loc.landlord,
+                    icon: LucideIcons.building,
+                    isSelected: false,
+                    onTap: _roleSelectionLoading ? null : () => _updateRole('landlord'),
+                  ),
+                ),
+              ],
+            ),
+            if (_roleSelectionLoading)
+              const Padding(
+                padding: EdgeInsets.only(top: 24),
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPropertyTabs(List<Property> properties) {
@@ -2382,16 +2507,15 @@ class _LandlordPropertyCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     // Status Pills
-                    Row(
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
                       children: [
                         if (state.rentStatus != null)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: _StatusPill(
-                              label: '${loc.rent}: ${state.rentStatus == RentStatus.debt ? loc.debtLabel.toUpperCase() : (state.rentStatus == RentStatus.awaitingApproval ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
-                              color: state.rentStatus == RentStatus.debt ? const Color(0xFFFFF1F2) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFFFFBEB) : const Color(0xFFECFDF5)),
-                              textColor: state.rentStatus == RentStatus.debt ? const Color(0xFFE11D48) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFD97706) : const Color(0xFF059669)),
-                            ),
+                          _StatusPill(
+                            label: '${loc.rent}: ${state.rentStatus == RentStatus.debt ? loc.debtLabel.toUpperCase() : (state.rentStatus == RentStatus.awaitingApproval ? loc.waiting.toUpperCase() : loc.paidLabel.toUpperCase())}',
+                            color: state.rentStatus == RentStatus.debt ? const Color(0xFFFFF1F2) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFFFFBEB) : const Color(0xFFECFDF5)),
+                            textColor: state.rentStatus == RentStatus.debt ? const Color(0xFFE11D48) : (state.rentStatus == RentStatus.awaitingApproval ? const Color(0xFFD97706) : const Color(0xFF059669)),
                           ),
                         if (state.billStatus != null)
                           _StatusPill(
@@ -2427,66 +2551,81 @@ class _LandlordPropertyCard extends ConsumerWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
+                const SizedBox(width: 4),
                 const Spacer(),
-                // Finance Quick Jump Button
-                TextButton.icon(
-                  onPressed: () => context.push('/property-detail', extra: {
-                    'property': property,
-                    'initialTabIndex': 1,
-                  }),
-                  icon: const Icon(LucideIcons.wallet, size: 14, color: Color(0xFF059669)),
-                  label: Text(
-                    loc.tabFinance,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF059669),
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    backgroundColor: const Color(0xFFECFDF5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                // Maintenance Quick Jump Button
-                TextButton.icon(
-                  onPressed: () => context.push('/maintenance', extra: property),
-                  icon: const Icon(LucideIcons.wrench, size: 14, color: Color(0xFF4F46E5)),
-                  label: Text(
-                    loc.tabRequests,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF4F46E5),
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    backgroundColor: const Color(0xFFEEF2FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                // Details Button
-                ElevatedButton.icon(
-                  onPressed: () => context.push('/property-detail', extra: property),
-                  icon: const Icon(LucideIcons.chevronRight, size: 15, color: Colors.white),
-                  label: Text(
-                    viewDetailsLabel,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: agencyColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
+                Flexible(
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      // Finance Quick Jump Button
+                      TextButton.icon(
+                        onPressed: () => context.push('/property-detail', extra: {
+                          'property': property,
+                          'initialTabIndex': 1,
+                        }),
+                        icon: const Icon(LucideIcons.wallet, size: 14, color: Color(0xFF059669)),
+                        label: Text(
+                          loc.tabFinance,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF059669),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          backgroundColor: const Color(0xFFECFDF5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      // Maintenance Quick Jump Button
+                      TextButton.icon(
+                        onPressed: () => context.push('/maintenance', extra: property),
+                        icon: const Icon(LucideIcons.wrench, size: 14, color: Color(0xFF4F46E5)),
+                        label: Text(
+                          loc.tabRequests,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF4F46E5),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          backgroundColor: const Color(0xFFEEF2FF),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      // Details Button
+                      ElevatedButton.icon(
+                        onPressed: () => context.push('/property-detail', extra: property),
+                        icon: const Icon(LucideIcons.chevronRight, size: 15, color: Colors.white),
+                        label: Text(
+                          viewDetailsLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: agencyColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

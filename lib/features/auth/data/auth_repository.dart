@@ -182,13 +182,15 @@ class AuthRepository {
     // This prevents infinite loops with GoRouter listeners
     final currentMetadata = user?.userMetadata ?? {};
     final needsMetaUpdate = (role != null && currentMetadata['role'] != role) || 
-                             (fullName != null && currentMetadata['full_name'] != fullName);
+                             (fullName != null && currentMetadata['full_name'] != fullName) ||
+                             (role != null && currentMetadata['initial_role_set'] != true);
 
     if (needsMetaUpdate) {
       await _client.auth.updateUser(UserAttributes(
         data: {
           if (fullName != null) 'full_name': fullName,
           if (role != null) 'role': role,
+          if (role != null) 'initial_role_set': true,
         },
       ));
     }

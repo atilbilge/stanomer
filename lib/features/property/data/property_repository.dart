@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 import '../../maintenance/domain/maintenance_request.dart';
+import '../../maintenance/domain/maintenance_charge.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
 import '../domain/rent_payment.dart';
@@ -133,12 +134,13 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
   final repo = ref.watch(propertyRepositoryProvider);
   final maintenanceRepo = ref.watch(maintenanceRepositoryProvider);
   
-  // Combine contract, payments, and maintenance requests streams
-  return Rx.combineLatest3(
+  // Combine contract, payments, maintenance requests, and charges streams
+  return Rx.combineLatest4(
     repo.getActiveContractStream(propertyId),
     repo.getRentPaymentsStream(propertyId),
     maintenanceRepo.getMaintenanceRequestsStream(propertyId),
-    (Contract? contract, List<RentPayment> payments, List<MaintenanceRequest> maintenanceRequests) {
+    maintenanceRepo.getPropertyMaintenanceChargesStream(propertyId),
+    (Contract? contract, List<RentPayment> payments, List<MaintenanceRequest> maintenanceRequests, List<MaintenanceCharge> charges) {
       // Initialize counters
       final paidTotals = <String, double>{};
       final pendingTotals = <String, double>{};
@@ -151,6 +153,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
       final endOfCurrentMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
       for (var p in payments) {
+        if (p.receiverType == 'included') continue;
         final cur = p.currency;
         if (p.status == 'paid') {
           paidTotals[cur] = (paidTotals[cur] ?? 0) + p.amount;
@@ -170,8 +173,8 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
         if (cost == null || cost <= 0) continue;
         final cur = m.currency ?? contract?.currency ?? (payments.isNotEmpty ? payments.first.currency : 'EUR');
 
-        // Only approved active settlements (pending_payment) factor into net balance debt / credit
-        if (m.paymentStatus == 'pending_payment') {
+        // Only approved active settlements factor into net balance debt / credit
+        if (m.paymentStatus == 'pending_payment' || (m.paidBy == 'agency' && m.paymentStatus == 'pending_review')) {
           if (m.paidBy == 'tenant') {
             // Tenant paid upfront for fixture/maintenance -> Landlord reimburses / Deduct from rent (Tenant credit)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) - cost;
@@ -179,6 +182,13 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
             // Landlord paid upfront for tenant fault -> Tenant owes / Add to rent (Tenant debt)
             pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
             pendingC++;
+          } else if (m.paidBy == 'agency') {
+            final matchingCharge = charges.where((c) => c.maintenanceRequestId == m.id).firstOrNull;
+            final isTenantDebtor = matchingCharge != null && matchingCharge.debtorId != contract?.landlordId;
+            if (isTenantDebtor) {
+              pendingTotals[cur] = (pendingTotals[cur] ?? 0) + cost;
+              pendingC++;
+            }
           }
         }
       }
@@ -250,7 +260,7 @@ final propertyFinancialStatusProvider = StreamProvider.autoDispose.family<Proper
       
       // Split payments
       final rentPayments = payments.where((p) => p.title == 'Kira').toList();
-      final billPayments = payments.where((p) => p.title != 'Kira').toList();
+      final billPayments = payments.where((p) => p.title != 'Kira' && p.receiverType != 'included').toList();
 
       // Determine Rent Status (only current/past month pending payments count as debt)
       RentStatus rentS;
@@ -406,7 +416,11 @@ final landlordSummaryProvider = StreamProvider.autoDispose<LandlordDashboardStat
               }
 
               // 4. Unentered bills
-              if (p.receiverType == 'owner' && p.title != 'Kira' && p.amount == 0) {
+              if ((p.receiverType == 'owner' || p.receiverType == 'included') &&
+                  p.title != 'Kira' &&
+                  p.amount == 0 &&
+                  p.status != 'paid' &&
+                  p.status != 'declared') {
                 unenteredBillsCount++;
                 latestUnenteredTitle ??= '${properties[i].name} — ${p.title}';
                 latestUnenteredPropertyId ??= properties[i].id;
@@ -1725,11 +1739,26 @@ class PropertyRepository {
     }
   }
 
-  Future<void> approveRentPayment(String paymentId, String propertyId, String monthName, DateTime dueDate) async {
-    await _client.from('rent_payments').update({
+  Future<void> approveRentPayment(
+    String paymentId,
+    String propertyId,
+    String monthName,
+    DateTime dueDate, {
+    String? receiptUrl,
+    String? note,
+  }) async {
+    final Map<String, dynamic> updateData = {
       'status': 'paid',
       'dispute_reason': null,
-    }).eq('id', paymentId);
+    };
+    if (receiptUrl != null) {
+      updateData['receipt_url'] = receiptUrl;
+    }
+    if (note != null && note.trim().isNotEmpty) {
+      updateData['owner_note'] = note.trim();
+    }
+
+    await _client.from('rent_payments').update(updateData).eq('id', paymentId);
 
     if (propertyId.isNotEmpty) {
       try {
