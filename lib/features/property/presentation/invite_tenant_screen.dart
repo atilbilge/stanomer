@@ -20,6 +20,8 @@ import '../../auth/data/auth_repository.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
+import '../domain/tenant_secondary_contact.dart';
+import 'widgets/tenant_secondary_contacts_section.dart';
 import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -45,6 +47,9 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   final _rentController = TextEditingController();
   final _depositController = TextEditingController();
   final _dueDayController = TextEditingController();
+  final _idNumberController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _notesController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   
   bool _isLoading = false;
@@ -56,12 +61,18 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   DateTime? _endDate;
   String _depositCurrency = 'EUR';
   List<ExpenseItem> _expenses = [];
+  List<TenantSecondaryContact> _secondaryContacts = [];
 
   // File Upload State
   String? _contractFileName;
   Uint8List? _contractFileBytes;
   String? _contractFilePath;
   String? _existingContractUrl;
+
+  // Tenant ID Document
+  String? _tenantIdDocUrl;
+  String? _tenantIdDocFileName;
+  bool _isUploadingTenantIdDoc = false;
 
   @override
   void initState() {
@@ -75,6 +86,11 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     if (contract != null) {
       _emailController.text = widget.existingContract != null ? contract.inviteeEmail : '';
       _nameController.text = contract.inviterName ?? '';
+      _idNumberController.text = contract.tenantIdNumber ?? '';
+      _phoneController.text = contract.tenantPhone ?? '';
+      _notesController.text = contract.tenantNotes ?? '';
+      _tenantIdDocUrl = contract.tenantIdDocumentUrl;
+      _secondaryContacts = List.from(contract.tenantSecondaryContacts);
       
       _rentController.text = contract.monthlyRent.toStringAsFixed(0);
       _depositController.text = contract.depositAmount?.toStringAsFixed(0) ?? '';
@@ -100,6 +116,9 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     _rentController.dispose();
     _depositController.dispose();
     _dueDayController.dispose();
+    _idNumberController.dispose();
+    _phoneController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -130,6 +149,42 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
           _endDate = picked;
         }
       });
+    }
+  }
+
+  Future<void> _pickTenantIdDoc() async {
+    final result = await pickContractFile(context);
+    if (result != null && result.files.single.name.isNotEmpty) {
+      final file = result.files.single;
+      Uint8List? fileBytes = file.bytes;
+      if (fileBytes == null && !kIsWeb && file.path != null) {
+        fileBytes = await io.File(file.path!).readAsBytes();
+      }
+      if (fileBytes != null) {
+        setState(() => _isUploadingTenantIdDoc = true);
+        try {
+          final repo = ref.read(propertyRepositoryProvider);
+          final uploadedUrl = await repo.uploadTenantDocument(
+            propertyId: widget.property.id,
+            fileName: file.name,
+            bytes: fileBytes,
+          );
+          if (mounted) {
+            setState(() {
+              _tenantIdDocUrl = uploadedUrl;
+              _tenantIdDocFileName = file.name;
+              _isUploadingTenantIdDoc = false;
+            });
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() => _isUploadingTenantIdDoc = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+            );
+          }
+        }
+      }
     }
   }
 
@@ -245,6 +300,11 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
           expensesConfig: _expenses,
           inviterName: newName,
           contractUrl: contractUrl,
+          tenantIdNumber: _idNumberController.text.trim().isEmpty ? null : _idNumberController.text.trim(),
+          tenantPhone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+          tenantNotes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          tenantIdDocumentUrl: _tenantIdDocUrl,
+          tenantSecondaryContacts: _secondaryContacts,
         );
         
         setState(() {
@@ -265,6 +325,8 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     final profileAsync = ref.watch(profileFutureProvider);
 
     if (!_isInitialized) {
@@ -364,49 +426,152 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader(loc.partiesHeader, LucideIcons.users, roleColor),
+                    _buildSectionHeader(loc.roleTenant.toUpperCase(), LucideIcons.user, roleColor),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: loc.yourName,
+                        labelText: '${isTr ? "Kiracı Adı & Soyadı" : (isSr ? "Ime i prezime zakupca" : "Tenant Full Name")} *',
                         prefixIcon: const Icon(LucideIcons.user, size: 20),
                       ),
-                      validator: (val) => (val == null || val.isEmpty) ? loc.fieldRequired : null,
+                      validator: (val) => (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailController,
                       enabled: widget.existingContract == null,
                       decoration: InputDecoration(
-                        labelText: (role == 'agency' || user?.id == widget.property.agencyId)
-                            ? '${loc.tenantEmail} *'
-                            : '${loc.tenantEmail} (${loc.optional})',
+                        labelText: '${loc.tenantEmail} *',
                         prefixIcon: const Icon(LucideIcons.mail, size: 20),
                         hintText: "kiraci@email.com",
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (val) {
-                        final isAgencyUser = role == 'agency' || user?.id == widget.property.agencyId;
-                        if (isAgencyUser && (val == null || val.trim().isEmpty)) {
+                        if (val == null || val.trim().isEmpty) {
                           return loc.fieldRequired;
                         }
-                        if (val != null && val.trim().isNotEmpty) {
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
-                            return loc.localeName == 'tr'
-                                ? 'Geçerli bir e-posta adresi giriniz'
-                                : (loc.localeName == 'ru'
-                                    ? 'Введите корректный e-mail'
-                                    : (loc.localeName.startsWith('sr')
-                                        ? 'Unesite validnu email adresu'
-                                        : 'Please enter a valid email address'));
-                          }
-                          final currentUserEmail = ref.read(currentUserProvider)?.email;
-                          if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
-                            return loc.cannotInviteSelf;
-                          }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                          return isTr
+                              ? 'Geçerli bir e-posta adresi giriniz'
+                              : (loc.localeName == 'ru'
+                                  ? 'Введите корректный e-mail'
+                                  : (isSr
+                                      ? 'Unesite validnu email adresu'
+                                      : 'Please enter a valid email address'));
+                        }
+                        final currentUserEmail = ref.read(currentUserProvider)?.email;
+                        if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
+                          return loc.cannotInviteSelf;
                         }
                         return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _idNumberController,
+                            decoration: InputDecoration(
+                              labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
+                              prefixIcon: const Icon(LucideIcons.idCard, size: 20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                              prefixIcon: const Icon(LucideIcons.phone, size: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _notesController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        labelText: isTr ? 'Kiracıya İlişkin Notlar (İsteğe Bağlı)' : (isSr ? 'Napomene o zakupcu (Opciono)' : 'Tenant Notes (Optional)'),
+                        prefixIcon: const Icon(LucideIcons.fileText, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Kiracı Kimlik Belgesi Yükleme
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: StanomerColors.borderDefault),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _tenantIdDocUrl != null ? LucideIcons.fileCheck2 : LucideIcons.fileUp,
+                            size: 20,
+                            color: _tenantIdDocUrl != null ? Colors.green : roleColor,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _tenantIdDocUrl != null
+                                      ? (_tenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
+                                      : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: _tenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_isUploadingTenantIdDoc)
+                            const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          else if (_tenantIdDocUrl != null)
+                            IconButton(
+                              icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.redAccent),
+                              onPressed: () => setState(() {
+                                _tenantIdDocUrl = null;
+                                _tenantIdDocFileName = null;
+                              }),
+                            )
+                          else
+                            OutlinedButton.icon(
+                              onPressed: _pickTenantIdDoc,
+                              icon: const Icon(LucideIcons.upload, size: 14),
+                              label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: roleColor,
+                                side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // İkincil İletişim Kişileri
+                    TenantSecondaryContactsSection(
+                      initialContacts: _secondaryContacts,
+                      onContactsChanged: (contacts) {
+                        _secondaryContacts = contacts;
                       },
                     ),
 
@@ -640,6 +805,8 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Widget _buildExpensesSection(AppLocalizations loc, Color roleColor) {
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     return Material(
       color: StanomerColors.bgCard,
       borderRadius: BorderRadius.circular(16),
@@ -711,6 +878,51 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                             _expenses[index] = expense.copyWith(receiver: newReceiver);
                           });
                         },
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                            avatar: const Icon(LucideIcons.landmark, size: 13),
+                            selected: expense.paymentMethod != 'cash',
+                            onSelected: _isLeaseLocked ? null : (_) {
+                              setState(() {
+                                _expenses[index] = expense.copyWith(paymentMethod: 'bank_transfer');
+                              });
+                            },
+                            selectedColor: const Color(0xFFEFF6FF),
+                            labelStyle: TextStyle(
+                              color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
+                              fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          const SizedBox(width: 6),
+                          ChoiceChip(
+                            label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                            avatar: const Icon(LucideIcons.banknote, size: 13),
+                            selected: expense.paymentMethod == 'cash',
+                            onSelected: _isLeaseLocked ? null : (_) {
+                              setState(() {
+                                _expenses[index] = expense.copyWith(paymentMethod: 'cash');
+                              });
+                            },
+                            selectedColor: const Color(0xFFFEF3C7),
+                            labelStyle: TextStyle(
+                              color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
+                              fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ],
                       ),
                     ],
                   ),

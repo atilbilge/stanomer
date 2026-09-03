@@ -30,6 +30,7 @@ _RentPayment _$RentPaymentFromJson(Map<String, dynamic> json) => _RentPayment(
   ownerNote: json['owner_note'] as String?,
   title: json['title'] as String? ?? 'Kira',
   receiverType: json['receiver_type'] as String? ?? 'owner',
+  paymentMethod: json['payment_method'] as String? ?? 'bank_transfer',
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
@@ -54,5 +55,6 @@ Map<String, dynamic> _$RentPaymentToJson(_RentPayment instance) =>
       'owner_note': instance.ownerNote,
       'title': instance.title,
       'receiver_type': instance.receiverType,
+      'payment_method': instance.paymentMethod,
       'created_at': instance.createdAt?.toIso8601String(),
     };

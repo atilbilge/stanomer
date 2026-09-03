@@ -23,6 +23,7 @@ abstract class RentPayment with _$RentPayment {
     @JsonKey(name: 'owner_note') String? ownerNote,
     @Default('Kira') String title,
     @Default('owner') @JsonKey(name: 'receiver_type') String receiverType,
+    @Default('bank_transfer') @JsonKey(name: 'payment_method') String paymentMethod,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _RentPayment;
 
@@ -37,4 +38,7 @@ extension RentPaymentX on RentPayment {
 
   /// Kiracının ev sahibine ödediği fatura kalemleri
   bool get isOwnerExpense => receiverType == 'owner' && title != 'Kira';
+
+  /// Nakit ödeme mi?
+  bool get isCashPayment => paymentMethod == 'cash';
 }

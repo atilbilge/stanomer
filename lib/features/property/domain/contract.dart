@@ -1,4 +1,5 @@
 import '../../../core/l10n/app_localizations.dart';
+import 'tenant_secondary_contact.dart';
 
 enum PaymentReceiver {
   unselected,
@@ -16,20 +17,24 @@ class ExpenseItem {
   final String name;
   final PaymentReceiver receiver;
   final double amount;
+  final String paymentMethod; // 'bank_transfer' or 'cash'
 
   const ExpenseItem({
     required this.name,
     this.receiver = PaymentReceiver.included,
     this.amount = 0.0,
+    this.paymentMethod = 'bank_transfer',
   });
 
   bool get isIncluded => receiver == PaymentReceiver.included;
+  bool get isCash => paymentMethod == 'cash';
 
   factory ExpenseItem.fromJson(Map<String, dynamic> json) {
     return ExpenseItem(
       name: json['name'] as String,
       receiver: _parseReceiver(json['receiver'] as String?),
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      paymentMethod: json['payment_method'] as String? ?? 'bank_transfer',
     );
   }
 
@@ -47,14 +52,16 @@ class ExpenseItem {
       'name': name,
       'receiver': receiver.name,
       'amount': amount,
+      'payment_method': paymentMethod,
     };
   }
 
-  ExpenseItem copyWith({String? name, PaymentReceiver? receiver, double? amount}) {
+  ExpenseItem copyWith({String? name, PaymentReceiver? receiver, double? amount, String? paymentMethod}) {
     return ExpenseItem(
       name: name ?? this.name,
       receiver: receiver ?? this.receiver,
       amount: amount ?? this.amount,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 }
@@ -147,6 +154,11 @@ class Contract {
   final Map<String, dynamic>? proposedChanges;
   final String? proposedBy;
   final bool terminationApproved;
+  final String? tenantIdNumber;
+  final String? tenantPhone;
+  final String? tenantNotes;
+  final String? tenantIdDocumentUrl;
+  final List<TenantSecondaryContact> tenantSecondaryContacts;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -175,6 +187,11 @@ class Contract {
     this.proposedChanges,
     this.proposedBy,
     this.terminationApproved = false,
+    this.tenantIdNumber,
+    this.tenantPhone,
+    this.tenantNotes,
+    this.tenantIdDocumentUrl,
+    this.tenantSecondaryContacts = const [],
     this.createdAt,
     this.updatedAt,
   });
@@ -211,6 +228,14 @@ class Contract {
       proposedChanges: json['proposed_changes'] as Map<String, dynamic>?,
       proposedBy: json['proposed_by'] as String?,
       terminationApproved: json['termination_approved'] as bool? ?? false,
+      tenantIdNumber: json['tenant_id_number'] as String?,
+      tenantPhone: json['tenant_phone'] as String?,
+      tenantNotes: json['tenant_notes'] as String?,
+      tenantIdDocumentUrl: json['tenant_id_document_url'] as String?,
+      tenantSecondaryContacts: (json['tenant_secondary_contacts'] as List?)
+              ?.map((e) => TenantSecondaryContact.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : null,
     );
@@ -270,6 +295,11 @@ class Contract {
       'proposed_changes': proposedChanges,
       'proposed_by': proposedBy,
       'termination_approved': terminationApproved,
+      if (tenantIdNumber != null) 'tenant_id_number': tenantIdNumber,
+      if (tenantPhone != null) 'tenant_phone': tenantPhone,
+      if (tenantNotes != null) 'tenant_notes': tenantNotes,
+      if (tenantIdDocumentUrl != null) 'tenant_id_document_url': tenantIdDocumentUrl,
+      'tenant_secondary_contacts': tenantSecondaryContacts.map((c) => c.toJson()).toList(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -302,6 +332,11 @@ class Contract {
     Map<String, dynamic>? proposedChanges,
     String? proposedBy,
     bool? terminationApproved,
+    String? tenantIdNumber,
+    String? tenantPhone,
+    String? tenantNotes,
+    String? tenantIdDocumentUrl,
+    List<TenantSecondaryContact>? tenantSecondaryContacts,
   }) {
     return Contract(
       id: id ?? this.id,
@@ -328,6 +363,11 @@ class Contract {
       proposedChanges: proposedChanges ?? this.proposedChanges,
       proposedBy: proposedBy ?? this.proposedBy,
       terminationApproved: terminationApproved ?? this.terminationApproved,
+      tenantIdNumber: tenantIdNumber ?? this.tenantIdNumber,
+      tenantPhone: tenantPhone ?? this.tenantPhone,
+      tenantNotes: tenantNotes ?? this.tenantNotes,
+      tenantIdDocumentUrl: tenantIdDocumentUrl ?? this.tenantIdDocumentUrl,
+      tenantSecondaryContacts: tenantSecondaryContacts ?? this.tenantSecondaryContacts,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

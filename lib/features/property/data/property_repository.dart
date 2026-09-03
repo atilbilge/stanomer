@@ -14,6 +14,7 @@ import '../domain/rent_payment.dart';
 import '../domain/activity_log.dart';
 import '../domain/landlord_stats.dart';
 import '../domain/property_owner.dart';
+import '../domain/tenant_secondary_contact.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../core/utils/stream_utils.dart';
@@ -924,6 +925,48 @@ class PropertyRepository {
     }
   }
 
+  Future<String> uploadTenantDocument({
+    required String propertyId,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    String cleanFileName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9.\-_]'), '').trim();
+    if (cleanFileName.isEmpty) cleanFileName = 'id_document.pdf';
+
+    final path = 'tenants/$propertyId/${DateTime.now().millisecondsSinceEpoch}_$cleanFileName';
+
+    String contentType = 'application/pdf';
+    if (cleanFileName.toLowerCase().endsWith('.jpg') || cleanFileName.toLowerCase().endsWith('.jpeg')) {
+      contentType = 'image/jpeg';
+    } else if (cleanFileName.toLowerCase().endsWith('.png')) {
+      contentType = 'image/png';
+    }
+
+    try {
+      await _client.storage.from('rent-receipts').uploadBinary(
+        path,
+        bytes,
+        fileOptions: FileOptions(contentType: contentType),
+      );
+      return _client.storage.from('rent-receipts').getPublicUrl(path);
+    } catch (_) {
+      try {
+        await _client.storage.from('documents').uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: contentType),
+        );
+        return _client.storage.from('documents').getPublicUrl(path);
+      } catch (e) {
+        debugPrint('Fallback tenant document upload error: $e');
+        rethrow;
+      }
+    }
+  }
+
   Future<void> updateProperty(Property property) async {
     await _client.from('properties').update({
       'title': property.name,
@@ -1248,6 +1291,11 @@ class PropertyRepository {
     required List<ExpenseItem> expensesConfig,
     String? inviterName,
     String? contractUrl,
+    String? tenantIdNumber,
+    String? tenantPhone,
+    String? tenantNotes,
+    String? tenantIdDocumentUrl,
+    List<TenantSecondaryContact>? tenantSecondaryContacts,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
@@ -1276,6 +1324,22 @@ class PropertyRepository {
       'token': token,
       'status': 'pending',
     };
+
+    if (tenantIdNumber != null && tenantIdNumber.trim().isNotEmpty) {
+      insertPayload['tenant_id_number'] = tenantIdNumber.trim();
+    }
+    if (tenantPhone != null && tenantPhone.trim().isNotEmpty) {
+      insertPayload['tenant_phone'] = tenantPhone.trim();
+    }
+    if (tenantNotes != null && tenantNotes.trim().isNotEmpty) {
+      insertPayload['tenant_notes'] = tenantNotes.trim();
+    }
+    if (tenantIdDocumentUrl != null && tenantIdDocumentUrl.trim().isNotEmpty) {
+      insertPayload['tenant_id_document_url'] = tenantIdDocumentUrl.trim();
+    }
+    if (tenantSecondaryContacts != null && tenantSecondaryContacts.isNotEmpty) {
+      insertPayload['tenant_secondary_contacts'] = tenantSecondaryContacts.map((c) => c.toJson()).toList();
+    }
 
     final profile = await _client.from('profiles').select('role').eq('id', user.id).maybeSingle();
     final userRole = profile?['role'] as String?;
@@ -1881,9 +1945,11 @@ class PropertyRepository {
     DateTime dueDate, {
     String? receiptUrl,
     String? note,
+    String? paymentMethod,
   }) async {
     final Map<String, dynamic> updateData = {
       'status': 'paid',
+      'paid_at': DateTime.now().toIso8601String(),
       'dispute_reason': null,
     };
     if (receiptUrl != null) {
@@ -1891,6 +1957,9 @@ class PropertyRepository {
     }
     if (note != null && note.trim().isNotEmpty) {
       updateData['owner_note'] = note.trim();
+    }
+    if (paymentMethod != null && paymentMethod.isNotEmpty) {
+      updateData['payment_method'] = paymentMethod;
     }
 
     await _client.from('rent_payments').update(updateData).eq('id', paymentId);

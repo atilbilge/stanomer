@@ -154,6 +154,11 @@ Mülke bağlı ev sahibi ve kiracı arasındaki kira sözleşmelerini tutar.
 | `termination_reason` | `TEXT` | YES | `NULL` | - | Fesih gerekçesi |
 | `termination_approved` | `BOOLEAN` | YES | `FALSE` | - | Fesih karşı tarafça onaylandı mı? |
 | `tax_type` | `tax_type` | YES | `'included'` | - | Vergi tipi |
+| `tenant_id_number` | `TEXT` | YES | `NULL` | - | Kiracı Kimlik / Pasaport / JMBG No |
+| `tenant_phone` | `TEXT` | YES | `NULL` | - | Kiracı iletişim telefonu |
+| `tenant_notes` | `TEXT` | YES | `NULL` | - | Kiracıya ilişkin özel notlar |
+| `tenant_id_document_url` | `TEXT` | YES | `NULL` | - | Kiracı kimlik fotokopisi URL |
+| `tenant_secondary_contacts` | `JSONB` | YES | `'[]'::jsonb` | - | Kiracı ek iletişim kişileri (asistan, PR, aile vb.) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme tarihi |
 
@@ -187,6 +192,7 @@ Aylık kira ve bina/fatura ödeme kalemlerini saklar.
 | `declared_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Kiracının ödedim beyan tarihi |
 | `paid_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Ev sahibinin ödemeyi onayladığı tarih |
 | `status` | `rent_payment_status`| **NO** | `'pending'` | - | Ödeme durumu |
+| `payment_method` | `TEXT` | YES | `'bank_transfer'` | `CHECK (payment_method IN ('cash', 'bank_transfer'))` | Ödeme yöntemi (`'cash'` veya `'bank_transfer'`) |
 | `receiver_type` | `TEXT` | **NO** | `'owner'` | - | Alıcı türü (`'owner'`, `'third_party'`) |
 | `receipt_url` | `TEXT` | YES | `NULL` | - | Ödeme dekontu URL |
 | `invoice_url` | `TEXT` | YES | `NULL` | - | Fatura belgesi URL |

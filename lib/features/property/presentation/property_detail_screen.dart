@@ -1265,6 +1265,64 @@ class _OverviewTab extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _ContractDetailRow(icon: LucideIcons.user, label: isTenant ? loc.landlord : loc.tenant, value: isTenant ? resolvedLandlordName : resolvedTenantName),
+              if (contract.tenantIdNumber != null && contract.tenantIdNumber!.isNotEmpty)
+                _ContractDetailRow(icon: LucideIcons.idCard, label: loc.localeName == 'tr' ? 'Kimlik / Pasaport' : 'ID / Passport', value: contract.tenantIdNumber!),
+              if (contract.tenantPhone != null && contract.tenantPhone!.isNotEmpty)
+                _ContractDetailRow(icon: LucideIcons.phone, label: loc.localeName == 'tr' ? 'Kiracı Telefonu' : 'Tenant Phone', value: contract.tenantPhone!),
+              if (contract.tenantNotes != null && contract.tenantNotes!.isNotEmpty)
+                _ContractDetailRow(icon: LucideIcons.fileText, label: loc.localeName == 'tr' ? 'Kiracı Notları' : 'Tenant Notes', value: contract.tenantNotes!),
+              if (contract.tenantIdDocumentUrl != null && contract.tenantIdDocumentUrl!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await _openFileOrUrl(context, contract.tenantIdDocumentUrl!, mounted: context.mounted);
+                    },
+                    icon: const Icon(LucideIcons.fileCheck, size: 16),
+                    label: Text(loc.localeName == 'tr' ? 'Kiracı Kimlik Belgesini Görüntüle' : 'View Tenant ID Document'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (contract.tenantSecondaryContacts.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  loc.localeName == 'tr' ? 'Ek İletişim Kişileri' : 'Secondary Contacts',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary),
+                ),
+                const SizedBox(height: 6),
+                ...contract.tenantSecondaryContacts.map((c) => Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.userCheck, size: 16, color: StanomerColors.brandPrimary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  c.fullName + (c.relationship.isNotEmpty ? ' (${c.relationship})' : ''),
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                                if (c.phone != null && c.phone!.isNotEmpty)
+                                  Text(c.phone!, style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary)),
+                                if (c.email != null && c.email!.isNotEmpty)
+                                  Text(c.email!, style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
               _ContractDetailRow(icon: LucideIcons.banknote, label: loc.monthlyRent, value: CurrencyUtils.formatAmount(contract.monthlyRent, contract.currency)),
               if (contract.depositAmount != null)
                 _ContractDetailRow(icon: LucideIcons.shield, label: loc.depositAmount, value: CurrencyUtils.formatAmount(contract.depositAmount!, contract.depositCurrency)),
@@ -1275,7 +1333,19 @@ class _OverviewTab extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(loc.expensesHeader, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary)),
                 const SizedBox(height: 8),
-                ...contract.expensesConfig.map((e) => _ContractDetailRow(icon: LucideIcons.zap, label: e.name, value: e.receiver == PaymentReceiver.owner ? loc.roleLandlord : e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included)),
+                ...contract.expensesConfig.map((e) {
+                  final receiverLabel = e.receiver == PaymentReceiver.owner
+                      ? loc.roleLandlord
+                      : (e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included);
+                  final methodLabel = e.isCash
+                      ? (loc.localeName == 'tr' ? 'Nakit' : 'Cash')
+                      : (loc.localeName == 'tr' ? 'Banka' : 'Bank');
+                  return _ContractDetailRow(
+                    icon: LucideIcons.zap,
+                    label: e.name,
+                    value: '$receiverLabel · $methodLabel',
+                  );
+                }),
               ],
               if (contract.contractUrl != null && contract.contractUrl!.isNotEmpty) ...[
                 const SizedBox(height: 20),
@@ -3042,6 +3112,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     PlatformFile? pickedReceiptFile;
     final noteController = TextEditingController();
     bool isSubmitting = false;
+    String selectedPaymentMethod = payment.paymentMethod;
 
     await showDialog(
       context: context,
@@ -3142,6 +3213,83 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Payment Method Selection (Banka Havalesi ⟷ Nakit)
+                    Text(
+                      isTr ? 'Ödeme Yöntemi' : (isSr ? 'Način plaćanja' : 'Payment Method'),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: isSubmitting ? null : () => setDialogState(() => selectedPaymentMethod = 'bank_transfer'),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFFEFF6FF) : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+                                  width: selectedPaymentMethod == 'bank_transfer' ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.landmark, size: 15, color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF1D4ED8) : const Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isTr ? 'Banka Havalesi' : (isSr ? 'Preko banke' : 'Bank Transfer'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: selectedPaymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
+                                      color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: isSubmitting ? null : () => setDialogState(() => selectedPaymentMethod = 'cash'),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: selectedPaymentMethod == 'cash' ? const Color(0xFFFEF3C7) : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: selectedPaymentMethod == 'cash' ? const Color(0xFFF59E0B) : const Color(0xFFE2E8F0),
+                                  width: selectedPaymentMethod == 'cash' ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.banknote, size: 15, color: selectedPaymentMethod == 'cash' ? const Color(0xFFB45309) : const Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: selectedPaymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                                      color: selectedPaymentMethod == 'cash' ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
                     // Receipt / Document Upload Area
                     Text(
                       isTr
@@ -3199,11 +3347,11 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                                 ? 'Загрузить квитанцию или фото'
                                                 : (isSr
                                                     ? 'Priložite uplatnicu ili sliku'
-                                                    : 'Upload receipt or photo'))),
+                                                    : 'Upload receipt or image'))),
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: pickedReceiptFile != null ? FontWeight.w600 : FontWeight.w500,
-                                      color: pickedReceiptFile != null ? const Color(0xFF059669) : const Color(0xFF334155),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: pickedReceiptFile != null ? const Color(0xFF059669) : const Color(0xFF1E293B),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -3297,6 +3445,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             payment.dueDate,
                             receiptUrl: uploadedReceiptUrl,
                             note: noteController.text.trim().isEmpty ? null : noteController.text.trim(),
+                            paymentMethod: selectedPaymentMethod,
                           );
 
                           if (mounted) {
@@ -4752,6 +4901,36 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               ),
                             ),
                           ],
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: isCash ? Colors.amber.shade50 : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: isCash ? Colors.amber.shade300 : Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isCash ? LucideIcons.banknote : LucideIcons.landmark,
+                                  size: 10,
+                                  color: isCash ? Colors.amber.shade900 : Colors.blue.shade800,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  isCash
+                                      ? (loc.localeName == 'tr' ? 'Nakit' : (loc.localeName.startsWith('sr') ? 'Gotovina' : 'Cash'))
+                                      : (loc.localeName == 'tr' ? 'Banka' : (loc.localeName.startsWith('sr') ? 'Banka' : 'Bank')),
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    color: isCash ? Colors.amber.shade900 : Colors.blue.shade800,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ],
