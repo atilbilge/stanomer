@@ -241,5 +241,65 @@ void main() {
       expect(find.text('Genel Bakış'), findsWidgets);
       expect(find.text('Aktivite'), findsWidgets);
     });
+
+    testWidgets('tapping Edit Owners button opens edit owners sheet with form section', (tester) async {
+      tester.view.physicalSize = const Size(1200, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final owner = PropertyOwner(
+        id: 'owner-1',
+        propertyId: mockProperty.id,
+        isPrimary: true,
+        firstName: 'Stefan',
+        lastName: 'Petrović',
+        phone: '+38161111222',
+        email: 'stefan@example.com',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => null),
+            userRoleProvider.overrideWith((ref) => 'agency'),
+            agencyColorSchemeProvider.overrideWith((ref) => const AgencyColorScheme.agencyScheme()),
+            agencyBrandingProvider.overrideWith((ref) => _FakeAgencyBrandingNotifier()),
+            propertiesStreamProvider.overrideWith((ref) => Stream.value([mockProperty])),
+            propertyProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockProperty)),
+            activeContractProvider(mockProperty.id).overrideWith((ref) => Stream.value(null)),
+            propertyContractsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<Contract>[])),
+            activityLogsProvider(mockProperty.id).overrideWith((ref) => Stream.value(mockActivities)),
+            maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
+            propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
+            rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
+            propertyOwnersProvider(mockProperty.id).overrideWith((ref) => Future.value([owner])),
+            profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
+            profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: PropertyDetailScreen(property: mockProperty),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final editIconBtn = find.byIcon(LucideIcons.edit3);
+      expect(editIconBtn, findsOneWidget);
+
+      await tester.tap(editIconBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Mülk Sahiplerini Düzenle'), findsOneWidget);
+      expect(find.text('Değişiklikleri Kaydet'), findsOneWidget);
+    });
   });
 }

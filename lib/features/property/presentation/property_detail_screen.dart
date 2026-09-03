@@ -37,6 +37,7 @@ import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'widgets/contract_file_picker.dart';
 import 'widgets/ownership_share_sheet.dart';
+import 'widgets/property_owners_form_section.dart';
 import '../../../core/widgets/bottom_sheet_wrapper.dart';
 import '../../../core/providers/agency_branding_provider.dart';
 
@@ -1766,7 +1767,7 @@ class _OverviewTab extends ConsumerWidget {
                   ),
                 ],
 
-                if (isAgencyManager) ...[
+                if (isAgencyManager || isLandlord) ...[
                   _LandlordOwnershipInviteCard(property: liveProperty),
                 ],
 
@@ -11680,6 +11681,12 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
     final isTr = loc.localeName == 'tr';
     final isSr = loc.localeName.startsWith('sr');
 
+    final user = ref.watch(currentUserProvider);
+    final role = user?.userMetadata?['role'] as String?;
+    final isAgencyManager = user?.id == property.agencyId || role == 'agency';
+    final isLandlord = user?.id == property.landlordId || isAgencyManager;
+    final canEdit = isAgencyManager || (isLandlord && (property.agencyId == null || property.agencyId!.isEmpty));
+
     final ownersAsync = ref.watch(propertyOwnersProvider(property.id));
     final owners = ownersAsync.value ?? [];
 
@@ -11714,6 +11721,16 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (canEdit) ...[
+                  IconButton(
+                    icon: Icon(LucideIcons.edit3, size: 16, color: primaryColor),
+                    tooltip: isTr ? 'Malikleri Düzenle' : (isSr ? 'Uredi vlasnike' : 'Edit Owners'),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _showEditOwnersModal(context, ref, property, owners),
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -12003,40 +12020,229 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
             ],
 
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final repo = ref.read(propertyRepositoryProvider);
-                  final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
-                  if (context.mounted) {
-                    final primaryOwner = owners.isNotEmpty
-                        ? owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first)
-                        : null;
-                    OwnershipShareSheet.show(
-                      context,
-                      propertyName: property.name,
-                      landlordName: primaryOwner?.displayName ?? property.landlordName ?? '',
-                      landlordEmail: primaryOwner?.email ?? property.landlordEmail ?? '',
-                      token: token,
-                    );
-                  }
-                },
-                icon: const Icon(LucideIcons.qrCode, size: 16),
-                label: Text(isClaimed ? loc.showLandlordInviteQrOrLinkClaimed : loc.showLandlordInviteQrOrLink),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                if (canEdit) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showEditOwnersModal(context, ref, property, owners),
+                      icon: const Icon(LucideIcons.userCog, size: 16),
+                      label: Text(
+                        isTr ? 'Malikleri Düzenle' : (isSr ? 'Uredi vlasnike' : 'Edit Owners'),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryColor,
+                        side: BorderSide(color: primaryColor.withValues(alpha: 0.6)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                ],
+                if (canEdit && isAgencyManager) const SizedBox(width: 10),
+                if (isAgencyManager) ...[
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final repo = ref.read(propertyRepositoryProvider);
+                        final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
+                        if (context.mounted) {
+                          final primaryOwner = owners.isNotEmpty
+                              ? owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first)
+                              : null;
+                          OwnershipShareSheet.show(
+                            context,
+                            propertyName: property.name,
+                            landlordName: primaryOwner?.displayName ?? property.landlordName ?? '',
+                            landlordEmail: primaryOwner?.email ?? property.landlordEmail ?? '',
+                            token: token,
+                          );
+                        }
+                      },
+                      icon: const Icon(LucideIcons.qrCode, size: 16),
+                      label: Text(
+                        isClaimed ? loc.showLandlordInviteQrOrLinkClaimed : loc.showLandlordInviteQrOrLink,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showEditOwnersModal(BuildContext context, WidgetRef ref, Property property, List<PropertyOwner> currentOwners) {
+    final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
+    final ownersFormKey = GlobalKey<PropertyOwnersFormSectionState>();
+
+    final initialList = currentOwners.isNotEmpty
+        ? currentOwners
+        : [
+            PropertyOwner(
+              isPrimary: true,
+              firstName: property.landlordName,
+              phone: property.landlordPhone,
+              email: property.landlordEmail,
+            )
+          ];
+
+    List<PropertyOwner> updatedOwners = List.from(initialList);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        bool isSaving = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: DraggableScrollableSheet(
+                initialChildSize: 0.9,
+                minChildSize: 0.5,
+                maxChildSize: 0.95,
+                expand: false,
+                builder: (_, scrollController) {
+                  return Column(
+                    children: [
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 12),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isTr ? 'Mülk Sahiplerini Düzenle' : (isSr ? 'Uredi vlasnike nekretnine' : 'Edit Property Owners'),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                              icon: const Icon(LucideIcons.x, size: 20),
+                              onPressed: () => Navigator.pop(ctx),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            PropertyOwnersFormSection(
+                              key: ownersFormKey,
+                              tempPropertyId: property.id,
+                              initialOwners: updatedOwners,
+                              onOwnersChanged: (owners) {
+                                updatedOwners = owners;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isSaving
+                                ? null
+                                : () async {
+                                    if (ownersFormKey.currentState != null && !ownersFormKey.currentState!.validate()) {
+                                      return;
+                                    }
+                                    setModalState(() => isSaving = true);
+                                    try {
+                                      final finalOwners = ownersFormKey.currentState?.getOwners() ?? updatedOwners;
+                                      await ref.read(propertyRepositoryProvider).savePropertyOwners(property.id, finalOwners);
+                                      ref.invalidate(propertyOwnersProvider(property.id));
+                                      ref.invalidate(propertyProvider(property.id));
+                                      ref.invalidate(propertiesStreamProvider);
+                                      ref.invalidate(propertiesFutureProvider);
+
+                                      if (ctx.mounted) Navigator.pop(ctx);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(isTr ? 'Mülk sahipleri başarıyla güncellendi.' : 'Property owners updated successfully.'),
+                                            backgroundColor: const Color(0xFF059669),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      setModalState(() => isSaving = false);
+                                      if (ctx.mounted) {
+                                        ScaffoldMessenger.of(ctx).showSnackBar(
+                                          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+                                        );
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: StanomerColors.brandPrimary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            child: isSaving
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Text(
+                                    isTr ? 'Değişiklikleri Kaydet' : (isSr ? 'Sačuvaj izmene' : 'Save Changes'),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
