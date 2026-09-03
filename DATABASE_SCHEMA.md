@@ -530,6 +530,40 @@ Web sitesi üzerinden (`/real-estate-agencies`, `/find-agency`, `/acente-bul`) h
 
 ---
 
+### 2.18 `property_owners`
+Bir mülkün birden fazla mülk sahibini (şahıs veya tüzel kişi / şirket), iletişim bilgilerini, yasal temsilcilerini ve destekleyici PDF belgelerini saklar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Malik benzersiz kimliği |
+| `property_id` | `UUID` | **NO** | - | **FK** `REFERENCES properties(id) ON DELETE CASCADE` | İlgili mülk |
+| `owner_type` | `TEXT` | **NO** | `'individual'` | `CHECK (owner_type IN ('individual', 'company'))` | Bireysel / Şirket ayrımı |
+| `is_primary` | `BOOLEAN` | **NO** | `false` | - | Ana / Birincil malik mi |
+| `ownership_percentage` | `NUMERIC` | YES | `100` | - | Sahiplik / Hisse oranı (%) |
+| `first_name` | `TEXT` | YES | `NULL` | - | Gerçek kişi malik adı |
+| `last_name` | `TEXT` | YES | `NULL` | - | Gerçek kişi malik soyadı |
+| `phone` | `TEXT` | YES | `NULL` | - | İletişim telefonu |
+| `secondary_contact` | `TEXT` | YES | `NULL` | - | İkincil telefon / iletişim bilgisi |
+| `email` | `TEXT` | YES | `NULL` | - | E-posta adresi (Ana malik için zorunlu, ek maliklerde varsa ev sahibi erişimi sağlar) |
+| `id_document_number` | `TEXT` | YES | `NULL` | - | Kimlik / Pasaport belge no |
+| `id_details` | `TEXT` | YES | `NULL` | - | Diğer kimlik detayları |
+| `company_name` | `TEXT` | YES | `NULL` | - | Şirket yasal unvanı |
+| `registered_address` | `TEXT` | YES | `NULL` | - | Şirket resmi sicil adresi |
+| `pib` | `TEXT` | YES | `NULL` | - | Vergi Kimlik Numarası (PIB) |
+| `registration_number` | `TEXT` | YES | `NULL` | - | Şirket Sicil No (Matični broj) |
+| `representative_name` | `TEXT` | YES | `NULL` | - | Yasal temsilci Ad Soyad |
+| `representative_id_number` | `TEXT` | YES | `NULL` | - | Yasal temsilci kimlik no |
+| `representative_id_details` | `TEXT` | YES | `NULL` | - | Yasal temsilci kimlik detayları |
+| `documents` | `JSONB` | **NO** | `'[]'::jsonb` | - | PDF belgeleri (`id_document`, `ownership_proof`, `power_of_attorney`, `other`) |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme tarihi |
+
+#### RLS Politikaları (`public.property_owners`)
+* **`agency_manage_property_owners`**: `FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = property_owners.property_id AND p.agency_id = auth.uid()))`
+* **`landlords_view_property_owners`**: `FOR SELECT TO authenticated USING (LOWER(email) = LOWER(auth.jwt()->>'email') OR EXISTS (SELECT 1 FROM properties p WHERE p.id = property_owners.property_id AND p.landlord_id = auth.uid()))`
+
+---
 
 ## 3. Görünümler (Views)
 

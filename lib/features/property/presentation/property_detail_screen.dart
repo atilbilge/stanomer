@@ -20,6 +20,7 @@ import '../../agency/domain/agency_color_scheme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import '../domain/contract.dart';
 import '../domain/property.dart';
+import '../domain/property_owner.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import '../data/property_repository.dart';
 import '../../../core/utils/expense_utils.dart';
@@ -11676,8 +11677,14 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
     final loc = AppLocalizations.of(context)!;
     final primaryColor = ref.watch(propertyAgencyColorSchemeProvider(property)).primary;
     final isClaimed = property.landlordId != null;
-    final landlordName = property.landlordName ?? property.landlordEmail ?? 'Ev Sahibi';
-    final landlordEmail = property.landlordEmail ?? '';
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
+
+    final ownersAsync = ref.watch(propertyOwnersProvider(property.id));
+    final owners = ownersAsync.value ?? [];
+
+    final fallbackLandlordName = property.landlordName ?? property.landlordEmail ?? (isTr ? 'Ev Sahibi' : 'Landlord');
+    final fallbackLandlordEmail = property.landlordEmail ?? '';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -11697,7 +11704,9 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    loc.landlord,
+                    owners.length > 1
+                        ? (isTr ? 'Mülk Sahipleri (${owners.length})' : (isSr ? 'Vlasnici nekretnine (${owners.length})' : 'Property Owners (${owners.length})'))
+                        : loc.landlord,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -11728,49 +11737,271 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
             const SizedBox(height: 12),
             const Divider(height: 1),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
+
+            if (owners.isNotEmpty) ...[
+              ...owners.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final owner = entry.value;
+                final isCompany = owner.ownerType == PropertyOwnerType.company;
+
+                return Container(
+                  margin: EdgeInsets.only(bottom: idx == owners.length - 1 ? 0 : 12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: Icon(
-                    LucideIcons.user,
-                    color: primaryColor,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        landlordName,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: StanomerColors.textPrimary,
-                        ),
-                      ),
-                      if (landlordEmail.isNotEmpty && landlordEmail != landlordName) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          landlordEmail,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: StanomerColors.textSecondary,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: isCompany ? const Color(0xFFEEF2FF) : primaryColor.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isCompany ? LucideIcons.building2 : LucideIcons.user,
+                              color: isCompany ? const Color(0xFF4F46E5) : primaryColor,
+                              size: 18,
+                            ),
                           ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        owner.displayName,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: StanomerColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    if (owner.isPrimary)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEFF6FF),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(color: const Color(0xFFDBEAFE)),
+                                        ),
+                                        child: Text(
+                                          isTr ? 'Ana Malik' : (isSr ? 'Glavni vlasnik' : 'Primary'),
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1E40AF)),
+                                        ),
+                                      ),
+                                    if (owner.ownershipPercentage < 100) ...[
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          '%${owner.ownershipPercentage.toStringAsFixed(0)}',
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  isCompany
+                                      ? (isTr ? 'Tüzel Kişi / Şirket' : (isSr ? 'Pravno lice' : 'Legal Entity / Company'))
+                                      : (isTr ? 'Gerçek Kişi (Bireysel)' : (isSr ? 'Fizičko lice' : 'Individual')),
+                                  style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      if (isCompany) ...[
+                        const SizedBox(height: 8),
+                        if (owner.pib != null && owner.pib!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              'PIB: ${owner.pib}${owner.registrationNumber != null && owner.registrationNumber!.isNotEmpty ? ' | Matični broj: ${owner.registrationNumber}' : ''}',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+                            ),
+                          ),
+                        if (owner.representativeName != null && owner.representativeName!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              '${isTr ? 'Yetkili Temsilci' : (isSr ? 'Zastupnik' : 'Representative')}: ${owner.representativeName}${owner.representativeIdNumber != null ? ' (${owner.representativeIdNumber})' : ''}',
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                            ),
+                          ),
+                        if (owner.registeredAddress != null && owner.registeredAddress!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              '${isTr ? 'Sicil Adresi' : (isSr ? 'Sedište' : 'Address')}: ${owner.registeredAddress}',
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                            ),
+                          ),
+                      ] else if (owner.idDocumentNumber != null && owner.idDocumentNumber!.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          '${isTr ? 'Kimlik/JMBG' : (isSr ? 'Broj l.k./JMBG' : 'ID/JMBG')}: ${owner.idDocumentNumber}${owner.idDetails != null ? ' (${owner.idDetails})' : ''}',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                        ),
+                      ],
+
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 4,
+                        children: [
+                          if (owner.phone != null && owner.phone!.isNotEmpty)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.phone, size: 12, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Text(owner.phone!, style: const TextStyle(fontSize: 11, color: Color(0xFF334155))),
+                              ],
+                            ),
+                          if (owner.secondaryContact != null && owner.secondaryContact!.isNotEmpty)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.phoneCall, size: 12, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Text('${isTr ? "2. İletişim: " : "Alt: "}${owner.secondaryContact!}', style: const TextStyle(fontSize: 11, color: Color(0xFF475569))),
+                              ],
+                            ),
+                          if (owner.email != null && owner.email!.isNotEmpty)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.mail, size: 12, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Text(owner.email!, style: const TextStyle(fontSize: 11, color: Color(0xFF334155))),
+                              ],
+                            ),
+                        ],
+                      ),
+
+                      if (owner.documents.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        const Divider(height: 1),
+                        const SizedBox(height: 6),
+                        Text(
+                          isTr ? 'Destekleyici Belgeler (PDF):' : (isSr ? 'Priložena dokumenta:' : 'Supporting Documents:'),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+                        ),
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: owner.documents.map((doc) {
+                            final docTypeLabel = _getDocTypeLabel(doc.type, isTr, isSr);
+                            return InkWell(
+                              onTap: () async {
+                                if (doc.url.isNotEmpty) {
+                                  final uri = Uri.tryParse(doc.url);
+                                  if (uri != null) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  }
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(LucideIcons.fileText, size: 12, color: Color(0xFF059669)),
+                                    const SizedBox(width: 4),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 140),
+                                      child: Text(
+                                        '$docTypeLabel: ${doc.name}',
+                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(LucideIcons.externalLink, size: 10, color: Color(0xFF64748B)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ],
                     ],
                   ),
-                ),
-              ],
-            ),
+                );
+              }),
+            ] else ...[
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      LucideIcons.user,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fallbackLandlordName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: StanomerColors.textPrimary,
+                          ),
+                        ),
+                        if (fallbackLandlordEmail.isNotEmpty && fallbackLandlordEmail != fallbackLandlordName) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            fallbackLandlordEmail,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: StanomerColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -11779,11 +12010,14 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
                   final repo = ref.read(propertyRepositoryProvider);
                   final token = await repo.getOrCreateLandlordOwnershipInviteToken(property);
                   if (context.mounted) {
+                    final primaryOwner = owners.isNotEmpty
+                        ? owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first)
+                        : null;
                     OwnershipShareSheet.show(
                       context,
                       propertyName: property.name,
-                      landlordName: property.landlordName ?? '',
-                      landlordEmail: property.landlordEmail ?? '',
+                      landlordName: primaryOwner?.displayName ?? property.landlordName ?? '',
+                      landlordEmail: primaryOwner?.email ?? property.landlordEmail ?? '',
                       token: token,
                     );
                   }
@@ -11804,6 +12038,19 @@ class _LandlordOwnershipInviteCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static String _getDocTypeLabel(OwnerDocumentType type, bool isTr, bool isSr) {
+    switch (type) {
+      case OwnerDocumentType.idDocument:
+        return isTr ? 'Kimlik' : (isSr ? 'L.K.' : 'ID');
+      case OwnerDocumentType.ownershipProof:
+        return isTr ? 'Tapu' : (isSr ? 'Tapu/List' : 'Deed');
+      case OwnerDocumentType.powerOfAttorney:
+        return isTr ? 'Vekalet' : (isSr ? 'Ovlašćenje' : 'POA');
+      case OwnerDocumentType.other:
+        return isTr ? 'Belge' : (isSr ? 'Dokument' : 'Doc');
+    }
   }
 }
 

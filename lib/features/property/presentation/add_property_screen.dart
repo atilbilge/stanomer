@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-import 'package:file_picker/file_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stanomer/features/property/presentation/widgets/payment_responsibility_selector.dart';
@@ -13,10 +10,11 @@ import '../../agency/presentation/agency_dashboard_screen.dart';
 import '../data/property_repository.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
-import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:stanomer/core/utils/expense_utils.dart';
 import '../../../core/providers/agency_branding_provider.dart';
 import '../../auth/data/auth_providers.dart';
+import '../domain/property_owner.dart';
+import 'widgets/property_owners_form_section.dart';
 import 'widgets/ownership_share_sheet.dart';
 import 'join_property_sheet.dart';
 
@@ -39,6 +37,10 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final _landlordNameController = TextEditingController();
   final _landlordPhoneController = TextEditingController();
   final _landlordEmailController = TextEditingController();
+
+  List<PropertyOwner> _owners = [];
+  final _ownersFormKey = GlobalKey<PropertyOwnersFormSectionState>();
+  late String _tempPropertyId;
 
   // --- Detailed Property Fields Controllers & State ---
   bool _isDetailed = false;
@@ -109,6 +111,20 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     }
     _addressController.addListener(_onAddressChanged);
     _descriptionController.addListener(() => setState(() {}));
+
+    _tempPropertyId = widget.property?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    if (widget.property != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final existingOwners = await ref.read(propertyRepositoryProvider).getPropertyOwners(widget.property!.id);
+          if (mounted && existingOwners.isNotEmpty) {
+            setState(() {
+              _owners = existingOwners;
+            });
+          }
+        } catch (_) {}
+      });
+    }
   }
 
   @override
@@ -188,6 +204,26 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       final hasAgencyBranding = ref.read(hasAgencyBrandingProvider);
       final isDetailedFinal = hasAgencyBranding || _isDetailed;
 
+      List<PropertyOwner> finalOwners = _owners;
+      if (_ownersFormKey.currentState != null) {
+        if (!_ownersFormKey.currentState!.validate()) {
+          setState(() => _isLoading = false);
+          return;
+        }
+        finalOwners = _ownersFormKey.currentState!.getOwners();
+      }
+
+      String effLandlordName = _landlordNameController.text.trim();
+      String effLandlordPhone = _landlordPhoneController.text.trim();
+      String effLandlordEmail = _landlordEmailController.text.trim();
+
+      if (finalOwners.isNotEmpty) {
+        final primary = finalOwners.firstWhere((o) => o.isPrimary, orElse: () => finalOwners.first);
+        effLandlordName = primary.displayName;
+        effLandlordPhone = primary.phone ?? '';
+        effLandlordEmail = primary.email ?? '';
+      }
+
       if (isEdit) {
         await repo.updateProperty(widget.property!.copyWith(
           address: _addressController.text.trim(),
@@ -202,9 +238,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           defaultDueDay: int.tryParse(_dueDayController.text) ?? 1,
           taxType: TaxType.included,
           expensesTemplate: _expenses,
-          landlordName: _landlordNameController.text.trim(),
-          landlordPhone: _landlordPhoneController.text.trim(),
-          landlordEmail: _landlordEmailController.text.trim(),
+          landlordName: effLandlordName,
+          landlordPhone: effLandlordPhone,
+          landlordEmail: effLandlordEmail,
           isDetailed: isDetailedFinal,
           propertyType: _propertyType,
           unitNumber: unitNumberVal,
@@ -217,6 +253,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           amenities: _selectedAmenities.toList(),
           description: descriptionVal,
         ));
+        if (finalOwners.isNotEmpty) {
+          await repo.savePropertyOwners(widget.property!.id, finalOwners);
+        }
       } else {
         createdProp = await repo.createProperty(
           address: _addressController.text.trim(),
@@ -231,9 +270,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           defaultDueDay: int.tryParse(_dueDayController.text) ?? 1,
           taxType: TaxType.included,
           expensesTemplate: _expenses,
-          landlordName: _landlordNameController.text.trim(),
-          landlordPhone: _landlordPhoneController.text.trim(),
-          landlordEmail: _landlordEmailController.text.trim(),
+          landlordName: effLandlordName,
+          landlordPhone: effLandlordPhone,
+          landlordEmail: effLandlordEmail,
           isDetailed: isDetailedFinal,
           propertyType: _propertyType,
           unitNumber: unitNumberVal,
@@ -245,6 +284,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           heatingType: _heatingType,
           amenities: _selectedAmenities.toList(),
           description: descriptionVal,
+          owners: finalOwners.isNotEmpty ? finalOwners : null,
         );
       }
       
@@ -266,8 +306,8 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
             OwnershipShareSheet.show(
               context,
               propertyName: createdProp.name,
-              landlordName: _landlordNameController.text.trim(),
-              landlordEmail: _landlordEmailController.text.trim(),
+              landlordName: effLandlordName,
+              landlordEmail: effLandlordEmail,
               token: token,
             );
           }
@@ -492,6 +532,33 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 _buildAmenitiesGrid(loc),
                 const SizedBox(height: 16),
                 _buildDescriptionField(loc),
+              ],
+
+              // --- SECTION: PROPERTY OWNERS (DEDICATED SECTION) ---
+              if (isAgency || (widget.property != null && (widget.property!.landlordName?.isNotEmpty == true || widget.property!.agencyId != null))) ...[
+                PropertyOwnersFormSection(
+                  key: _ownersFormKey,
+                  tempPropertyId: _tempPropertyId,
+                  initialOwners: _owners.isNotEmpty
+                      ? _owners
+                      : [
+                          PropertyOwner(
+                            isPrimary: true,
+                            firstName: _landlordNameController.text.trim(),
+                            phone: _landlordPhoneController.text.trim(),
+                            email: _landlordEmailController.text.trim(),
+                          )
+                        ],
+                  onOwnersChanged: (owners) {
+                    _owners = owners;
+                    if (owners.isNotEmpty) {
+                      final primary = owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first);
+                      _landlordNameController.text = primary.displayName;
+                      _landlordPhoneController.text = primary.phone ?? '';
+                      _landlordEmailController.text = primary.email ?? '';
+                    }
+                  },
+                ),
               ],
 
               if (isAgency) ...[

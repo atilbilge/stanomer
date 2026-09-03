@@ -13,6 +13,7 @@ import '../domain/contract.dart';
 import '../domain/rent_payment.dart';
 import '../domain/activity_log.dart';
 import '../domain/landlord_stats.dart';
+import '../domain/property_owner.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../core/utils/stream_utils.dart';
@@ -67,6 +68,11 @@ class PropertyFinancialState {
 
 final propertyRepositoryProvider = Provider<PropertyRepository>((ref) {
   return PropertyRepository(Supabase.instance.client);
+});
+
+final propertyOwnersProvider = FutureProvider.autoDispose.family<List<PropertyOwner>, String>((ref, propertyId) async {
+  final repo = ref.watch(propertyRepositoryProvider);
+  return repo.getPropertyOwners(propertyId);
 });
 
 final propertiesStreamProvider = StreamProvider<List<Property>>((ref) {
@@ -477,7 +483,24 @@ class PropertyRepository {
       var query = _client.from('properties_with_names').select();
       
       if (role == 'landlord') {
-        query = query.eq('landlord_id', user.id);
+        List<String> coOwnedIds = [];
+        if (user.email != null && user.email!.isNotEmpty) {
+          try {
+            final coOwnedPropsRes = await _client
+                .from('property_owners')
+                .select('property_id')
+                .eq('email', user.email!.toLowerCase());
+            coOwnedIds = (coOwnedPropsRes as List)
+                .map((r) => r['property_id'] as String?)
+                .whereType<String>()
+                .toList();
+          } catch (_) {}
+        }
+        if (coOwnedIds.isNotEmpty) {
+          query = query.or('landlord_id.eq.${user.id},id.in.(${coOwnedIds.join(',')})');
+        } else {
+          query = query.eq('landlord_id', user.id);
+        }
       } else if (role == 'tenant') {
         query = query.eq('tenant_id', user.id);
       } else if (role == 'agency') {
@@ -589,6 +612,7 @@ class PropertyRepository {
     String? heatingType,
     List<String> amenities = const [],
     String? description,
+    List<PropertyOwner>? owners,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
@@ -623,12 +647,23 @@ class PropertyRepository {
       'description': description,
     };
 
+    String? effLandlordName = landlordName;
+    String? effLandlordPhone = landlordPhone;
+    String? effLandlordEmail = landlordEmail;
+
+    if (owners != null && owners.isNotEmpty) {
+      final primary = owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first);
+      effLandlordName = primary.displayName;
+      effLandlordPhone = primary.phone;
+      effLandlordEmail = primary.email;
+    }
+
     if (isAgency) {
       insertPayload['landlord_id'] = null;
       insertPayload['agency_id'] = user.id;
-      insertPayload['landlord_name'] = landlordName;
-      insertPayload['landlord_phone'] = landlordPhone;
-      insertPayload['landlord_email'] = landlordEmail;
+      insertPayload['landlord_name'] = effLandlordName;
+      insertPayload['landlord_phone'] = effLandlordPhone;
+      insertPayload['landlord_email'] = effLandlordEmail;
     } else {
       insertPayload['landlord_id'] = user.id;
     }
@@ -636,12 +671,14 @@ class PropertyRepository {
     final res = await _client.from('properties').insert(insertPayload).select().single();
     final createdProp = Property.fromJson(res);
 
-    if (isAgency) {
+    if (owners != null && owners.isNotEmpty) {
+      await savePropertyOwners(createdProp.id, owners);
+    } else if (isAgency) {
       await createLandlordOwnershipInvite(
         propertyId: createdProp.id,
-        landlordEmail: landlordEmail,
-        landlordName: landlordName,
-        landlordPhone: landlordPhone,
+        landlordEmail: effLandlordEmail,
+        landlordName: effLandlordName,
+        landlordPhone: effLandlordPhone,
       );
     }
 
@@ -787,6 +824,104 @@ class PropertyRepository {
       landlordName: newLandlordName,
       landlordPhone: newLandlordPhone,
     );
+  }
+
+  Future<List<PropertyOwner>> getPropertyOwners(String propertyId) async {
+    try {
+      final res = await _client
+          .from('property_owners')
+          .select()
+          .eq('property_id', propertyId)
+          .order('is_primary', ascending: false)
+          .order('created_at', ascending: true);
+
+      return (res as List)
+          .map((json) => PropertyOwner.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting property owners: $e');
+      return [];
+    }
+  }
+
+  Future<void> savePropertyOwners(String propertyId, List<PropertyOwner> owners) async {
+    if (owners.isEmpty) return;
+
+    try {
+      await _client.from('property_owners').delete().eq('property_id', propertyId);
+
+      final insertPayload = owners
+          .map((o) => o.copyWith(propertyId: propertyId).toJson(excludeId: true))
+          .toList();
+      await _client.from('property_owners').insert(insertPayload);
+
+      final primary = owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first);
+      await _client.from('properties').update({
+        'landlord_name': primary.displayName,
+        'landlord_phone': primary.phone,
+        'landlord_email': primary.email,
+      }).eq('id', propertyId);
+
+      for (final owner in owners) {
+        if (owner.email != null && owner.email!.trim().isNotEmpty) {
+          try {
+            await createLandlordOwnershipInvite(
+              propertyId: propertyId,
+              landlordEmail: owner.email!.trim(),
+              landlordName: owner.displayName,
+              landlordPhone: owner.phone,
+            );
+          } catch (e) {
+            debugPrint('Error creating invite for co-owner: $e');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving property owners: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> uploadOwnerDocument({
+    required String propertyId,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    String cleanFileName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9.\-_]'), '').trim();
+    if (cleanFileName.isEmpty) cleanFileName = 'document.pdf';
+
+    final path = 'owners/$propertyId/${DateTime.now().millisecondsSinceEpoch}_$cleanFileName';
+
+    String contentType = 'application/pdf';
+    if (cleanFileName.toLowerCase().endsWith('.jpg') || cleanFileName.toLowerCase().endsWith('.jpeg')) {
+      contentType = 'image/jpeg';
+    } else if (cleanFileName.toLowerCase().endsWith('.png')) {
+      contentType = 'image/png';
+    }
+
+    try {
+      await _client.storage.from('rent-receipts').uploadBinary(
+        path,
+        bytes,
+        fileOptions: FileOptions(contentType: contentType),
+      );
+      return _client.storage.from('rent-receipts').getPublicUrl(path);
+    } catch (_) {
+      try {
+        await _client.storage.from('documents').uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: contentType),
+        );
+        return _client.storage.from('documents').getPublicUrl(path);
+      } catch (e) {
+        debugPrint('Fallback document upload error: $e');
+        rethrow;
+      }
+    }
   }
 
   Future<void> updateProperty(Property property) async {

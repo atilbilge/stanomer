@@ -12,6 +12,7 @@ import 'package:stanomer/features/maintenance/domain/maintenance_charge.dart';
 import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
 import 'package:stanomer/features/property/domain/contract.dart';
 import 'package:stanomer/features/property/domain/activity_log.dart';
+import 'package:stanomer/features/property/domain/property_owner.dart';
 import 'package:stanomer/core/providers/agency_branding_provider.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -78,6 +79,7 @@ void main() {
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
             propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
+            propertyOwnersProvider(mockProperty.id).overrideWith((ref) => Future.value(<PropertyOwner>[])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
           ],
@@ -121,6 +123,7 @@ void main() {
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
             propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
+            propertyOwnersProvider(mockProperty.id).overrideWith((ref) => Future.value(<PropertyOwner>[])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
           ],
@@ -165,6 +168,7 @@ void main() {
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
             propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
+            propertyOwnersProvider(mockProperty.id).overrideWith((ref) => Future.value(<PropertyOwner>[])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
           ],
@@ -213,6 +217,7 @@ void main() {
             maintenanceRequestsProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceRequest>[])),
             propertyMaintenanceChargesProvider(mockProperty.id).overrideWith((ref) => Stream.value(<MaintenanceCharge>[])),
             rentPaymentsProvider(mockProperty.id).overrideWith((ref) => Stream.value([])),
+            propertyOwnersProvider(mockProperty.id).overrideWith((ref) => Future.value(<PropertyOwner>[])),
             profileProvider('landlord-1').overrideWith((ref) => Stream.value({'full_name': 'Stefan Petrovic', 'email': 'stefan@example.com'})),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'full_name': 'Marko Jankovic', 'email': 'marko@example.com'})),
           ],
