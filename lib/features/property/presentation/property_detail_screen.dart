@@ -59,6 +59,13 @@ class PropertyDetailScreen extends ConsumerStatefulWidget {
 
 class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
   int _selectedPanelIndex = 0;
+  late int _mobileTabIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _mobileTabIndex = widget.initialTabIndex.clamp(0, 3);
+  }
 
   void _openOverviewModal(BuildContext context, Property property, {int initialTab = 0}) {
     showModalBottomSheet(
@@ -130,9 +137,132 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
     );
   }
 
+  Widget _buildMobileTabBar(BuildContext context, Property property, Color roleColor, AppLocalizations loc) {
+    final maintenanceAsync = ref.watch(maintenanceRequestsProvider(property.id));
+    final activeMaintenanceCount = maintenanceAsync.valueOrNull?.length ?? 0;
+
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
+
+    final tabs = [
+      {
+        'index': 0,
+        'label': isTr ? 'Kira & Finans' : (isSr ? 'Kirija i Finansije' : 'Rent & Finance'),
+        'icon': LucideIcons.walletCards,
+      },
+      {
+        'index': 1,
+        'label': isTr ? 'Kontrat & Kiracı' : (isSr ? 'Ugovor i Zakupac' : 'Lease & Tenant'),
+        'icon': LucideIcons.scrollText,
+      },
+      {
+        'index': 2,
+        'label': isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
+        'icon': LucideIcons.wrench,
+        'badge': activeMaintenanceCount > 0 ? activeMaintenanceCount : null,
+      },
+      {
+        'index': 3,
+        'label': isTr ? 'İşlem Geçmişi' : (isSr ? 'Istorija' : 'Audit Log'),
+        'icon': LucideIcons.history,
+      },
+    ];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: tabs.map((t) {
+            final idx = t['index'] as int;
+            final isSelected = _mobileTabIndex == idx;
+            final label = t['label'] as String;
+            final icon = t['icon'] as IconData;
+            final badge = t['badge'] as int?;
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => _mobileTabIndex = idx);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 13,
+                        color: isSelected ? roleColor : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                            color: isSelected ? roleColor : const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                      if (badge != null && badge > 0) ...[
+                        const SizedBox(width: 3),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: isSelected ? roleColor.withValues(alpha: 0.15) : const Color(0xFFCBD5E1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$badge',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: isSelected ? roleColor : const Color(0xFF334155),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final propertiesAsync = ref.watch(propertiesStreamProvider);
+    final loc = AppLocalizations.of(context)!;
     
     // Find the current property in the stream to get up-to-date info
     final property = propertiesAsync.when(
@@ -140,6 +270,9 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
       loading: () => widget.property,
       error: (_, __) => widget.property,
     );
+
+    final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(property));
+    final roleColor = colorScheme.primary;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -195,9 +328,24 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                             ),
                           ],
                         )
-                      : _FinancialsTab(
-                          property: property,
-                          initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                      : Column(
+                          children: [
+                            _buildMobileTabBar(context, property, roleColor, loc),
+                            Expanded(
+                              child: IndexedStack(
+                                index: _mobileTabIndex,
+                                children: [
+                                  _FinancialsTab(
+                                    property: property,
+                                    initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                                  ),
+                                  _OverviewTab(property: property, isSidebar: false),
+                                  _MaintenanceTab(property: property, isSidebar: false),
+                                  _ActivityTab(property: property, isSidebar: false),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                 ),
               ],
@@ -375,6 +523,12 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (property.areaSqm != null || property.roomCount != null) ...[
+                          Text(
+                            ' · ${[if (property.areaSqm != null) '${property.areaSqm!.toStringAsFixed(0)} m²', if (property.roomCount != null) property.roomCount!].join(' · ')}',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 11, fontWeight: FontWeight.w500),
+                          ),
+                        ],
                       ],
                     ),
                   ],
