@@ -150,6 +150,10 @@ class PropertyOwner {
     return full.isNotEmpty ? full : 'Malik';
   }
 
+  bool get isCompany => ownerType == PropertyOwnerType.company;
+  bool get isIndividual => ownerType == PropertyOwnerType.individual;
+  String? get idNumber => idDocumentNumber;
+
   factory PropertyOwner.fromJson(Map<String, dynamic> json) {
     final docsList = (json['documents'] as List<dynamic>?)
             ?.map((e) => PropertyOwnerDocument.fromJson(e as Map<String, dynamic>))

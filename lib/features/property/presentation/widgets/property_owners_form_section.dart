@@ -90,6 +90,38 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
     return _ownerForms.map((f) => f.toModel()).toList();
   }
 
+  void setPrimaryOwnerFromContact({
+    required String name,
+    String? email,
+    String? phone,
+    String? idNumber,
+    bool isCompany = false,
+    String? companyName,
+    String? pib,
+    String? representativeName,
+  }) {
+    if (_ownerForms.isEmpty) {
+      _ownerForms = [_OwnerFormState(isPrimary: true, ownershipPercentage: 100.0)];
+    }
+    final primary = _ownerForms.firstWhere((f) => f.isPrimary, orElse: () => _ownerForms.first);
+    setState(() {
+      primary.ownerType = isCompany ? PropertyOwnerType.company : PropertyOwnerType.individual;
+      if (isCompany) {
+        primary.companyNameController.text = companyName ?? name;
+        if (pib != null) primary.pibController.text = pib;
+        if (representativeName != null) primary.representativeNameController.text = representativeName;
+      } else {
+        final parts = name.trim().split(' ');
+        primary.firstNameController.text = parts.isNotEmpty ? parts.first : name;
+        primary.lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      }
+      if (email != null) primary.emailController.text = email;
+      if (phone != null) primary.phoneController.text = phone;
+      if (idNumber != null) primary.idNumberController.text = idNumber;
+    });
+    _notifyParent();
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;

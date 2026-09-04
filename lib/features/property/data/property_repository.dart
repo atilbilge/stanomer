@@ -15,6 +15,7 @@ import '../domain/activity_log.dart';
 import '../domain/landlord_stats.dart';
 import '../domain/property_owner.dart';
 import '../domain/tenant_secondary_contact.dart';
+import '../../agency/domain/agency_contact.dart';
 import 'package:stanomer/core/utils/currency_utils.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../core/utils/stream_utils.dart';
@@ -74,6 +75,11 @@ final propertyRepositoryProvider = Provider<PropertyRepository>((ref) {
 final propertyOwnersProvider = FutureProvider.autoDispose.family<List<PropertyOwner>, String>((ref, propertyId) async {
   final repo = ref.watch(propertyRepositoryProvider);
   return repo.getPropertyOwners(propertyId);
+});
+
+final agencyContactsProvider = FutureProvider.autoDispose<List<AgencyContact>>((ref) async {
+  final repo = ref.watch(propertyRepositoryProvider);
+  return repo.getAgencyContacts();
 });
 
 final propertiesStreamProvider = StreamProvider<List<Property>>((ref) {
@@ -2644,5 +2650,136 @@ class PropertyRepository {
       debugPrint('Error fetching agency referral info: $e');
       return null;
     }
+  }
+
+  /// Fetches unique landlords and tenants managed by the current agency
+  Future<List<AgencyContact>> getAgencyContacts() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
+    final Map<String, AgencyContact> contactsMap = {};
+
+    try {
+      // 1. Fetch properties managed by this agency
+      final propsRes = await _client
+          .from('properties')
+          .select('id, name, title, address, landlord_name, landlord_email, landlord_phone')
+          .eq('agency_id', user.id);
+
+      final Map<String, String> propNames = {};
+      final Map<String, int> landlordPropCounts = {};
+
+      for (final p in propsRes) {
+        final propId = p['id'] as String;
+        final propName = (p['name'] ?? p['title'] ?? p['address'] ?? 'Mülk') as String;
+        propNames[propId] = propName;
+
+        final lName = (p['landlord_name'] as String?)?.trim();
+        final lEmail = (p['landlord_email'] as String?)?.trim();
+
+        if (lName != null && lName.isNotEmpty) {
+          final key = (lEmail != null && lEmail.isNotEmpty)
+              ? 'landlord_${lEmail.toLowerCase()}'
+              : 'landlord_${lName.toLowerCase()}';
+          landlordPropCounts[key] = (landlordPropCounts[key] ?? 0) + 1;
+        }
+      }
+
+      for (final p in propsRes) {
+        final lName = (p['landlord_name'] as String?)?.trim();
+        final lEmail = (p['landlord_email'] as String?)?.trim();
+        final lPhone = (p['landlord_phone'] as String?)?.trim();
+
+        if (lName != null && lName.isNotEmpty) {
+          final key = (lEmail != null && lEmail.isNotEmpty)
+              ? 'landlord_${lEmail.toLowerCase()}'
+              : 'landlord_${lName.toLowerCase()}';
+          final count = landlordPropCounts[key] ?? 1;
+          final summary = count > 1 ? '$count Mülk Sahibi' : (p['name'] ?? p['title'] ?? 'Mülk');
+
+          contactsMap[key] = AgencyContact(
+            name: lName,
+            email: lEmail,
+            phone: lPhone,
+            role: AgencyContactRole.landlord,
+            propertySummary: summary,
+            propertyId: p['id'] as String?,
+          );
+        }
+      }
+
+      // 2. Fetch property_owners for agency's properties
+      final propIds = propsRes.map((p) => p['id'] as String).toList();
+      if (propIds.isNotEmpty) {
+        final ownersRes = await _client
+            .from('property_owners')
+            .select('*')
+            .inFilter('property_id', propIds);
+
+        for (final o in ownersRes) {
+          final owner = PropertyOwner.fromJson(o);
+          final displayName = owner.displayName.trim();
+          if (displayName.isNotEmpty) {
+            final key = (owner.email != null && owner.email!.isNotEmpty)
+                ? 'landlord_${owner.email!.toLowerCase()}'
+                : 'landlord_${displayName.toLowerCase()}';
+
+            final current = contactsMap[key];
+            contactsMap[key] = AgencyContact(
+              name: displayName,
+              email: owner.email ?? current?.email,
+              phone: owner.phone ?? current?.phone,
+              idNumber: owner.idNumber ?? current?.idNumber,
+              role: AgencyContactRole.landlord,
+              propertySummary: current?.propertySummary ?? propNames[owner.propertyId],
+              propertyId: owner.propertyId ?? current?.propertyId,
+              isCompany: owner.isCompany,
+              companyName: owner.companyName,
+              pib: owner.pib,
+              representativeName: owner.representativeName,
+            );
+          }
+        }
+
+        // 3. Fetch tenants from contracts
+        final contractsRes = await _client
+            .from('contracts')
+            .select('id, property_id, tenant_name, invitee_email, tenant_phone, tenant_id_number, status')
+            .inFilter('property_id', propIds);
+
+        for (final c in contractsRes) {
+          final tName = (c['tenant_name'] as String?)?.trim();
+          final tEmail = (c['invitee_email'] as String?)?.trim();
+          final tPhone = (c['tenant_phone'] as String?)?.trim();
+          final tIdNumber = (c['tenant_id_number'] as String?)?.trim();
+          final propId = c['property_id'] as String?;
+          final propName = propId != null ? propNames[propId] : null;
+
+          if ((tName != null && tName.isNotEmpty) || (tEmail != null && tEmail.isNotEmpty)) {
+            final key = (tEmail != null && tEmail.isNotEmpty)
+                ? 'tenant_${tEmail.toLowerCase()}'
+                : 'tenant_${tName?.toLowerCase()}';
+
+            final summary = propName != null ? '$propName Kiracısı' : 'Kiracı';
+
+            contactsMap[key] = AgencyContact(
+              name: (tName != null && tName.isNotEmpty) ? tName : (tEmail ?? 'Kiracı'),
+              email: tEmail,
+              phone: tPhone,
+              idNumber: tIdNumber,
+              role: AgencyContactRole.tenant,
+              propertySummary: summary,
+              propertyId: propId,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching agency contacts: $e');
+    }
+
+    final list = contactsMap.values.toList();
+    list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return list;
   }
 }
