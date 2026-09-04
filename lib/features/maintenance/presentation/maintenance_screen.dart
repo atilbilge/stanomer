@@ -16,6 +16,8 @@ import '../../property/data/property_repository.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/maintenance_request.dart';
 import '../data/maintenance_repository.dart';
+import '../../agency/presentation/agency_dashboard_screen.dart';
+import 'widgets/agency_property_picker_sheet.dart';
 
 enum _MaintenanceFilter {
   all,
@@ -72,6 +74,28 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
       _searchController.clear();
       _searchQuery = '';
     });
+  }
+
+  Future<void> _handleCreateRequest(BuildContext context, bool isAgency, Color primaryColor) async {
+    if (isAgency) {
+      final properties = ref.read(agencyPropertiesProvider).value ?? [widget.property];
+      final selected = await showAgencyPropertyPickerSheet(
+        context: context,
+        properties: properties,
+        initialSelectedProperty: widget.property,
+        primaryColor: primaryColor,
+      );
+      if (selected != null && context.mounted) {
+        await context.push('/maintenance/new', extra: selected);
+        ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+        if (selected.id != widget.property.id) {
+          ref.invalidate(maintenanceRequestsProvider(selected.id));
+        }
+      }
+    } else {
+      await context.push('/maintenance/new', extra: widget.property);
+      ref.invalidate(maintenanceRequestsProvider(widget.property.id));
+    }
   }
 
   List<MaintenanceRequest> _filterRequests(List<MaintenanceRequest> requests) {
@@ -134,10 +158,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
     return Scaffold(
       backgroundColor: StanomerColors.bgPage,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await context.push('/maintenance/new', extra: widget.property);
-          ref.invalidate(maintenanceRequestsProvider(widget.property.id));
-        },
+        onPressed: () => _handleCreateRequest(context, isAgency, colorScheme.primary),
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 4,
@@ -256,10 +277,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                               property: widget.property,
                               isTenant: isTenant,
                               isAgency: isAgency,
-                              onNewRequest: () async {
-                                await context.push('/maintenance/new', extra: widget.property);
-                                ref.invalidate(maintenanceRequestsProvider(widget.property.id));
-                              },
+                              onNewRequest: () => _handleCreateRequest(context, isAgency, colorScheme.primary),
                             ),
                           )
                         else if (filteredList.isEmpty)

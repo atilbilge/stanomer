@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stanomer/core/l10n/app_localizations.dart';
+import 'package:stanomer/core/providers/agency_branding_provider.dart';
+import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
+import 'package:stanomer/features/agency/presentation/agency_dashboard_screen.dart';
 import 'package:stanomer/features/maintenance/presentation/maintenance_screen.dart';
 import 'package:stanomer/features/maintenance/domain/maintenance_request.dart';
 import 'package:stanomer/features/maintenance/data/maintenance_repository.dart';
@@ -65,6 +68,12 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            propertyAgencyColorSchemeProvider(mockProperty).overrideWithValue(
+              const AgencyColorScheme.defaultScheme(),
+            ),
+            agencyPropertiesProvider.overrideWith(
+              (ref) => Stream.value([mockProperty]),
+            ),
             maintenanceRequestsProvider(mockProperty.id).overrideWith(
               (ref) => Stream.value(mockRequests),
             ),
@@ -107,6 +116,12 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            propertyAgencyColorSchemeProvider(mockProperty).overrideWithValue(
+              const AgencyColorScheme.defaultScheme(),
+            ),
+            agencyPropertiesProvider.overrideWith(
+              (ref) => Stream.value([mockProperty]),
+            ),
             currentUserProvider.overrideWith((ref) => tenantUser),
             profileProvider('tenant-1').overrideWith((ref) => Stream.value({'role': 'tenant'})),
             maintenanceRequestsProvider(mockProperty.id).overrideWith(
@@ -129,7 +144,7 @@ void main() {
       expect(find.text('Sorun Bildir'), findsWidgets);
     });
 
-    testWidgets('agency user does not see report issue CTA on empty state', (tester) async {
+    testWidgets('agency user sees floating action button and empty state message', (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -145,6 +160,12 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            propertyAgencyColorSchemeProvider(mockProperty).overrideWithValue(
+              const AgencyColorScheme.defaultScheme(),
+            ),
+            agencyPropertiesProvider.overrideWith(
+              (ref) => Stream.value([mockProperty]),
+            ),
             currentUserProvider.overrideWith((ref) => agencyUser),
             profileProvider('agency-1').overrideWith((ref) => Stream.value({'role': 'agency'})),
             maintenanceRequestsProvider(mockProperty.id).overrideWith(
@@ -164,8 +185,9 @@ void main() {
 
       // Check No Issues message is visible
       expect(find.text('Kayıtlı sorun yok'), findsOneWidget);
-      // Agency must NOT see "Sorun Bildir" button
-      expect(find.text('Sorun Bildir'), findsNothing);
+      // Floating action button with Sorun Bildir / Report issue is visible
+      expect(find.byType(FloatingActionButton), findsOneWidget);
     });
   });
 }
+

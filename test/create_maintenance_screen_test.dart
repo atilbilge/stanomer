@@ -6,6 +6,9 @@ import 'package:stanomer/features/maintenance/presentation/create_maintenance_sc
 import 'package:stanomer/features/property/domain/property.dart';
 import 'package:stanomer/features/auth/data/auth_providers.dart';
 
+import 'package:stanomer/core/providers/agency_branding_provider.dart';
+import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
+
 void main() {
   group('CreateMaintenanceRequestScreen Tests', () {
     final mockProperty = Property(
@@ -28,6 +31,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            propertyAgencyColorSchemeProvider(mockProperty).overrideWithValue(
+              const AgencyColorScheme.defaultScheme(),
+            ),
             currentUserProvider.overrideWith((ref) => null),
           ],
           child: MaterialApp(
@@ -65,6 +71,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            propertyAgencyColorSchemeProvider(mockProperty).overrideWithValue(
+              const AgencyColorScheme.defaultScheme(),
+            ),
             currentUserProvider.overrideWith((ref) => null),
           ],
           child: MaterialApp(

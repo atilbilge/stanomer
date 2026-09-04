@@ -37,6 +37,7 @@ import '../domain/agency_color_scheme.dart';
 import '../../maintenance/domain/maintenance_request.dart';
 import '../../maintenance/domain/maintenance_charge.dart';
 import '../../maintenance/data/maintenance_repository.dart';
+import '../../maintenance/presentation/widgets/agency_property_picker_sheet.dart';
 
 // ---------------------------------------------------------------------------
 // Actionable Insights Types & Helpers
@@ -361,6 +362,45 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
     );
   }
 
+  String _getAgencyMaintenanceFabLabel(String lang) {
+    switch (lang) {
+      case 'tr':
+        return 'Yeni Bakım Talebi';
+      case 'sr':
+        return 'Novi zahtev za održavanje';
+      case 'ru':
+        return 'Новая заявка на ремонт';
+      case 'en':
+      default:
+        return 'New Maintenance Request';
+    }
+  }
+
+  Future<void> _handleAgencyNewMaintenanceRequest(BuildContext context, AgencyColorScheme colors) async {
+    final properties = ref.read(agencyPropertiesProvider).value ?? [];
+    if (properties.isEmpty) {
+      final loc = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.noManagedPropertiesYet),
+          backgroundColor: const Color(0xFFE11D48),
+        ),
+      );
+      return;
+    }
+
+    final selectedProperty = await showAgencyPropertyPickerSheet(
+      context: context,
+      properties: properties,
+      primaryColor: colors.primary,
+    );
+
+    if (selectedProperty != null && context.mounted) {
+      await context.push('/maintenance/new', extra: selectedProperty);
+      ref.invalidate(agencyMaintenanceRequestsProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileFutureProvider);
@@ -458,9 +498,19 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
               ],
             ),
 
-      // ── Floating Action Button (Global Mülk Ekle +) ────────────────────
+      // ── Floating Action Button (Global Mülk Ekle + / Yeni Bakım Talebi +) ─
       floatingActionButton: _currentTab == 3
-          ? null
+          ? FloatingActionButton.extended(
+              onPressed: () => _handleAgencyNewMaintenanceRequest(context, colors),
+              backgroundColor: colors.primary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: const Icon(LucideIcons.plus, size: 20),
+              label: Text(
+                _getAgencyMaintenanceFabLabel(Localizations.localeOf(context).languageCode.toLowerCase()),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            )
           : FloatingActionButton.extended(
               onPressed: () async {
                 await context.push('/add-property');
@@ -598,7 +648,10 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             ),
 
             // ── Tab 3: Bakım / Talepler (Arıza & Bakım Talepleri) ─────────
-            AgencyMaintenanceTab(colors: colors),
+            AgencyMaintenanceTab(
+              colors: colors,
+              onNewRequest: () => _handleAgencyNewMaintenanceRequest(context, colors),
+            ),
           ],
         ),
       ),
@@ -5563,8 +5616,9 @@ class _FinancePaymentItemCard extends ConsumerWidget {
 
 class AgencyMaintenanceTab extends ConsumerStatefulWidget {
   final AgencyColorScheme colors;
+  final VoidCallback? onNewRequest;
 
-  const AgencyMaintenanceTab({super.key, required this.colors});
+  const AgencyMaintenanceTab({super.key, required this.colors, this.onNewRequest});
 
   @override
   ConsumerState<AgencyMaintenanceTab> createState() => _AgencyMaintenanceTabState();
@@ -5679,6 +5733,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
           'col_payment_status': 'Ödeme / Masraf',
           'col_date': 'Tarih',
           'no_financials': 'Masraf Belirtilmedi',
+          'new_request': 'Yeni Talep',
         };
       case 'sr':
         return {
@@ -5735,6 +5790,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
           'col_payment_status': 'Plaćanje / Trošak',
           'col_date': 'Datum',
           'no_financials': 'Nema troška',
+          'new_request': 'Novi Zahtev',
         };
       case 'ru':
         return {
@@ -5791,6 +5847,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
           'col_payment_status': 'Оплата / Расход',
           'col_date': 'Дата',
           'no_financials': 'Без расходов',
+          'new_request': 'Новая заявка',
         };
       case 'en':
       default:
@@ -5848,6 +5905,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
           'col_payment_status': 'Payment & Cost',
           'col_date': 'Date',
           'no_financials': 'No cost assigned',
+          'new_request': 'New Request',
         };
     }
   }
@@ -5903,6 +5961,24 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
                   ],
                 ),
               ),
+              if (widget.onNewRequest != null) ...[
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: widget.onNewRequest,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.colors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(LucideIcons.plus, size: 16),
+                  label: Text(
+                    txt['new_request'] ?? 'Yeni Talep',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 20),
