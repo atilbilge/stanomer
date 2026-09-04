@@ -1540,7 +1540,10 @@ class _OverviewTab extends ConsumerWidget {
             final currentCurrency = activeContract?.currency ?? liveProperty.currency;
 
             final resolvedLandlordName = landlordProfileAsync.value?['full_name'] ?? liveProperty.landlordName ?? activeContract?.inviterName ?? 'Landlord';
-            final resolvedTenantName = tenantProfileAsync.value?['full_name'] ?? liveProperty.tenantName ?? activeContract?.inviteeEmail ?? 'Tenant';
+            final resolvedTenantName = tenantProfileAsync.value?['full_name'] 
+                ?? (activeContract?.tenantName != null && activeContract!.tenantName!.trim().isNotEmpty ? activeContract!.tenantName! : null)
+                ?? liveProperty.tenantName 
+                ?? (activeContract?.inviteeEmail.isNotEmpty == true ? activeContract!.inviteeEmail : 'Tenant');
             final resolvedLandlordEmail = landlordProfileAsync.value?['email'] ?? '';
             final resolvedTenantEmail = tenantProfileAsync.value?['email'] ?? activeContract?.inviteeEmail ?? '';
 

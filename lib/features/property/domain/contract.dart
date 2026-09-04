@@ -159,6 +159,7 @@ class Contract {
   final String? tenantNotes;
   final String? tenantIdDocumentUrl;
   final List<TenantSecondaryContact> tenantSecondaryContacts;
+  final String? tenantName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -192,6 +193,7 @@ class Contract {
     this.tenantNotes,
     this.tenantIdDocumentUrl,
     this.tenantSecondaryContacts = const [],
+    this.tenantName,
     this.createdAt,
     this.updatedAt,
   });
@@ -236,6 +238,7 @@ class Contract {
               ?.map((e) => TenantSecondaryContact.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      tenantName: json['tenant_name'] as String?,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : null,
     );
@@ -299,6 +302,7 @@ class Contract {
       if (tenantPhone != null) 'tenant_phone': tenantPhone,
       if (tenantNotes != null) 'tenant_notes': tenantNotes,
       if (tenantIdDocumentUrl != null) 'tenant_id_document_url': tenantIdDocumentUrl,
+      if (tenantName != null) 'tenant_name': tenantName,
       'tenant_secondary_contacts': tenantSecondaryContacts.map((c) => c.toJson()).toList(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -337,6 +341,7 @@ class Contract {
     String? tenantNotes,
     String? tenantIdDocumentUrl,
     List<TenantSecondaryContact>? tenantSecondaryContacts,
+    String? tenantName,
   }) {
     return Contract(
       id: id ?? this.id,
@@ -368,6 +373,7 @@ class Contract {
       tenantNotes: tenantNotes ?? this.tenantNotes,
       tenantIdDocumentUrl: tenantIdDocumentUrl ?? this.tenantIdDocumentUrl,
       tenantSecondaryContacts: tenantSecondaryContacts ?? this.tenantSecondaryContacts,
+      tenantName: tenantName ?? this.tenantName,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

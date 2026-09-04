@@ -3,6 +3,7 @@
 
 -- 1. Add tenant extra fields to contracts table
 ALTER TABLE contracts
+  ADD COLUMN IF NOT EXISTS tenant_name TEXT,
   ADD COLUMN IF NOT EXISTS tenant_id_number TEXT,
   ADD COLUMN IF NOT EXISTS tenant_phone TEXT,
   ADD COLUMN IF NOT EXISTS tenant_notes TEXT,

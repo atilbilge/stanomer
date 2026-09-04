@@ -154,6 +154,7 @@ Mülke bağlı ev sahibi ve kiracı arasındaki kira sözleşmelerini tutar.
 | `termination_reason` | `TEXT` | YES | `NULL` | - | Fesih gerekçesi |
 | `termination_approved` | `BOOLEAN` | YES | `FALSE` | - | Fesih karşı tarafça onaylandı mı? |
 | `tax_type` | `tax_type` | YES | `'included'` | - | Vergi tipi |
+| `tenant_name` | `TEXT` | YES | `NULL` | - | Kiracının Adı & Soyadı |
 | `tenant_id_number` | `TEXT` | YES | `NULL` | - | Kiracı Kimlik / Pasaport / JMBG No |
 | `tenant_phone` | `TEXT` | YES | `NULL` | - | Kiracı iletişim telefonu |
 | `tenant_notes` | `TEXT` | YES | `NULL` | - | Kiracıya ilişkin özel notlar |

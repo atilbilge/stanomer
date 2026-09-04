@@ -1291,6 +1291,7 @@ class PropertyRepository {
     required List<ExpenseItem> expensesConfig,
     String? inviterName,
     String? contractUrl,
+    String? tenantName,
     String? tenantIdNumber,
     String? tenantPhone,
     String? tenantNotes,
@@ -1325,6 +1326,9 @@ class PropertyRepository {
       'status': 'pending',
     };
 
+    if (tenantName != null && tenantName.trim().isNotEmpty) {
+      insertPayload['tenant_name'] = tenantName.trim();
+    }
     if (tenantIdNumber != null && tenantIdNumber.trim().isNotEmpty) {
       insertPayload['tenant_id_number'] = tenantIdNumber.trim();
     }
@@ -1344,11 +1348,19 @@ class PropertyRepository {
     final profile = await _client.from('profiles').select('role').eq('id', user.id).maybeSingle();
     final userRole = profile?['role'] as String?;
 
-    if (userRole == 'agency' || propAgencyId == user.id) {
-      insertPayload['agency_id'] = user.id;
+    if (userRole == 'agency' || propAgencyId != null) {
+      insertPayload['agency_id'] = propAgencyId ?? user.id;
     }
 
     final data = await _client.from('contracts').insert(insertPayload).select().single();
+
+    if (tenantName != null && tenantName.trim().isNotEmpty) {
+      try {
+        await _client.from('properties').update({'tenant_name': tenantName.trim()}).eq('id', propertyId);
+      } catch (e) {
+        debugPrint('Silent update property tenant_name failure: $e');
+      }
+    }
 
     final contract = Contract.fromJson(data);
 

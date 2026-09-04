@@ -43,7 +43,7 @@ class InviteTenantScreen extends ConsumerStatefulWidget {
 
 class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   final _emailController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _tenantNameController = TextEditingController();
   final _rentController = TextEditingController();
   final _depositController = TextEditingController();
   final _dueDayController = TextEditingController();
@@ -54,7 +54,6 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   
   bool _isLoading = false;
   String? _generatedLink;
-  bool _isInitialized = false;
   bool _isLeaseLocked = false;
   
   DateTime? _startDate;
@@ -85,7 +84,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
 
     if (contract != null) {
       _emailController.text = widget.existingContract != null ? contract.inviteeEmail : '';
-      _nameController.text = contract.inviterName ?? '';
+      _tenantNameController.text = contract.tenantName ?? (widget.existingContract != null ? widget.property.tenantName ?? '' : '');
       _idNumberController.text = contract.tenantIdNumber ?? '';
       _phoneController.text = contract.tenantPhone ?? '';
       _notesController.text = contract.tenantNotes ?? '';
@@ -112,7 +111,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _nameController.dispose();
+    _tenantNameController.dispose();
     _rentController.dispose();
     _depositController.dispose();
     _dueDayController.dispose();
@@ -263,7 +262,13 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
       }
 
       final finalRent = double.parse(_rentController.text);
-      final newName = _nameController.text.trim();
+      final profileAsync = ref.read(profileFutureProvider);
+      final user = ref.read(currentUserProvider);
+      final inviterName = profileAsync.value?['full_name'] 
+          ?? widget.existingContract?.inviterName 
+          ?? user?.userMetadata?['full_name'] 
+          ?? widget.property.landlordName 
+          ?? 'Landlord';
 
       if (widget.existingContract != null) {
         await repo.updateContractTerms(
@@ -298,8 +303,9 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
           endDate: _endDate!,
           taxType: TaxType.included,
           expensesConfig: _expenses,
-          inviterName: newName,
+          inviterName: inviterName,
           contractUrl: contractUrl,
+          tenantName: _tenantNameController.text.trim().isEmpty ? null : _tenantNameController.text.trim(),
           tenantIdNumber: _idNumberController.text.trim().isEmpty ? null : _idNumberController.text.trim(),
           tenantPhone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
           tenantNotes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
@@ -327,16 +333,6 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     final loc = AppLocalizations.of(context)!;
     final isTr = loc.localeName == 'tr';
     final isSr = loc.localeName.startsWith('sr');
-    final profileAsync = ref.watch(profileFutureProvider);
-
-    if (!_isInitialized) {
-      profileAsync.whenData((profile) {
-        if (profile != null && profile['full_name'] != null && _nameController.text.isEmpty) {
-          _nameController.text = profile['full_name'];
-          _isInitialized = true;
-        }
-      });
-    }
 
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
@@ -429,10 +425,11 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                     _buildSectionHeader(loc.roleTenant.toUpperCase(), LucideIcons.user, roleColor),
                     const SizedBox(height: 16),
                     TextFormField(
-                      controller: _nameController,
+                      controller: _tenantNameController,
                       decoration: InputDecoration(
                         labelText: '${isTr ? "Kiracı Adı & Soyadı" : (isSr ? "Ime i prezime zakupca" : "Tenant Full Name")} *',
                         prefixIcon: const Icon(LucideIcons.user, size: 20),
+                        hintText: isTr ? "Örn: Ahmet Yılmaz" : (isSr ? "Npr: Marko Petrović" : "E.g. John Doe"),
                       ),
                       validator: (val) => (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
                     ),

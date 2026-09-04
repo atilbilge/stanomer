@@ -83,6 +83,7 @@ void main() {
         'start_date': '2026-09-01T00:00:00.000Z',
         'end_date': '2027-09-01T00:00:00.000Z',
         'status': 'active',
+        'tenant_name': 'Petar Petrović',
         'tenant_id_number': 'JMBG1234567890123',
         'tenant_phone': '+381609998877',
         'tenant_notes': 'Has a trained guide dog',
@@ -105,6 +106,7 @@ void main() {
       };
 
       final contract = Contract.fromJson(contractJson);
+      expect(contract.tenantName, 'Petar Petrović');
       expect(contract.tenantIdNumber, 'JMBG1234567890123');
       expect(contract.tenantPhone, '+381609998877');
       expect(contract.tenantNotes, 'Has a trained guide dog');
@@ -115,6 +117,7 @@ void main() {
       expect(contract.expensesConfig.first.isCash, isTrue);
 
       final mapped = contract.toJson();
+      expect(mapped['tenant_name'], 'Petar Petrović');
       expect(mapped['tenant_id_number'], 'JMBG1234567890123');
       expect(mapped['tenant_phone'], '+381609998877');
       expect(mapped['tenant_notes'], 'Has a trained guide dog');
