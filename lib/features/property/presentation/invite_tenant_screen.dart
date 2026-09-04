@@ -223,7 +223,8 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     }
 
     final currentUserEmail = ref.read(currentUserProvider)?.email;
-    if (_emailController.text.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
+    final emailText = _emailController.text.trim();
+    if (emailText.isNotEmpty && currentUserEmail != null && emailText.toLowerCase() == currentUserEmail.toLowerCase()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(loc.cannotInviteSelf),
@@ -293,7 +294,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
         // Her durumda contracts tablosunu kullan (hem ilk hem ek kiracı)
         final contract = await repo.createContract(
           propertyId: widget.property.id,
-          inviteeEmail: _emailController.text.trim(),
+          inviteeEmail: emailText.isEmpty ? null : emailText,
           monthlyRent: finalRent,
           depositAmount: _depositController.text.isNotEmpty ? double.parse(_depositController.text) : null,
           currency: widget.property.currency,
@@ -343,6 +344,11 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     final loc = AppLocalizations.of(context)!;
     final isTr = loc.localeName == 'tr';
     final isSr = loc.localeName.startsWith('sr');
+    final optionalSuffix = isTr
+        ? '(İsteğe Bağlı)'
+        : (isSr
+            ? '(Opciono)'
+            : (loc.localeName.startsWith('ru') ? '(Необязательно)' : '(Optional)'));
 
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
@@ -449,16 +455,22 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                       controller: _emailController,
                       enabled: widget.existingContract == null,
                       decoration: InputDecoration(
-                        labelText: '${loc.tenantEmail} *',
+                        labelText: showAgencyTenantDetails
+                            ? '${loc.tenantEmail} *'
+                            : '${loc.tenantEmail} $optionalSuffix',
                         prefixIcon: const Icon(LucideIcons.mail, size: 20),
                         hintText: "kiraci@email.com",
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return loc.fieldRequired;
+                        final text = val?.trim() ?? '';
+                        if (text.isEmpty) {
+                          if (showAgencyTenantDetails) {
+                            return loc.fieldRequired;
+                          }
+                          return null;
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) {
                           return isTr
                               ? 'Geçerli bir e-posta adresi giriniz'
                               : (loc.localeName == 'ru'
@@ -468,7 +480,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                                       : 'Please enter a valid email address'));
                         }
                         final currentUserEmail = ref.read(currentUserProvider)?.email;
-                        if (val.trim().toLowerCase() == currentUserEmail?.toLowerCase()) {
+                        if (currentUserEmail != null && text.toLowerCase() == currentUserEmail.toLowerCase()) {
                           return loc.cannotInviteSelf;
                         }
                         return null;

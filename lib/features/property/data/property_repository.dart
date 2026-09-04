@@ -1279,7 +1279,7 @@ class PropertyRepository {
 
   Future<Contract> createContract({
     required String propertyId,
-    required String inviteeEmail,
+    String? inviteeEmail,
     required double monthlyRent,
     double? depositAmount,
     required String currency,
@@ -1311,7 +1311,7 @@ class PropertyRepository {
       'property_id': propertyId,
       'landlord_id': propLandlordId ?? user.id,
       'inviter_name': inviterName,
-      'invitee_email': inviteeEmail.trim().toLowerCase(),
+      'invitee_email': (inviteeEmail != null && inviteeEmail.trim().isNotEmpty) ? inviteeEmail.trim().toLowerCase() : null,
       'monthly_rent': monthlyRent,
       'deposit_amount': depositAmount,
       'currency': currency,
@@ -1365,12 +1365,13 @@ class PropertyRepository {
     final contract = Contract.fromJson(data);
 
     // Try to notify the tenant if they are already registered
-    try {
-      final inviteeProfile = await _client
-          .from('profiles')
-          .select('id')
-          .eq('email', inviteeEmail.trim().toLowerCase())
-          .maybeSingle();
+    if (inviteeEmail != null && inviteeEmail.trim().isNotEmpty) {
+      try {
+        final inviteeProfile = await _client
+            .from('profiles')
+            .select('id')
+            .eq('email', inviteeEmail.trim().toLowerCase())
+            .maybeSingle();
       
       if (inviteeProfile != null) {
         final property = await _client
@@ -1391,6 +1392,7 @@ class PropertyRepository {
       }
     } catch (e) {
       debugPrint('Silent notification failure: $e');
+    }
     }
 
     return contract;

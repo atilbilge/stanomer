@@ -240,6 +240,9 @@ void main() {
       // Independent landlord should see standard tenant fields:
       expect(find.textContaining('Kiracı Adı & Soyadı'), findsOneWidget);
       expect(find.text('Telefon'), findsOneWidget);
+      // Independent landlord: email is optional
+      expect(find.text('Kiracının E-postası (İsteğe Bağlı)'), findsOneWidget);
+      expect(find.text('Kiracının E-postası *'), findsNothing);
 
       // Independent landlord must NOT see the 5 extra agency fields:
       // 1. ID Number
@@ -255,7 +258,7 @@ void main() {
       expect(find.text('Ödeme Yöntemi:'), findsNothing);
     });
 
-    testWidgets('Agency-managed property DOES see extra tenant details and expense payment methods', (tester) async {
+    testWidgets('Agency-managed property DOES see extra tenant details, expense payment methods, and mandatory email', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -278,6 +281,8 @@ void main() {
       // Agency should see standard fields
       expect(find.textContaining('Kiracı Adı & Soyadı'), findsOneWidget);
       expect(find.text('Telefon'), findsOneWidget);
+      // Agency: email is mandatory
+      expect(find.text('Kiracının E-postası *'), findsOneWidget);
 
       // Agency MUST see all 5 extra fields:
       // 1. ID Number
@@ -293,6 +298,75 @@ void main() {
       expect(find.text('Ödeme Yöntemi:'), findsOneWidget);
       expect(find.text('Banka'), findsOneWidget);
       expect(find.text('Nakit'), findsOneWidget);
+    });
+
+    testWidgets('Email validation: Optional for independent landlord, but invalid email format still fails', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => landlordUser),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: InviteTenantScreen(property: independentProperty),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final emailFormField = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Kiracının E-postası (İsteğe Bağlı)'),
+      );
+
+      // Independent landlord: empty/null is valid (optional)
+      expect(emailFormField.validator!(''), isNull);
+      expect(emailFormField.validator!(null), isNull);
+      expect(emailFormField.validator!('   '), isNull);
+
+      // Invalid format is rejected
+      expect(emailFormField.validator!('not-an-email'), 'Geçerli bir e-posta adresi giriniz');
+
+      // Valid email is accepted
+      expect(emailFormField.validator!('tenant@example.com'), isNull);
+    });
+
+    testWidgets('Email validation: Mandatory for agency property', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => agencyUser),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: InviteTenantScreen(property: agencyProperty),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final emailFormField = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Kiracının E-postası *'),
+      );
+
+      // Agency: empty or whitespace must return fieldRequired
+      expect(emailFormField.validator!(''), 'Bu alan zorunludur');
+      expect(emailFormField.validator!(null), 'Bu alan zorunludur');
+      expect(emailFormField.validator!('   '), 'Bu alan zorunludur');
+
+      // Valid email is accepted
+      expect(emailFormField.validator!('agency.tenant@example.com'), isNull);
     });
   });
 
