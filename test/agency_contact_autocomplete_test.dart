@@ -252,11 +252,11 @@ void main() {
       await tester.tap(find.text('Elena Ivanova'));
       await tester.pumpAndSettle();
 
-      // Check that landlord input fields are populated
+      // Check that landlord input fields are populated (exactly one form on screen now!)
       expect(find.widgetWithText(TextFormField, 'Elena'), findsOneWidget);
       expect(find.widgetWithText(TextFormField, 'Ivanova'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'elena@example.com'), findsWidgets);
-      expect(find.widgetWithText(TextFormField, '+381659998877'), findsWidgets);
+      expect(find.widgetWithText(TextFormField, 'elena@example.com'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '+381659998877'), findsOneWidget);
     });
   });
 }

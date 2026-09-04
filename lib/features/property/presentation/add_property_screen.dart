@@ -458,6 +458,34 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 const SizedBox(height: 24),
               ],
 
+              // --- SECTION: PROPERTY OWNERS (DEDICATED FOR AGENCY / MANAGED PROPERTIES) ---
+              if (isAgency || (widget.property != null && (widget.property!.landlordName?.isNotEmpty == true || widget.property!.agencyId != null))) ...[
+                PropertyOwnersFormSection(
+                  key: _ownersFormKey,
+                  tempPropertyId: _tempPropertyId,
+                  initialOwners: _owners.isNotEmpty
+                      ? _owners
+                      : [
+                          PropertyOwner(
+                            isPrimary: true,
+                            firstName: _landlordNameController.text.trim(),
+                            phone: _landlordPhoneController.text.trim(),
+                            email: _landlordEmailController.text.trim(),
+                          )
+                        ],
+                  onOwnersChanged: (owners) {
+                    _owners = owners;
+                    if (owners.isNotEmpty) {
+                      final primary = owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first);
+                      _landlordNameController.text = primary.displayName;
+                      _landlordPhoneController.text = primary.phone ?? '';
+                      _landlordEmailController.text = primary.email ?? '';
+                    }
+                  },
+                ),
+                const SizedBox(height: 32),
+              ],
+
               // Main section header "PROPERTY INFO" with Detailed Entry Toggle right next to it
               _buildPropertyInfoHeaderWithToggle(loc),
               const SizedBox(height: 16),
@@ -583,115 +611,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 _buildDescriptionField(loc),
               ],
 
-
-              // --- SECTION: PROPERTY OWNERS (DEDICATED SECTION) ---
-              if (isAgency || (widget.property != null && (widget.property!.landlordName?.isNotEmpty == true || widget.property!.agencyId != null))) ...[
-                PropertyOwnersFormSection(
-                  key: _ownersFormKey,
-                  tempPropertyId: _tempPropertyId,
-                  initialOwners: _owners.isNotEmpty
-                      ? _owners
-                      : [
-                          PropertyOwner(
-                            isPrimary: true,
-                            firstName: _landlordNameController.text.trim(),
-                            phone: _landlordPhoneController.text.trim(),
-                            email: _landlordEmailController.text.trim(),
-                          )
-                        ],
-                  onOwnersChanged: (owners) {
-                    _owners = owners;
-                    if (owners.isNotEmpty) {
-                      final primary = owners.firstWhere((o) => o.isPrimary, orElse: () => owners.first);
-                      _landlordNameController.text = primary.displayName;
-                      _landlordPhoneController.text = primary.phone ?? '';
-                      _landlordEmailController.text = primary.email ?? '';
-                    }
-                  },
-                ),
-              ],
-
-              if (isAgency) ...[
-                const SizedBox(height: 32),
-                _buildSectionHeader(
-                  loc.localeName == 'tr'
-                      ? 'Ev Sahibi İletişim Bilgileri'
-                      : (loc.localeName == 'ru'
-                          ? 'Контактная информация арендодателя'
-                          : (loc.localeName.startsWith('sr')
-                              ? 'Kontakt podaci stanodavca'
-                              : 'Landlord Contact Information')),
-                  LucideIcons.userCheck,
-                  subtitle: loc.localeName == 'tr'
-                      ? 'Acente mülk eklerken ev sahibi bilgileri girilir. Kayıttan sonra ev sahibine sahiplik QR/Linki gönderilir.'
-                      : (loc.localeName == 'ru'
-                          ? 'Введите данные арендодателя при добавлении объекта. После создания будет отправлен QR/ссылка на владение.'
-                          : (loc.localeName.startsWith('sr')
-                              ? 'Unesite podatke stanodavca pri dodavanju nekretnine. QR/Link za preuzimanje vlasništva biće dostupan nakon kreiranja.'
-                              : 'Enter landlord details when adding property. An ownership QR/Link will be shared after creation.')),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _landlordNameController,
-                  decoration: InputDecoration(
-                    labelText: loc.localeName == 'tr'
-                        ? 'Ev Sahibinin Adı Soyadı *'
-                        : (loc.localeName == 'ru'
-                            ? 'ФИО арендодателя *'
-                            : (loc.localeName.startsWith('sr')
-                                ? 'Ime i prezime stanodavca *'
-                                : 'Landlord Full Name *')),
-                    prefixIcon: const Icon(LucideIcons.user, size: 20),
-                  ),
-                  validator: (val) => isAgency && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _landlordEmailController,
-                  decoration: InputDecoration(
-                    labelText: isAgency
-                        ? (loc.localeName == 'tr' ? 'Ev Sahibinin E-posta Adresi *' : (loc.localeName == 'ru' ? 'Email арендодателя *' : (loc.localeName.startsWith('sr') ? 'Email stanodavca *' : 'Landlord Email *')))
-                        : (loc.localeName == 'tr' ? 'Ev Sahibinin E-posta Adresi' : (loc.localeName == 'ru' ? 'Email арендодателя' : (loc.localeName.startsWith('sr') ? 'Email stanodavca' : 'Landlord Email'))),
-                    hintText: 'ornek@email.com',
-                    prefixIcon: const Icon(LucideIcons.mail, size: 20),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (val) {
-                    if (!isAgency) return null;
-                    if (val == null || val.trim().isEmpty) {
-                      return loc.fieldRequired;
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
-                      return loc.localeName == 'tr'
-                          ? 'Geçerli bir e-posta adresi giriniz'
-                          : (loc.localeName == 'ru'
-                              ? 'Введите корректный e-mail'
-                              : (loc.localeName.startsWith('sr')
-                                  ? 'Unesite validnu email adresu'
-                                  : 'Please enter a valid email address'));
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _landlordPhoneController,
-                  decoration: InputDecoration(
-                    labelText: loc.localeName == 'tr'
-                        ? 'Ev Sahibinin Telefon Numarası'
-                        : (loc.localeName == 'ru'
-                            ? 'Номер телефона арендодателя'
-                            : (loc.localeName.startsWith('sr')
-                                ? 'Broj telefona stanodavca'
-                                : 'Landlord Phone Number')),
-                    hintText: '+90 5xx xxx xx xx',
-                    prefixIcon: const Icon(LucideIcons.phone, size: 20),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-              ],
-              
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               
               // --- SECTION: DEFAULT CONTRACT TERMS ---
               _buildSectionHeader(
