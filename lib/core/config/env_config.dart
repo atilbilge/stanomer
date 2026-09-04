@@ -51,6 +51,39 @@ class EnvConfig {
   static bool get isDev => F.appFlavor == Flavor.dev;
   static bool get isProd => F.appFlavor == Flavor.prod;
 
+  /// Brevo Email API Key
+  static String get brevoApiKey {
+    const fromEnv = String.fromEnvironment('BREVO_API_KEY');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (dotenv.isInitialized) {
+      final fromDotenv = dotenv.env['BREVO_API_KEY'];
+      if (fromDotenv != null && fromDotenv.isNotEmpty) return fromDotenv;
+    }
+    return '';
+  }
+
+  /// Brevo Sender Email
+  static String get brevoSenderEmail {
+    const fromEnv = String.fromEnvironment('BREVO_SENDER_EMAIL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (dotenv.isInitialized) {
+      final fromDotenv = dotenv.env['BREVO_SENDER_EMAIL'];
+      if (fromDotenv != null && fromDotenv.isNotEmpty) return fromDotenv;
+    }
+    return 'atilbilge@gmail.com';
+  }
+
+  /// Brevo Sender Name
+  static String get brevoSenderName {
+    const fromEnv = String.fromEnvironment('BREVO_SENDER_NAME');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (dotenv.isInitialized) {
+      final fromDotenv = dotenv.env['BREVO_SENDER_NAME'];
+      if (fromDotenv != null && fromDotenv.isNotEmpty) return fromDotenv;
+    }
+    return 'Stanomer';
+  }
+
   /// Validates environment variables and logs status.
   static void validate() {
     debugPrint('[EnvConfig] Active Environment: $environment | Flavor: ${F.appFlavor} | URL: $supabaseUrl');

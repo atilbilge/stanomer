@@ -315,6 +315,33 @@ CREATE TABLE IF NOT EXISTS public.maintenance_charges (
 );
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS linked_charge_id UUID REFERENCES public.maintenance_charges(id) ON DELETE SET NULL;
 
+CREATE TABLE IF NOT EXISTS public.property_owners (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
+    owner_type TEXT NOT NULL DEFAULT 'individual' CHECK (owner_type IN ('individual', 'company')),
+    is_primary BOOLEAN NOT NULL DEFAULT false,
+    ownership_percentage NUMERIC DEFAULT 100,
+    first_name TEXT,
+    last_name TEXT,
+    phone TEXT,
+    secondary_contact TEXT,
+    email TEXT,
+    id_document_number TEXT,
+    id_details TEXT,
+    company_name TEXT,
+    registered_address TEXT,
+    pib TEXT,
+    registration_number TEXT,
+    representative_name TEXT,
+    representative_id_number TEXT,
+    representative_id_details TEXT,
+    documents JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_property_owners_property_id ON public.property_owners(property_id);
+CREATE INDEX IF NOT EXISTS idx_property_owners_email ON public.property_owners(LOWER(email));
+
 
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -516,8 +543,22 @@ DROP POLICY IF EXISTS "maintenance_charges_delete_policy" ON public.maintenance_
 CREATE POLICY "maintenance_charges_delete_policy" ON public.maintenance_charges FOR DELETE TO authenticated
     USING (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = maintenance_charges.property_id AND (p.landlord_id = auth.uid() OR p.agency_id = auth.uid() OR public.is_agency_of_property(p.id, auth.uid()))));
 
+-- Property Owners RLS
+ALTER TABLE public.property_owners ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "agency_manage_property_owners" ON public.property_owners;
+CREATE POLICY "agency_manage_property_owners" ON public.property_owners
+    FOR ALL TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.properties p WHERE p.id = property_owners.property_id AND p.agency_id = auth.uid()));
+
+DROP POLICY IF EXISTS "landlords_view_property_owners" ON public.property_owners;
+CREATE POLICY "landlords_view_property_owners" ON public.property_owners
+    FOR SELECT TO authenticated
+    USING (LOWER(email) = LOWER(auth.jwt()->>'email') OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = property_owners.property_id AND p.landlord_id = auth.uid()));
+
 -- 5. REALTIME PUBLICATION & REPLICA IDENTITY FOR PUBLIC TABLES
 ALTER TABLE public.properties REPLICA IDENTITY FULL;
+ALTER TABLE public.property_owners REPLICA IDENTITY FULL;
 ALTER TABLE public.contracts REPLICA IDENTITY FULL;
 ALTER TABLE public.rent_payments REPLICA IDENTITY FULL;
 ALTER TABLE public.maintenance_requests REPLICA IDENTITY FULL;

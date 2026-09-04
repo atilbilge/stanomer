@@ -26,6 +26,16 @@ echo "ENVIRONMENT=dev" > .env.dev
 echo "SUPABASE_URL=$DEV_URL" >> .env.dev
 echo "SUPABASE_ANON_KEY=$DEV_KEY" >> .env.dev
 
+if [ -n "$BREVO_API_KEY" ]; then
+  echo "BREVO_API_KEY=$BREVO_API_KEY" >> .env.prod
+  echo "BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL:-atilbilge@gmail.com}" >> .env.prod
+  echo "BREVO_SENDER_NAME=${BREVO_SENDER_NAME:-Stanomer}" >> .env.prod
+
+  echo "BREVO_API_KEY=$BREVO_API_KEY" >> .env.dev
+  echo "BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL:-atilbilge@gmail.com}" >> .env.dev
+  echo "BREVO_SENDER_NAME=${BREVO_SENDER_NAME:-Stanomer}" >> .env.dev
+fi
+
 # 2. FLUTTER SDK INSTALLATION
 echo "Step 2: Ensuring Flutter SDK..."
 if [ ! -d "flutter" ]; then

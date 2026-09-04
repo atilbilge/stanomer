@@ -119,14 +119,13 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
-
-    final defaultRoles = isTr
-        ? ['Özel Asistan', 'PR / Temsilci', 'Aile Bireyi', 'Yetkili İletişim', 'Diğer']
-        : (isSr
-            ? ['Lični asistent', 'PR / Zastupnik', 'Član porodice', 'Ovlašćeni kontakt', 'Ostalo']
-            : ['Personal Assistant', 'PR / Rep', 'Family Member', 'Authorised Contact', 'Other']);
+    final defaultRoles = [
+      loc.rolePersonalAssistant,
+      loc.rolePrRep,
+      loc.roleFamilyMember,
+      loc.roleAuthorizedContact,
+      loc.other,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +134,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              isTr ? 'Ek İletişim Kişileri' : (isSr ? 'Dodatne kontakt osobe' : 'Secondary Contacts'),
+              loc.secondaryContacts,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -146,7 +145,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
               onPressed: () => _addEntry(),
               icon: const Icon(LucideIcons.userPlus, size: 15),
               label: Text(
-                isTr ? 'Kişi Ekle' : (isSr ? 'Dodaj kontakt' : 'Add Contact'),
+                loc.addSecondaryContact,
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
               style: TextButton.styleFrom(
@@ -171,11 +170,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    isTr
-                        ? 'İsteğe bağlı: Asistan, temsilci veya aile üyesi gibi ek iletişim kişileri ekleyebilirsiniz.'
-                        : (isSr
-                            ? 'Opciono: Možete dodati pomoćne kontakte poput asistenta, zastupnika ili člana porodice.'
-                            : 'Optional: You can add secondary contacts like an assistant, PR, or family member.'),
+                    loc.secondaryContactsOptionalDesc,
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ),
@@ -206,7 +201,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                           const Icon(LucideIcons.userCheck, size: 15, color: StanomerColors.brandPrimary),
                           const SizedBox(width: 6),
                           Text(
-                            '${isTr ? "Ek İletişim" : (isSr ? "Dodatni kontakt" : "Contact")} #${idx + 1}',
+                            '${loc.secondaryContacts} #${idx + 1}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -228,7 +223,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                   TextFormField(
                     controller: entry.nameController,
                     decoration: InputDecoration(
-                      labelText: '${isTr ? "Ad Soyad" : (isSr ? "Ime i prezime" : "Full Name")} *',
+                      labelText: '${loc.fullName} *',
                       prefixIcon: const Icon(LucideIcons.user, size: 18),
                       isDense: true,
                     ),
@@ -273,7 +268,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                         child: TextFormField(
                           controller: entry.relationController,
                           decoration: InputDecoration(
-                            labelText: isTr ? 'Rol / Yakınlık' : (isSr ? 'Uloga / Odnos' : 'Role / Relationship'),
+                            labelText: loc.roleOrRelation,
                             prefixIcon: const Icon(LucideIcons.badgeCheck, size: 18),
                             isDense: true,
                           ),
@@ -285,7 +280,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                           controller: entry.phoneController,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
-                            labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                            labelText: loc.phone,
                             prefixIcon: const Icon(LucideIcons.phone, size: 18),
                             isDense: true,
                           ),
@@ -298,7 +293,7 @@ class TenantSecondaryContactsSectionState extends State<TenantSecondaryContactsS
                     controller: entry.emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: isTr ? 'E-posta' : (isSr ? 'Email' : 'Email'),
+                      labelText: loc.email,
                       prefixIcon: const Icon(LucideIcons.mail, size: 18),
                       isDense: true,
                     ),

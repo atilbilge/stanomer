@@ -322,8 +322,6 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
   }
 
   Widget _buildContractPanel(AppLocalizations loc, User? user, Color roleColor, bool showAgencyDetails) {
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
     final activeContractAsync = ref.watch(activeContractProvider(widget.property.id));
     final userRole = ref.watch(userRoleProvider);
     final isManager = widget.property.landlordId == user?.id ||
@@ -454,7 +452,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               TextFormField(
                 controller: _contractTenantNameController,
                 decoration: InputDecoration(
-                  labelText: isTr ? 'Kiracı Adı & Soyadı' : (isSr ? 'Ime i prezime zakupca' : 'Tenant Full Name'),
+                  labelText: loc.tenantFullName,
                   prefixIcon: const Icon(LucideIcons.user, size: 20),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -464,7 +462,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                 key: ValueKey('tenant_email_${contract.id}_${contract.inviteeEmail}'),
                 initialValue: contract.inviteeEmail.isNotEmpty
                     ? contract.inviteeEmail
-                    : (isTr ? 'Belirtilmedi' : (isSr ? 'Nije navedeno' : (loc.localeName.startsWith('ru') ? 'Не указано' : 'Not specified'))),
+                    : loc.unassigned,
                 readOnly: true,
                 decoration: InputDecoration(
                   labelText: loc.tenantEmail,
@@ -484,7 +482,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                     child: TextFormField(
                       controller: _contractTenantIdController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
+                        labelText: loc.tenantIdOrPassport,
                         prefixIcon: const Icon(LucideIcons.idCard, size: 20),
                       ),
                       onChanged: (_) => setState(() {}),
@@ -496,7 +494,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                       controller: _contractTenantPhoneController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                        labelText: loc.phone,
                         prefixIcon: const Icon(LucideIcons.phone, size: 20),
                       ),
                       onChanged: (_) => setState(() {}),
@@ -509,7 +507,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                 controller: _contractTenantNotesController,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText: isTr ? 'Kiracıya İlişkin Notlar' : (isSr ? 'Napomene o zakupcu' : 'Tenant Notes'),
+                  labelText: loc.tenantNotes,
                   prefixIcon: const Icon(LucideIcons.fileText, size: 20),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -535,14 +533,14 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
+                            loc.tenantIdDocument,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             _contractTenantIdDocUrl != null
-                                ? (_contractTenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
-                                : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
+                                ? (_contractTenantIdDocFileName ?? loc.idDocumentUploaded)
+                                : loc.uploadPdfOrPhoto,
                             style: TextStyle(
                               fontSize: 11,
                               color: _contractTenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
@@ -571,7 +569,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                       OutlinedButton.icon(
                         onPressed: _pickTenantIdDoc,
                         icon: const Icon(LucideIcons.upload, size: 14),
-                        label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
+                        label: Text(loc.uploadAction, style: const TextStyle(fontSize: 12)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: roleColor,
                           side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
@@ -1404,8 +1402,6 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
 
   Widget _buildContractExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyDetails) {
     if (_contractExpenses.isEmpty) return const SizedBox.shrink();
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1463,12 +1459,12 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                             Row(
                               children: [
                                 Text(
-                                  isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                                  loc.paymentMethodLabel,
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
                                 ),
                                 const SizedBox(width: 8),
                                 ChoiceChip(
-                                  label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                                  label: Text(loc.paymentMethodBank, style: const TextStyle(fontSize: 11)),
                                   avatar: const Icon(LucideIcons.landmark, size: 13),
                                   selected: expense.paymentMethod != 'cash',
                                   onSelected: (_) {
@@ -1486,7 +1482,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
-                                  label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                                  label: Text(loc.paymentMethodCash, style: const TextStyle(fontSize: 11)),
                                   avatar: const Icon(LucideIcons.banknote, size: 13),
                                   selected: expense.paymentMethod == 'cash',
                                   onSelected: (_) {
@@ -1668,8 +1664,6 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     String getTooltip(String name) {
       return ExpenseUtils.getLocalizedTooltip(name, loc);
     }
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1760,12 +1754,12 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                             Row(
                               children: [
                                 Text(
-                                  isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                                  loc.paymentMethodLabel,
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
                                 ),
                                 const SizedBox(width: 8),
                                 ChoiceChip(
-                                  label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                                  label: Text(loc.paymentMethodBank, style: const TextStyle(fontSize: 11)),
                                   avatar: const Icon(LucideIcons.landmark, size: 13),
                                   selected: expense.paymentMethod != 'cash',
                                   onSelected: (_) {
@@ -1783,7 +1777,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
-                                  label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                                  label: Text(loc.paymentMethodCash, style: const TextStyle(fontSize: 11)),
                                   avatar: const Icon(LucideIcons.banknote, size: 13),
                                   selected: expense.paymentMethod == 'cash',
                                   onSelected: (_) {

@@ -1430,7 +1430,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get requiredField => 'Это поле обязательно';
 
   @override
-  String get invalidEmail => 'Неверный адрес эл. почты';
+  String get invalidEmail => 'Введите корректный e-mail';
 
   @override
   String get offlineMessage =>
@@ -1938,44 +1938,45 @@ class AppLocalizationsRu extends AppLocalizations {
   String get forgotPassword => 'Забыли пароль?';
 
   @override
-  String get copy => 'Kopiraj';
+  String get copy => 'Копировать';
 
   @override
-  String get showLandlordInviteQrOrLink => 'Prikaži QR kod / vezu vlasništva';
+  String get showLandlordInviteQrOrLink =>
+      'Показать QR-код / ссылку приглашения';
 
   @override
-  String get showLandlordInviteQrOrLinkClaimed => 'QR kod / veza vlasništva';
+  String get showLandlordInviteQrOrLinkClaimed => 'QR-код / ссылка приглашения';
 
   @override
   String get landlordOwnershipInviteTitle =>
-      'Pozivnica za vlasništvo nad nekretninom';
+      'Приглашение на владение недвижимостью';
 
   @override
   String becomeLandlordTitle(String propertyName) {
-    return 'Postanite vlasnik nekretnine $propertyName';
+    return 'Станьте арендодателем объекта $propertyName';
   }
 
   @override
   String get landlordInviteAcceptDesc =>
-      'Potvrdite pozivnicu da biste bili dodeljeni i upravljali ovom nekretninom kojom upravlja agencija.';
+      'Подтвердите приглашение, чтобы стать арендодателем и управлять этим объектом под управлением агентства.';
 
   @override
-  String get acceptAsLandlord => 'Prihvati kao vlasnik';
+  String get acceptAsLandlord => 'Принять как арендодатель';
 
   @override
-  String get landlordAcceptedInviteTitle => 'Vlasnik je prihvatio pozivnicu!';
+  String get landlordAcceptedInviteTitle => 'Арендодатель принял приглашение!';
 
   @override
   String landlordOwnershipTransferredDesc(String propertyName) {
-    return 'Vlasništvo nad nekretninom $propertyName je uspešno preneto.';
+    return 'Право собственности на $propertyName успешно передано.';
   }
 
   @override
   String get landlordShareQrInstruction =>
-      'Neka vlasnik skenira ovaj QR kod ili mu pošaljite vezu.';
+      'Попросите арендодателя отсканировать этот QR-код или отправьте ему ссылку.';
 
   @override
-  String get ownershipLinkCopied => 'Vlasnička veza je kopirana!';
+  String get ownershipLinkCopied => 'Ссылка на владение скопирована!';
 
   @override
   String landlordShareMessage(
@@ -1983,37 +1984,37 @@ class AppLocalizationsRu extends AppLocalizations {
     String propertyName,
     String inviteUrl,
   ) {
-    return 'Zdravo $landlordName, kliknite na ovu vezu da preuzmete vlasništvo nad nekretninom \"$propertyName\" na Stanomeru:\n$inviteUrl';
+    return 'Здравствуйте $landlordName, перейдите по этой ссылке, чтобы принять управление объектом \"$propertyName\" на Stanomer:\n$inviteUrl';
   }
 
   @override
-  String get joinHomeTitle => 'Pridruži se domu';
+  String get joinHomeTitle => 'Присоединиться к дому';
 
   @override
   String get joinHomeSubtitle =>
-      'Skenirajte QR kod ili unesite vezu/kod pozivnice.';
+      'Отсканируйте QR-код или введите ссылку/код приглашения.';
 
   @override
-  String get closeCamera => 'Zatvori kameru';
+  String get closeCamera => 'Закрыть камеру';
 
   @override
-  String get scanQrCodeBtn => 'Skeniraj QR kod';
+  String get scanQrCodeBtn => 'Сканировать QR-код';
 
   @override
-  String get inviteLinkOrTokenLabel => 'Veza pozivnice ili token kod';
+  String get inviteLinkOrTokenLabel => 'Ссылка приглашения или токен-код';
 
   @override
-  String get inviteLinkOrTokenHint => 'https://.../invite?token=... ili kod';
+  String get inviteLinkOrTokenHint => 'https://.../invite?token=... или код';
 
   @override
-  String get paste => 'Zalepi';
+  String get paste => 'Вставить';
 
   @override
-  String get joinAndReview => 'Pridruži se i pregledaj';
+  String get joinAndReview => 'Присоединиться и проверить';
 
   @override
   String get invalidInviteCodeOrLink =>
-      'Molimo unesite važeću vezu ili kod pozivnice.';
+      'Пожалуйста, введите действительную ссылку или код приглашения.';
 
   @override
   String get landlordOwnershipTransferredSuccess =>
@@ -2024,7 +2025,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Приглашение на владение недействительно, истекло или уже принято.';
 
   @override
-  String get statusApproved => 'Potvrđeno';
+  String get statusApproved => 'Подтверждено';
 
   @override
   String get referringAgency => 'Рекомендующее Агентство';
@@ -3075,4 +3076,680 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get payerRequiredError =>
       'Пожалуйста, укажите кто оплачивает перед установкой статуса.';
+
+  @override
+  String get tabRentAndFinance => 'Аренда и Финансы';
+
+  @override
+  String get tabLeaseAndTenant => 'Договор и Арендатор';
+
+  @override
+  String get tabMaintenance => 'Обслуживание';
+
+  @override
+  String get tabAuditLog => 'История операций';
+
+  @override
+  String get paymentMethodBank => 'Банк';
+
+  @override
+  String get paymentMethodCash => 'Наличные';
+
+  @override
+  String get paymentMethodLabel => 'Способ оплаты:';
+
+  @override
+  String get managedByAgencyTitle => 'Под управлением агентства';
+
+  @override
+  String get managedByAgencyDesc =>
+      'Ваша недвижимость управляется агентством. Добавление новых объектов может осуществляться только управляющим агентством.';
+
+  @override
+  String get structuralAndFinancialMetricsSubtitle =>
+      'Тип недвижимости, номер квартиры, количество комнат и этажность';
+
+  @override
+  String get equipmentAndHeatingStandardsSubtitle =>
+      'Меблировка и система отопления';
+
+  @override
+  String get featuredAmenitiesSubtitle =>
+      'Основные удобства и подробное описание';
+
+  @override
+  String get roomTypeStudio => 'Студия';
+
+  @override
+  String get secondaryContacts => 'Дополнительные контактные лица';
+
+  @override
+  String get addSecondaryContact => 'Добавить контакт';
+
+  @override
+  String get secondaryContactsOptionalDesc =>
+      'Необязательно: Вы можете добавить дополнительные контакты, такие как ассистент, представитель или член семьи.';
+
+  @override
+  String get roleOrRelation => 'Роль / Отношение';
+
+  @override
+  String get tenantFullName => 'Имя и фамилия арендатора';
+
+  @override
+  String get tenantIdOrPassport => 'Удостоверение / Паспорт / JMBG';
+
+  @override
+  String get tenantNotes => 'Заметки об арендаторе';
+
+  @override
+  String get tenantIdDocument =>
+      'Документ, удостоверяющий личность / Паспорт арендатора';
+
+  @override
+  String get uploadPdfOrPhoto => 'Загрузите в формате PDF или фото';
+
+  @override
+  String get uploadAction => 'Загрузить';
+
+  @override
+  String get idDocumentUploaded => 'Документ загружен';
+
+  @override
+  String copiedId(String id) {
+    return 'ID скопирован: $id';
+  }
+
+  @override
+  String get rolePersonalAssistant => 'Личный помощник';
+
+  @override
+  String get rolePrRep => 'PR / Представитель';
+
+  @override
+  String get roleFamilyMember => 'Член семьи';
+
+  @override
+  String get roleAuthorizedContact => 'Доверенное лицо';
+
+  @override
+  String get clearAllAction => 'Сбросить все';
+
+  @override
+  String get selectAllAction => 'Выбрать все';
+
+  @override
+  String get applyAction => 'Применить';
+
+  @override
+  String selectedCount(int count) {
+    return '$count выбрано';
+  }
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count Выбрано';
+  }
+
+  @override
+  String get propertyOwnerInfoTitle => 'Информация о собственниках';
+
+  @override
+  String get propertyOwnerInfoSubtitle =>
+      'Вы можете добавить нескольких собственников, юридические или физические лица, и загрузить подтверждающие документы.';
+
+  @override
+  String get addCoOwner => '+ Добавить совладельца';
+
+  @override
+  String get primaryOwnerLabel => '1. Собственник (Основной)';
+
+  @override
+  String coOwnerIndexedLabel(int index) {
+    return '$index. Совладелец';
+  }
+
+  @override
+  String get sharePercentage => 'Доля %';
+
+  @override
+  String get removeOwner => 'Удалить собственника';
+
+  @override
+  String get ownerType => 'Тип собственника';
+
+  @override
+  String get ownerIndividual => 'Физическое лицо';
+
+  @override
+  String get ownerCompany => 'Юридическое лицо / Компания';
+
+  @override
+  String get firstNameRequired => 'Имя *';
+
+  @override
+  String get lastNameRequired => 'Фамилия *';
+
+  @override
+  String get idOrPassportOrJmbg => 'Номер паспорта / удостоверения';
+
+  @override
+  String get idIssuingAuthority => 'Орган выдачи документа';
+
+  @override
+  String get companyLegalNameRequired => 'Полное юридическое наименование *';
+
+  @override
+  String get registeredOfficeAddress => 'Юридический адрес';
+
+  @override
+  String get taxIdPibRequired => 'ИНН / PIB *';
+
+  @override
+  String get companyRegNo => 'ОГРН / Matični broj';
+
+  @override
+  String get legalRepFullNameRequired => 'ФИО представителя *';
+
+  @override
+  String get repIdJmbg => 'Паспорт представителя';
+
+  @override
+  String get repAuthorityDetails => 'Детали полномочий представителя';
+
+  @override
+  String get contactPhoneRequired => 'Контактный телефон *';
+
+  @override
+  String get secondaryContactOptional => 'Доп. контакт (Опционально)';
+
+  @override
+  String get altPhoneOrNote => 'Доп. тел. / Заметка';
+
+  @override
+  String get emailAddressRequiredForPrimary =>
+      'Email (Обязательно для основного) *';
+
+  @override
+  String get emailAddressOptional => 'Email (Опционально)';
+
+  @override
+  String get selectExistingAgencyContact =>
+      'Или выберите из существующих контактов...';
+
+  @override
+  String get clearSelectionTooltip => 'Очистить выбор';
+
+  @override
+  String get supportingPdfDocuments => 'Подтверждающие PDF документы';
+
+  @override
+  String get uploadDocumentTooltip => 'Загрузить документ';
+
+  @override
+  String get docTypePassportCopy => 'Копия паспорта / удостоверения (PDF)';
+
+  @override
+  String get docTypeProofOfOwnership => 'Свидетельство о собственности (PDF)';
+
+  @override
+  String get docTypePowerOfAttorney => 'Доверенность (PDF)';
+
+  @override
+  String get docTypeOtherDocument => 'Другой документ (PDF)';
+
+  @override
+  String get addPdfDocument => '+ Добавить PDF';
+
+  @override
+  String get docTypeLabelId => 'Паспорт';
+
+  @override
+  String get docTypeLabelTitleDeed => 'Выписка';
+
+  @override
+  String get docTypeLabelPoa => 'Доверенность';
+
+  @override
+  String get docTypeLabelOther => 'Документ';
+
+  @override
+  String get markAsPaid => 'Отметить как оплачено';
+
+  @override
+  String markAsPaidSubtitle(String title, String month) {
+    return 'Подтверждение оплаты за $title ($month)';
+  }
+
+  @override
+  String get bankTransferOption => 'Банковский перевод';
+
+  @override
+  String get receiptOrDocOptional => 'Квитанция / Документ (Опционально)';
+
+  @override
+  String get uploadReceiptOrImage => 'Загрузить квитанцию или фото';
+
+  @override
+  String get uploadReceiptHint => 'PDF, PNG, JPG или фото';
+
+  @override
+  String get noteOptional => 'Примечание (Опционально)';
+
+  @override
+  String get noteOptionalRentHint =>
+      'Напр: Получено наличными / Квитанция прикреплена';
+
+  @override
+  String get paymentMarkedPaidSuccess =>
+      'Платеж успешно отмечен как оплаченный.';
+
+  @override
+  String get saveAsPaid => 'Сохранить как оплаченное';
+
+  @override
+  String get collectSettleExpenseTitle => 'Подтверждение получения и закрытие';
+
+  @override
+  String collectSettleExpenseSubtitle(String cost) {
+    return 'Подтвердите получение $cost и закройте расход.';
+  }
+
+  @override
+  String get collectionMethod => 'Способ получения';
+
+  @override
+  String get collectionMethodBank => 'Банк / Перевод';
+
+  @override
+  String get collectionMethodCash => 'Наличные';
+
+  @override
+  String get collectionMethodPayoutDeduction => 'Вычтено из аренды';
+
+  @override
+  String get attachReceiptOrVoucher => 'Прикрепить квитанцию';
+
+  @override
+  String get noteOptionalAgencyHint => 'Напр: Владелец передал наличные';
+
+  @override
+  String get payoutDeductionLabel => 'Вычет из аренды';
+
+  @override
+  String get collectionConfirmedAndSettled =>
+      'Оплата подтверждена, запись закрыта.';
+
+  @override
+  String get confirmAndSettle => 'Подтвердить и закрыть';
+
+  @override
+  String propertyOwnersCountTitle(int count) {
+    return 'Собственники ($count)';
+  }
+
+  @override
+  String get editOwners => 'Редактировать собственников';
+
+  @override
+  String get primaryOwnerBadge => 'Основной';
+
+  @override
+  String get authorizedRepresentative => 'Представитель';
+
+  @override
+  String get registeredAddressLabel => 'Юридический адрес';
+
+  @override
+  String get idJmbgLabel => 'Паспорт/JMBG';
+
+  @override
+  String get secondaryContactPrefix => 'Доп. контакт: ';
+
+  @override
+  String get supportingDocumentsColon => 'Подтверждающие документы:';
+
+  @override
+  String get auditPaymentCreatedRent =>
+      'Система автоматически создала запись о начислении';
+
+  @override
+  String get auditPaymentCreatedExpense =>
+      'Система автоматически создала запись о расходах';
+
+  @override
+  String auditRentDeclaredCash(String actor, String monthSuffix) {
+    return '$actor сообщил об оплате (Наличные)$monthSuffix';
+  }
+
+  @override
+  String auditRentDeclaredReceipt(String actor, String monthSuffix) {
+    return '$actor сообщил об оплате, загрузив квитанцию$monthSuffix';
+  }
+
+  @override
+  String auditRentApproved(String actor, String monthSuffix) {
+    return '$actor одобрил платеж$monthSuffix';
+  }
+
+  @override
+  String auditRentRejected(String actor, String monthSuffix) {
+    return '$actor отклонил платеж$monthSuffix';
+  }
+
+  @override
+  String auditRentDisputed(String actor, String reasonSuffix) {
+    return '$actor оспорил платеж$reasonSuffix';
+  }
+
+  @override
+  String auditInvoiceUploadedPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor $monthPrefixзагрузил счет (Ожидает одобрения, $amount)';
+  }
+
+  @override
+  String auditInvoiceUploaded(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixзагрузил счет ($amount)';
+  }
+
+  @override
+  String auditInvoiceEnteredPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor $monthPrefixввел сумму расхода (Ожидает одобрения, $amount)';
+  }
+
+  @override
+  String auditInvoiceEntered(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixввел данные расхода ($amount)';
+  }
+
+  @override
+  String auditInvoiceApproved(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixодобрил счет ($amount)';
+  }
+
+  @override
+  String auditInvoiceRejected(
+    String actor,
+    String monthPrefix,
+    String reasonSuffix,
+  ) {
+    return '$actor $monthPrefixотклонил счет$reasonSuffix';
+  }
+
+  @override
+  String auditPaymentToggle(String actor, String status) {
+    return '$actor отметил платеж как $status';
+  }
+
+  @override
+  String get auditRentAutoApproved =>
+      'Платеж был автоматически одобрен системой';
+
+  @override
+  String auditMaintenanceCreated(String actor, String titleSuffix) {
+    return '$actor создал заявку на обслуживание$titleSuffix';
+  }
+
+  @override
+  String auditMaintenanceStatusUpdated(String actor, String status) {
+    return '$actor обновил статус заявки на обслуживание ($status)';
+  }
+
+  @override
+  String auditMaintenanceMessageAdded(String actor) {
+    return '$actor добавил сообщение к заявке на обслуживание';
+  }
+
+  @override
+  String auditMaintenanceReopened(String actor) {
+    return '$actor повторно открыл заявку на обслуживание';
+  }
+
+  @override
+  String contactTenantAsLandlordInfo(String propertySummary) {
+    return 'Этот контакт зарегистрирован как арендатор ($propertySummary). Теперь добавляется как собственник.';
+  }
+
+  @override
+  String get registeredLandlordDetailsAutofilled =>
+      'Данные зарегистрированного собственника заполнены.';
+
+  @override
+  String get noDocumentsAttachedYet => 'Документы еще не загружены.';
+
+  @override
+  String get coOwnerEmailHelper =>
+      'При указании email совладелец сможет видеть объект после входа в систему.';
+
+  @override
+  String get propertyOwnersUpdatedSuccess =>
+      'Данные собственников успешно обновлены.';
+
+  @override
+  String get systemActor => 'Система';
+
+  @override
+  String get agencyRole => 'Агентство';
+
+  @override
+  String get editPropertyOwners => 'Редактировать собственников недвижимости';
+
+  @override
+  String auditInvitationAccepted(Object actor) {
+    return '$actor принял(а) приглашение по объекту';
+  }
+
+  @override
+  String auditContractAccepted(Object actor) {
+    return '$actor подтвердил(а) и подписал(а) договор аренды';
+  }
+
+  @override
+  String auditContractTerminationRequested(Object actor) {
+    return '$actor запросил(а) досрочное расторжение договора';
+  }
+
+  @override
+  String auditContractChangesAccepted(Object actor) {
+    return '$actor принял(а) предложенные изменения договора';
+  }
+
+  @override
+  String auditContractChangesDeclined(Object actor) {
+    return '$actor отклонил(а) или отозвал(а) изменения договора';
+  }
+
+  @override
+  String auditLandlordOwnershipClaimed(Object actor) {
+    return '$actor принял(а) право собственности и управление объектом';
+  }
+
+  @override
+  String auditTenantRemoved(Object actor) {
+    return '$actor удалил(а) арендатора из объекта';
+  }
+
+  @override
+  String auditPropertyOwnersUpdated(Object actor) {
+    return '$actor обновил(а) данные о владельцах объекта';
+  }
+
+  @override
+  String auditMaintenanceFinancialsUpdated(Object actor) {
+    return '$actor обновил(а) расходы и финансовые детали обслуживания';
+  }
+
+  @override
+  String auditMaintenanceFinancialsDeleted(Object actor) {
+    return '$actor удалил(а) детали расходов обслуживания и отменил(а) зачеты';
+  }
+
+  @override
+  String auditMaintenanceChargeCreated(Object actor) {
+    return '$actor добавил(а) новую статью расходов по обслуживанию';
+  }
+
+  @override
+  String auditMaintenanceChargeStatusUpdated(Object actor) {
+    return '$actor обновил(а) статус расхода по обслуживанию';
+  }
+
+  @override
+  String auditMaintenanceChargeSettled(Object actor) {
+    return '$actor произвел(а) взаимозачет расхода по обслуживанию';
+  }
+
+  @override
+  String auditMaintenanceDeleted(Object actor) {
+    return '$actor удалил(а) заявку на обслуживание';
+  }
+
+  @override
+  String get tenantInviteEmailTitle => 'Уведомление для арендатора (email)';
+
+  @override
+  String get landlordInviteEmailTitle => 'Уведомление для владельца (email)';
+
+  @override
+  String get statusNotSent => 'Не отправлено';
+
+  @override
+  String get statusNoEmail => 'Нет email';
+
+  @override
+  String lastSentAt(String date) {
+    return 'Последняя отправка: $date';
+  }
+
+  @override
+  String get noEmailSpecified => 'Email адрес не указан';
+
+  @override
+  String ownersConfirmedRatio(String confirmed, String total) {
+    return '$confirmed/$total Подтверждено';
+  }
+
+  @override
+  String ownerConfirmedBanner(String name) {
+    return '$name подтвердил(а) приглашение и принял(а) управление недвижимостью.';
+  }
+
+  @override
+  String get emailPreviewTitle => 'Предпросмотр отправляемого email';
+
+  @override
+  String emailPreviewForOwner(String name) {
+    return 'Предпросмотр email ($name)';
+  }
+
+  @override
+  String get tabVisual => 'Визуальный';
+
+  @override
+  String get tabPlainText => 'Простой текст';
+
+  @override
+  String get emailCopiedToast => 'Текст email скопирован в буфер обмена.';
+
+  @override
+  String get languageLabel => 'Язык:';
+
+  @override
+  String get subjectHeader => 'ТЕМА';
+
+  @override
+  String get contentHeader => 'СОДЕРЖАНИЕ';
+
+  @override
+  String get recipientWillReceiveThisFormat =>
+      'Получатель получит в этом формате';
+
+  @override
+  String get sendTenantInviteEmailBtn => 'Отправить email арендатору';
+
+  @override
+  String get resendInviteEmailBtn => 'Отправить email повторно';
+
+  @override
+  String get sendLandlordInviteEmailBtn => 'Отправить email владельцу';
+
+  @override
+  String sendInviteForOwnerBtn(String name) {
+    return 'Отправить email для $name';
+  }
+
+  @override
+  String resendInviteForOwnerBtn(String name) {
+    return 'Отправить повторно для $name';
+  }
+
+  @override
+  String get sendToAllBtn => 'Отправить всем';
+
+  @override
+  String sendToAllOwnersBtn(String count) {
+    return 'Отправить всем владельцам индивидуально ($count)';
+  }
+
+  @override
+  String resendToAllOwnersBtn(String count) {
+    return 'Повторно отправить всем владельцам ($count)';
+  }
+
+  @override
+  String get sendingState => 'Отправка...';
+
+  @override
+  String get sendingAllState => 'Отправка всем...';
+
+  @override
+  String get noEmailAddressDefined => 'Email адрес не указан';
+
+  @override
+  String tenantInviteSentSuccess(String email) {
+    return 'Приглашение успешно отправлено на $email.';
+  }
+
+  @override
+  String landlordInviteSentSuccess(String email) {
+    return 'Приглашение успешно отправлено на $email.';
+  }
+
+  @override
+  String noEmailForUserError(String name) {
+    return 'Для $name не указан email адрес.';
+  }
+
+  @override
+  String get tenantNoEmailError => 'Email адрес арендатора не указан.';
+
+  @override
+  String get emailSendFailedError =>
+      'Не удалось отправить email. Пожалуйста, проверьте настройки Brevo API.';
+
+  @override
+  String emailSendGenericError(String error) {
+    return 'Произошла ошибка при отправке email: $error';
+  }
+
+  @override
+  String get tenantInviteEmailBtn => 'Email приглашение для арендатора';
+
+  @override
+  String allOwnersInviteSentSuccess(String successCount, String totalCount) {
+    return 'Письма-приглашения успешно отправлены для $successCount / $totalCount владельцев недвижимости.';
+  }
+
+  @override
+  String landlordsListHeader(String count) {
+    return 'Владельцы недвижимости ($count)';
+  }
 }

@@ -79,9 +79,21 @@
   "inviteNotFound": "Invitation not found or expired",
   "invitationAcceptedSuccess": "Welcome home! Invitation accepted.",
   "pendingInvitationBanner": "You have a pending invitation for {property}",
-  "@pendingInvitationBanner": {"placeholders": {"property": {"type": "String"}}},
+  "@pendingInvitationBanner": {
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
   "invitedBy": "Invited by {name}",
-  "@invitedBy": {"placeholders": {"name": {"type": "String"}}},
+  "@invitedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "yourName": "Your Name",
   "yourNameHint": "Enter your full name",
   "viewInvite": "View Invite",
@@ -114,17 +126,53 @@
   "removeTenantConfirmation": "Are you sure you want to remove this tenant from the property? This will detach them and delete the invitation record.",
   "remove": "Remove",
   "logRentDeclared": "Tenant declared {month} rent as paid.",
-  "@logRentDeclared": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentDeclared": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logRentApproved": "Landlord approved {month} rent.",
-  "@logRentApproved": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logRentRejected": "Landlord rejected {month} rent.",
-  "@logRentRejected": {"placeholders": {"month": {"type": "String"}}},
+  "@logRentRejected": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logMarkedAsPaid": "Landlord marked {month} as paid.",
-  "@logMarkedAsPaid": {"placeholders": {"month": {"type": "String"}}},
+  "@logMarkedAsPaid": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logMarkedAsPending": "Landlord marked {month} as pending.",
-  "@logMarkedAsPending": {"placeholders": {"month": {"type": "String"}}},
+  "@logMarkedAsPending": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "logAutoApproved": "{month} rent was auto-approved by system after 5 days.",
-  "@logAutoApproved": {"placeholders": {"month": {"type": "String"}}},
+  "@logAutoApproved": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "activity": "Activity",
   "noContractsTitle": "No contracts yet",
   "noContractsMessage": "To track rent and expenses for your property, first invite a tenant by entering contract details.",
@@ -165,7 +213,13 @@
   "contractDetails": "Contract Details",
   "pastContracts": "Past contracts",
   "previousLeasesCount": "{count} previous leases",
-  "@previousLeasesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@previousLeasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertySettingsLabel": "Property settings",
   "propertyActions": "Property Actions",
   "leavePropertyConfirm": "Do you want to leave this property?",
@@ -208,7 +262,13 @@
   "declare": "Declare",
   "viewReceipt": "View Receipt",
   "proposesChanges": "{name} proposes the following changes:",
-  "@proposesChanges": {"placeholders": {"name": {"type": "String"}}},
+  "@proposesChanges": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "awaitingApprovalInfo": "Your change proposal is awaiting the other party's approval.",
   "propertyDetails": "PROPERTY DETAILS",
   "defaultLeaseTerms": "DEFAULT LEASE TERMS",
@@ -243,7 +303,7 @@
   "startAndEndDatesMandatory": "Start and end dates are mandatory",
   "revisionRequested": "Revision Requested",
   "statusActive": "Active",
-  "statusPending": "Pending Approval",
+  "statusPending": "Pending",
   "statusDeclined": "Declined",
   "statusExpired": "Expired",
   "statusNegotiating": "Negotiating",
@@ -255,8 +315,6 @@
   "contractChangeProposal": "Contract Change Proposal",
   "cancelProposal": "Cancel Proposal",
   "viewInvoice": "View Bill",
-  "decline": "Decline",
-  "accept": "Accept",
   "paymentResponsibility": "PAYMENT RESPONSIBILITY",
   "tenantPaysDirectlyToUtility": "Tenant pays directly to the utility",
   "tenantPaysToLandlord": "Tenant pays to the landlord",
@@ -264,9 +322,15 @@
   "progressSummary": "{completed} / {total} paid • {sent} sent",
   "@progressSummary": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"},
-      "sent": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "sent": {
+        "type": "int"
+      }
     }
   },
   "maintenance": "Maintenance",
@@ -293,9 +357,21 @@
   "updateStatus": "Update Status",
   "issueDetails": "Issue Details",
   "logMaintenanceCreated": "Maintenance request created: {title}",
-  "@logMaintenanceCreated": {"placeholders": {"title": {"type": "String"}}},
+  "@logMaintenanceCreated": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "logMaintenanceStatusUpdated": "Maintenance status updated to {status}",
-  "@logMaintenanceStatusUpdated": {"placeholders": {"status": {"type": "String"}}},
+  "@logMaintenanceStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
   "logMaintenanceReopened": "Maintenance request reopened",
   "logMaintenanceMessageAdded": "New message added to maintenance request",
   "notifications": "Notifications",
@@ -367,8 +443,12 @@
   "logRentDisputed": "Tenant disputed {month} payment: {reason}",
   "@logRentDisputed": {
     "placeholders": {
-      "month": {"type": "String"},
-      "reason": {"type": "String"}
+      "month": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "confirmDisputeTitle": "Dispute Payment",
@@ -447,7 +527,6 @@
   "backToDashboard": "Back to Dashboard",
   "propertyDetailsHeader": "PROPERTY INFO",
   "defaultLeaseTermsHeader": "DEFAULT LEASE TERMS",
-  "defaultLeaseTermsSubtitle": "Target terms used as a template for new invitations.",
   "proposeRevision": "Propose Revision",
   "revisionTermsQuestion": "Which terms would you like to change? (Rent, due day, expenses, etc.)",
   "enterNotesHint": "Enter your notes here...",
@@ -455,7 +534,9 @@
   "invitedToJoinProperty": "You have been invited to join {property}.",
   "@invitedToJoinProperty": {
     "placeholders": {
-      "property": { "type": "String" }
+      "property": {
+        "type": "String"
+      }
     }
   },
   "waitingForLandlord": "Waiting for landlord to respond...",
@@ -475,7 +556,9 @@
   "plannedEnd": "Planned End: {date}",
   "@plannedEnd": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "yourApartment": "Your Apartment",
@@ -489,7 +572,9 @@
   "paymentDeclaredSuccess": "{title} payment declared.",
   "@paymentDeclaredSuccess": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "setAmountUploadInvoice": "Enter bill details",
@@ -501,7 +586,9 @@
   "dueOn": "Due on {date}",
   "@dueOn": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "item": "item",
@@ -521,7 +608,6 @@
   "restorePurchases": "Restore Purchases",
   "limitReachedTitle": "You've reached your free limit",
   "limitReachedSubtitle": "Upgrade to Stanomer Premium to manage multiple properties.",
-  "discoverPremium": "Discover Premium",
   "optionsLoadFailed": "Could not load subscription options.",
   "manageSubscription": "Manage Subscription",
   "premiumMobileOnly": "Mobile App Required",
@@ -546,7 +632,7 @@
   "messageSent": "Message sent successfully!",
   "errorSendingMessage": "Failed to send message. Please try again.",
   "requiredField": "This field is required",
-  "invalidEmail": "Invalid email address",
+  "invalidEmail": "Please enter a valid email address",
   "offlineMessage": "You are currently offline. You can continue with existing data. It will be updated when connected.",
   "retry": "RETRY",
   "zzplConsentTitle": "Personal Data Protection Consent",
@@ -555,7 +641,13 @@
   "optional": "Optional",
   "sentInvitation": "Sent Invitation",
   "invitedOn": "Invited on {date}",
-  "@invitedOn": {"placeholders": {"date": {"type": "String"}}},
+  "@invitedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "noEmailProvided": "No email provided",
   "invoiceLocalOnlyDesc": "Document is stored only on this device. You can enable cloud upload in settings.",
   "invoiceCloudSecureDesc": "Document is securely stored with encryption. Only you and the tenant can see it.",
@@ -568,10 +660,15 @@
   "paymentApprovalQueue": "Payment Approval Queue",
   "noPendingPaymentApprovals": "No pending payment approvals",
   "noManagedPropertiesYet": "No managed properties yet",
-  "vacant": "Vacant",
   "occupied": "Occupied",
   "dueDateShort": "Due: {date}",
-  "@dueDateShort": {"placeholders": {"date": {"type": "String"}}},
+  "@dueDateShort": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "payment": "Payment",
   "insightPendingApprovalsTitle": "Pending Approvals",
   "insightPendingApprovalsDesc": "You have properties where the landlord or tenants have not yet approved the invitation.",
@@ -627,7 +724,6 @@
   "colAction": "ACTION",
   "unenteredBillsTitle": "Unentered Bills",
   "cashBadge": "Cash",
-  "viewReceipt": "Receipt",
   "filterRent": "Rent",
   "filterBills": "Bills",
   "filterDeposit": "Deposit",
@@ -746,7 +842,6 @@
       }
     }
   },
-  "viewReceipt": "View Receipt",
   "noFinanceRecords": "No records found in this category",
   "reminderMessageCopied": "Reminder message copied",
   "tenantNoPropertyTitle": "You are not yet connected to a property.",
@@ -825,7 +920,6 @@
   "joinHomeSubtitle": "Scan the QR code or enter the invite link/code.",
   "closeCamera": "Close Camera",
   "scanQrCodeBtn": "Scan QR Code",
-  "orLabel": "OR",
   "inviteLinkOrTokenLabel": "Invite Link or Token Code",
   "inviteLinkOrTokenHint": "https://.../invite?token=... or code",
   "paste": "Paste",
@@ -894,7 +988,6 @@
   "statusOpen": "Open",
   "statusInProgress": "Technician Sent",
   "statusClosed": "Closed",
-  "statusPending": "Pending",
   "statusCancelled": "Cancelled",
   "financialDetails": "Financial Details",
   "financialStatusPendingReview": "Pending Review",
@@ -1001,7 +1094,6 @@
     }
   },
   "submitExpenseReview": "Submit Expense (Send for Review)",
-  "saveChanges": "Save Changes",
   "pleaseEnterValidCost": "Please enter the valid amount paid.",
   "pleaseUploadReceipt": "Please upload a receipt or invoice document.",
   "pleaseSelectCostPayer": "Please select who pays.",
@@ -1354,8 +1446,6 @@
   "progressInProgress": "Technician",
   "progressResolved": "Resolved",
   "statusInProgressTechnician": "Technician Sent",
-  "statusClosed": "Closed",
-  "statusCancelled": "Cancelled",
   "costDeductFromRent": "Deduct from Rent",
   "costAddToRent": "Add to Rent",
   "costPaidByTenant": "Paid by Tenant",
@@ -1398,5 +1488,185 @@
   "uploadPdfTitle": "Upload Invoice PDF",
   "uploadPdfSubtitle": "Tap to select PDF file (Max 10MB)",
   "tenantLockedStatusNotice": "Tenants cannot change payment status unless paying themselves (submitted as Pending Review).",
-  "payerRequiredError": "Please select who pays before setting payment status."
+  "payerRequiredError": "Please select who pays before setting payment status.",
+  "tabRentAndFinance": "Rent & Finance",
+  "tabLeaseAndTenant": "Lease & Tenant",
+  "tabMaintenance": "Maintenance",
+  "tabAuditLog": "Audit Log",
+  "paymentMethodBank": "Bank",
+  "paymentMethodCash": "Cash",
+  "paymentMethodLabel": "Payment Method:",
+  "managedByAgencyTitle": "Managed by Agency",
+  "managedByAgencyDesc": "Your properties are managed by an agency. Adding new properties can only be done by your managing agency.",
+  "structuralAndFinancialMetricsSubtitle": "Property type, room count, unit number & floor metrics",
+  "equipmentAndHeatingStandardsSubtitle": "Furnishing status and heating infrastructure",
+  "featuredAmenitiesSubtitle": "Featured amenities and extended description",
+  "roomTypeStudio": "Studio",
+  "secondaryContacts": "Secondary Contacts",
+  "addSecondaryContact": "Add Contact",
+  "secondaryContactsOptionalDesc": "Optional: You can add secondary contacts like an assistant, PR, or family member.",
+  "roleOrRelation": "Role / Relationship",
+  "tenantFullName": "Tenant Full Name",
+  "tenantIdOrPassport": "ID / Passport / JMBG",
+  "tenantNotes": "Tenant Notes",
+  "tenantIdDocument": "Tenant ID Document / Passport",
+  "uploadPdfOrPhoto": "Upload PDF or photo copy",
+  "uploadAction": "Upload",
+  "idDocumentUploaded": "ID document uploaded",
+  "copiedId": "ID copied: {id}",
+  "rolePersonalAssistant": "Personal Assistant",
+  "rolePrRep": "PR / Representative",
+  "roleFamilyMember": "Family Member",
+  "roleAuthorizedContact": "Authorized Contact",
+  "clearAllAction": "Clear All",
+  "selectAllAction": "Select All",
+  "applyAction": "Apply",
+  "selectedCount": "{count} selected",
+  "selectedItemsCount": "{count} Selected",
+  "propertyOwnerInfoTitle": "Property Owner Information",
+  "propertyOwnerInfoSubtitle": "You can add multiple co-owners, corporate or individual, and attach ownership and authorization documents.",
+  "addCoOwner": "+ Add Co-Owner",
+  "primaryOwnerLabel": "1. Owner (Primary)",
+  "coOwnerIndexedLabel": "{index}. Co-Owner",
+  "sharePercentage": "Share %",
+  "removeOwner": "Remove Owner",
+  "ownerType": "Owner Type",
+  "ownerIndividual": "Individual",
+  "ownerCompany": "Company / Legal Entity",
+  "firstNameRequired": "First Name *",
+  "lastNameRequired": "Last Name *",
+  "idOrPassportOrJmbg": "ID / Passport / JMBG No",
+  "idIssuingAuthority": "ID Issuing Authority / Details",
+  "companyLegalNameRequired": "Full Legal Company Name *",
+  "registeredOfficeAddress": "Registered Office Address",
+  "taxIdPibRequired": "Tax ID (PIB) *",
+  "companyRegNo": "Company Reg No (Matični broj)",
+  "legalRepFullNameRequired": "Legal Representative Full Name *",
+  "repIdJmbg": "Rep. ID / JMBG Number",
+  "repAuthorityDetails": "Representative Authority Details / Title",
+  "contactPhoneRequired": "Contact Phone *",
+  "secondaryContactOptional": "Secondary Contact (Optional)",
+  "altPhoneOrNote": "Alt. Phone / Note",
+  "emailAddressRequiredForPrimary": "Email Address (Required for Primary) *",
+  "emailAddressOptional": "Email Address (Optional)",
+  "selectExistingAgencyContact": "Or select from existing agency contacts...",
+  "clearSelectionTooltip": "Clear selection",
+  "supportingPdfDocuments": "Supporting PDF Documents",
+  "uploadDocumentTooltip": "Upload Document",
+  "docTypePassportCopy": "ID Document Copy (PDF)",
+  "docTypeProofOfOwnership": "Proof of Ownership / Title Deed (PDF)",
+  "docTypePowerOfAttorney": "Power of Attorney / POA (PDF)",
+  "docTypeOtherDocument": "Other Document (PDF)",
+  "addPdfDocument": "+ Add PDF Document",
+  "docTypeLabelId": "ID",
+  "docTypeLabelTitleDeed": "Deed",
+  "docTypeLabelPoa": "POA",
+  "docTypeLabelOther": "Doc",
+  "markAsPaid": "Mark as Paid",
+  "markAsPaidSubtitle": "Payment confirmation for {title} ({month})",
+  "bankTransferOption": "Bank Transfer",
+  "receiptOrDocOptional": "Receipt / Document (Optional)",
+  "uploadReceiptOrImage": "Upload receipt or image",
+  "uploadReceiptHint": "Choose PDF, PNG, JPG or camera photo",
+  "noteOptional": "Note (Optional)",
+  "noteOptionalRentHint": "E.g. Paid in cash / Receipt attached",
+  "paymentMarkedPaidSuccess": "Payment successfully marked as paid.",
+  "saveAsPaid": "Save as Paid",
+  "collectSettleExpenseTitle": "Collect & Settle Expense",
+  "collectSettleExpenseSubtitle": "Confirm collection of {cost} and settle this charge.",
+  "collectionMethod": "Collection Method",
+  "collectionMethodBank": "Bank Transfer",
+  "collectionMethodCash": "Cash",
+  "collectionMethodPayoutDeduction": "Deducted from Payout",
+  "attachReceiptOrVoucher": "Attach receipt or voucher",
+  "noteOptionalAgencyHint": "E.g. Paid in cash / Bank transfer confirmed",
+  "payoutDeductionLabel": "Payout Deduction",
+  "collectionConfirmedAndSettled": "Collection confirmed and settled.",
+  "confirmAndSettle": "Confirm & Settle",
+  "propertyOwnersCountTitle": "Property Owners ({count})",
+  "editOwners": "Edit Owners",
+  "primaryOwnerBadge": "Primary",
+  "authorizedRepresentative": "Representative",
+  "registeredAddressLabel": "Registered Address",
+  "idJmbgLabel": "ID/JMBG",
+  "secondaryContactPrefix": "Alt Contact: ",
+  "supportingDocumentsColon": "Supporting Documents:",
+  "auditPaymentCreatedRent": "System automatically created the due record",
+  "auditPaymentCreatedExpense": "System automatically created the expense record",
+  "auditRentDeclaredCash": "{actor} declared payment (Cash){monthSuffix}",
+  "auditRentDeclaredReceipt": "{actor} declared payment by uploading a receipt{monthSuffix}",
+  "auditRentApproved": "{actor} approved payment{monthSuffix}",
+  "auditRentRejected": "{actor} rejected payment{monthSuffix}",
+  "auditRentDisputed": "{actor} objected to the payment{reasonSuffix}",
+  "auditInvoiceUploadedPending": "{actor} {monthPrefix}uploaded a bill (Awaiting approval, {amount})",
+  "auditInvoiceUploaded": "{actor} {monthPrefix}uploaded a bill ({amount})",
+  "auditInvoiceEnteredPending": "{actor} {monthPrefix}entered bill details (Awaiting approval, {amount})",
+  "auditInvoiceEntered": "{actor} {monthPrefix}entered bill details ({amount})",
+  "auditInvoiceApproved": "{actor} {monthPrefix}approved bill ({amount})",
+  "auditInvoiceRejected": "{actor} {monthPrefix}rejected bill{reasonSuffix}",
+  "auditPaymentToggle": "{actor} marked payment as {status}",
+  "auditRentAutoApproved": "Payment was automatically approved by the system",
+  "auditMaintenanceCreated": "{actor} created a maintenance request{titleSuffix}",
+  "auditMaintenanceStatusUpdated": "{actor} updated maintenance status ({status})",
+  "auditMaintenanceMessageAdded": "{actor} added a message to maintenance request",
+  "auditMaintenanceReopened": "{actor} reopened maintenance request",
+  "contactTenantAsLandlordInfo": "This contact is registered as a tenant ({propertySummary}). Now being added as a landlord.",
+  "registeredLandlordDetailsAutofilled": "Registered landlord details auto-filled.",
+  "noDocumentsAttachedYet": "No documents attached yet (You can attach ID, Title deed or POA).",
+  "coOwnerEmailHelper": "If entered, the co-owner will see the property in their landlord dashboard upon login.",
+  "propertyOwnersUpdatedSuccess": "Property owners updated successfully.",
+  "systemActor": "System",
+  "agencyRole": "Agency",
+  "editPropertyOwners": "Edit Property Owners",
+  "auditInvitationAccepted": "{actor} accepted the property invitation",
+  "auditContractAccepted": "{actor} approved and signed the lease contract",
+  "auditContractTerminationRequested": "{actor} requested early contract termination",
+  "auditContractChangesAccepted": "{actor} accepted the proposed contract changes",
+  "auditContractChangesDeclined": "{actor} declined or withdrew the proposed contract changes",
+  "auditLandlordOwnershipClaimed": "{actor} claimed property ownership and management",
+  "auditTenantRemoved": "{actor} removed the tenant from the property",
+  "auditPropertyOwnersUpdated": "{actor} updated property owner details",
+  "auditMaintenanceFinancialsUpdated": "{actor} updated maintenance cost and financial details",
+  "auditMaintenanceFinancialsDeleted": "{actor} deleted maintenance cost details and reverted settlements",
+  "auditMaintenanceChargeCreated": "{actor} added a new maintenance expense item",
+  "auditMaintenanceChargeStatusUpdated": "{actor} updated maintenance charge status",
+  "auditMaintenanceChargeSettled": "{actor} settled maintenance charge",
+  "auditMaintenanceDeleted": "{actor} deleted the maintenance request",
+  "tenantInviteEmailTitle": "Tenant Invitation Email",
+  "landlordInviteEmailTitle": "Landlord Invitation Email",
+  "statusNotSent": "Not Sent",
+  "statusNoEmail": "No Email",
+  "lastSentAt": "Last sent: {date}",
+  "noEmailSpecified": "No email address specified",
+  "ownersConfirmedRatio": "{confirmed}/{total} Confirmed",
+  "ownerConfirmedBanner": "{name} accepted the invitation and confirmed property management.",
+  "emailPreviewTitle": "Outgoing Email Preview",
+  "emailPreviewForOwner": "Email Preview ({name})",
+  "tabVisual": "Visual",
+  "tabPlainText": "Plain Text",
+  "emailCopiedToast": "Email text copied to clipboard.",
+  "languageLabel": "Language:",
+  "subjectHeader": "SUBJECT",
+  "contentHeader": "CONTENT",
+  "recipientWillReceiveThisFormat": "Recipient will receive this format",
+  "sendTenantInviteEmailBtn": "Send Invitation Email to Tenant",
+  "resendInviteEmailBtn": "Resend Invitation Email",
+  "sendLandlordInviteEmailBtn": "Send Invitation Email to Landlord",
+  "sendInviteForOwnerBtn": "Send Invitation Email for {name}",
+  "resendInviteForOwnerBtn": "Resend for {name}",
+  "sendToAllBtn": "Send to All",
+  "sendToAllOwnersBtn": "Send to All Landlords Individually ({count})",
+  "resendToAllOwnersBtn": "Resend to All Landlords ({count})",
+  "sendingState": "Sending...",
+  "sendingAllState": "Sending to all...",
+  "noEmailAddressDefined": "No Email Address Defined",
+  "tenantInviteSentSuccess": "Invitation email successfully sent to {email}.",
+  "landlordInviteSentSuccess": "Invitation email successfully sent to {email}.",
+  "noEmailForUserError": "No email address found for {name}.",
+  "tenantNoEmailError": "Tenant email address is not defined.",
+  "emailSendFailedError": "Failed to send invitation email. Please check Brevo API settings.",
+  "emailSendGenericError": "Error occurred while sending email: {error}",
+  "tenantInviteEmailBtn": "Tenant Invite Email",
+  "allOwnersInviteSentSuccess": "Invitation emails successfully sent to {successCount} / {totalCount} property owners.",
+  "landlordsListHeader": "Property Owners ({count})"
 }

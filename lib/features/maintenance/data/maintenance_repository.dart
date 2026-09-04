@@ -282,16 +282,13 @@ class MaintenanceRepository {
       }
 
       try {
-        final landlordId = await _getLandlordId(propertyId);
-        if (landlordId.isNotEmpty) {
-          await _createNotification(
-            userId: landlordId,
-            title: 'New Maintenance Request',
-            body: 'A new maintenance request has been submitted: $title',
-            type: 'maintenance',
-            relatedId: data['id'] as String?,
-          );
-        }
+        await _notifyPropertyManagers(
+          propertyId: propertyId,
+          title: 'New Maintenance Request',
+          body: 'A new maintenance request has been submitted: $title',
+          type: 'maintenance',
+          relatedId: data['id'] as String?,
+        );
       } catch (e) {
         print('Error creating notification: $e');
       }
@@ -632,13 +629,15 @@ class MaintenanceRepository {
     );
 
     final reporterId = await _getReporterId(requestId);
-    await _createNotification(
-      userId: reporterId,
-      title: 'Maintenance Update',
-      body: 'Your maintenance request status has been updated to $dbStatus',
-      type: 'maintenance',
-      relatedId: requestId,
-    );
+    if (reporterId != null && reporterId.isNotEmpty) {
+      await _createNotification(
+        userId: reporterId,
+        title: 'Maintenance Update',
+        body: 'Your maintenance request status has been updated to $dbStatus',
+        type: 'maintenance',
+        relatedId: requestId,
+      );
+    }
   }
 
   Future<void> deleteRequest(String requestId, String propertyId) async {
@@ -705,15 +704,32 @@ class MaintenanceRepository {
     try {
       final landlordId = await _getLandlordId(propertyId);
       final reporterId = await _getReporterId(requestId);
-      final recipientId = (user.id == landlordId) ? reporterId : landlordId;
+      final agencyId = await _getAgencyId(propertyId);
 
-      await _createNotification(
-        userId: recipientId,
-        title: 'Arıza Kaydı Yorumu',
-        body: message.isEmpty ? (photoUrl != null ? 'Bir fotoğraf gönderdi' : '') : (message.length > 50 ? '${message.substring(0, 47)}...' : message),
-        type: 'maintenance',
-        relatedId: requestId,
-      );
+      final recipients = <String>{};
+      if (reporterId != null && reporterId.isNotEmpty && reporterId != user.id) {
+        recipients.add(reporterId);
+      }
+      if (landlordId != null && landlordId.isNotEmpty && landlordId != user.id) {
+        recipients.add(landlordId);
+      }
+      if (agencyId != null && agencyId.isNotEmpty && agencyId != user.id) {
+        recipients.add(agencyId);
+      }
+
+      final bodyText = message.isEmpty
+          ? (photoUrl != null ? 'Bir fotoğraf gönderdi' : '')
+          : (message.length > 50 ? '${message.substring(0, 47)}...' : message);
+
+      for (final recipientId in recipients) {
+        await _createNotification(
+          userId: recipientId,
+          title: 'Arıza Kaydı Yorumu',
+          body: bodyText,
+          type: 'maintenance',
+          relatedId: requestId,
+        );
+      }
     } catch (e) {
       print('Error creating notification for maintenance message: $e');
     }
@@ -738,9 +754,8 @@ class MaintenanceRepository {
     }
 
     try {
-      final landlordId = await _getLandlordId(propertyId);
-      await _createNotification(
-        userId: landlordId,
+      await _notifyPropertyManagers(
+        propertyId: propertyId,
         title: 'Request Reopened',
         body: 'A maintenance request has been reopened.',
         type: 'maintenance',
@@ -976,14 +991,60 @@ class MaintenanceRepository {
     await _client.from('maintenance_charges').delete().eq('id', chargeId);
   }
 
-  Future<String> _getLandlordId(String propertyId) async {
-    final data = await _client.from('properties').select('landlord_id').eq('id', propertyId).single();
-    return data['landlord_id'] as String;
+  Future<String?> _getLandlordId(String propertyId) async {
+    try {
+      final data = await _client.from('properties').select('landlord_id').eq('id', propertyId).maybeSingle();
+      return data?['landlord_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
-  Future<String> _getReporterId(String requestId) async {
-    final data = await _client.from('maintenance_requests').select('reporter_id').eq('id', requestId).single();
-    return data['reporter_id'] as String;
+  Future<String?> _getAgencyId(String propertyId) async {
+    try {
+      final data = await _client.from('properties').select('agency_id').eq('id', propertyId).maybeSingle();
+      return data?['agency_id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _notifyPropertyManagers({
+    required String propertyId,
+    required String title,
+    required String body,
+    required String type,
+    String? relatedId,
+  }) async {
+    final landlordId = await _getLandlordId(propertyId);
+    if (landlordId != null && landlordId.isNotEmpty) {
+      await _createNotification(
+        userId: landlordId,
+        title: title,
+        body: body,
+        type: type,
+        relatedId: relatedId,
+      );
+    }
+    final agencyId = await _getAgencyId(propertyId);
+    if (agencyId != null && agencyId.isNotEmpty && agencyId != landlordId) {
+      await _createNotification(
+        userId: agencyId,
+        title: title,
+        body: body,
+        type: type,
+        relatedId: relatedId,
+      );
+    }
+  }
+
+  Future<String?> _getReporterId(String requestId) async {
+    try {
+      final data = await _client.from('maintenance_requests').select('reporter_id').eq('id', requestId).maybeSingle();
+      return data?['reporter_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 }
 

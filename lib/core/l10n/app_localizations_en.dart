@@ -1419,7 +1419,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requiredField => 'This field is required';
 
   @override
-  String get invalidEmail => 'Invalid email address';
+  String get invalidEmail => 'Please enter a valid email address';
 
   @override
   String get offlineMessage =>
@@ -3057,4 +3057,679 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get payerRequiredError =>
       'Please select who pays before setting payment status.';
+
+  @override
+  String get tabRentAndFinance => 'Rent & Finance';
+
+  @override
+  String get tabLeaseAndTenant => 'Lease & Tenant';
+
+  @override
+  String get tabMaintenance => 'Maintenance';
+
+  @override
+  String get tabAuditLog => 'Audit Log';
+
+  @override
+  String get paymentMethodBank => 'Bank';
+
+  @override
+  String get paymentMethodCash => 'Cash';
+
+  @override
+  String get paymentMethodLabel => 'Payment Method:';
+
+  @override
+  String get managedByAgencyTitle => 'Managed by Agency';
+
+  @override
+  String get managedByAgencyDesc =>
+      'Your properties are managed by an agency. Adding new properties can only be done by your managing agency.';
+
+  @override
+  String get structuralAndFinancialMetricsSubtitle =>
+      'Property type, room count, unit number & floor metrics';
+
+  @override
+  String get equipmentAndHeatingStandardsSubtitle =>
+      'Furnishing status and heating infrastructure';
+
+  @override
+  String get featuredAmenitiesSubtitle =>
+      'Featured amenities and extended description';
+
+  @override
+  String get roomTypeStudio => 'Studio';
+
+  @override
+  String get secondaryContacts => 'Secondary Contacts';
+
+  @override
+  String get addSecondaryContact => 'Add Contact';
+
+  @override
+  String get secondaryContactsOptionalDesc =>
+      'Optional: You can add secondary contacts like an assistant, PR, or family member.';
+
+  @override
+  String get roleOrRelation => 'Role / Relationship';
+
+  @override
+  String get tenantFullName => 'Tenant Full Name';
+
+  @override
+  String get tenantIdOrPassport => 'ID / Passport / JMBG';
+
+  @override
+  String get tenantNotes => 'Tenant Notes';
+
+  @override
+  String get tenantIdDocument => 'Tenant ID Document / Passport';
+
+  @override
+  String get uploadPdfOrPhoto => 'Upload PDF or photo copy';
+
+  @override
+  String get uploadAction => 'Upload';
+
+  @override
+  String get idDocumentUploaded => 'ID document uploaded';
+
+  @override
+  String copiedId(String id) {
+    return 'ID copied: $id';
+  }
+
+  @override
+  String get rolePersonalAssistant => 'Personal Assistant';
+
+  @override
+  String get rolePrRep => 'PR / Representative';
+
+  @override
+  String get roleFamilyMember => 'Family Member';
+
+  @override
+  String get roleAuthorizedContact => 'Authorized Contact';
+
+  @override
+  String get clearAllAction => 'Clear All';
+
+  @override
+  String get selectAllAction => 'Select All';
+
+  @override
+  String get applyAction => 'Apply';
+
+  @override
+  String selectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count Selected';
+  }
+
+  @override
+  String get propertyOwnerInfoTitle => 'Property Owner Information';
+
+  @override
+  String get propertyOwnerInfoSubtitle =>
+      'You can add multiple co-owners, corporate or individual, and attach ownership and authorization documents.';
+
+  @override
+  String get addCoOwner => '+ Add Co-Owner';
+
+  @override
+  String get primaryOwnerLabel => '1. Owner (Primary)';
+
+  @override
+  String coOwnerIndexedLabel(int index) {
+    return '$index. Co-Owner';
+  }
+
+  @override
+  String get sharePercentage => 'Share %';
+
+  @override
+  String get removeOwner => 'Remove Owner';
+
+  @override
+  String get ownerType => 'Owner Type';
+
+  @override
+  String get ownerIndividual => 'Individual';
+
+  @override
+  String get ownerCompany => 'Company / Legal Entity';
+
+  @override
+  String get firstNameRequired => 'First Name *';
+
+  @override
+  String get lastNameRequired => 'Last Name *';
+
+  @override
+  String get idOrPassportOrJmbg => 'ID / Passport / JMBG No';
+
+  @override
+  String get idIssuingAuthority => 'ID Issuing Authority / Details';
+
+  @override
+  String get companyLegalNameRequired => 'Full Legal Company Name *';
+
+  @override
+  String get registeredOfficeAddress => 'Registered Office Address';
+
+  @override
+  String get taxIdPibRequired => 'Tax ID (PIB) *';
+
+  @override
+  String get companyRegNo => 'Company Reg No (Matični broj)';
+
+  @override
+  String get legalRepFullNameRequired => 'Legal Representative Full Name *';
+
+  @override
+  String get repIdJmbg => 'Rep. ID / JMBG Number';
+
+  @override
+  String get repAuthorityDetails => 'Representative Authority Details / Title';
+
+  @override
+  String get contactPhoneRequired => 'Contact Phone *';
+
+  @override
+  String get secondaryContactOptional => 'Secondary Contact (Optional)';
+
+  @override
+  String get altPhoneOrNote => 'Alt. Phone / Note';
+
+  @override
+  String get emailAddressRequiredForPrimary =>
+      'Email Address (Required for Primary) *';
+
+  @override
+  String get emailAddressOptional => 'Email Address (Optional)';
+
+  @override
+  String get selectExistingAgencyContact =>
+      'Or select from existing agency contacts...';
+
+  @override
+  String get clearSelectionTooltip => 'Clear selection';
+
+  @override
+  String get supportingPdfDocuments => 'Supporting PDF Documents';
+
+  @override
+  String get uploadDocumentTooltip => 'Upload Document';
+
+  @override
+  String get docTypePassportCopy => 'ID Document Copy (PDF)';
+
+  @override
+  String get docTypeProofOfOwnership => 'Proof of Ownership / Title Deed (PDF)';
+
+  @override
+  String get docTypePowerOfAttorney => 'Power of Attorney / POA (PDF)';
+
+  @override
+  String get docTypeOtherDocument => 'Other Document (PDF)';
+
+  @override
+  String get addPdfDocument => '+ Add PDF Document';
+
+  @override
+  String get docTypeLabelId => 'ID';
+
+  @override
+  String get docTypeLabelTitleDeed => 'Deed';
+
+  @override
+  String get docTypeLabelPoa => 'POA';
+
+  @override
+  String get docTypeLabelOther => 'Doc';
+
+  @override
+  String get markAsPaid => 'Mark as Paid';
+
+  @override
+  String markAsPaidSubtitle(String title, String month) {
+    return 'Payment confirmation for $title ($month)';
+  }
+
+  @override
+  String get bankTransferOption => 'Bank Transfer';
+
+  @override
+  String get receiptOrDocOptional => 'Receipt / Document (Optional)';
+
+  @override
+  String get uploadReceiptOrImage => 'Upload receipt or image';
+
+  @override
+  String get uploadReceiptHint => 'Choose PDF, PNG, JPG or camera photo';
+
+  @override
+  String get noteOptional => 'Note (Optional)';
+
+  @override
+  String get noteOptionalRentHint => 'E.g. Paid in cash / Receipt attached';
+
+  @override
+  String get paymentMarkedPaidSuccess => 'Payment successfully marked as paid.';
+
+  @override
+  String get saveAsPaid => 'Save as Paid';
+
+  @override
+  String get collectSettleExpenseTitle => 'Collect & Settle Expense';
+
+  @override
+  String collectSettleExpenseSubtitle(String cost) {
+    return 'Confirm collection of $cost and settle this charge.';
+  }
+
+  @override
+  String get collectionMethod => 'Collection Method';
+
+  @override
+  String get collectionMethodBank => 'Bank Transfer';
+
+  @override
+  String get collectionMethodCash => 'Cash';
+
+  @override
+  String get collectionMethodPayoutDeduction => 'Deducted from Payout';
+
+  @override
+  String get attachReceiptOrVoucher => 'Attach receipt or voucher';
+
+  @override
+  String get noteOptionalAgencyHint =>
+      'E.g. Paid in cash / Bank transfer confirmed';
+
+  @override
+  String get payoutDeductionLabel => 'Payout Deduction';
+
+  @override
+  String get collectionConfirmedAndSettled =>
+      'Collection confirmed and settled.';
+
+  @override
+  String get confirmAndSettle => 'Confirm & Settle';
+
+  @override
+  String propertyOwnersCountTitle(int count) {
+    return 'Property Owners ($count)';
+  }
+
+  @override
+  String get editOwners => 'Edit Owners';
+
+  @override
+  String get primaryOwnerBadge => 'Primary';
+
+  @override
+  String get authorizedRepresentative => 'Representative';
+
+  @override
+  String get registeredAddressLabel => 'Registered Address';
+
+  @override
+  String get idJmbgLabel => 'ID/JMBG';
+
+  @override
+  String get secondaryContactPrefix => 'Alt Contact: ';
+
+  @override
+  String get supportingDocumentsColon => 'Supporting Documents:';
+
+  @override
+  String get auditPaymentCreatedRent =>
+      'System automatically created the due record';
+
+  @override
+  String get auditPaymentCreatedExpense =>
+      'System automatically created the expense record';
+
+  @override
+  String auditRentDeclaredCash(String actor, String monthSuffix) {
+    return '$actor declared payment (Cash)$monthSuffix';
+  }
+
+  @override
+  String auditRentDeclaredReceipt(String actor, String monthSuffix) {
+    return '$actor declared payment by uploading a receipt$monthSuffix';
+  }
+
+  @override
+  String auditRentApproved(String actor, String monthSuffix) {
+    return '$actor approved payment$monthSuffix';
+  }
+
+  @override
+  String auditRentRejected(String actor, String monthSuffix) {
+    return '$actor rejected payment$monthSuffix';
+  }
+
+  @override
+  String auditRentDisputed(String actor, String reasonSuffix) {
+    return '$actor objected to the payment$reasonSuffix';
+  }
+
+  @override
+  String auditInvoiceUploadedPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}uploaded a bill (Awaiting approval, $amount)';
+  }
+
+  @override
+  String auditInvoiceUploaded(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}uploaded a bill ($amount)';
+  }
+
+  @override
+  String auditInvoiceEnteredPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}entered bill details (Awaiting approval, $amount)';
+  }
+
+  @override
+  String auditInvoiceEntered(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}entered bill details ($amount)';
+  }
+
+  @override
+  String auditInvoiceApproved(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}approved bill ($amount)';
+  }
+
+  @override
+  String auditInvoiceRejected(
+    String actor,
+    String monthPrefix,
+    String reasonSuffix,
+  ) {
+    return '$actor ${monthPrefix}rejected bill$reasonSuffix';
+  }
+
+  @override
+  String auditPaymentToggle(String actor, String status) {
+    return '$actor marked payment as $status';
+  }
+
+  @override
+  String get auditRentAutoApproved =>
+      'Payment was automatically approved by the system';
+
+  @override
+  String auditMaintenanceCreated(String actor, String titleSuffix) {
+    return '$actor created a maintenance request$titleSuffix';
+  }
+
+  @override
+  String auditMaintenanceStatusUpdated(String actor, String status) {
+    return '$actor updated maintenance status ($status)';
+  }
+
+  @override
+  String auditMaintenanceMessageAdded(String actor) {
+    return '$actor added a message to maintenance request';
+  }
+
+  @override
+  String auditMaintenanceReopened(String actor) {
+    return '$actor reopened maintenance request';
+  }
+
+  @override
+  String contactTenantAsLandlordInfo(String propertySummary) {
+    return 'This contact is registered as a tenant ($propertySummary). Now being added as a landlord.';
+  }
+
+  @override
+  String get registeredLandlordDetailsAutofilled =>
+      'Registered landlord details auto-filled.';
+
+  @override
+  String get noDocumentsAttachedYet =>
+      'No documents attached yet (You can attach ID, Title deed or POA).';
+
+  @override
+  String get coOwnerEmailHelper =>
+      'If entered, the co-owner will see the property in their landlord dashboard upon login.';
+
+  @override
+  String get propertyOwnersUpdatedSuccess =>
+      'Property owners updated successfully.';
+
+  @override
+  String get systemActor => 'System';
+
+  @override
+  String get agencyRole => 'Agency';
+
+  @override
+  String get editPropertyOwners => 'Edit Property Owners';
+
+  @override
+  String auditInvitationAccepted(Object actor) {
+    return '$actor accepted the property invitation';
+  }
+
+  @override
+  String auditContractAccepted(Object actor) {
+    return '$actor approved and signed the lease contract';
+  }
+
+  @override
+  String auditContractTerminationRequested(Object actor) {
+    return '$actor requested early contract termination';
+  }
+
+  @override
+  String auditContractChangesAccepted(Object actor) {
+    return '$actor accepted the proposed contract changes';
+  }
+
+  @override
+  String auditContractChangesDeclined(Object actor) {
+    return '$actor declined or withdrew the proposed contract changes';
+  }
+
+  @override
+  String auditLandlordOwnershipClaimed(Object actor) {
+    return '$actor claimed property ownership and management';
+  }
+
+  @override
+  String auditTenantRemoved(Object actor) {
+    return '$actor removed the tenant from the property';
+  }
+
+  @override
+  String auditPropertyOwnersUpdated(Object actor) {
+    return '$actor updated property owner details';
+  }
+
+  @override
+  String auditMaintenanceFinancialsUpdated(Object actor) {
+    return '$actor updated maintenance cost and financial details';
+  }
+
+  @override
+  String auditMaintenanceFinancialsDeleted(Object actor) {
+    return '$actor deleted maintenance cost details and reverted settlements';
+  }
+
+  @override
+  String auditMaintenanceChargeCreated(Object actor) {
+    return '$actor added a new maintenance expense item';
+  }
+
+  @override
+  String auditMaintenanceChargeStatusUpdated(Object actor) {
+    return '$actor updated maintenance charge status';
+  }
+
+  @override
+  String auditMaintenanceChargeSettled(Object actor) {
+    return '$actor settled maintenance charge';
+  }
+
+  @override
+  String auditMaintenanceDeleted(Object actor) {
+    return '$actor deleted the maintenance request';
+  }
+
+  @override
+  String get tenantInviteEmailTitle => 'Tenant Invitation Email';
+
+  @override
+  String get landlordInviteEmailTitle => 'Landlord Invitation Email';
+
+  @override
+  String get statusNotSent => 'Not Sent';
+
+  @override
+  String get statusNoEmail => 'No Email';
+
+  @override
+  String lastSentAt(String date) {
+    return 'Last sent: $date';
+  }
+
+  @override
+  String get noEmailSpecified => 'No email address specified';
+
+  @override
+  String ownersConfirmedRatio(String confirmed, String total) {
+    return '$confirmed/$total Confirmed';
+  }
+
+  @override
+  String ownerConfirmedBanner(String name) {
+    return '$name accepted the invitation and confirmed property management.';
+  }
+
+  @override
+  String get emailPreviewTitle => 'Outgoing Email Preview';
+
+  @override
+  String emailPreviewForOwner(String name) {
+    return 'Email Preview ($name)';
+  }
+
+  @override
+  String get tabVisual => 'Visual';
+
+  @override
+  String get tabPlainText => 'Plain Text';
+
+  @override
+  String get emailCopiedToast => 'Email text copied to clipboard.';
+
+  @override
+  String get languageLabel => 'Language:';
+
+  @override
+  String get subjectHeader => 'SUBJECT';
+
+  @override
+  String get contentHeader => 'CONTENT';
+
+  @override
+  String get recipientWillReceiveThisFormat =>
+      'Recipient will receive this format';
+
+  @override
+  String get sendTenantInviteEmailBtn => 'Send Invitation Email to Tenant';
+
+  @override
+  String get resendInviteEmailBtn => 'Resend Invitation Email';
+
+  @override
+  String get sendLandlordInviteEmailBtn => 'Send Invitation Email to Landlord';
+
+  @override
+  String sendInviteForOwnerBtn(String name) {
+    return 'Send Invitation Email for $name';
+  }
+
+  @override
+  String resendInviteForOwnerBtn(String name) {
+    return 'Resend for $name';
+  }
+
+  @override
+  String get sendToAllBtn => 'Send to All';
+
+  @override
+  String sendToAllOwnersBtn(String count) {
+    return 'Send to All Landlords Individually ($count)';
+  }
+
+  @override
+  String resendToAllOwnersBtn(String count) {
+    return 'Resend to All Landlords ($count)';
+  }
+
+  @override
+  String get sendingState => 'Sending...';
+
+  @override
+  String get sendingAllState => 'Sending to all...';
+
+  @override
+  String get noEmailAddressDefined => 'No Email Address Defined';
+
+  @override
+  String tenantInviteSentSuccess(String email) {
+    return 'Invitation email successfully sent to $email.';
+  }
+
+  @override
+  String landlordInviteSentSuccess(String email) {
+    return 'Invitation email successfully sent to $email.';
+  }
+
+  @override
+  String noEmailForUserError(String name) {
+    return 'No email address found for $name.';
+  }
+
+  @override
+  String get tenantNoEmailError => 'Tenant email address is not defined.';
+
+  @override
+  String get emailSendFailedError =>
+      'Failed to send invitation email. Please check Brevo API settings.';
+
+  @override
+  String emailSendGenericError(String error) {
+    return 'Error occurred while sending email: $error';
+  }
+
+  @override
+  String get tenantInviteEmailBtn => 'Tenant Invite Email';
+
+  @override
+  String allOwnersInviteSentSuccess(String successCount, String totalCount) {
+    return 'Invitation emails successfully sent to $successCount / $totalCount property owners.';
+  }
+
+  @override
+  String landlordsListHeader(String count) {
+    return 'Property Owners ($count)';
+  }
 }

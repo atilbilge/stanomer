@@ -22,6 +22,7 @@ import '../domain/property.dart';
 import '../domain/contract.dart';
 import '../domain/tenant_secondary_contact.dart';
 import 'widgets/tenant_secondary_contacts_section.dart';
+import 'widgets/tenant_invite_share_sheet.dart';
 import '../../../core/services/document_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -324,10 +325,37 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
               : const [],
         );
         
-        setState(() {
-          _generatedLink = 'stanomer://invite?token=${contract.token}';
-          _isLoading = false;
-        });
+        final isAgencyManaged = (widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) ||
+            (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' ||
+                ref.read(currentUserProvider)?.id == widget.property.agencyId);
+
+        if (isAgencyManaged) {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            await TenantInviteShareSheet.show(
+              context,
+              propertyId: widget.property.id,
+              propertyName: widget.property.name,
+              propertyAddress: widget.property.address,
+              tenantName: _tenantNameController.text.trim(),
+              tenantEmail: emailText,
+              token: contract.token,
+              contractId: contract.id,
+              monthlyRent: finalRent,
+              currency: widget.property.currency,
+              depositAmount: _depositController.text.isNotEmpty ? double.parse(_depositController.text) : null,
+              startDate: _startDate,
+            );
+            if (mounted) {
+              Navigator.pop(context);
+            }
+          }
+        } else {
+          setState(() {
+            _generatedLink = 'stanomer://invite?token=${contract.token}';
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -342,13 +370,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
-    final optionalSuffix = isTr
-        ? '(İsteğe Bağlı)'
-        : (isSr
-            ? '(Opciono)'
-            : (loc.localeName.startsWith('ru') ? '(Необязательно)' : '(Optional)'));
+    final optionalSuffix = '(${loc.optional})';
 
     final user = ref.watch(currentUserProvider);
     final role = user?.userMetadata?['role'] as String?;
@@ -444,9 +466,8 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                     TextFormField(
                       controller: _tenantNameController,
                       decoration: InputDecoration(
-                        labelText: '${isTr ? "Kiracı Adı & Soyadı" : (isSr ? "Ime i prezime zakupca" : "Tenant Full Name")} *',
+                        labelText: '${loc.tenantFullName} *',
                         prefixIcon: const Icon(LucideIcons.user, size: 20),
-                        hintText: isTr ? "Örn: Ahmet Yılmaz" : (isSr ? "Npr: Marko Petrović" : "E.g. John Doe"),
                       ),
                       validator: (val) => (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
                     ),
@@ -471,13 +492,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                           return null;
                         }
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) {
-                          return isTr
-                              ? 'Geçerli bir e-posta adresi giriniz'
-                              : (loc.localeName == 'ru'
-                                  ? 'Введите корректный e-mail'
-                                  : (isSr
-                                      ? 'Unesite validnu email adresu'
-                                      : 'Please enter a valid email address'));
+                          return loc.invalidEmail;
                         }
                         final currentUserEmail = ref.read(currentUserProvider)?.email;
                         if (currentUserEmail != null && text.toLowerCase() == currentUserEmail.toLowerCase()) {
@@ -494,7 +509,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                             child: TextFormField(
                               controller: _idNumberController,
                               decoration: InputDecoration(
-                                labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
+                                labelText: loc.tenantIdOrPassport,
                                 prefixIcon: const Icon(LucideIcons.idCard, size: 20),
                               ),
                             ),
@@ -505,7 +520,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                                labelText: loc.phone,
                                 prefixIcon: const Icon(LucideIcons.phone, size: 20),
                               ),
                             ),
@@ -517,7 +532,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                         controller: _notesController,
                         maxLines: 2,
                         decoration: InputDecoration(
-                          labelText: isTr ? 'Kiracıya İlişkin Notlar (İsteğe Bağlı)' : (isSr ? 'Napomene o zakupcu (Opciono)' : 'Tenant Notes (Optional)'),
+                          labelText: '${loc.tenantNotes} (${loc.optional})',
                           prefixIcon: const Icon(LucideIcons.fileText, size: 20),
                         ),
                       ),
@@ -544,14 +559,14 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
+                                    loc.tenantIdDocument,
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     _tenantIdDocUrl != null
-                                        ? (_tenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
-                                        : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
+                                        ? (_tenantIdDocFileName ?? loc.idDocumentUploaded)
+                                        : loc.uploadPdfOrPhoto,
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: _tenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
@@ -576,7 +591,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                               OutlinedButton.icon(
                                 onPressed: _pickTenantIdDoc,
                                 icon: const Icon(LucideIcons.upload, size: 14),
-                                label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
+                                label: Text(loc.uploadAction, style: const TextStyle(fontSize: 12)),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: roleColor,
                                   side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
@@ -600,7 +615,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
-                          labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                          labelText: loc.phone,
                           prefixIcon: const Icon(LucideIcons.phone, size: 20),
                         ),
                       ),
@@ -836,8 +851,6 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Widget _buildExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyTenantDetails) {
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
     return Material(
       color: StanomerColors.bgCard,
       borderRadius: BorderRadius.circular(16),
@@ -915,12 +928,12 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                         Row(
                           children: [
                             Text(
-                              isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                              loc.paymentMethodLabel,
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
                             ),
                             const SizedBox(width: 8),
                             ChoiceChip(
-                              label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                              label: Text(loc.paymentMethodBank, style: const TextStyle(fontSize: 11)),
                               avatar: const Icon(LucideIcons.landmark, size: 13),
                               selected: expense.paymentMethod != 'cash',
                               onSelected: _isLeaseLocked ? null : (_) {
@@ -938,7 +951,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                             ),
                             const SizedBox(width: 6),
                             ChoiceChip(
-                              label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                              label: Text(loc.paymentMethodCash, style: const TextStyle(fontSize: 11)),
                               avatar: const Icon(LucideIcons.banknote, size: 13),
                               selected: expense.paymentMethod == 'cash',
                               onSelected: _isLeaseLocked ? null : (_) {

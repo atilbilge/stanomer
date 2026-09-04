@@ -57,9 +57,7 @@ class _PropertySpecsFormSectionState extends State<PropertySpecsFormSection> {
         _buildCardWrapper(
           icon: LucideIcons.building,
           title: loc.structuralAndFinancialMetrics,
-          subtitle: loc.localeName == 'tr'
-              ? 'Mülk tipi, daire no, oda sayısı ve kat metrikleri'
-              : 'Property type, room count, unit number & floor metrics',
+          subtitle: loc.structuralAndFinancialMetricsSubtitle,
           children: [
             _buildPropertyTypeSelector(loc),
             if (widget.unitNumberController != null) ...[
@@ -86,9 +84,7 @@ class _PropertySpecsFormSectionState extends State<PropertySpecsFormSection> {
         _buildCardWrapper(
           icon: LucideIcons.armchair,
           title: loc.equipmentAndHeatingStandards,
-          subtitle: loc.localeName == 'tr'
-              ? 'Eşya durumu ve ısıtma altyapısı'
-              : 'Furnishing status and heating infrastructure',
+          subtitle: loc.equipmentAndHeatingStandardsSubtitle,
           children: [
             _buildFurnishingGrid(loc),
             const SizedBox(height: 20),
@@ -102,9 +98,7 @@ class _PropertySpecsFormSectionState extends State<PropertySpecsFormSection> {
         _buildCardWrapper(
           icon: LucideIcons.sparkles,
           title: loc.featuredAmenitiesLabel,
-          subtitle: loc.localeName == 'tr'
-              ? 'Öne çıkan konfor özellikleri ve açıklama'
-              : 'Featured amenities and extended description',
+          subtitle: loc.featuredAmenitiesSubtitle,
           children: [
             _buildAmenitiesGroup(loc),
             if (widget.descriptionController != null) ...[
@@ -277,7 +271,7 @@ class _PropertySpecsFormSectionState extends State<PropertySpecsFormSection> {
           runSpacing: 7,
           children: rooms.map((r) {
             final isSelected = widget.roomCount == r;
-            final label = r == 'studio' ? (loc.localeName == 'tr' ? 'Stüdyo' : 'Studio') : r;
+            final label = r == 'studio' ? loc.roomTypeStudio : r;
             return ChoiceChip(
               label: Text(label),
               selected: isSelected,

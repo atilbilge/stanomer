@@ -2872,8 +2872,6 @@ class _LandlordEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -2885,13 +2883,7 @@ class _LandlordEmptyState extends StatelessWidget {
           Text(loc.noProperties, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
-            isAgencyClient
-                ? (isTr
-                    ? 'Mülkleriniz acente tarafından yönetilmektedir. Yeni mülk eklemek için lütfen acenteniz ile iletişime geçiniz.'
-                    : (isSr
-                        ? 'Vašim nekretninama upravlja agencija. Za dodavanje nove nekretnine obratite se svojoj agenciji.'
-                        : 'Your properties are managed by an agency. To add a new property, please contact your agency.'))
-                : loc.addYourFirstProperty,
+            isAgencyClient ? loc.managedByAgencyDesc : loc.addYourFirstProperty,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
           ),

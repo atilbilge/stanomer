@@ -1419,7 +1419,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get requiredField => 'Bu alan zorunludur';
 
   @override
-  String get invalidEmail => 'Geçersiz e-posta adresi';
+  String get invalidEmail => 'Geçerli bir e-posta adresi giriniz';
 
   @override
   String get offlineMessage =>
@@ -1438,7 +1438,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get share => 'Paylaş';
 
   @override
-  String get optional => 'İsteğe bağlı';
+  String get optional => 'İsteğe Bağlı';
 
   @override
   String get sentInvitation => 'Gönderilen Davet';
@@ -1786,7 +1786,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Yeni ev sahibinin iletişim bilgilerini girin. Mevcut sahiplik sıfırlanıp yeni ev sahibine sahiplik QR/Linki üretilecektir.';
 
   @override
-  String get phone => 'Telefon Numarası';
+  String get phone => 'Telefon';
 
   @override
   String get error => 'Hata';
@@ -3057,4 +3057,682 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get payerRequiredError =>
       'Lütfen ödeme bekleyen veya ödenmiş kayıt için maliyet sorumlusunu seçiniz.';
+
+  @override
+  String get tabRentAndFinance => 'Kira & Finans';
+
+  @override
+  String get tabLeaseAndTenant => 'Kontrat & Kiracı';
+
+  @override
+  String get tabMaintenance => 'Arıza & Bakım';
+
+  @override
+  String get tabAuditLog => 'İşlem Geçmişi';
+
+  @override
+  String get paymentMethodBank => 'Banka';
+
+  @override
+  String get paymentMethodCash => 'Nakit';
+
+  @override
+  String get paymentMethodLabel => 'Ödeme Yöntemi:';
+
+  @override
+  String get managedByAgencyTitle => 'Acente Yönetiminde';
+
+  @override
+  String get managedByAgencyDesc =>
+      'Mülkleriniz acente tarafından yönetilmektedir. Yeni mülk ekleme işlemleri yalnızca bağlı olduğunuz acente tarafından yapılabilir.';
+
+  @override
+  String get structuralAndFinancialMetricsSubtitle =>
+      'Mülk tipi, daire no, oda sayısı ve kat metrikleri';
+
+  @override
+  String get equipmentAndHeatingStandardsSubtitle =>
+      'Eşya durumu ve ısıtma altyapısı';
+
+  @override
+  String get featuredAmenitiesSubtitle =>
+      'Öne çıkan konfor özellikleri ve açıklama';
+
+  @override
+  String get roomTypeStudio => 'Stüdyo';
+
+  @override
+  String get secondaryContacts => 'Ek İletişim Kişileri';
+
+  @override
+  String get addSecondaryContact => 'Kişi Ekle';
+
+  @override
+  String get secondaryContactsOptionalDesc =>
+      'İsteğe bağlı: Asistan, temsilci veya aile üyesi gibi ek iletişim kişileri ekleyebilirsiniz.';
+
+  @override
+  String get roleOrRelation => 'Rol / Yakınlık';
+
+  @override
+  String get tenantFullName => 'Kiracı Adı & Soyadı';
+
+  @override
+  String get tenantIdOrPassport => 'Kimlik / Pasaport / JMBG';
+
+  @override
+  String get tenantNotes => 'Kiracıya İlişkin Notlar';
+
+  @override
+  String get tenantIdDocument => 'Kiracı Kimlik Belgesi / Pasaport';
+
+  @override
+  String get uploadPdfOrPhoto =>
+      'PDF veya fotoğraf formatında yükleyebilirsiniz';
+
+  @override
+  String get uploadAction => 'Yükle';
+
+  @override
+  String get idDocumentUploaded => 'Kimlik belgesi yüklendi';
+
+  @override
+  String copiedId(String id) {
+    return 'ID kopyalandı: $id';
+  }
+
+  @override
+  String get rolePersonalAssistant => 'Özel Asistan';
+
+  @override
+  String get rolePrRep => 'PR / Temsilci';
+
+  @override
+  String get roleFamilyMember => 'Aile Bireyi';
+
+  @override
+  String get roleAuthorizedContact => 'Yetkili İletişim';
+
+  @override
+  String get clearAllAction => 'Seçimi Temizle';
+
+  @override
+  String get selectAllAction => 'Tümünü Seç';
+
+  @override
+  String get applyAction => 'Uygula';
+
+  @override
+  String selectedCount(int count) {
+    return '$count seçildi';
+  }
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count Seçili';
+  }
+
+  @override
+  String get propertyOwnerInfoTitle => 'Mülk Sahibi / Malik Bilgileri';
+
+  @override
+  String get propertyOwnerInfoSubtitle =>
+      'Birden fazla hisseli malik ekleyebilir, şirket veya bireysel olarak kimlik ve tapu/vekalet belgelerini yükleyebilirsiniz.';
+
+  @override
+  String get addCoOwner => '+ Ortak Malik Ekle';
+
+  @override
+  String get primaryOwnerLabel => '1. Malik (Ana Malik)';
+
+  @override
+  String coOwnerIndexedLabel(int index) {
+    return '$index. Ortak Malik';
+  }
+
+  @override
+  String get sharePercentage => 'Hisse %';
+
+  @override
+  String get removeOwner => 'Maliki Sil';
+
+  @override
+  String get ownerType => 'Malik Türü';
+
+  @override
+  String get ownerIndividual => 'Gerçek Kişi (Bireysel)';
+
+  @override
+  String get ownerCompany => 'Tüzel Kişi / Şirket';
+
+  @override
+  String get firstNameRequired => 'Adı *';
+
+  @override
+  String get lastNameRequired => 'Soyadı *';
+
+  @override
+  String get idOrPassportOrJmbg => 'Kimlik / Pasaport / JMBG No';
+
+  @override
+  String get idIssuingAuthority => 'Kimlik Detayı (Veren makam vb.)';
+
+  @override
+  String get companyLegalNameRequired => 'Şirket Tam Yasal Unvanı *';
+
+  @override
+  String get registeredOfficeAddress => 'Resmi Sicil Adresi';
+
+  @override
+  String get taxIdPibRequired => 'Vergi No (PIB) *';
+
+  @override
+  String get companyRegNo => 'Şirket Sicil No (Matični broj)';
+
+  @override
+  String get legalRepFullNameRequired => 'Yasal Temsilci Ad Soyad *';
+
+  @override
+  String get repIdJmbg => 'Temsilci Kimlik / JMBG No';
+
+  @override
+  String get repAuthorityDetails =>
+      'Temsilci Yetki Detayları (İmza sirküleri vb.)';
+
+  @override
+  String get contactPhoneRequired => 'İletişim Telefonu *';
+
+  @override
+  String get secondaryContactOptional => 'İkinci İletişim (İsteğe bağlı)';
+
+  @override
+  String get altPhoneOrNote => 'Alternatif Tel / Not';
+
+  @override
+  String get emailAddressRequiredForPrimary =>
+      'E-posta Adresi (Ana Malik İçin Zorunlu) *';
+
+  @override
+  String get emailAddressOptional => 'E-posta Adresi (İsteğe Bağlı)';
+
+  @override
+  String get selectExistingAgencyContact =>
+      'Veya mevcut bir ajans kişisinden seçin...';
+
+  @override
+  String get clearSelectionTooltip => 'Seçimi temizle';
+
+  @override
+  String get supportingPdfDocuments => 'Destekleyici PDF Belgeleri';
+
+  @override
+  String get uploadDocumentTooltip => 'Belge Yükle';
+
+  @override
+  String get docTypePassportCopy => 'Kimlik Fotokopisi (PDF)';
+
+  @override
+  String get docTypeProofOfOwnership => 'Tapu / Mülkiyet Belgesi (PDF)';
+
+  @override
+  String get docTypePowerOfAttorney => 'Vekaletname / Yetki Belgesi (PDF)';
+
+  @override
+  String get docTypeOtherDocument => 'Diğer İlgili Belge (PDF)';
+
+  @override
+  String get addPdfDocument => '+ PDF Belge Ekle';
+
+  @override
+  String get docTypeLabelId => 'Kimlik';
+
+  @override
+  String get docTypeLabelTitleDeed => 'Tapu';
+
+  @override
+  String get docTypeLabelPoa => 'Vekalet';
+
+  @override
+  String get docTypeLabelOther => 'Belge';
+
+  @override
+  String get markAsPaid => 'Ödendi Olarak İşaretle';
+
+  @override
+  String markAsPaidSubtitle(String title, String month) {
+    return '$title ($month) için ödeme onayı';
+  }
+
+  @override
+  String get bankTransferOption => 'Banka Havalesi';
+
+  @override
+  String get receiptOrDocOptional => 'Dekont / Görsel (İsteğe Bağlı)';
+
+  @override
+  String get uploadReceiptOrImage => 'Dekont veya görsel yükleyin';
+
+  @override
+  String get uploadReceiptHint => 'PDF, PNG, JPG veya kamera görseli seçin';
+
+  @override
+  String get noteOptional => 'Açıklama / Not (İsteğe Bağlı)';
+
+  @override
+  String get noteOptionalRentHint =>
+      'Örn: Elden nakit teslim alındı / Dekont eklendi';
+
+  @override
+  String get paymentMarkedPaidSuccess =>
+      'Ödeme başarıyla ödendi olarak işaretlendi.';
+
+  @override
+  String get saveAsPaid => 'Ödendi Olarak Kaydet';
+
+  @override
+  String get collectSettleExpenseTitle => 'Tahsilat Onayı ve Kapatma';
+
+  @override
+  String collectSettleExpenseSubtitle(String cost) {
+    return '$cost tutarındaki acente alacağının tahsilatını onaylayın ve masrafı kapatın.';
+  }
+
+  @override
+  String get collectionMethod => 'Tahsilat Yöntemi';
+
+  @override
+  String get collectionMethodBank => 'Banka / Havale';
+
+  @override
+  String get collectionMethodCash => 'Elden / Nakit';
+
+  @override
+  String get collectionMethodPayoutDeduction => 'Kira Aktarımından Düşüldü';
+
+  @override
+  String get attachReceiptOrVoucher => 'Dekont veya makbuz dosyası ekle';
+
+  @override
+  String get noteOptionalAgencyHint =>
+      'Örn: Ev sahibi elden nakit teslim etti / Dekont iletildi';
+
+  @override
+  String get payoutDeductionLabel => 'Kira Aktarımı Mahsubu';
+
+  @override
+  String get collectionConfirmedAndSettled =>
+      'Tahsilat onaylandı ve masraf kaydı kapatıldı.';
+
+  @override
+  String get confirmAndSettle => 'Tahsilatı Onayla ve Kapat';
+
+  @override
+  String propertyOwnersCountTitle(int count) {
+    return 'Mülk Sahipleri ($count)';
+  }
+
+  @override
+  String get editOwners => 'Malikleri Düzenle';
+
+  @override
+  String get primaryOwnerBadge => 'Ana Malik';
+
+  @override
+  String get authorizedRepresentative => 'Yetkili Temsilci';
+
+  @override
+  String get registeredAddressLabel => 'Sicil Adresi';
+
+  @override
+  String get idJmbgLabel => 'Kimlik/JMBG';
+
+  @override
+  String get secondaryContactPrefix => '2. İletişim: ';
+
+  @override
+  String get supportingDocumentsColon => 'Destekleyici Belgeler (PDF):';
+
+  @override
+  String get auditPaymentCreatedRent =>
+      'Sistem borç kaydını otomatik oluşturdu';
+
+  @override
+  String get auditPaymentCreatedExpense =>
+      'Sistem masraf kaydını otomatik oluşturdu';
+
+  @override
+  String auditRentDeclaredCash(String actor, String monthSuffix) {
+    return '$actor ödemeyi bildirdi (Nakit)$monthSuffix';
+  }
+
+  @override
+  String auditRentDeclaredReceipt(String actor, String monthSuffix) {
+    return '$actor makbuz yükleyerek ödemeyi bildirdi$monthSuffix';
+  }
+
+  @override
+  String auditRentApproved(String actor, String monthSuffix) {
+    return '$actor ödemeyi onayladı$monthSuffix';
+  }
+
+  @override
+  String auditRentRejected(String actor, String monthSuffix) {
+    return '$actor ödemeyi reddetti$monthSuffix';
+  }
+
+  @override
+  String auditRentDisputed(String actor, String reasonSuffix) {
+    return '$actor ödemeye itiraz etti$reasonSuffix';
+  }
+
+  @override
+  String auditInvoiceUploadedPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}fatura yükledi (Acente onayı bekleniyor, $amount)';
+  }
+
+  @override
+  String auditInvoiceUploaded(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}fatura yükledi ($amount)';
+  }
+
+  @override
+  String auditInvoiceEnteredPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}masraf tutarı girdi (Acente onayı bekleniyor, $amount)';
+  }
+
+  @override
+  String auditInvoiceEntered(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}masraf detayı girdi ($amount)';
+  }
+
+  @override
+  String auditInvoiceApproved(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}fatura tutarını onayladı ($amount)';
+  }
+
+  @override
+  String auditInvoiceRejected(
+    String actor,
+    String monthPrefix,
+    String reasonSuffix,
+  ) {
+    return '$actor ${monthPrefix}fatura tutarını reddetti$reasonSuffix';
+  }
+
+  @override
+  String auditPaymentToggle(String actor, String status) {
+    return '$actor ödemeyi $status olarak işaretledi';
+  }
+
+  @override
+  String get auditRentAutoApproved =>
+      'Ödeme sistem tarafından otomatik olarak onaylandı';
+
+  @override
+  String auditMaintenanceCreated(String actor, String titleSuffix) {
+    return '$actor arıza/bakım talebi oluşturdu$titleSuffix';
+  }
+
+  @override
+  String auditMaintenanceStatusUpdated(String actor, String status) {
+    return '$actor arıza talebi durumunu güncelledi ($status)';
+  }
+
+  @override
+  String auditMaintenanceMessageAdded(String actor) {
+    return '$actor arıza talebine mesaj ekledi';
+  }
+
+  @override
+  String auditMaintenanceReopened(String actor) {
+    return '$actor arıza talebini tekrar açtı';
+  }
+
+  @override
+  String contactTenantAsLandlordInfo(String propertySummary) {
+    return 'Bu kişi $propertySummary kiracı olarak kayıtlıdır. Şimdi bu mülke ev sahibi olarak atanıyor.';
+  }
+
+  @override
+  String get registeredLandlordDetailsAutofilled =>
+      'Kayıtlı ev sahibi bilgileri otomatik dolduruldu.';
+
+  @override
+  String get noDocumentsAttachedYet =>
+      'Henüz belge yüklenmedi (Kimlik, Tapu veya Vekaletname ekleyebilirsiniz).';
+
+  @override
+  String get coOwnerEmailHelper =>
+      'E-posta girilirse malik bu adresle giriş yaptığında mülkü ev sahibi olarak görür.';
+
+  @override
+  String get propertyOwnersUpdatedSuccess =>
+      'Mülk sahipleri başarıyla güncellendi.';
+
+  @override
+  String get systemActor => 'Sistem';
+
+  @override
+  String get agencyRole => 'Acente';
+
+  @override
+  String get editPropertyOwners => 'Mülk Sahiplerini Düzenle';
+
+  @override
+  String auditInvitationAccepted(Object actor) {
+    return '$actor mülk yönetim/kiracı davetini kabul etti';
+  }
+
+  @override
+  String auditContractAccepted(Object actor) {
+    return '$actor kira sözleşmesini onayladı ve imzaladı';
+  }
+
+  @override
+  String auditContractTerminationRequested(Object actor) {
+    return '$actor erken sözleşme fesih talebinde bulundu';
+  }
+
+  @override
+  String auditContractChangesAccepted(Object actor) {
+    return '$actor önerilen sözleşme değişikliklerini kabul etti';
+  }
+
+  @override
+  String auditContractChangesDeclined(Object actor) {
+    return '$actor sözleşme değişikliklerini reddetti / geri çekti';
+  }
+
+  @override
+  String auditLandlordOwnershipClaimed(Object actor) {
+    return '$actor mülk sahipliğini ve yönetimini üstlendi';
+  }
+
+  @override
+  String auditTenantRemoved(Object actor) {
+    return '$actor kiracıyı mülkten çıkardı';
+  }
+
+  @override
+  String auditPropertyOwnersUpdated(Object actor) {
+    return '$actor mülk malik ve hissedar bilgilerini güncelledi';
+  }
+
+  @override
+  String auditMaintenanceFinancialsUpdated(Object actor) {
+    return '$actor arıza masraf ve finansal detaylarını güncelledi';
+  }
+
+  @override
+  String auditMaintenanceFinancialsDeleted(Object actor) {
+    return '$actor arıza masraf detaylarını sildi ve mahsuplaşmaları geri aldı';
+  }
+
+  @override
+  String auditMaintenanceChargeCreated(Object actor) {
+    return '$actor yeni bakım masraf kalemi ekledi';
+  }
+
+  @override
+  String auditMaintenanceChargeStatusUpdated(Object actor) {
+    return '$actor bakım masrafı durumunu güncelledi';
+  }
+
+  @override
+  String auditMaintenanceChargeSettled(Object actor) {
+    return '$actor bakım masrafını mahsup etti / kapattı';
+  }
+
+  @override
+  String auditMaintenanceDeleted(Object actor) {
+    return '$actor arıza kaydını sildi';
+  }
+
+  @override
+  String get tenantInviteEmailTitle => 'Kiracı Davet E-postası';
+
+  @override
+  String get landlordInviteEmailTitle => 'Ev Sahibi Davet E-postası';
+
+  @override
+  String get statusNotSent => 'Gönderilmedi';
+
+  @override
+  String get statusNoEmail => 'E-posta Yok';
+
+  @override
+  String lastSentAt(String date) {
+    return 'Son gönderim: $date';
+  }
+
+  @override
+  String get noEmailSpecified => 'E-posta adresi belirtilmemiş';
+
+  @override
+  String ownersConfirmedRatio(String confirmed, String total) {
+    return '$confirmed/$total Onaylandı';
+  }
+
+  @override
+  String ownerConfirmedBanner(String name) {
+    return '$name daveti onayladı ve mülk yönetimini kabul etti.';
+  }
+
+  @override
+  String get emailPreviewTitle => 'Gönderilecek E-posta Önizlemesi';
+
+  @override
+  String emailPreviewForOwner(String name) {
+    return 'E-posta Önizlemesi ($name)';
+  }
+
+  @override
+  String get tabVisual => 'Görsel';
+
+  @override
+  String get tabPlainText => 'Düz Metin';
+
+  @override
+  String get emailCopiedToast => 'E-posta metni panoya kopyalandı.';
+
+  @override
+  String get languageLabel => 'Dil:';
+
+  @override
+  String get subjectHeader => 'KONU';
+
+  @override
+  String get contentHeader => 'İÇERİK';
+
+  @override
+  String get recipientWillReceiveThisFormat => 'Alıcıya bu formatta gidecektir';
+
+  @override
+  String get sendTenantInviteEmailBtn => 'Kiracıya Davet Maili Gönder';
+
+  @override
+  String get resendInviteEmailBtn => 'Davet Mailini Tekrar Gönder';
+
+  @override
+  String get sendLandlordInviteEmailBtn => 'Ev Sahibine Davet Maili Gönder';
+
+  @override
+  String sendInviteForOwnerBtn(String name) {
+    return '$name İçin Davet Maili Gönder';
+  }
+
+  @override
+  String resendInviteForOwnerBtn(String name) {
+    return '$name İçin Tekrar Gönder';
+  }
+
+  @override
+  String get sendToAllBtn => 'Tümüne Gönder';
+
+  @override
+  String sendToAllOwnersBtn(String count) {
+    return 'Tüm Ev Sahiplerine Ayrı Ayrı Gönder ($count)';
+  }
+
+  @override
+  String resendToAllOwnersBtn(String count) {
+    return 'Tüm Ev Sahiplerine Tekrar Gönder ($count)';
+  }
+
+  @override
+  String get sendingState => 'Gönderiliyor...';
+
+  @override
+  String get sendingAllState => 'Tümüne Gönderiliyor...';
+
+  @override
+  String get noEmailAddressDefined => 'E-posta Adresi Tanımsız';
+
+  @override
+  String tenantInviteSentSuccess(String email) {
+    return '$email adresine kira daveti başarıyla gönderildi.';
+  }
+
+  @override
+  String landlordInviteSentSuccess(String email) {
+    return '$email adresine davet maili başarıyla gönderildi.';
+  }
+
+  @override
+  String noEmailForUserError(String name) {
+    return '$name için e-posta adresi bulunmuyor.';
+  }
+
+  @override
+  String get tenantNoEmailError => 'Kiracı e-posta adresi tanımlı değil.';
+
+  @override
+  String get emailSendFailedError =>
+      'Davet maili gönderilemedi. Lütfen Brevo API ayarlarını kontrol edin.';
+
+  @override
+  String emailSendGenericError(String error) {
+    return 'Mail gönderimi sırasında hata oluştu: $error';
+  }
+
+  @override
+  String get tenantInviteEmailBtn => 'Kiracı Davet Maili';
+
+  @override
+  String allOwnersInviteSentSuccess(String successCount, String totalCount) {
+    return '$successCount / $totalCount ev sahibine davet mailleri başarıyla gönderildi.';
+  }
+
+  @override
+  String landlordsListHeader(String count) {
+    return 'Ev Sahipleri ($count)';
+  }
 }

@@ -126,28 +126,8 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isTr = loc.localeName == 'tr';
-    final isRu = loc.localeName == 'ru';
-    final isSr = loc.localeName.startsWith('sr');
-
     final contactsAsync = ref.watch(agencyContactsProvider);
     final contacts = contactsAsync.valueOrNull ?? <AgencyContact>[];
-
-    final sectionTitle = isTr
-        ? 'Mülk Sahibi / Malik Bilgileri'
-        : (isRu
-            ? 'Информация о собственниках'
-            : (isSr
-                ? 'Podaci o vlasnicima nekretnine'
-                : 'Property Owner Information'));
-
-    final sectionSubtitle = isTr
-        ? 'Birden fazla hisseli malik ekleyebilir, şirket veya bireysel olarak kimlik ve tapu/vekalet belgelerini yükleyebilirsiniz.'
-        : (isRu
-            ? 'Вы можете добавить нескольких собственников, юридические или физические лица, и загрузить подтверждающие документы.'
-            : (isSr
-                ? 'Možete dodati više suvlasnika, pravna ili fizička lica, kao i priložiti dokumenta o vlasništvu i ovlašćenja.'
-                : 'You can add multiple co-owners, corporate or individual, and attach ownership and authorization documents.'));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +149,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    sectionTitle,
+                    loc.propertyOwnerInfoTitle,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -178,7 +158,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    sectionSubtitle,
+                    loc.propertyOwnerInfoSubtitle,
                     style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                   ),
                 ],
@@ -190,7 +170,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
 
         // Owner Cards
         ...List.generate(_ownerForms.length, (index) {
-          return _buildOwnerCard(index, _ownerForms[index], isTr, isRu, isSr, loc, contacts);
+          return _buildOwnerCard(index, _ownerForms[index], loc, contacts);
         }),
 
         const SizedBox(height: 8),
@@ -199,13 +179,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
           onPressed: _addOwner,
           icon: const Icon(LucideIcons.userPlus, size: 16),
           label: Text(
-            isTr
-                ? '+ Ortak Malik Ekle'
-                : (isRu
-                    ? '+ Добавить совладельца'
-                    : (isSr
-                        ? '+ Dodaj suvlasnika'
-                        : '+ Add Co-Owner')),
+            loc.addCoOwner,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           style: OutlinedButton.styleFrom(
@@ -222,9 +196,6 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
   Widget _buildOwnerCard(
     int index,
     _OwnerFormState form,
-    bool isTr,
-    bool isRu,
-    bool isSr,
     AppLocalizations loc,
     List<AgencyContact> contacts,
   ) {
@@ -275,8 +246,8 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                       const SizedBox(width: 4),
                       Text(
                         isPrimary
-                            ? (isTr ? '1. Malik (Ana Malik)' : (isRu ? '1. Собственник (Основной)' : (isSr ? '1. Vlasnik (Glavni)' : '1. Owner (Primary)')))
-                            : '${index + 1}. ${isTr ? "Ortak Malik" : (isRu ? "Совладелец" : (isSr ? "Suvlasnik" : "Co-Owner"))}',
+                            ? loc.primaryOwnerLabel
+                            : loc.coOwnerIndexedLabel(index + 1),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -294,7 +265,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     controller: form.percentController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: isTr ? 'Hisse %' : (isRu ? 'Доля %' : (isSr ? 'Udeo %' : 'Share %')),
+                      labelText: loc.sharePercentage,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       isDense: true,
                     ),
@@ -311,7 +282,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => _removeOwner(index),
-                    tooltip: isTr ? 'Maliki Sil' : 'Remove Owner',
+                    tooltip: loc.removeOwner,
                   ),
                 ],
               ],
@@ -320,7 +291,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
 
             // Entity Type Toggle: Individual vs Company
             Text(
-              isTr ? 'Malik Türü' : (isRu ? 'Тип собственника' : (isSr ? 'Vrsta vlasnika' : 'Owner Type')),
+              loc.ownerType,
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 6),
@@ -333,7 +304,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     children: [
                       const Icon(LucideIcons.user, size: 14),
                       const SizedBox(width: 6),
-                      Text(isTr ? 'Gerçek Kişi (Bireysel)' : (isRu ? 'Физическое лицо' : (isSr ? 'Fizičko lice' : 'Individual'))),
+                      Text(loc.ownerIndividual),
                     ],
                   ),
                   selected: !isCompany,
@@ -350,7 +321,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     children: [
                       const Icon(LucideIcons.building2, size: 14),
                       const SizedBox(width: 6),
-                      Text(isTr ? 'Tüzel Kişi / Şirket' : (isRu ? 'Юридическое лицо / Компания' : (isSr ? 'Pravno lice / Kompanija' : 'Company / Legal Entity'))),
+                      Text(loc.ownerCompany),
                     ],
                   ),
                   selected: isCompany,
@@ -374,7 +345,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.firstNameController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Adı *' : (isRu ? 'Имя *' : (isSr ? 'Ime *' : 'First Name *')),
+                        labelText: loc.firstNameRequired,
                         prefixIcon: const Icon(LucideIcons.user, size: 18),
                       ),
                       validator: (val) => val == null || val.trim().isEmpty ? loc.fieldRequired : null,
@@ -386,7 +357,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.lastNameController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Soyadı *' : (isRu ? 'Фамилия *' : (isSr ? 'Prezime *' : 'Last Name *')),
+                        labelText: loc.lastNameRequired,
                       ),
                       validator: (val) => val == null || val.trim().isEmpty ? loc.fieldRequired : null,
                       onChanged: (_) => _notifyParent(),
@@ -401,7 +372,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.idNumberController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Kimlik / Pasaport / JMBG No' : (isRu ? 'Номер паспорта / удостоверения' : (isSr ? 'Broj l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG No')),
+                        labelText: loc.idOrPassportOrJmbg,
                         prefixIcon: const Icon(LucideIcons.idCard, size: 18),
                       ),
                       onChanged: (_) => _notifyParent(),
@@ -412,7 +383,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.idDetailsController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Kimlik Detayı (Veren makam vb.)' : (isRu ? 'Орган выдачи документа' : (isSr ? 'Organ izdavanja' : 'ID Issuing Authority / Details')),
+                        labelText: loc.idIssuingAuthority,
                       ),
                       onChanged: (_) => _notifyParent(),
                     ),
@@ -424,7 +395,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
               TextFormField(
                 controller: form.companyNameController,
                 decoration: InputDecoration(
-                  labelText: isTr ? 'Şirket Tam Yasal Unvanı *' : (isRu ? 'Полное юридическое наименование *' : (isSr ? 'Puni naziv pravnog lica *' : 'Full Legal Company Name *')),
+                  labelText: loc.companyLegalNameRequired,
                   prefixIcon: const Icon(LucideIcons.building, size: 18),
                 ),
                 validator: (val) => isCompany && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
@@ -434,7 +405,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
               TextFormField(
                 controller: form.registeredAddressController,
                 decoration: InputDecoration(
-                  labelText: isTr ? 'Resmi Sicil Adresi' : (isRu ? 'Юридический адрес' : (isSr ? 'Sedište / Adresa registracije' : 'Registered Office Address')),
+                  labelText: loc.registeredOfficeAddress,
                   prefixIcon: const Icon(LucideIcons.mapPin, size: 18),
                 ),
                 onChanged: (_) => _notifyParent(),
@@ -446,7 +417,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.pibController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Vergi No (PIB) *' : (isRu ? 'ИНН / PIB *' : (isSr ? 'PIB *' : 'Tax ID (PIB) *')),
+                        labelText: loc.taxIdPibRequired,
                         prefixIcon: const Icon(LucideIcons.hash, size: 18),
                       ),
                       validator: (val) => isCompany && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
@@ -458,7 +429,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.regNumberController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Şirket Sicil No (Matični broj)' : (isRu ? 'ОГРН / Matični broj' : (isSr ? 'Matični broj' : 'Company Reg No (Matični broj)')),
+                        labelText: loc.companyRegNo,
                       ),
                       onChanged: (_) => _notifyParent(),
                     ),
@@ -472,7 +443,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.representativeNameController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Yasal Temsilci Ad Soyad *' : (isRu ? 'ФИО представителя *' : (isSr ? 'Ime i prezime zastupnika *' : 'Legal Representative Full Name *')),
+                        labelText: loc.legalRepFullNameRequired,
                         prefixIcon: const Icon(LucideIcons.userCheck, size: 18),
                       ),
                       validator: (val) => isCompany && (val == null || val.trim().isEmpty) ? loc.fieldRequired : null,
@@ -484,7 +455,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     child: TextFormField(
                       controller: form.representativeIdNumberController,
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Temsilci Kimlik / JMBG No' : (isRu ? 'Паспорт представителя' : (isSr ? 'Broj l.k./JMBG zastupnika' : 'Rep. ID / JMBG Number')),
+                        labelText: loc.repIdJmbg,
                       ),
                       onChanged: (_) => _notifyParent(),
                     ),
@@ -495,7 +466,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
               TextFormField(
                 controller: form.representativeIdDetailsController,
                 decoration: InputDecoration(
-                  labelText: isTr ? 'Temsilci Yetki Detayları (İmza sirküleri vb.)' : (isRu ? 'Детали полномочий представителя' : (isSr ? 'Detalji ovlašćenja zastupnika' : 'Representative Authority Details / Title')),
+                  labelText: loc.repAuthorityDetails,
                 ),
                 onChanged: (_) => _notifyParent(),
               ),
@@ -510,7 +481,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     controller: form.phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: isTr ? 'İletişim Telefonu *' : (isRu ? 'Контактный телефон *' : (isSr ? 'Kontakt telefon *' : 'Contact Phone *')),
+                      labelText: loc.contactPhoneRequired,
                       prefixIcon: const Icon(LucideIcons.phone, size: 18),
                     ),
                     validator: (val) => val == null || val.trim().isEmpty ? loc.fieldRequired : null,
@@ -523,8 +494,8 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     controller: form.secondaryContactController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: isTr ? 'İkinci İletişim (İsteğe bağlı)' : (isRu ? 'Доп. контакт (Опционально)' : (isSr ? 'Drugi kontakt (Opciono)' : 'Secondary Contact (Optional)')),
-                      hintText: isTr ? 'Alternatif Tel / Not' : (isSr ? 'Alternativni tel.' : 'Alt. Phone / Note'),
+                      labelText: loc.secondaryContactOptional,
+                      hintText: loc.altPhoneOrNote,
                       prefixIcon: const Icon(LucideIcons.phoneCall, size: 18),
                     ),
                     onChanged: (_) => _notifyParent(),
@@ -581,24 +552,18 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: isPrimary
-                        ? (isTr ? 'E-posta Adresi (Ana Malik İçin Zorunlu) *' : (isRu ? 'Email (Обязательно для основного) *' : (isSr ? 'Email adresa (Obavezno za glavnog) *' : 'Email Address (Required for Primary) *')))
-                        : (isTr ? 'E-posta Adresi (İsteğe Bağlı)' : (isRu ? 'Email (Опционально)' : (isSr ? 'Email adresa (Opciono)' : 'Email Address (Optional)'))),
+                        ? loc.emailAddressRequiredForPrimary
+                        : loc.emailAddressOptional,
                     hintText: 'ornek@email.com',
                     helperText: isPrimary
                         ? null
-                        : (isTr
-                            ? 'E-posta girilirse malik bu adresle giriş yaptığında mülkü ev sahibi olarak görür.'
-                            : (isRu
-                                ? 'При указании email совладелец сможет видеть объект после входа в систему.'
-                                : (isSr
-                                    ? 'Ukoliko unesete email, suvlasnik će videti nekretninu u svom nalogu.'
-                                    : 'If entered, the co-owner will see the property in their landlord dashboard upon login.'))),
+                        : loc.coOwnerEmailHelper,
                     helperMaxLines: 2,
                     prefixIcon: const Icon(LucideIcons.mail, size: 18),
                     suffixIcon: form.selectedContact != null
                         ? IconButton(
                             icon: const Icon(LucideIcons.x, size: 16),
-                            tooltip: isTr ? 'Seçimi temizle' : 'Clear selection',
+                            tooltip: loc.clearSelectionTooltip,
                             onPressed: () {
                               setState(() {
                                 form.selectedContact = null;
@@ -615,7 +580,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     }
                     if (val != null && val.trim().isNotEmpty) {
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
-                        return isTr ? 'Geçerli bir e-posta giriniz' : 'Please enter a valid email address';
+                        return loc.invalidEmail;
                       }
                     }
                     return null;
@@ -698,8 +663,8 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                                               ),
                                               child: Text(
                                                 isLandlord
-                                                    ? (isTr ? 'Ev Sahibi' : (isRu ? 'Арендодатель' : (isSr ? 'Stanodavac' : 'Landlord')))
-                                                    : (isTr ? 'Kiracı' : (isRu ? 'Арендатор' : (isSr ? 'Stanar' : 'Tenant'))),
+                                                    ? loc.landlord
+                                                    : loc.tenant,
                                                 style: TextStyle(
                                                   fontSize: 9.5,
                                                   fontWeight: FontWeight.bold,
@@ -755,13 +720,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        isTr
-                            ? 'Bu kişi ${form.selectedContact!.propertySummary ?? "başka bir mülkünüzde"} kiracı olarak kayıtlıdır. Şimdi bu mülke ev sahibi olarak atanıyor.'
-                            : (isRu
-                                ? 'Этот контакт зарегистрирован как арендатор (${form.selectedContact!.propertySummary ?? ""}). Теперь добавляется как собственник.'
-                                : (isSr
-                                    ? 'Ova osoba je registrovana kao stanar (${form.selectedContact!.propertySummary ?? ""}). Sada se dodaje kao vlasnik.'
-                                    : 'This contact is registered as a tenant (${form.selectedContact!.propertySummary ?? ""}). Now being added as a landlord.')),
+                        loc.contactTenantAsLandlordInfo(form.selectedContact!.propertySummary ?? ''),
                         style: const TextStyle(fontSize: 11.5, color: Color(0xFF15803D), fontWeight: FontWeight.w500),
                       ),
                     ),
@@ -777,13 +736,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                   const Icon(LucideIcons.checkCircle2, size: 14, color: Color(0xFF2563EB)),
                   const SizedBox(width: 6),
                   Text(
-                    isTr
-                        ? 'Kayıtlı ev sahibi bilgileri otomatik dolduruldu.'
-                        : (isRu
-                            ? 'Данные зарегистрированного собственника заполнены.'
-                            : (isSr
-                                ? 'Podaci registrovanog stanodavca su automatski popunjeni.'
-                                : 'Registered landlord details auto-filled.')),
+                    loc.registeredLandlordDetailsAutofilled,
                     style: const TextStyle(fontSize: 11, color: Color(0xFF2563EB), fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -803,14 +756,14 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                     const Icon(LucideIcons.fileText, size: 16, color: Color(0xFF64748B)),
                     const SizedBox(width: 6),
                     Text(
-                      isTr ? 'Destekleyici PDF Belgeleri' : (isRu ? 'Подтверждающие PDF документы' : (isSr ? 'Prateća PDF dokumenta' : 'Supporting PDF Documents')),
+                      loc.supportingPdfDocuments,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
                     ),
                   ],
                 ),
                 // Document upload action menu
                 PopupMenuButton<OwnerDocumentType>(
-                  tooltip: isTr ? 'Belge Yükle' : 'Upload Document',
+                  tooltip: loc.uploadDocumentTooltip,
                   onSelected: (docType) => _pickAndUploadDocument(form, docType),
                   itemBuilder: (ctx) => [
                     PopupMenuItem(
@@ -819,7 +772,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                         children: [
                           const Icon(LucideIcons.idCard, size: 16),
                           const SizedBox(width: 8),
-                          Text(isTr ? 'Kimlik Fotokopisi (PDF)' : (isSr ? 'Kopija l.k. / Pasoša' : 'ID Document Copy')),
+                          Text(loc.docTypePassportCopy),
                         ],
                       ),
                     ),
@@ -829,7 +782,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                         children: [
                           const Icon(LucideIcons.fileCheck, size: 16),
                           const SizedBox(width: 8),
-                          Text(isTr ? 'Tapu / Mülkiyet Belgesi (PDF)' : (isSr ? 'Vlasnički list / Dokaz' : 'Proof of Ownership / Title Deed')),
+                          Text(loc.docTypeProofOfOwnership),
                         ],
                       ),
                     ),
@@ -839,7 +792,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                         children: [
                           const Icon(LucideIcons.award, size: 16),
                           const SizedBox(width: 8),
-                          Text(isTr ? 'Vekaletname / Yetki Belgesi (PDF)' : (isSr ? 'Ovlašćenje / Punomoćje' : 'Power of Attorney (POA)')),
+                          Text(loc.docTypePowerOfAttorney),
                         ],
                       ),
                     ),
@@ -849,7 +802,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                         children: [
                           const Icon(LucideIcons.filePlus, size: 16),
                           const SizedBox(width: 8),
-                          Text(isTr ? 'Diğer İlgili Belge (PDF)' : (isSr ? 'Ostala dokumentacija' : 'Other Document')),
+                          Text(loc.docTypeOtherDocument),
                         ],
                       ),
                     ),
@@ -866,7 +819,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                         const Icon(LucideIcons.uploadCloud, size: 14, color: StanomerColors.brandPrimary),
                         const SizedBox(width: 6),
                         Text(
-                          isTr ? '+ PDF Belge Ekle' : (isSr ? '+ Priloži PDF' : '+ Add PDF Document'),
+                          loc.addPdfDocument,
                           style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: StanomerColors.brandPrimary),
                         ),
                       ],
@@ -882,13 +835,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
-                  isTr
-                      ? 'Henüz belge yüklenmedi (Kimlik, Tapu veya Vekaletname ekleyebilirsiniz).'
-                      : (isRu
-                          ? 'Документы еще не загружены.'
-                          : (isSr
-                              ? 'Nema priloženih dokumenata (Možete dodati l.k., vlasnički list ili ovlašćenje).'
-                              : 'No documents attached yet (You can attach ID, Title deed or POA).')),
+                  loc.noDocumentsAttachedYet,
                   style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
                 ),
               )
@@ -897,7 +844,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                 spacing: 8,
                 runSpacing: 8,
                 children: form.documents.map((doc) {
-                  final label = _getDocumentTypeLabel(doc.type, isTr, isRu, isSr);
+                  final label = _getDocumentTypeLabel(doc.type, loc);
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
@@ -924,7 +871,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                           icon: const Icon(LucideIcons.x, size: 14, color: Colors.red),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          tooltip: isTr ? 'Sil' : 'Remove',
+                          tooltip: loc.delete,
                           onPressed: () {
                             setState(() {
                               form.documents.remove(doc);
@@ -943,16 +890,16 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
     );
   }
 
-  String _getDocumentTypeLabel(OwnerDocumentType type, bool isTr, bool isRu, bool isSr) {
+  String _getDocumentTypeLabel(OwnerDocumentType type, AppLocalizations loc) {
     switch (type) {
       case OwnerDocumentType.idDocument:
-        return isTr ? 'Kimlik' : (isSr ? 'L.K.' : 'ID');
+        return loc.docTypeLabelId;
       case OwnerDocumentType.ownershipProof:
-        return isTr ? 'Tapu' : (isSr ? 'Vlasnički list' : 'Title Deed');
+        return loc.docTypeLabelTitleDeed;
       case OwnerDocumentType.powerOfAttorney:
-        return isTr ? 'Vekaletname' : (isSr ? 'Ovlašćenje' : 'POA');
+        return loc.docTypeLabelPoa;
       case OwnerDocumentType.other:
-        return isTr ? 'Belge' : (isSr ? 'Dokument' : 'Doc');
+        return loc.docTypeLabelOther;
     }
   }
 

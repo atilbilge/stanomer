@@ -1561,7 +1561,6 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         return StatefulBuilder(
           builder: (context, setPickerState) {
             final loc = AppLocalizations.of(context)!;
-            final isTr = loc.localeName == 'tr';
             final filteredItems = searchFilter.isEmpty
                 ? items
                 : items.where((it) =>
@@ -1647,8 +1646,8 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                           ),
                           child: Text(
                             allSelected
-                                ? (isTr ? 'Seçimi Temizle' : 'Clear All')
-                                : (isTr ? 'Tümünü Seç' : 'Select All'),
+                                ? loc.clearAllAction
+                                : loc.selectAllAction,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1658,7 +1657,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                         ),
                         if (tempSelection.isNotEmpty)
                           Text(
-                            isTr ? '${tempSelection.length} seçildi' : '${tempSelection.length} selected',
+                            loc.selectedCount(tempSelection.length),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -1765,7 +1764,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                           Navigator.pop(context);
                         },
                         child: Text(
-                          isTr ? 'Uygula' : 'Apply',
+                          loc.applyAction,
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                         ),
                       ),
@@ -2076,17 +2075,17 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     required Set<String> selectedKeys,
     required ValueChanged<Set<String>> onSelectionChanged,
   }) {
+    final loc = AppLocalizations.of(context)!;
     final hasSelection = selectedKeys.isNotEmpty;
-    final isTr = AppLocalizations.of(context)!.localeName == 'tr';
     final String displayText;
     if (!hasSelection) {
-      displayText = isTr ? 'Tümü' : 'All';
+      displayText = loc.filterAll;
     } else if (selectedKeys.length == 1) {
       final key = selectedKeys.first;
       final matched = items.where((it) => it.key == key).firstOrNull;
       displayText = matched?.label ?? key;
     } else {
-      displayText = isTr ? '${selectedKeys.length} Seçili' : '${selectedKeys.length} Selected';
+      displayText = loc.selectedItemsCount(selectedKeys.length);
     }
 
     return InkWell(
@@ -5553,8 +5552,15 @@ class _FinancePaymentItemCard extends ConsumerWidget {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            final repo = AgencyRepository(ref.read(propertyRepositoryProvider).client);
-                            await repo.markPaymentAsCashPaid(id);
+                            final propRepo = ref.read(propertyRepositoryProvider);
+                            final monthName = periodText.isNotEmpty ? periodText : 'Kira';
+                            await propRepo.approveRentPayment(
+                              id,
+                              propertyId,
+                              monthName,
+                              dueDate ?? DateTime.now(),
+                              paymentMethod: 'cash',
+                            );
                             ref.invalidate(agencyPendingPaymentsProvider);
                             ref.invalidate(agencyAllPaymentsProvider);
                           },
@@ -10290,6 +10296,8 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
                             if (context.mounted) {
                               OwnershipShareSheet.show(
                                 context,
+                                propertyId: property.id,
+                                propertyAddress: property.address,
                                 propertyName: property.name,
                                 landlordName: property.landlordName ?? '',
                                 landlordEmail: property.landlordEmail ?? '',
@@ -10317,9 +10325,9 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
                             value: 'share_qr',
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.qrCode, size: 15),
+                                const Icon(LucideIcons.mail, size: 15),
                                 const SizedBox(width: 8),
-                                Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 12.5)),
+                                Text(loc.landlordOwnershipInviteTitle, style: const TextStyle(fontSize: 12.5)),
                               ],
                             ),
                           ),
@@ -10685,6 +10693,8 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                             if (context.mounted) {
                               OwnershipShareSheet.show(
                                 context,
+                                propertyId: property.id,
+                                propertyAddress: property.address,
                                 propertyName: property.name,
                                 landlordName: property.landlordName ?? '',
                                 landlordEmail: property.landlordEmail ?? '',
@@ -10712,9 +10722,9 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                             value: 'share_qr',
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.qrCode, size: 16),
+                                const Icon(LucideIcons.mail, size: 16),
                                 const SizedBox(width: 8),
-                                Text(loc.ownershipQrOrLink, style: const TextStyle(fontSize: 13)),
+                                Text(loc.landlordOwnershipInviteTitle, style: const TextStyle(fontSize: 13)),
                               ],
                             ),
                           ),
@@ -11178,6 +11188,8 @@ class _ChangeLandlordDialogState extends ConsumerState<_ChangeLandlordDialog> {
                       ref.invalidate(agencyPropertiesProvider);
                       OwnershipShareSheet.show(
                         context,
+                        propertyId: widget.property.id,
+                        propertyAddress: widget.property.address,
                         propertyName: widget.property.name,
                         landlordName: _nameController.text.trim(),
                         landlordEmail: _emailController.text.trim(),

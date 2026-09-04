@@ -307,10 +307,13 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           if (token != null && token.isNotEmpty && context.mounted) {
             OwnershipShareSheet.show(
               context,
+              propertyId: createdProp.id,
+              propertyAddress: createdProp.address,
               propertyName: createdProp.name,
               landlordName: effLandlordName,
               landlordEmail: effLandlordEmail,
               token: token,
+              owners: finalOwners.isNotEmpty ? finalOwners : null,
             );
           }
         }
@@ -358,16 +361,12 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  loc.localeName == 'tr' ? 'Acente Yönetiminde' : (loc.localeName.startsWith('sr') ? 'Upravlja agencija' : 'Managed by Agency'),
+                  loc.managedByAgencyTitle,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  loc.localeName == 'tr'
-                      ? 'Mülkleriniz acente tarafından yönetilmektedir. Yeni mülk ekleme işlemleri yalnızca bağlı olduğunuz acente tarafından yapılabilir.'
-                      : (loc.localeName.startsWith('sr')
-                          ? 'Vašim nekretninama upravlja agencija. Dodavanje novih nekretnina može izvršiti samo vaša agencija.'
-                          : 'Your properties are managed by an agency. Adding new properties can only be done by your managing agency.'),
+                  loc.managedByAgencyDesc,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: StanomerColors.textSecondary, fontSize: 13),
                 ),

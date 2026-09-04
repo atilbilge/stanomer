@@ -769,6 +769,31 @@ class PropertyRepository {
     }
   }
 
+  /// Fetches all landlord invitations for a property
+  Future<List<Map<String, dynamic>>> getLandlordInvitationsForProperty(String propertyId) async {
+    try {
+      final res = await _client
+          .from('invitations')
+          .select('id, token, invitee_email, status, target_role, created_at, updated_at')
+          .eq('property_id', propertyId)
+          .eq('target_role', 'landlord')
+          .order('created_at', ascending: false);
+
+      return List<Map<String, dynamic>>.from(res);
+    } catch (e) {
+      debugPrint('Error fetching landlord invitations for property: $e');
+      return [];
+    }
+  }
+
+  /// Streams all landlord invitations for a property
+  Stream<List<Map<String, dynamic>>> getLandlordInvitationsStreamForProperty(String propertyId) {
+    return _client
+        .from('invitations')
+        .stream(primaryKey: ['id'])
+        .eq('property_id', propertyId);
+  }
+
   /// Fetches or creates a landlord ownership invitation token for an agency-managed property
   Future<String> getOrCreateLandlordOwnershipInviteToken(Property property) async {
     final existingToken = await getLandlordOwnershipInviteToken(property.id);
@@ -791,6 +816,26 @@ class PropertyRepository {
     try {
       final res = await _client.rpc('claim_landlord_ownership', params: {'p_token': token});
       if (res is Map && res['success'] == true) {
+        final propertyId = res['property_id'] as String?;
+        if (propertyId != null) {
+          try {
+            await _logActivity(propertyId, 'landlord_ownership_claimed', {
+              'token': token,
+            });
+            final agencyId = await _getAgencyId(propertyId);
+            if (agencyId != null) {
+              await _createNotification(
+                userId: agencyId,
+                title: 'Ev Sahibi Mülkü Üstlendi',
+                body: 'Ev sahibi yönetim davetini kabul etti ve mülk yönetimini üstlendi.',
+                type: 'contract',
+                relatedId: propertyId,
+              );
+            }
+          } catch (logErr) {
+            debugPrint('Silent error logging ownership claim: $logErr');
+          }
+        }
         return true;
       }
       return false;
@@ -883,6 +928,13 @@ class PropertyRepository {
           }
         }
       }
+
+      try {
+        await _logActivity(propertyId, 'property_owners_updated', {
+          'owner_count': owners.length,
+          'primary_owner': primary.displayName,
+        });
+      } catch (_) {}
     } catch (e) {
       debugPrint('Error saving property owners: $e');
       rethrow;
@@ -1242,16 +1294,19 @@ class PropertyRepository {
       
       if (invite != null) {
         final propertyId = invite['property_id'] as String;
-        final landlordId = await _getLandlordId(propertyId);
-        if (landlordId != null && landlordId.isNotEmpty) {
-          await _createNotification(
-            userId: landlordId,
-            title: 'Invitation Accepted',
-            body: 'A tenant has accepted the invitation for your property.',
-            type: 'contract',
-            relatedId: propertyId,
-          );
-        }
+        await _notifyPropertyManagers(
+          propertyId: propertyId,
+          title: 'Invitation Accepted',
+          body: 'A tenant has accepted the invitation for your property.',
+          type: 'contract',
+          relatedId: propertyId,
+        );
+
+        try {
+          await _logActivity(propertyId, 'invitation_accepted', {
+            'token': token,
+          });
+        } catch (_) {}
       }
 
       print('DEBUG: Successfully accepted invitation via RPC');
@@ -1563,9 +1618,43 @@ class PropertyRepository {
     if (user == null) throw Exception('User not logged in');
 
     try {
+      Map<String, dynamic>? contractData;
+      if (token != null && token.isNotEmpty) {
+        contractData = await _client.from('contracts').select('id, property_id').eq('token', token).maybeSingle();
+      }
+
       await _client.rpc('accept_contract', params: {
         'contract_token': token, // null ise RPC email fallback'e geçer
       });
+
+      if (contractData == null && user.email != null) {
+        contractData = await _client
+            .from('contracts')
+            .select('id, property_id')
+            .eq('invitee_email', user.email!.trim().toLowerCase())
+            .order('created_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
+      }
+
+      if (contractData != null) {
+        final propertyId = contractData['property_id'] as String;
+        final contractId = contractData['id'] as String;
+
+        await _notifyPropertyManagers(
+          propertyId: propertyId,
+          title: 'Kira Sözleşmesi İmzalandı',
+          body: 'Kiracı sözleşme şartlarını kabul etti ve sözleşmeyi onayladı.',
+          type: 'contract',
+          relatedId: propertyId,
+        );
+
+        try {
+          await _logActivity(propertyId, 'contract_accepted', {
+            'contract_id': contractId,
+          });
+        } catch (_) {}
+      }
     } catch (e) {
       print('DEBUG ERROR [acceptContract]: $e');
       rethrow;
@@ -1687,22 +1776,38 @@ class PropertyRepository {
       'p_termination_date': terminationDate.toIso8601String(),
     });
 
-    // Notify other party
     final contractData = await _client.from('contracts').select().eq('id', contractId).single();
+    final propertyId = contractData['property_id'] as String;
     final user = _client.auth.currentUser;
+
+    try {
+      await _logActivity(propertyId, 'contract_termination_requested', {
+        'contract_id': contractId,
+        'termination_date': terminationDate.toIso8601String(),
+      });
+    } catch (_) {}
+
+    // Notify other party and managing agency
     if (user != null) {
       final targetUserId = user.id == contractData['landlord_id'] ? contractData['tenant_id'] : contractData['landlord_id'];
       if (targetUserId != null) {
-        final relatedId = (targetUserId == contractData['tenant_id']) 
-            ? contractData['token'] 
-            : contractData['property_id'];
-
         await _createNotification(
           userId: targetUserId,
           title: 'Contract Termination Requested',
           body: 'A request has been made to end the contract early.',
           type: 'contract',
-          relatedId: contractData['property_id'],
+          relatedId: propertyId,
+        );
+      }
+
+      final agencyId = await _getAgencyId(propertyId);
+      if (agencyId != null && agencyId.isNotEmpty && agencyId != user.id && agencyId != targetUserId) {
+        await _createNotification(
+          userId: agencyId,
+          title: 'Contract Termination Requested',
+          body: 'A request has been made to end the contract early.',
+          type: 'contract',
+          relatedId: propertyId,
         );
       }
     }
@@ -1714,22 +1819,37 @@ class PropertyRepository {
       'p_contract_id': contractId,
     });
 
-    // Notify other party
     final contractData = await _client.from('contracts').select().eq('id', contractId).single();
+    final propertyId = contractData['property_id'] as String;
     final user = _client.auth.currentUser;
+
+    try {
+      await _logActivity(propertyId, 'contract_changes_accepted', {
+        'contract_id': contractId,
+      });
+    } catch (_) {}
+
+    // Notify other party and managing agency
     if (user != null) {
       final targetUserId = user.id == contractData['landlord_id'] ? contractData['tenant_id'] : contractData['landlord_id'];
       if (targetUserId != null) {
-        final relatedId = (targetUserId == contractData['tenant_id']) 
-            ? contractData['token'] 
-            : contractData['property_id'];
-
         await _createNotification(
           userId: targetUserId,
           title: 'Contract Changes Accepted',
           body: 'The proposed contract changes have been accepted.',
           type: 'contract',
-          relatedId: contractData['property_id'],
+          relatedId: propertyId,
+        );
+      }
+
+      final agencyId = await _getAgencyId(propertyId);
+      if (agencyId != null && agencyId.isNotEmpty && agencyId != user.id && agencyId != targetUserId) {
+        await _createNotification(
+          userId: agencyId,
+          title: 'Contract Changes Accepted',
+          body: 'The proposed contract changes have been accepted.',
+          type: 'contract',
+          relatedId: propertyId,
         );
       }
     }
@@ -1742,22 +1862,26 @@ class PropertyRepository {
 
     // Fetch before RPC to know who proposed
     final contractBefore = await _client.from('contracts').select().eq('id', contractId).single();
+    final propertyId = contractBefore['property_id'] as String;
     final wasProposedByMe = contractBefore['proposed_by'] == user.id;
 
     await _client.rpc('decline_proposed_changes', params: {
       'p_contract_id': contractId,
     });
 
-    // Notify other party
+    try {
+      await _logActivity(propertyId, 'contract_changes_declined', {
+        'contract_id': contractId,
+        'was_cancelled': wasProposedByMe,
+      });
+    } catch (_) {}
+
+    // Notify other party and managing agency
     final targetUserId = await _getCounterpartyId(contractBefore);
 
     if (targetUserId != null) {
       final isLandlord = user.id == contractBefore['landlord_id'];
       final roleName = isLandlord ? 'Landlord' : 'Tenant';
-      
-      final relatedId = (targetUserId == contractBefore['tenant_id']) 
-          ? contractBefore['token'] 
-          : contractBefore['property_id'];
 
       await _createNotification(
         userId: targetUserId,
@@ -1766,7 +1890,20 @@ class PropertyRepository {
           ? '$roleName has withdrawn their proposed contract changes.'
           : '$roleName has declined the proposed contract changes.',
         type: 'contract',
-        relatedId: contractBefore['property_id'],
+        relatedId: propertyId,
+      );
+    }
+
+    final agencyId = await _getAgencyId(propertyId);
+    if (agencyId != null && agencyId.isNotEmpty && agencyId != user.id && agencyId != targetUserId) {
+      await _createNotification(
+        userId: agencyId,
+        title: wasProposedByMe ? 'Revision Cancelled' : 'Revision Declined',
+        body: wasProposedByMe
+          ? 'Proposed contract changes were withdrawn.'
+          : 'Proposed contract changes were declined.',
+        type: 'contract',
+        relatedId: propertyId,
       );
     }
   }
@@ -1877,6 +2014,12 @@ class PropertyRepository {
       'p_property_id': propertyId,
       'p_invite_id': inviteId,
     });
+
+    try {
+      await _logActivity(propertyId, 'tenant_removed', {
+        'invite_id': inviteId,
+      });
+    } catch (_) {}
   }
 
   Future<void> generateRentPayments(String propertyId) async {
@@ -1967,16 +2110,13 @@ class PropertyRepository {
       'is_cash': receiptUrl == 'CASH',
     });
 
-    final landlordId = await _getLandlordId(propertyId);
-    if (landlordId != null && landlordId.isNotEmpty) {
-      await _createNotification(
-        userId: landlordId,
-        title: 'Rent Declared',
-        body: 'Tenant has declared rent as paid for $monthName${receiptUrl == 'CASH' ? ' (Cash)' : ''}',
-        type: 'rent',
-        relatedId: propertyId,
-      );
-    }
+    await _notifyPropertyManagers(
+      propertyId: propertyId,
+      title: 'Rent Declared',
+      body: 'Tenant has declared rent as paid for $monthName${receiptUrl == 'CASH' ? ' (Cash)' : ''}',
+      type: 'rent',
+      relatedId: propertyId,
+    );
   }
 
   Future<void> approveRentPayment(
@@ -2069,16 +2209,13 @@ class PropertyRepository {
       'reason': reason,
     });
 
-    final landlordId = await _getLandlordId(propertyId);
-    if (landlordId != null && landlordId.isNotEmpty) {
-      await _createNotification(
-        userId: landlordId,
-        title: 'Payment Disputed',
-        body: 'Tenant has objected to a charge. Reason: $reason',
-        type: 'rent',
-        relatedId: propertyId,
-      );
-    }
+    await _notifyPropertyManagers(
+      propertyId: propertyId,
+      title: 'Payment Disputed',
+      body: 'Tenant has objected to a charge. Reason: $reason',
+      type: 'rent',
+      relatedId: propertyId,
+    );
   }
 
   Future<void> setPaymentInvoice(
@@ -2433,6 +2570,35 @@ class PropertyRepository {
       'type': type,
       'related_id': relatedId,
     });
+  }
+
+  Future<void> _notifyPropertyManagers({
+    required String propertyId,
+    required String title,
+    required String body,
+    required String type,
+    String? relatedId,
+  }) async {
+    final landlordId = await _getLandlordId(propertyId);
+    if (landlordId != null && landlordId.isNotEmpty) {
+      await _createNotification(
+        userId: landlordId,
+        title: title,
+        body: body,
+        type: type,
+        relatedId: relatedId,
+      );
+    }
+    final agencyId = await _getAgencyId(propertyId);
+    if (agencyId != null && agencyId.isNotEmpty && agencyId != landlordId) {
+      await _createNotification(
+        userId: agencyId,
+        title: title,
+        body: body,
+        type: type,
+        relatedId: relatedId,
+      );
+    }
   }
 
   Future<String?> _getAgencyId(String propertyId) async {

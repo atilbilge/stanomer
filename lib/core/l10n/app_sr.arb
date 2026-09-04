@@ -30,13 +30,13 @@
   "profile": "Profil",
   "settingsHeader": "Podešavanja",
   "accountHeader": "Nalog",
-  "discoverPremium": "Istraži Premium",
+  "discoverPremium": "Istražite Premium",
   "unlimitedLeaseContracts": "Neograničeni najamni ugovori",
   "updateName": "Ažuriraj ime",
   "updatePassword": "Promeni lozinku",
   "oldPassword": "Trenutna lozinka",
   "newPassword": "Nova lozinka",
-  "saveChanges": "Sačuvaj",
+  "saveChanges": "Sačuvaj izmene",
   "passwordChangedSuccess": "Lozinka je uspešno promenjena",
   "profileUpdatedSuccess": "Profil je uspešno ažuriran",
   "role": "Uloga",
@@ -260,7 +260,7 @@
   "internetTooltip": "Pretplatnički internet i TV paketi.",
   "maintenanceTooltip": "Čišćenje zgrade, održavanje lifta i troškovi zajedničkih prostorija.",
   "declare": "Prijavi",
-  "viewReceipt": "Vidi uplatnicu",
+  "viewReceipt": "Prikaži uplatnicu",
   "proposesChanges": "{name} predlaže sledeće izmene:",
   "@proposesChanges": {
     "placeholders": {
@@ -608,7 +608,6 @@
   "restorePurchases": "Povrati kupovine",
   "limitReachedTitle": "Dostigli ste besplatni limit",
   "limitReachedSubtitle": "Pređite na Stanomer Premium za upravljanje sa više nekretnina.",
-  "discoverPremium": "Istražite Premium",
   "optionsLoadFailed": "Nije moguće učitati opcije pretplate.",
   "manageSubscription": "Upravljaj pretplatom",
   "premiumMobileOnly": "Potrebna mobilna aplikacija",
@@ -633,7 +632,7 @@
   "messageSent": "Poruka je poslata!",
   "errorSendingMessage": "Slanje poruke nije uspelo. Molimo pokušajte ponovo.",
   "requiredField": "Ovo polje je obavezno",
-  "invalidEmail": "Nevažeća email adresa",
+  "invalidEmail": "Unesite validnu email adresu",
   "offlineMessage": "Trenutno ste van mreže. Možete nastaviti sa postojećim podacima. Biće ažurirano kada se povežete.",
   "retry": "OSVEŽI",
   "zzplConsentTitle": "Zaštita podataka (ZZPL)",
@@ -661,7 +660,6 @@
   "paymentApprovalQueue": "Red za odobrenje plaćanja",
   "noPendingPaymentApprovals": "Nema plaćanja na čekanju",
   "noManagedPropertiesYet": "Još nema upravljanih nekretnina",
-  "vacant": "Prazno",
   "occupied": "Zauzeto",
   "dueDateShort": "Rok: {date}",
   "@dueDateShort": {
@@ -726,7 +724,6 @@
   "colAction": "AKCIJA",
   "unenteredBillsTitle": "Neuneti računi",
   "cashBadge": "Gotovina",
-  "viewReceipt": "Priznanica",
   "filterRent": "Kirija",
   "filterBills": "Računi",
   "filterDeposit": "Depozit",
@@ -845,7 +842,6 @@
       }
     }
   },
-  "viewReceipt": "Prikaži uplatnicu",
   "noFinanceRecords": "Nema zapisa u ovoj kategoriji",
   "reminderMessageCopied": "Poruka podsetnika je kopirana",
   "tenantNoPropertyTitle": "Još niste povezani sa nekretninom.",
@@ -924,7 +920,6 @@
   "joinHomeSubtitle": "Skenirajte QR kod ili unesite vezu/kod pozivnice.",
   "closeCamera": "Zatvori kameru",
   "scanQrCodeBtn": "Skeniraj QR kod",
-  "orLabel": "ILI",
   "inviteLinkOrTokenLabel": "Veza pozivnice ili token kod",
   "inviteLinkOrTokenHint": "https://.../invite?token=... ili kod",
   "paste": "Zalepi",
@@ -993,7 +988,6 @@
   "statusOpen": "Otvoreno",
   "statusInProgress": "Poslat majstor",
   "statusClosed": "Zatvoreno",
-  "statusPending": "Na čekanju",
   "statusCancelled": "Otkazano",
   "financialDetails": "Finansijski Detalji",
   "financialStatusPendingReview": "Na čekanju pregleda",
@@ -1100,7 +1094,6 @@
     }
   },
   "submitExpenseReview": "Prijavi trošak (Pošalji na pregled)",
-  "saveChanges": "Sačuvaj izmene",
   "pleaseEnterValidCost": "Molimo unesite važeći plaćeni iznos.",
   "pleaseUploadReceipt": "Molimo priložite račun ili uplatnicu.",
   "pleaseSelectCostPayer": "Molimo izaberite ko snosi trošak.",
@@ -1453,8 +1446,6 @@
   "progressInProgress": "Majstor",
   "progressResolved": "Rešeno",
   "statusInProgressTechnician": "Poslat majstor",
-  "statusClosed": "Zatvoreno",
-  "statusCancelled": "Otkazano",
   "costDeductFromRent": "Odbija se od kirije",
   "costAddToRent": "Dodaje se na kiriju",
   "costPaidByTenant": "Platio stanar",
@@ -1497,5 +1488,543 @@
   "uploadPdfTitle": "Otpremi PDF račun",
   "uploadPdfSubtitle": "Dodirnite za izbor PDF-a (Maks. 10MB)",
   "tenantLockedStatusNotice": "Stanar ne može menjati status plaćanja ukoliko sam ne plaća trošak (biće sačuvano kao Čeka proveru).",
-  "payerRequiredError": "Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja."
+  "payerRequiredError": "Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja.",
+  "tabRentAndFinance": "Kirija i Finansije",
+  "tabLeaseAndTenant": "Ugovor i Zakupac",
+  "tabMaintenance": "Održavanje",
+  "tabAuditLog": "Istorija",
+  "paymentMethodBank": "Banka",
+  "paymentMethodCash": "Gotovina",
+  "paymentMethodLabel": "Način plaćanja:",
+  "managedByAgencyTitle": "Upravlja agencija",
+  "managedByAgencyDesc": "Vašim nekretninama upravlja agencija. Dodavanje novih nekretnina može izvršiti samo vaša agencija.",
+  "structuralAndFinancialMetricsSubtitle": "Tip nekretnine, broj stana, broj soba i spratnost",
+  "equipmentAndHeatingStandardsSubtitle": "Status opremljenosti i infrastruktura grejanja",
+  "featuredAmenitiesSubtitle": "Istaknute pogodnosti i detaljan opis",
+  "roomTypeStudio": "Garsonjera",
+  "secondaryContacts": "Dodatne kontakt osobe",
+  "addSecondaryContact": "Dodaj kontakt",
+  "secondaryContactsOptionalDesc": "Opciono: Možete dodati pomoćne kontakte poput asistenta, zastupnika ili člana porodice.",
+  "roleOrRelation": "Uloga / Odnos",
+  "tenantFullName": "Ime i prezime zakupca",
+  "tenantIdOrPassport": "Br. l.k. / Pasoša / JMBG",
+  "tenantNotes": "Napomene o zakupcu",
+  "tenantIdDocument": "Lični dokument / Pasoš zakupca",
+  "uploadPdfOrPhoto": "Otpremite u PDF ili formatu slike",
+  "uploadAction": "Otpremi",
+  "idDocumentUploaded": "Lični dokument je otpremljen",
+  "copiedId": "ID je kopiran: {id}",
+  "@copiedId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "rolePersonalAssistant": "Lični asistent",
+  "rolePrRep": "PR / Zastupnik",
+  "roleFamilyMember": "Član porodice",
+  "roleAuthorizedContact": "Ovlašćeni kontakt",
+  "clearAllAction": "Poništi sve",
+  "selectAllAction": "Izaberi sve",
+  "applyAction": "Primeni",
+  "selectedCount": "{count} izabrano",
+  "@selectedCount": {
+    "description": "Localization for selectedCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectedItemsCount": "{count} Izabrano",
+  "@selectedItemsCount": {
+    "description": "Localization for selectedItemsCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "propertyOwnerInfoTitle": "Podaci o vlasnicima nekretnine",
+  "propertyOwnerInfoSubtitle": "Možete dodati više suvlasnika, pravna ili fizička lica, kao i priložiti dokumenta o vlasništvu i ovlašćenja.",
+  "addCoOwner": "+ Dodaj suvlasnika",
+  "primaryOwnerLabel": "1. Vlasnik (Glavni)",
+  "coOwnerIndexedLabel": "{index}. Suvlasnik",
+  "@coOwnerIndexedLabel": {
+    "description": "Localization for coOwnerIndexedLabel",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "sharePercentage": "Udeo %",
+  "removeOwner": "Ukloni vlasnika",
+  "ownerType": "Vrsta vlasnika",
+  "ownerIndividual": "Fizičko lice",
+  "ownerCompany": "Pravno lice / Kompanija",
+  "firstNameRequired": "Ime *",
+  "lastNameRequired": "Prezime *",
+  "idOrPassportOrJmbg": "Broj l.k. / Pasoša / JMBG",
+  "idIssuingAuthority": "Organ izdavanja",
+  "companyLegalNameRequired": "Puni naziv pravnog lica *",
+  "registeredOfficeAddress": "Sedište / Adresa registracije",
+  "taxIdPibRequired": "PIB *",
+  "companyRegNo": "Matični broj",
+  "legalRepFullNameRequired": "Ime i prezime zastupnika *",
+  "repIdJmbg": "Broj l.k./JMBG zastupnika",
+  "repAuthorityDetails": "Detalji ovlašćenja zastupnika",
+  "contactPhoneRequired": "Kontakt telefon *",
+  "secondaryContactOptional": "Drugi kontakt (Opciono)",
+  "altPhoneOrNote": "Alternativni tel.",
+  "emailAddressRequiredForPrimary": "Email adresa (Obavezno za glavnog) *",
+  "emailAddressOptional": "Email adresa (Opciono)",
+  "selectExistingAgencyContact": "Ili izaberite iz postojećih kontakata agencije...",
+  "clearSelectionTooltip": "Poništi izbor",
+  "supportingPdfDocuments": "Prateća PDF dokumenta",
+  "uploadDocumentTooltip": "Priloži dokument",
+  "docTypePassportCopy": "Kopija l.k. / Pasoša (PDF)",
+  "docTypeProofOfOwnership": "Vlasnički list / Dokaz (PDF)",
+  "docTypePowerOfAttorney": "Ovlašćenje / Punomoćje (PDF)",
+  "docTypeOtherDocument": "Ostala dokumentacija (PDF)",
+  "addPdfDocument": "+ Priloži PDF",
+  "docTypeLabelId": "L.K.",
+  "docTypeLabelTitleDeed": "List nepokretnosti",
+  "docTypeLabelPoa": "Ovlašćenje",
+  "docTypeLabelOther": "Dokument",
+  "markAsPaid": "Označi kao plaćeno",
+  "markAsPaidSubtitle": "Potvrda plaćanja za {title} ({month})",
+  "@markAsPaidSubtitle": {
+    "description": "Localization for markAsPaidSubtitle",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bankTransferOption": "Preko banke",
+  "receiptOrDocOptional": "Uplatnica / Dokument (Opciono)",
+  "uploadReceiptOrImage": "Priložite uplatnicu ili sliku",
+  "uploadReceiptHint": "PDF, PNG, JPG ili fotografija",
+  "noteOptional": "Napomena (Opciono)",
+  "noteOptionalRentHint": "Npr: Gotovinski plaćeno / Uplatnica priložena",
+  "paymentMarkedPaidSuccess": "Plaćanje je uspešno označeno kao plaćeno.",
+  "saveAsPaid": "Sačuvaj kao plaćeno",
+  "collectSettleExpenseTitle": "Potvrda naplate i zatvaranje",
+  "collectSettleExpenseSubtitle": "Potvrdite naplatu {cost} i zatvorite trošak.",
+  "@collectSettleExpenseSubtitle": {
+    "description": "Localization for collectSettleExpenseSubtitle",
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "collectionMethod": "Način naplate",
+  "collectionMethodBank": "Banka / Transfer",
+  "collectionMethodCash": "Gotovina",
+  "collectionMethodPayoutDeduction": "Odbijeno od isplate",
+  "attachReceiptOrVoucher": "Priložite uplatnicu",
+  "noteOptionalAgencyHint": "Npr: Vlasnik je uplatio na račun",
+  "payoutDeductionLabel": "Odbijeno od isplate",
+  "collectionConfirmedAndSettled": "Naplata je potvrđena i trošak je zatvoren.",
+  "confirmAndSettle": "Potvrdi i zatvori",
+  "propertyOwnersCountTitle": "Vlasnici nekretnine ({count})",
+  "@propertyOwnersCountTitle": {
+    "description": "Localization for propertyOwnersCountTitle",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editOwners": "Uredi vlasnike",
+  "primaryOwnerBadge": "Glavni vlasnik",
+  "authorizedRepresentative": "Zastupnik",
+  "registeredAddressLabel": "Sedište",
+  "idJmbgLabel": "Broj l.k./JMBG",
+  "secondaryContactPrefix": "Drugi kontakt: ",
+  "supportingDocumentsColon": "Priložena dokumenta:",
+  "auditPaymentCreatedRent": "Sistem je automatski kreirao zaduženje",
+  "auditPaymentCreatedExpense": "Sistem je automatski kreirao stavku troška",
+  "auditRentDeclaredCash": "{actor} je prijavio uplatu (Gotovina){monthSuffix}",
+  "@auditRentDeclaredCash": {
+    "description": "Localization for auditRentDeclaredCash",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditRentDeclaredReceipt": "{actor} je učitao uplatnicu i prijavio uplatu{monthSuffix}",
+  "@auditRentDeclaredReceipt": {
+    "description": "Localization for auditRentDeclaredReceipt",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditRentApproved": "{actor} je odobrio plaćanje{monthSuffix}",
+  "@auditRentApproved": {
+    "description": "Localization for auditRentApproved",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditRentRejected": "{actor} je odbio plaćanje{monthSuffix}",
+  "@auditRentRejected": {
+    "description": "Localization for auditRentRejected",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditRentDisputed": "{actor} je osporio plaćanje{reasonSuffix}",
+  "@auditRentDisputed": {
+    "description": "Localization for auditRentDisputed",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "reasonSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceUploadedPending": "{actor} {monthPrefix}je učitao račun (Čeka odobrenje, {amount})",
+  "@auditInvoiceUploadedPending": {
+    "description": "Localization for auditInvoiceUploadedPending",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceUploaded": "{actor} {monthPrefix}je učitao račun ({amount})",
+  "@auditInvoiceUploaded": {
+    "description": "Localization for auditInvoiceUploaded",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceEnteredPending": "{actor} {monthPrefix}je uneo iznos troška (Čeka odobrenje, {amount})",
+  "@auditInvoiceEnteredPending": {
+    "description": "Localization for auditInvoiceEnteredPending",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceEntered": "{actor} {monthPrefix}je uneo detalje troška ({amount})",
+  "@auditInvoiceEntered": {
+    "description": "Localization for auditInvoiceEntered",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceApproved": "{actor} {monthPrefix}je odobrio račun ({amount})",
+  "@auditInvoiceApproved": {
+    "description": "Localization for auditInvoiceApproved",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "auditInvoiceRejected": "{actor} {monthPrefix}je odbio račun{reasonSuffix}",
+  "@auditInvoiceRejected": {
+    "description": "Localization for auditInvoiceRejected",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "monthPrefix": {
+        "type": "String"
+      },
+      "reasonSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditPaymentToggle": "{actor} je označio plaćanje kao {status}",
+  "@auditPaymentToggle": {
+    "description": "Localization for auditPaymentToggle",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "auditRentAutoApproved": "Plaćanje je automatski odobreno od strane sistema",
+  "auditMaintenanceCreated": "{actor} je kreirao zahtev za održavanje{titleSuffix}",
+  "@auditMaintenanceCreated": {
+    "description": "Localization for auditMaintenanceCreated",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "titleSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "auditMaintenanceStatusUpdated": "{actor} je ažurirao status zahteva za održavanje ({status})",
+  "@auditMaintenanceStatusUpdated": {
+    "description": "Localization for auditMaintenanceStatusUpdated",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "auditMaintenanceMessageAdded": "{actor} je dodao poruku na zahtev za održavanje",
+  "@auditMaintenanceMessageAdded": {
+    "description": "Localization for auditMaintenanceMessageAdded",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "auditMaintenanceReopened": "{actor} je ponovo otvorio zahtev za održavanje",
+  "@auditMaintenanceReopened": {
+    "description": "Localization for auditMaintenanceReopened",
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "contactTenantAsLandlordInfo": "Ova osoba je registrovana kao stanar ({propertySummary}). Sada se dodaje kao vlasnik.",
+  "@contactTenantAsLandlordInfo": {
+    "description": "Localization for contactTenantAsLandlordInfo",
+    "placeholders": {
+      "propertySummary": {
+        "type": "String"
+      }
+    }
+  },
+  "registeredLandlordDetailsAutofilled": "Podaci registrovanog stanodavca su automatski popunjeni.",
+  "noDocumentsAttachedYet": "Nema priloženih dokumenata (Možete dodati l.k., vlasnički list ili ovlašćenje).",
+  "coOwnerEmailHelper": "Ukoliko unesete email, suvlasnik će videti nekretninu u svom nalogu.",
+  "propertyOwnersUpdatedSuccess": "Podaci o vlasnicima su uspešno ažurirani.",
+  "systemActor": "Sistem",
+  "agencyRole": "Agencija",
+  "editPropertyOwners": "Uredi vlasnike nekretnine",
+  "auditInvitationAccepted": "{actor} je prihvatio/la poziv za nekretninu",
+  "auditContractAccepted": "{actor} je odobrio/la i potpisao/la ugovor o zakupu",
+  "auditContractTerminationRequested": "{actor} je zatražio/la prevremeni raskid ugovora",
+  "auditContractChangesAccepted": "{actor} je prihvatio/la predložene izmene ugovora",
+  "auditContractChangesDeclined": "{actor} je odbio/la ili povukao/la predložene izmene ugovora",
+  "auditLandlordOwnershipClaimed": "{actor} je preuzeo/la vlasništvo i upravljanje nekretninom",
+  "auditTenantRemoved": "{actor} je uklonio/la stanara sa nekretnine",
+  "auditPropertyOwnersUpdated": "{actor} je ažurirao/la podatke o vlasnicima nekretnine",
+  "auditMaintenanceFinancialsUpdated": "{actor} je ažurirao/la troškove i finansijske detalje održavanja",
+  "auditMaintenanceFinancialsDeleted": "{actor} je izbrisao/la troškove održavanja i poništio/la prebijanja",
+  "auditMaintenanceChargeCreated": "{actor} je dodao/la novu stavku troška održavanja",
+  "auditMaintenanceChargeStatusUpdated": "{actor} je ažurirao/la status troška održavanja",
+  "auditMaintenanceChargeSettled": "{actor} je namirio/la trošak održavanja",
+  "auditMaintenanceDeleted": "{actor} je izbrisao/la zahtev za održavanje",
+  "tenantInviteEmailTitle": "Obaveštenje za zakupca (imejl)",
+  "landlordInviteEmailTitle": "Obaveštenje za vlasnika (imejl)",
+  "statusNotSent": "Nije poslato",
+  "statusNoEmail": "Nema imejl",
+  "lastSentAt": "Poslednje slanje: {date}",
+  "noEmailSpecified": "Imejl adresa nije navedena",
+  "ownersConfirmedRatio": "{confirmed}/{total} Potvrđeno",
+  "ownerConfirmedBanner": "{name} je prihvatio/la pozivnicu i odobrio/la upravljanje nekretninom.",
+  "emailPreviewTitle": "Pregled imejla za slanje",
+  "emailPreviewForOwner": "Pregled imejla ({name})",
+  "tabVisual": "Vizuelno",
+  "tabPlainText": "Običan tekst",
+  "emailCopiedToast": "Tekst imejla je kopiran u privremenu memoriju.",
+  "languageLabel": "Jezik:",
+  "subjectHeader": "PREDMET",
+  "contentHeader": "SADRŽAJ",
+  "recipientWillReceiveThisFormat": "Primalac će dobiti u ovom formatu",
+  "sendTenantInviteEmailBtn": "Pošalji imejl zakupcu",
+  "resendInviteEmailBtn": "Ponovo pošalji imejl",
+  "sendLandlordInviteEmailBtn": "Pošalji imejl vlasniku",
+  "sendInviteForOwnerBtn": "Pošalji imejl za {name}",
+  "resendInviteForOwnerBtn": "Ponovo pošalji za {name}",
+  "sendToAllBtn": "Pošalji svima",
+  "sendToAllOwnersBtn": "Pošalji pojedinačno svim vlasnicima ({count})",
+  "resendToAllOwnersBtn": "Ponovo pošalji svim vlasnicima ({count})",
+  "sendingState": "Slanje u toku...",
+  "sendingAllState": "Slanje svima u toku...",
+  "noEmailAddressDefined": "Imejl adresa nije definisana",
+  "tenantInviteSentSuccess": "Pozivni imejl je uspešno poslat na {email}.",
+  "landlordInviteSentSuccess": "Pozivni imejl je uspešno poslat na {email}.",
+  "noEmailForUserError": "Nema imejl adrese za {name}.",
+  "tenantNoEmailError": "Imejl adresa zakupca nije definisana.",
+  "emailSendFailedError": "Slanje imejla nije uspelo. Proverite podešavanja Brevo API-ja.",
+  "emailSendGenericError": "Došlo je do greške prilikom slanja imejla: {error}",
+  "tenantInviteEmailBtn": "Imejl pozivnica za zakupca",
+  "allOwnersInviteSentSuccess": "Imejlovi sa pozivom uspešno poslati za {successCount} / {totalCount} vlasnika.",
+  "landlordsListHeader": "Vlasnici nekretnine ({count})",
+  "@lastSentAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownersConfirmedRatio": {
+    "placeholders": {
+      "confirmed": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerConfirmedBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@emailPreviewForOwner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@sendInviteForOwnerBtn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@resendInviteForOwnerBtn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@sendToAllOwnersBtn": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@resendToAllOwnersBtn": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@tenantInviteSentSuccess": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@landlordInviteSentSuccess": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@noEmailForUserError": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@emailSendGenericError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@allOwnersInviteSentSuccess": {
+    "placeholders": {
+      "successCount": {
+        "type": "String"
+      },
+      "totalCount": {
+        "type": "String"
+      }
+    }
+  },
+  "@landlordsListHeader": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
 }

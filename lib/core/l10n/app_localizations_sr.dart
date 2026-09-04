@@ -1417,7 +1417,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get requiredField => 'Ovo polje je obavezno';
 
   @override
-  String get invalidEmail => 'Nevažeća email adresa';
+  String get invalidEmail => 'Unesite validnu email adresu';
 
   @override
   String get offlineMessage =>
@@ -3054,6 +3054,683 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get payerRequiredError =>
       'Molimo izaberite ko plaća trošak pre postavljanja statusa plaćanja.';
+
+  @override
+  String get tabRentAndFinance => 'Kirija i Finansije';
+
+  @override
+  String get tabLeaseAndTenant => 'Ugovor i Zakupac';
+
+  @override
+  String get tabMaintenance => 'Održavanje';
+
+  @override
+  String get tabAuditLog => 'Istorija';
+
+  @override
+  String get paymentMethodBank => 'Banka';
+
+  @override
+  String get paymentMethodCash => 'Gotovina';
+
+  @override
+  String get paymentMethodLabel => 'Način plaćanja:';
+
+  @override
+  String get managedByAgencyTitle => 'Upravlja agencija';
+
+  @override
+  String get managedByAgencyDesc =>
+      'Vašim nekretninama upravlja agencija. Dodavanje novih nekretnina može izvršiti samo vaša agencija.';
+
+  @override
+  String get structuralAndFinancialMetricsSubtitle =>
+      'Tip nekretnine, broj stana, broj soba i spratnost';
+
+  @override
+  String get equipmentAndHeatingStandardsSubtitle =>
+      'Status opremljenosti i infrastruktura grejanja';
+
+  @override
+  String get featuredAmenitiesSubtitle =>
+      'Istaknute pogodnosti i detaljan opis';
+
+  @override
+  String get roomTypeStudio => 'Garsonjera';
+
+  @override
+  String get secondaryContacts => 'Dodatne kontakt osobe';
+
+  @override
+  String get addSecondaryContact => 'Dodaj kontakt';
+
+  @override
+  String get secondaryContactsOptionalDesc =>
+      'Opciono: Možete dodati pomoćne kontakte poput asistenta, zastupnika ili člana porodice.';
+
+  @override
+  String get roleOrRelation => 'Uloga / Odnos';
+
+  @override
+  String get tenantFullName => 'Ime i prezime zakupca';
+
+  @override
+  String get tenantIdOrPassport => 'Br. l.k. / Pasoša / JMBG';
+
+  @override
+  String get tenantNotes => 'Napomene o zakupcu';
+
+  @override
+  String get tenantIdDocument => 'Lični dokument / Pasoš zakupca';
+
+  @override
+  String get uploadPdfOrPhoto => 'Otpremite u PDF ili formatu slike';
+
+  @override
+  String get uploadAction => 'Otpremi';
+
+  @override
+  String get idDocumentUploaded => 'Lični dokument je otpremljen';
+
+  @override
+  String copiedId(String id) {
+    return 'ID je kopiran: $id';
+  }
+
+  @override
+  String get rolePersonalAssistant => 'Lični asistent';
+
+  @override
+  String get rolePrRep => 'PR / Zastupnik';
+
+  @override
+  String get roleFamilyMember => 'Član porodice';
+
+  @override
+  String get roleAuthorizedContact => 'Ovlašćeni kontakt';
+
+  @override
+  String get clearAllAction => 'Poništi sve';
+
+  @override
+  String get selectAllAction => 'Izaberi sve';
+
+  @override
+  String get applyAction => 'Primeni';
+
+  @override
+  String selectedCount(int count) {
+    return '$count izabrano';
+  }
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count Izabrano';
+  }
+
+  @override
+  String get propertyOwnerInfoTitle => 'Podaci o vlasnicima nekretnine';
+
+  @override
+  String get propertyOwnerInfoSubtitle =>
+      'Možete dodati više suvlasnika, pravna ili fizička lica, kao i priložiti dokumenta o vlasništvu i ovlašćenja.';
+
+  @override
+  String get addCoOwner => '+ Dodaj suvlasnika';
+
+  @override
+  String get primaryOwnerLabel => '1. Vlasnik (Glavni)';
+
+  @override
+  String coOwnerIndexedLabel(int index) {
+    return '$index. Suvlasnik';
+  }
+
+  @override
+  String get sharePercentage => 'Udeo %';
+
+  @override
+  String get removeOwner => 'Ukloni vlasnika';
+
+  @override
+  String get ownerType => 'Vrsta vlasnika';
+
+  @override
+  String get ownerIndividual => 'Fizičko lice';
+
+  @override
+  String get ownerCompany => 'Pravno lice / Kompanija';
+
+  @override
+  String get firstNameRequired => 'Ime *';
+
+  @override
+  String get lastNameRequired => 'Prezime *';
+
+  @override
+  String get idOrPassportOrJmbg => 'Broj l.k. / Pasoša / JMBG';
+
+  @override
+  String get idIssuingAuthority => 'Organ izdavanja';
+
+  @override
+  String get companyLegalNameRequired => 'Puni naziv pravnog lica *';
+
+  @override
+  String get registeredOfficeAddress => 'Sedište / Adresa registracije';
+
+  @override
+  String get taxIdPibRequired => 'PIB *';
+
+  @override
+  String get companyRegNo => 'Matični broj';
+
+  @override
+  String get legalRepFullNameRequired => 'Ime i prezime zastupnika *';
+
+  @override
+  String get repIdJmbg => 'Broj l.k./JMBG zastupnika';
+
+  @override
+  String get repAuthorityDetails => 'Detalji ovlašćenja zastupnika';
+
+  @override
+  String get contactPhoneRequired => 'Kontakt telefon *';
+
+  @override
+  String get secondaryContactOptional => 'Drugi kontakt (Opciono)';
+
+  @override
+  String get altPhoneOrNote => 'Alternativni tel.';
+
+  @override
+  String get emailAddressRequiredForPrimary =>
+      'Email adresa (Obavezno za glavnog) *';
+
+  @override
+  String get emailAddressOptional => 'Email adresa (Opciono)';
+
+  @override
+  String get selectExistingAgencyContact =>
+      'Ili izaberite iz postojećih kontakata agencije...';
+
+  @override
+  String get clearSelectionTooltip => 'Poništi izbor';
+
+  @override
+  String get supportingPdfDocuments => 'Prateća PDF dokumenta';
+
+  @override
+  String get uploadDocumentTooltip => 'Priloži dokument';
+
+  @override
+  String get docTypePassportCopy => 'Kopija l.k. / Pasoša (PDF)';
+
+  @override
+  String get docTypeProofOfOwnership => 'Vlasnički list / Dokaz (PDF)';
+
+  @override
+  String get docTypePowerOfAttorney => 'Ovlašćenje / Punomoćje (PDF)';
+
+  @override
+  String get docTypeOtherDocument => 'Ostala dokumentacija (PDF)';
+
+  @override
+  String get addPdfDocument => '+ Priloži PDF';
+
+  @override
+  String get docTypeLabelId => 'L.K.';
+
+  @override
+  String get docTypeLabelTitleDeed => 'List nepokretnosti';
+
+  @override
+  String get docTypeLabelPoa => 'Ovlašćenje';
+
+  @override
+  String get docTypeLabelOther => 'Dokument';
+
+  @override
+  String get markAsPaid => 'Označi kao plaćeno';
+
+  @override
+  String markAsPaidSubtitle(String title, String month) {
+    return 'Potvrda plaćanja za $title ($month)';
+  }
+
+  @override
+  String get bankTransferOption => 'Preko banke';
+
+  @override
+  String get receiptOrDocOptional => 'Uplatnica / Dokument (Opciono)';
+
+  @override
+  String get uploadReceiptOrImage => 'Priložite uplatnicu ili sliku';
+
+  @override
+  String get uploadReceiptHint => 'PDF, PNG, JPG ili fotografija';
+
+  @override
+  String get noteOptional => 'Napomena (Opciono)';
+
+  @override
+  String get noteOptionalRentHint =>
+      'Npr: Gotovinski plaćeno / Uplatnica priložena';
+
+  @override
+  String get paymentMarkedPaidSuccess =>
+      'Plaćanje je uspešno označeno kao plaćeno.';
+
+  @override
+  String get saveAsPaid => 'Sačuvaj kao plaćeno';
+
+  @override
+  String get collectSettleExpenseTitle => 'Potvrda naplate i zatvaranje';
+
+  @override
+  String collectSettleExpenseSubtitle(String cost) {
+    return 'Potvrdite naplatu $cost i zatvorite trošak.';
+  }
+
+  @override
+  String get collectionMethod => 'Način naplate';
+
+  @override
+  String get collectionMethodBank => 'Banka / Transfer';
+
+  @override
+  String get collectionMethodCash => 'Gotovina';
+
+  @override
+  String get collectionMethodPayoutDeduction => 'Odbijeno od isplate';
+
+  @override
+  String get attachReceiptOrVoucher => 'Priložite uplatnicu';
+
+  @override
+  String get noteOptionalAgencyHint => 'Npr: Vlasnik je uplatio na račun';
+
+  @override
+  String get payoutDeductionLabel => 'Odbijeno od isplate';
+
+  @override
+  String get collectionConfirmedAndSettled =>
+      'Naplata je potvrđena i trošak je zatvoren.';
+
+  @override
+  String get confirmAndSettle => 'Potvrdi i zatvori';
+
+  @override
+  String propertyOwnersCountTitle(int count) {
+    return 'Vlasnici nekretnine ($count)';
+  }
+
+  @override
+  String get editOwners => 'Uredi vlasnike';
+
+  @override
+  String get primaryOwnerBadge => 'Glavni vlasnik';
+
+  @override
+  String get authorizedRepresentative => 'Zastupnik';
+
+  @override
+  String get registeredAddressLabel => 'Sedište';
+
+  @override
+  String get idJmbgLabel => 'Broj l.k./JMBG';
+
+  @override
+  String get secondaryContactPrefix => 'Drugi kontakt: ';
+
+  @override
+  String get supportingDocumentsColon => 'Priložena dokumenta:';
+
+  @override
+  String get auditPaymentCreatedRent =>
+      'Sistem je automatski kreirao zaduženje';
+
+  @override
+  String get auditPaymentCreatedExpense =>
+      'Sistem je automatski kreirao stavku troška';
+
+  @override
+  String auditRentDeclaredCash(String actor, String monthSuffix) {
+    return '$actor je prijavio uplatu (Gotovina)$monthSuffix';
+  }
+
+  @override
+  String auditRentDeclaredReceipt(String actor, String monthSuffix) {
+    return '$actor je učitao uplatnicu i prijavio uplatu$monthSuffix';
+  }
+
+  @override
+  String auditRentApproved(String actor, String monthSuffix) {
+    return '$actor je odobrio plaćanje$monthSuffix';
+  }
+
+  @override
+  String auditRentRejected(String actor, String monthSuffix) {
+    return '$actor je odbio plaćanje$monthSuffix';
+  }
+
+  @override
+  String auditRentDisputed(String actor, String reasonSuffix) {
+    return '$actor je osporio plaćanje$reasonSuffix';
+  }
+
+  @override
+  String auditInvoiceUploadedPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}je učitao račun (Čeka odobrenje, $amount)';
+  }
+
+  @override
+  String auditInvoiceUploaded(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}je učitao račun ($amount)';
+  }
+
+  @override
+  String auditInvoiceEnteredPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor ${monthPrefix}je uneo iznos troška (Čeka odobrenje, $amount)';
+  }
+
+  @override
+  String auditInvoiceEntered(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}je uneo detalje troška ($amount)';
+  }
+
+  @override
+  String auditInvoiceApproved(String actor, String monthPrefix, String amount) {
+    return '$actor ${monthPrefix}je odobrio račun ($amount)';
+  }
+
+  @override
+  String auditInvoiceRejected(
+    String actor,
+    String monthPrefix,
+    String reasonSuffix,
+  ) {
+    return '$actor ${monthPrefix}je odbio račun$reasonSuffix';
+  }
+
+  @override
+  String auditPaymentToggle(String actor, String status) {
+    return '$actor je označio plaćanje kao $status';
+  }
+
+  @override
+  String get auditRentAutoApproved =>
+      'Plaćanje je automatski odobreno od strane sistema';
+
+  @override
+  String auditMaintenanceCreated(String actor, String titleSuffix) {
+    return '$actor je kreirao zahtev za održavanje$titleSuffix';
+  }
+
+  @override
+  String auditMaintenanceStatusUpdated(String actor, String status) {
+    return '$actor je ažurirao status zahteva za održavanje ($status)';
+  }
+
+  @override
+  String auditMaintenanceMessageAdded(String actor) {
+    return '$actor je dodao poruku na zahtev za održavanje';
+  }
+
+  @override
+  String auditMaintenanceReopened(String actor) {
+    return '$actor je ponovo otvorio zahtev za održavanje';
+  }
+
+  @override
+  String contactTenantAsLandlordInfo(String propertySummary) {
+    return 'Ova osoba je registrovana kao stanar ($propertySummary). Sada se dodaje kao vlasnik.';
+  }
+
+  @override
+  String get registeredLandlordDetailsAutofilled =>
+      'Podaci registrovanog stanodavca su automatski popunjeni.';
+
+  @override
+  String get noDocumentsAttachedYet =>
+      'Nema priloženih dokumenata (Možete dodati l.k., vlasnički list ili ovlašćenje).';
+
+  @override
+  String get coOwnerEmailHelper =>
+      'Ukoliko unesete email, suvlasnik će videti nekretninu u svom nalogu.';
+
+  @override
+  String get propertyOwnersUpdatedSuccess =>
+      'Podaci o vlasnicima su uspešno ažurirani.';
+
+  @override
+  String get systemActor => 'Sistem';
+
+  @override
+  String get agencyRole => 'Agencija';
+
+  @override
+  String get editPropertyOwners => 'Uredi vlasnike nekretnine';
+
+  @override
+  String auditInvitationAccepted(Object actor) {
+    return '$actor je prihvatio/la poziv za nekretninu';
+  }
+
+  @override
+  String auditContractAccepted(Object actor) {
+    return '$actor je odobrio/la i potpisao/la ugovor o zakupu';
+  }
+
+  @override
+  String auditContractTerminationRequested(Object actor) {
+    return '$actor je zatražio/la prevremeni raskid ugovora';
+  }
+
+  @override
+  String auditContractChangesAccepted(Object actor) {
+    return '$actor je prihvatio/la predložene izmene ugovora';
+  }
+
+  @override
+  String auditContractChangesDeclined(Object actor) {
+    return '$actor je odbio/la ili povukao/la predložene izmene ugovora';
+  }
+
+  @override
+  String auditLandlordOwnershipClaimed(Object actor) {
+    return '$actor je preuzeo/la vlasništvo i upravljanje nekretninom';
+  }
+
+  @override
+  String auditTenantRemoved(Object actor) {
+    return '$actor je uklonio/la stanara sa nekretnine';
+  }
+
+  @override
+  String auditPropertyOwnersUpdated(Object actor) {
+    return '$actor je ažurirao/la podatke o vlasnicima nekretnine';
+  }
+
+  @override
+  String auditMaintenanceFinancialsUpdated(Object actor) {
+    return '$actor je ažurirao/la troškove i finansijske detalje održavanja';
+  }
+
+  @override
+  String auditMaintenanceFinancialsDeleted(Object actor) {
+    return '$actor je izbrisao/la troškove održavanja i poništio/la prebijanja';
+  }
+
+  @override
+  String auditMaintenanceChargeCreated(Object actor) {
+    return '$actor je dodao/la novu stavku troška održavanja';
+  }
+
+  @override
+  String auditMaintenanceChargeStatusUpdated(Object actor) {
+    return '$actor je ažurirao/la status troška održavanja';
+  }
+
+  @override
+  String auditMaintenanceChargeSettled(Object actor) {
+    return '$actor je namirio/la trošak održavanja';
+  }
+
+  @override
+  String auditMaintenanceDeleted(Object actor) {
+    return '$actor je izbrisao/la zahtev za održavanje';
+  }
+
+  @override
+  String get tenantInviteEmailTitle => 'Obaveštenje za zakupca (imejl)';
+
+  @override
+  String get landlordInviteEmailTitle => 'Obaveštenje za vlasnika (imejl)';
+
+  @override
+  String get statusNotSent => 'Nije poslato';
+
+  @override
+  String get statusNoEmail => 'Nema imejl';
+
+  @override
+  String lastSentAt(String date) {
+    return 'Poslednje slanje: $date';
+  }
+
+  @override
+  String get noEmailSpecified => 'Imejl adresa nije navedena';
+
+  @override
+  String ownersConfirmedRatio(String confirmed, String total) {
+    return '$confirmed/$total Potvrđeno';
+  }
+
+  @override
+  String ownerConfirmedBanner(String name) {
+    return '$name je prihvatio/la pozivnicu i odobrio/la upravljanje nekretninom.';
+  }
+
+  @override
+  String get emailPreviewTitle => 'Pregled imejla za slanje';
+
+  @override
+  String emailPreviewForOwner(String name) {
+    return 'Pregled imejla ($name)';
+  }
+
+  @override
+  String get tabVisual => 'Vizuelno';
+
+  @override
+  String get tabPlainText => 'Običan tekst';
+
+  @override
+  String get emailCopiedToast =>
+      'Tekst imejla je kopiran u privremenu memoriju.';
+
+  @override
+  String get languageLabel => 'Jezik:';
+
+  @override
+  String get subjectHeader => 'PREDMET';
+
+  @override
+  String get contentHeader => 'SADRŽAJ';
+
+  @override
+  String get recipientWillReceiveThisFormat =>
+      'Primalac će dobiti u ovom formatu';
+
+  @override
+  String get sendTenantInviteEmailBtn => 'Pošalji imejl zakupcu';
+
+  @override
+  String get resendInviteEmailBtn => 'Ponovo pošalji imejl';
+
+  @override
+  String get sendLandlordInviteEmailBtn => 'Pošalji imejl vlasniku';
+
+  @override
+  String sendInviteForOwnerBtn(String name) {
+    return 'Pošalji imejl za $name';
+  }
+
+  @override
+  String resendInviteForOwnerBtn(String name) {
+    return 'Ponovo pošalji za $name';
+  }
+
+  @override
+  String get sendToAllBtn => 'Pošalji svima';
+
+  @override
+  String sendToAllOwnersBtn(String count) {
+    return 'Pošalji pojedinačno svim vlasnicima ($count)';
+  }
+
+  @override
+  String resendToAllOwnersBtn(String count) {
+    return 'Ponovo pošalji svim vlasnicima ($count)';
+  }
+
+  @override
+  String get sendingState => 'Slanje u toku...';
+
+  @override
+  String get sendingAllState => 'Slanje svima u toku...';
+
+  @override
+  String get noEmailAddressDefined => 'Imejl adresa nije definisana';
+
+  @override
+  String tenantInviteSentSuccess(String email) {
+    return 'Pozivni imejl je uspešno poslat na $email.';
+  }
+
+  @override
+  String landlordInviteSentSuccess(String email) {
+    return 'Pozivni imejl je uspešno poslat na $email.';
+  }
+
+  @override
+  String noEmailForUserError(String name) {
+    return 'Nema imejl adrese za $name.';
+  }
+
+  @override
+  String get tenantNoEmailError => 'Imejl adresa zakupca nije definisana.';
+
+  @override
+  String get emailSendFailedError =>
+      'Slanje imejla nije uspelo. Proverite podešavanja Brevo API-ja.';
+
+  @override
+  String emailSendGenericError(String error) {
+    return 'Došlo je do greške prilikom slanja imejla: $error';
+  }
+
+  @override
+  String get tenantInviteEmailBtn => 'Imejl pozivnica za zakupca';
+
+  @override
+  String allOwnersInviteSentSuccess(String successCount, String totalCount) {
+    return 'Imejlovi sa pozivom uspešno poslati za $successCount / $totalCount vlasnika.';
+  }
+
+  @override
+  String landlordsListHeader(String count) {
+    return 'Vlasnici nekretnine ($count)';
+  }
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -4474,7 +5151,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get requiredField => 'Ово поље је обавезно';
 
   @override
-  String get invalidEmail => 'Неважећа емаил адреса';
+  String get invalidEmail => 'Унесите валидну емаил адресу';
 
   @override
   String get offlineMessage =>
@@ -4979,12 +5656,93 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get forgotPassword => 'Заборавили сте лозинку?';
 
   @override
+  String get copy => 'Копирај';
+
+  @override
+  String get showLandlordInviteQrOrLink => 'Прикажи QR код / везу власништва';
+
+  @override
+  String get showLandlordInviteQrOrLinkClaimed => 'QR код / веза власништва';
+
+  @override
+  String get landlordOwnershipInviteTitle =>
+      'Позивница за власништво над некретнином';
+
+  @override
+  String becomeLandlordTitle(String propertyName) {
+    return 'Постаните власник некретнине $propertyName';
+  }
+
+  @override
+  String get landlordInviteAcceptDesc =>
+      'Потврдите позивницу да бисте били додељени и управљали овом некретнином којом управља агенција.';
+
+  @override
+  String get acceptAsLandlord => 'Прихвати као власник';
+
+  @override
+  String get landlordAcceptedInviteTitle => 'Власник је прихватио позивницу!';
+
+  @override
+  String landlordOwnershipTransferredDesc(String propertyName) {
+    return 'Власништво над некретнином $propertyName је успешно пренето.';
+  }
+
+  @override
+  String get landlordShareQrInstruction =>
+      'Нека власник скенира овај QR код или му пошаљите везу.';
+
+  @override
+  String get ownershipLinkCopied => 'Власничка веза је копирана!';
+
+  @override
+  String landlordShareMessage(
+    String landlordName,
+    String propertyName,
+    String inviteUrl,
+  ) {
+    return 'Здраво $landlordName, кликните на ову везу да преузмете власништво над некретнином \"$propertyName\" на Stanomeru:\n$inviteUrl';
+  }
+
+  @override
+  String get joinHomeTitle => 'Придружи се дому';
+
+  @override
+  String get joinHomeSubtitle =>
+      'Скенирајте QR код или унесите везу/код позивнице.';
+
+  @override
+  String get closeCamera => 'Затвори камеру';
+
+  @override
+  String get scanQrCodeBtn => 'Скенирај QR код';
+
+  @override
+  String get inviteLinkOrTokenLabel => 'Веза позивнице или токен код';
+
+  @override
+  String get inviteLinkOrTokenHint => 'https://.../invite?token=... или код';
+
+  @override
+  String get paste => 'Залепи';
+
+  @override
+  String get joinAndReview => 'Придружи се и прегледај';
+
+  @override
+  String get invalidInviteCodeOrLink =>
+      'Молимо унесите важећу везу или код позивнице.';
+
+  @override
   String get landlordOwnershipTransferredSuccess =>
       'Честитамо! Власништво над некретнином је успешно пренето на ваш налог.';
 
   @override
   String get landlordOwnershipInviteInvalid =>
       'Позивница за власништво је неважећа, истекла или је већ прихваћена.';
+
+  @override
+  String get statusApproved => 'Потврђено';
 
   @override
   String get referringAgency => 'Агенција Која Је Препоручила';
@@ -6029,4 +6787,679 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   @override
   String get payerRequiredError =>
       'Молимо изаберите ко плаћа трошак пре постављања статуса плаћања.';
+
+  @override
+  String get tabRentAndFinance => 'Кирија и Финансије';
+
+  @override
+  String get tabLeaseAndTenant => 'Уговор и Закупац';
+
+  @override
+  String get tabMaintenance => 'Одржавање';
+
+  @override
+  String get tabAuditLog => 'Историја';
+
+  @override
+  String get paymentMethodBank => 'Банка';
+
+  @override
+  String get paymentMethodCash => 'Готовина';
+
+  @override
+  String get paymentMethodLabel => 'Начин плаћања:';
+
+  @override
+  String get managedByAgencyTitle => 'Управља агенција';
+
+  @override
+  String get managedByAgencyDesc =>
+      'Вашим некретнинама управља агенција. Додавање нових некретнина може извршити само ваша агенција.';
+
+  @override
+  String get structuralAndFinancialMetricsSubtitle =>
+      'Тип некретнине, број стана, број соба и спратност';
+
+  @override
+  String get equipmentAndHeatingStandardsSubtitle =>
+      'Статус опремљености и инфраструктура грејања';
+
+  @override
+  String get featuredAmenitiesSubtitle => 'Истакнуте погодности и детаљан опис';
+
+  @override
+  String get roomTypeStudio => 'Гарсоњера';
+
+  @override
+  String get secondaryContacts => 'Додатне контакт особе';
+
+  @override
+  String get addSecondaryContact => 'Додај контакт';
+
+  @override
+  String get secondaryContactsOptionalDesc =>
+      'Опционо: Можете додати помоћне контакте попут асистента, заступника или члана породице.';
+
+  @override
+  String get roleOrRelation => 'Улога / Однос';
+
+  @override
+  String get tenantFullName => 'Име и презиме закупца';
+
+  @override
+  String get tenantIdOrPassport => 'Бр. л.к. / Пасоша / ЈМБГ';
+
+  @override
+  String get tenantNotes => 'Напомене о закупцу';
+
+  @override
+  String get tenantIdDocument => 'Лични документ / Пасош закупца';
+
+  @override
+  String get uploadPdfOrPhoto => 'Отпремите у PDF или формату слике';
+
+  @override
+  String get uploadAction => 'Отпреми';
+
+  @override
+  String get idDocumentUploaded => 'Лични документ је отпремљен';
+
+  @override
+  String copiedId(String id) {
+    return 'ID је копиран: $id';
+  }
+
+  @override
+  String get rolePersonalAssistant => 'Лични асистент';
+
+  @override
+  String get rolePrRep => 'ПР / Заступник';
+
+  @override
+  String get roleFamilyMember => 'Члан породице';
+
+  @override
+  String get roleAuthorizedContact => 'Овлашћени контакт';
+
+  @override
+  String get clearAllAction => 'Поништи све';
+
+  @override
+  String get selectAllAction => 'Изабери све';
+
+  @override
+  String get applyAction => 'Примени';
+
+  @override
+  String selectedCount(int count) {
+    return '$count изабрано';
+  }
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count Изабрано';
+  }
+
+  @override
+  String get propertyOwnerInfoTitle => 'Подаци о власницима некретнине';
+
+  @override
+  String get propertyOwnerInfoSubtitle =>
+      'Можете додати више сувласника, правна или физичка лица, као и приложити документа о власништву и овлашћења.';
+
+  @override
+  String get addCoOwner => '+ Додај сувласника';
+
+  @override
+  String get primaryOwnerLabel => '1. Власник (Главни)';
+
+  @override
+  String coOwnerIndexedLabel(int index) {
+    return '$index. Сувласник';
+  }
+
+  @override
+  String get sharePercentage => 'Удео %';
+
+  @override
+  String get removeOwner => 'Уклони власника';
+
+  @override
+  String get ownerType => 'Врста власника';
+
+  @override
+  String get ownerIndividual => 'Физичко лице';
+
+  @override
+  String get ownerCompany => 'Правно лице / Компанија';
+
+  @override
+  String get firstNameRequired => 'Име *';
+
+  @override
+  String get lastNameRequired => 'Презиме *';
+
+  @override
+  String get idOrPassportOrJmbg => 'Број л.к. / Пасоша / ЈМБГ';
+
+  @override
+  String get idIssuingAuthority => 'Орган издавања';
+
+  @override
+  String get companyLegalNameRequired => 'Пуни назив правног лица *';
+
+  @override
+  String get registeredOfficeAddress => 'Седиште / Адреса регистрације';
+
+  @override
+  String get taxIdPibRequired => 'ПИБ *';
+
+  @override
+  String get companyRegNo => 'Матични број';
+
+  @override
+  String get legalRepFullNameRequired => 'Име и презиме заступника *';
+
+  @override
+  String get repIdJmbg => 'Број л.к./ЈМБГ заступника';
+
+  @override
+  String get repAuthorityDetails => 'Детаљи овлашћења заступника';
+
+  @override
+  String get contactPhoneRequired => 'Контакт телефон *';
+
+  @override
+  String get secondaryContactOptional => 'Други контакт (Опционо)';
+
+  @override
+  String get altPhoneOrNote => 'Алтернативни тел.';
+
+  @override
+  String get emailAddressRequiredForPrimary =>
+      'Емаил адреса (Обавезно за главног) *';
+
+  @override
+  String get emailAddressOptional => 'Емаил адреса (Опционо)';
+
+  @override
+  String get selectExistingAgencyContact =>
+      'Или изаберите из постојећих контаката агенције...';
+
+  @override
+  String get clearSelectionTooltip => 'Поништи избор';
+
+  @override
+  String get supportingPdfDocuments => 'Пратећа ПДФ документа';
+
+  @override
+  String get uploadDocumentTooltip => 'Приложи документ';
+
+  @override
+  String get docTypePassportCopy => 'Копија л.к. / Пасоша (ПДФ)';
+
+  @override
+  String get docTypeProofOfOwnership => 'Власнички лист / Доказ (ПДФ)';
+
+  @override
+  String get docTypePowerOfAttorney => 'Овлашћење / Пуномоћје (ПДФ)';
+
+  @override
+  String get docTypeOtherDocument => 'Остала документација (ПДФ)';
+
+  @override
+  String get addPdfDocument => '+ Приложи ПДФ';
+
+  @override
+  String get docTypeLabelId => 'Л.К.';
+
+  @override
+  String get docTypeLabelTitleDeed => 'Лист непокретности';
+
+  @override
+  String get docTypeLabelPoa => 'Овлашћење';
+
+  @override
+  String get docTypeLabelOther => 'Документ';
+
+  @override
+  String get markAsPaid => 'Означи као плаћено';
+
+  @override
+  String markAsPaidSubtitle(String title, String month) {
+    return 'Потврда плаћања за $title ($month)';
+  }
+
+  @override
+  String get bankTransferOption => 'Преко банке';
+
+  @override
+  String get receiptOrDocOptional => 'Уплатница / Документ (Опционо)';
+
+  @override
+  String get uploadReceiptOrImage => 'Приложите уплатницу или слику';
+
+  @override
+  String get uploadReceiptHint => 'ПДФ, ПНГ, ЈПГ или фотографија';
+
+  @override
+  String get noteOptional => 'Напомена (Опционо)';
+
+  @override
+  String get noteOptionalRentHint =>
+      'Нпр: Готовински плаћено / Уплатница приложена';
+
+  @override
+  String get paymentMarkedPaidSuccess =>
+      'Плаћање је успешно означено као плаћено.';
+
+  @override
+  String get saveAsPaid => 'Сачувај као плаћено';
+
+  @override
+  String get collectSettleExpenseTitle => 'Потврда наплате и затварање';
+
+  @override
+  String collectSettleExpenseSubtitle(String cost) {
+    return 'Потврдите наплату $cost и затворите трошак.';
+  }
+
+  @override
+  String get collectionMethod => 'Начин наплате';
+
+  @override
+  String get collectionMethodBank => 'Банка / Трансфер';
+
+  @override
+  String get collectionMethodCash => 'Готовина';
+
+  @override
+  String get collectionMethodPayoutDeduction => 'Одбијено од исплате';
+
+  @override
+  String get attachReceiptOrVoucher => 'Приложите уплатницу';
+
+  @override
+  String get noteOptionalAgencyHint => 'Нпр: Власник је уплатио на рачун';
+
+  @override
+  String get payoutDeductionLabel => 'Одбијено од исплате';
+
+  @override
+  String get collectionConfirmedAndSettled =>
+      'Наплата је потврђена и трошак је затворен.';
+
+  @override
+  String get confirmAndSettle => 'Потврди и затвори';
+
+  @override
+  String propertyOwnersCountTitle(int count) {
+    return 'Власници некретнине ($count)';
+  }
+
+  @override
+  String get editOwners => 'Уреди власнике';
+
+  @override
+  String get primaryOwnerBadge => 'Главни власник';
+
+  @override
+  String get authorizedRepresentative => 'Заступник';
+
+  @override
+  String get registeredAddressLabel => 'Седиште';
+
+  @override
+  String get idJmbgLabel => 'Број л.к./ЈМБГ';
+
+  @override
+  String get secondaryContactPrefix => 'Други контакт: ';
+
+  @override
+  String get supportingDocumentsColon => 'Приложена документа:';
+
+  @override
+  String get auditPaymentCreatedRent => 'Систем је аутоматски креирао задужење';
+
+  @override
+  String get auditPaymentCreatedExpense =>
+      'Систем је аутоматски креирао ставку трошка';
+
+  @override
+  String auditRentDeclaredCash(String actor, String monthSuffix) {
+    return '$actor је пријавио уплату (Готовина)$monthSuffix';
+  }
+
+  @override
+  String auditRentDeclaredReceipt(String actor, String monthSuffix) {
+    return '$actor је учитао уплатницу и пријавио уплату$monthSuffix';
+  }
+
+  @override
+  String auditRentApproved(String actor, String monthSuffix) {
+    return '$actor је одобрио плаћање$monthSuffix';
+  }
+
+  @override
+  String auditRentRejected(String actor, String monthSuffix) {
+    return '$actor је одбио плаћање$monthSuffix';
+  }
+
+  @override
+  String auditRentDisputed(String actor, String reasonSuffix) {
+    return '$actor је оспорио плаћање$reasonSuffix';
+  }
+
+  @override
+  String auditInvoiceUploadedPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor $monthPrefixје учитао рачун (Чека одобрење, $amount)';
+  }
+
+  @override
+  String auditInvoiceUploaded(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixје учитао рачун ($amount)';
+  }
+
+  @override
+  String auditInvoiceEnteredPending(
+    String actor,
+    String monthPrefix,
+    String amount,
+  ) {
+    return '$actor $monthPrefixје унео износ трошка (Чека одобрење, $amount)';
+  }
+
+  @override
+  String auditInvoiceEntered(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixје унео детаље трошка ($amount)';
+  }
+
+  @override
+  String auditInvoiceApproved(String actor, String monthPrefix, String amount) {
+    return '$actor $monthPrefixје одобрио рачун ($amount)';
+  }
+
+  @override
+  String auditInvoiceRejected(
+    String actor,
+    String monthPrefix,
+    String reasonSuffix,
+  ) {
+    return '$actor $monthPrefixје одбио рачун$reasonSuffix';
+  }
+
+  @override
+  String auditPaymentToggle(String actor, String status) {
+    return '$actor је означио плаћање као $status';
+  }
+
+  @override
+  String get auditRentAutoApproved =>
+      'Плаћање је аутоматски одобрено од стране система';
+
+  @override
+  String auditMaintenanceCreated(String actor, String titleSuffix) {
+    return '$actor је креирао захтев за одржавање$titleSuffix';
+  }
+
+  @override
+  String auditMaintenanceStatusUpdated(String actor, String status) {
+    return '$actor је ажурирао статус захтева за одржавање ($status)';
+  }
+
+  @override
+  String auditMaintenanceMessageAdded(String actor) {
+    return '$actor је додао поруку на захтев за одржавање';
+  }
+
+  @override
+  String auditMaintenanceReopened(String actor) {
+    return '$actor је поново отворио захтев за одржавање';
+  }
+
+  @override
+  String contactTenantAsLandlordInfo(String propertySummary) {
+    return 'Ова особа је регистрована као станар ($propertySummary). Сада се додаје као власник.';
+  }
+
+  @override
+  String get registeredLandlordDetailsAutofilled =>
+      'Подаци регистрованог станодавца су аутоматски попуњени.';
+
+  @override
+  String get noDocumentsAttachedYet =>
+      'Нема приложених докумената (Можете додати л.к., власнички лист или овлашћење).';
+
+  @override
+  String get coOwnerEmailHelper =>
+      'Уколико унесете емаил, сувласник ће видети некретнину у свом налогу.';
+
+  @override
+  String get propertyOwnersUpdatedSuccess =>
+      'Подаци о власницима су успешно ажурирани.';
+
+  @override
+  String get systemActor => 'Систем';
+
+  @override
+  String get agencyRole => 'Агенција';
+
+  @override
+  String get editPropertyOwners => 'Уреди власнике некретнине';
+
+  @override
+  String auditInvitationAccepted(Object actor) {
+    return '$actor је прихватио/ла позив за некретнину';
+  }
+
+  @override
+  String auditContractAccepted(Object actor) {
+    return '$actor је одобрио/ла и потписао/ла уговор о закупу';
+  }
+
+  @override
+  String auditContractTerminationRequested(Object actor) {
+    return '$actor је затражио/ла превремени раскид уговора';
+  }
+
+  @override
+  String auditContractChangesAccepted(Object actor) {
+    return '$actor је прихватио/ла предложене измене уговора';
+  }
+
+  @override
+  String auditContractChangesDeclined(Object actor) {
+    return '$actor је одбио/ла или повукао/ла предложене измене уговора';
+  }
+
+  @override
+  String auditLandlordOwnershipClaimed(Object actor) {
+    return '$actor је преузео/ла власништво и управљање некретнином';
+  }
+
+  @override
+  String auditTenantRemoved(Object actor) {
+    return '$actor је уклонио/ла станара са некретнине';
+  }
+
+  @override
+  String auditPropertyOwnersUpdated(Object actor) {
+    return '$actor је ажурирао/ла податке о власницима некретнине';
+  }
+
+  @override
+  String auditMaintenanceFinancialsUpdated(Object actor) {
+    return '$actor је ажурирао/ла трошкове и финансијске детаље одржавања';
+  }
+
+  @override
+  String auditMaintenanceFinancialsDeleted(Object actor) {
+    return '$actor је избрисао/ла трошкове одржавања и поништио/ла пребијања';
+  }
+
+  @override
+  String auditMaintenanceChargeCreated(Object actor) {
+    return '$actor је додао/ла нову ставку трошка одржавања';
+  }
+
+  @override
+  String auditMaintenanceChargeStatusUpdated(Object actor) {
+    return '$actor је ажурирао/ла статус трошка одржавања';
+  }
+
+  @override
+  String auditMaintenanceChargeSettled(Object actor) {
+    return '$actor је намирио/ла трошак одржавања';
+  }
+
+  @override
+  String auditMaintenanceDeleted(Object actor) {
+    return '$actor је избрисао/ла захтев за одржавање';
+  }
+
+  @override
+  String get tenantInviteEmailTitle => 'Обавештење за закупца (имејл)';
+
+  @override
+  String get landlordInviteEmailTitle => 'Обавештење за власника (имејл)';
+
+  @override
+  String get statusNotSent => 'Није послато';
+
+  @override
+  String get statusNoEmail => 'Нема имејл';
+
+  @override
+  String lastSentAt(String date) {
+    return 'Последње слање: $date';
+  }
+
+  @override
+  String get noEmailSpecified => 'Имејл адреса није наведена';
+
+  @override
+  String ownersConfirmedRatio(String confirmed, String total) {
+    return '$confirmed/$total Потврђено';
+  }
+
+  @override
+  String ownerConfirmedBanner(String name) {
+    return '$name је прихватио/ла позивницу и одобрио/ла управљање некретнином.';
+  }
+
+  @override
+  String get emailPreviewTitle => 'Преглед имејла за слање';
+
+  @override
+  String emailPreviewForOwner(String name) {
+    return 'Преглед имејла ($name)';
+  }
+
+  @override
+  String get tabVisual => 'Визуелно';
+
+  @override
+  String get tabPlainText => 'Обичан текст';
+
+  @override
+  String get emailCopiedToast =>
+      'Текст имејла је копиран у привремену меморију.';
+
+  @override
+  String get languageLabel => 'Језик:';
+
+  @override
+  String get subjectHeader => 'ПРЕДМЕТ';
+
+  @override
+  String get contentHeader => 'САДРЖАЈ';
+
+  @override
+  String get recipientWillReceiveThisFormat =>
+      'Прималац ће добити у овом формату';
+
+  @override
+  String get sendTenantInviteEmailBtn => 'Пошаљи имејл закупцу';
+
+  @override
+  String get resendInviteEmailBtn => 'Поново пошаљи имејл';
+
+  @override
+  String get sendLandlordInviteEmailBtn => 'Пошаљи имејл власнику';
+
+  @override
+  String sendInviteForOwnerBtn(String name) {
+    return 'Пошаљи имејл за $name';
+  }
+
+  @override
+  String resendInviteForOwnerBtn(String name) {
+    return 'Поново пошаљи за $name';
+  }
+
+  @override
+  String get sendToAllBtn => 'Пошаљи свима';
+
+  @override
+  String sendToAllOwnersBtn(String count) {
+    return 'Пошаљи појединачно свим власницима ($count)';
+  }
+
+  @override
+  String resendToAllOwnersBtn(String count) {
+    return 'Поново пошаљи свим власницима ($count)';
+  }
+
+  @override
+  String get sendingState => 'Слање у току...';
+
+  @override
+  String get sendingAllState => 'Слање свима у току...';
+
+  @override
+  String get noEmailAddressDefined => 'Имејл адреса није дефинисана';
+
+  @override
+  String tenantInviteSentSuccess(String email) {
+    return 'Позивни имејл је успешно послат на $email.';
+  }
+
+  @override
+  String landlordInviteSentSuccess(String email) {
+    return 'Позивни имејл је успешно послат на $email.';
+  }
+
+  @override
+  String noEmailForUserError(String name) {
+    return 'Нема имејл адресе за $name.';
+  }
+
+  @override
+  String get tenantNoEmailError => 'Имејл адреса закупца није дефинисана.';
+
+  @override
+  String get emailSendFailedError =>
+      'Слање имејла није успело. Проверите подешавања Brevo API-ја.';
+
+  @override
+  String emailSendGenericError(String error) {
+    return 'Дошло је до грешке приликом слања имејла: $error';
+  }
+
+  @override
+  String get tenantInviteEmailBtn => 'Имејл позивница за закупца';
+
+  @override
+  String allOwnersInviteSentSuccess(String successCount, String totalCount) {
+    return 'Имејлови са позивом успешно послати за $successCount / $totalCount власника.';
+  }
+
+  @override
+  String landlordsListHeader(String count) {
+    return 'Власници некретнине ($count)';
+  }
 }
