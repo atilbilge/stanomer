@@ -258,6 +258,9 @@ ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS payment_status 
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS invoice_pdf_url TEXT;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
 ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS rejected_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+CREATE SEQUENCE IF NOT EXISTS public.maintenance_ticket_number_seq START WITH 10001;
+ALTER TABLE public.maintenance_requests ADD COLUMN IF NOT EXISTS ticket_number TEXT DEFAULT ('MR-' || LPAD(nextval('public.maintenance_ticket_number_seq')::TEXT, 5, '0'));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_maintenance_requests_ticket_number ON public.maintenance_requests(ticket_number);
 
 ALTER TABLE public.maintenance_requests DROP CONSTRAINT IF EXISTS maintenance_requests_priority_check;
 ALTER TABLE public.maintenance_requests ADD CONSTRAINT maintenance_requests_priority_check CHECK (priority IN ('normal', 'medium', 'low', 'urgent', 'high'));

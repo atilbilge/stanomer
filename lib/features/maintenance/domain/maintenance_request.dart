@@ -85,6 +85,7 @@ enum MaintenancePriority {
 abstract class MaintenanceRequest with _$MaintenanceRequest {
   const factory MaintenanceRequest({
     required String id,
+    @JsonKey(name: 'ticket_number') String? ticketNumber,
     @JsonKey(name: 'property_id') required String propertyId,
     @JsonKey(name: 'contract_id') String? contractId,
     @JsonKey(name: 'reporter_id') required String reporterId,
@@ -126,8 +127,12 @@ extension MaintenanceRequestMapX on MaintenanceRequest {
   double get remainingAmount => (costAmount != null ? (costAmount! - settledAmount).clamp(0.0, double.infinity) : 0.0);
   bool get hasPartialSettlement => settledAmount > 0 && remainingAmount > 0;
 
-  /// User-friendly ticket number for UI display (e.g. #MR-10482)
+  /// User-friendly ticket number for UI display (e.g. #MR-10001)
   String get displayId {
+    if (ticketNumber != null && ticketNumber!.trim().isNotEmpty) {
+      final clean = ticketNumber!.trim();
+      return clean.startsWith('#') ? clean : '#$clean';
+    }
     if (id.isEmpty) return '#MR-00000';
     final numCode = (id.hashCode.abs() % 90000) + 10000;
     return '#MR-$numCode';

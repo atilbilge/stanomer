@@ -221,6 +221,7 @@ Bakım ve arıza bildirimlerini saklar.
 | Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Talep ID |
+| `ticket_number` | `TEXT` | YES | `'MR-' || LPAD(nextval('public.maintenance_ticket_number_seq')::TEXT, 5, '0')` | `UNIQUE` | Sıralı bilet/takip numarası (örn: MR-10001) |
 | `property_id` | `UUID` | **NO** | - | **FK** `REFERENCES properties(id) ON DELETE CASCADE` | Mülk ID |
 | `contract_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES contracts(id) ON DELETE SET NULL` | İlgili sözleşme ID |
 | `reporter_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id)` | Bildiren kullanıcı ID |

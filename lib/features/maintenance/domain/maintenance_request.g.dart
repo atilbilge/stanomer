@@ -9,6 +9,7 @@ part of 'maintenance_request.dart';
 _MaintenanceRequest _$MaintenanceRequestFromJson(Map<String, dynamic> json) =>
     _MaintenanceRequest(
       id: json['id'] as String,
+      ticketNumber: json['ticket_number'] as String?,
       propertyId: json['property_id'] as String,
       contractId: json['contract_id'] as String?,
       reporterId: json['reporter_id'] as String,
@@ -62,6 +63,7 @@ _MaintenanceRequest _$MaintenanceRequestFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MaintenanceRequestToJson(_MaintenanceRequest instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'ticket_number': instance.ticketNumber,
       'property_id': instance.propertyId,
       'contract_id': instance.contractId,
       'reporter_id': instance.reporterId,

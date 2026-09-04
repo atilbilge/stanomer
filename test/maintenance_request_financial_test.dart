@@ -120,5 +120,58 @@ void main() {
         MaintenancePaymentStatus.pendingReview,
       );
     });
+
+    test('displayId should use database ticketNumber when available and fallback when null', () {
+      // 1. With database-backed ticketNumber
+      const withTicket = MaintenanceRequest(
+        id: 'req-uuid-1',
+        ticketNumber: 'MR-10001',
+        propertyId: 'p1',
+        reporterId: 'u1',
+        title: 'Broken window',
+      );
+      expect(withTicket.ticketNumber, 'MR-10001');
+      expect(withTicket.displayId, '#MR-10001');
+
+      // 2. With # prefix already present
+      const withHashTicket = MaintenanceRequest(
+        id: 'req-uuid-2',
+        ticketNumber: '#MR-10002',
+        propertyId: 'p1',
+        reporterId: 'u1',
+        title: 'Broken lock',
+      );
+      expect(withHashTicket.displayId, '#MR-10002');
+
+      // 3. Backward-compatibility: ticketNumber is null (e.g. production DB / unmigrated row)
+      const withoutTicket = MaintenanceRequest(
+        id: 'req-uuid-3',
+        ticketNumber: null,
+        propertyId: 'p1',
+        reporterId: 'u1',
+        title: 'Leaking pipe',
+      );
+      final fallbackId = withoutTicket.displayId;
+      expect(fallbackId, startsWith('#MR-'));
+      expect(fallbackId.length, 9); // e.g. #MR-12345
+    });
+
+    test('should serialize and deserialize ticket_number via fromMap/toMap', () {
+      final json = {
+        'id': 'uuid-abc',
+        'ticket_number': 'MR-10450',
+        'property_id': 'prop-1',
+        'reporter_id': 'user-1',
+        'title': 'Test Request',
+      };
+
+      final parsed = MaintenanceRequest.fromMap(json);
+      expect(parsed.ticketNumber, 'MR-10450');
+      expect(parsed.displayId, '#MR-10450');
+
+      final exported = parsed.toMap();
+      expect(exported['ticket_number'], 'MR-10450');
+    });
   });
 }
+
