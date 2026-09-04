@@ -309,6 +309,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         if (propertiesAsync.hasValue) {
           final properties = propertiesAsync.value!;
           if (isLandlord) {
+            final hasAgencyManagedProperty = properties.any((p) => p.agencyId != null && p.agencyId!.isNotEmpty);
+            final isAgencyClient = hasAgencyManagedProperty || brandingState.hasAgencyBranding;
+            if (isAgencyClient) return null;
+
             return FloatingActionButton.extended(
               onPressed: () => context.push('/add-property'),
               backgroundColor: brandingState.hasAgencyBranding ? agencyColors.primary : StanomerColors.getRoleColor(role),
@@ -478,6 +482,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 if (propertiesAsync.hasValue) ...[
                                   () {
                                     final properties = propertiesAsync.value!;
+                                    final hasAgencyManagedProperty = properties.any((p) => p.agencyId != null && p.agencyId!.isNotEmpty);
+                                    final isAgencyClient = hasAgencyManagedProperty || brandingState.hasAgencyBranding;
                                     final totalUnits = properties.length;
                                     final totalTenants = properties.where((p) => p.tenantId != null).length;
                                     final statsAsync = ref.watch(landlordSummaryProvider);
@@ -486,7 +492,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     if (_landlordCurrentTab == 3) {
                       if (properties.isEmpty) {
                         return _LandlordEmptyState(
-                          onAction: () => context.push('/add-property'),
+                          onAction: isAgencyClient ? null : () => context.push('/add-property'),
+                          isAgencyClient: isAgencyClient,
                         );
                       }
                       return Column(
@@ -566,7 +573,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           builder: (context, constraints) {
                             if (properties.isEmpty) {
                               return _LandlordEmptyState(
-                                onAction: () => context.push('/add-property'),
+                                onAction: isAgencyClient ? null : () => context.push('/add-property'),
+                                isAgencyClient: isAgencyClient,
                               );
                             }
                             if (filteredProperties.isEmpty) {
@@ -2858,11 +2866,14 @@ class _LandlordMaintenanceEntryCard extends ConsumerWidget {
 }
 
 class _LandlordEmptyState extends StatelessWidget {
-  final VoidCallback onAction;
-  const _LandlordEmptyState({required this.onAction});
+  final VoidCallback? onAction;
+  final bool isAgencyClient;
+  const _LandlordEmptyState({this.onAction, this.isAgencyClient = false});
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -2873,22 +2884,34 @@ class _LandlordEmptyState extends StatelessWidget {
           const SizedBox(height: 20),
           Text(loc.noProperties, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text(loc.addYourFirstProperty, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF999999))),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: onAction,
-              icon: const Icon(LucideIcons.plus, size: 18),
-              label: Text(loc.addProperty, style: const TextStyle(fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A5FA8),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          Text(
+            isAgencyClient
+                ? (isTr
+                    ? 'Mülkleriniz acente tarafından yönetilmektedir. Yeni mülk eklemek için lütfen acenteniz ile iletişime geçiniz.'
+                    : (isSr
+                        ? 'Vašim nekretninama upravlja agencija. Za dodavanje nove nekretnine obratite se svojoj agenciji.'
+                        : 'Your properties are managed by an agency. To add a new property, please contact your agency.'))
+                : loc.addYourFirstProperty,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+          ),
+          if (!isAgencyClient && onAction != null) ...[
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onAction,
+                icon: const Icon(LucideIcons.plus, size: 18),
+                label: Text(loc.addProperty, style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1A5FA8),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,

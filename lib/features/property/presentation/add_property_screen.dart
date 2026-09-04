@@ -333,6 +333,54 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     final isAgency = userRole == 'agency' || hasAgencyBranding;
     final isDetailedActive = hasAgencyBranding || _isDetailed;
 
+    final propertiesAsync = ref.watch(propertiesStreamProvider);
+    final hasAgencyManagedProperty = (propertiesAsync.value ?? []).any((p) => p.agencyId != null && p.agencyId!.isNotEmpty);
+    final isAgencyClient = (userRole == 'landlord') && (hasAgencyManagedProperty || hasAgencyBranding);
+
+    if (!isEdit && isAgencyClient) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.addProperty)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.building2, size: 36, color: Color(0xFF2563EB)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  loc.localeName == 'tr' ? 'Acente Yönetiminde' : (loc.localeName.startsWith('sr') ? 'Upravlja agencija' : 'Managed by Agency'),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.localeName == 'tr'
+                      ? 'Mülkleriniz acente tarafından yönetilmektedir. Yeni mülk ekleme işlemleri yalnızca bağlı olduğunuz acente tarafından yapılabilir.'
+                      : (loc.localeName.startsWith('sr')
+                          ? 'Vašim nekretninama upravlja agencija. Dodavanje novih nekretnina može izvršiti samo vaša agencija.'
+                          : 'Your properties are managed by an agency. Adding new properties can only be done by your managing agency.'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: StanomerColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => context.pop(),
+                  child: Text(loc.cancel),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.property != null ? loc.editProperty : loc.addProperty),
