@@ -14,9 +14,7 @@ import 'package:stanomer/core/utils/expense_utils.dart';
 import '../../../core/providers/agency_branding_provider.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/property_owner.dart';
-import '../../agency/domain/agency_contact.dart';
 import 'widgets/property_owners_form_section.dart';
-import 'widgets/agency_contact_autocomplete.dart';
 import 'widgets/ownership_share_sheet.dart';
 import 'join_property_sheet.dart';
 
@@ -157,24 +155,6 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     }
   }
 
-  void _onAgencyContactSelected(AgencyContact contact) {
-    setState(() {
-      _landlordNameController.text = contact.name;
-      if (contact.email != null) _landlordEmailController.text = contact.email!;
-      if (contact.phone != null) _landlordPhoneController.text = contact.phone!;
-    });
-
-    _ownersFormKey.currentState?.setPrimaryOwnerFromContact(
-      name: contact.name,
-      email: contact.email,
-      phone: contact.phone,
-      idNumber: contact.idNumber,
-      isCompany: contact.isCompany,
-      companyName: contact.companyName,
-      pib: contact.pib,
-      representativeName: contact.representativeName,
-    );
-  }
 
   void _resetForm() {
     _formKey.currentState?.reset();
@@ -603,15 +583,6 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 _buildDescriptionField(loc),
               ],
 
-              // --- SECTION: AGENCY CONTACT QUICK FILL ---
-              if (isAgency) ...[
-                AgencyContactAutocomplete(
-                  onContactSelected: _onAgencyContactSelected,
-                  onCleared: () {
-                    // Selection cleared
-                  },
-                ),
-              ],
 
               // --- SECTION: PROPERTY OWNERS (DEDICATED SECTION) ---
               if (isAgency || (widget.property != null && (widget.property!.landlordName?.isNotEmpty == true || widget.property!.agencyId != null))) ...[
