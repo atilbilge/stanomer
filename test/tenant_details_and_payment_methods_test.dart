@@ -472,6 +472,7 @@ void main() {
       expect(find.text('Kiracıya İlişkin Notlar'), findsNothing);
       expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsNothing);
       expect(find.text('Ek İletişim Kişileri'), findsNothing);
+      expect(find.text('Kiracının E-postası'), findsNothing);
       // Independent landlord should NOT see payment method chips in expenses:
       expect(find.text('Ödeme Yöntemi:'), findsNothing);
     });
@@ -500,6 +501,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Agency property MUST see extra tenant details:
+      expect(find.text('Kiracının E-postası'), findsOneWidget);
+      expect(find.text('tenant@example.com'), findsOneWidget);
       expect(find.text('Kimlik / Pasaport / JMBG'), findsOneWidget);
       expect(find.text('Kiracıya İlişkin Notlar'), findsOneWidget);
       expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsOneWidget);

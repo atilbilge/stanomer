@@ -459,6 +459,24 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
+              TextFormField(
+                key: ValueKey('tenant_email_${contract.id}_${contract.inviteeEmail}'),
+                initialValue: contract.inviteeEmail.isNotEmpty
+                    ? contract.inviteeEmail
+                    : (isTr ? 'Belirtilmedi' : (isSr ? 'Nije navedeno' : (loc.localeName.startsWith('ru') ? 'Не указано' : 'Not specified'))),
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: loc.tenantEmail,
+                  prefixIcon: const Icon(LucideIcons.mail, size: 20),
+                  suffixIcon: const Icon(LucideIcons.lock, size: 16, color: StanomerColors.textTertiary),
+                  filled: true,
+                  fillColor: StanomerColors.bgPage,
+                ),
+                style: TextStyle(
+                  color: contract.inviteeEmail.isNotEmpty ? StanomerColors.textPrimary : StanomerColors.textTertiary,
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
