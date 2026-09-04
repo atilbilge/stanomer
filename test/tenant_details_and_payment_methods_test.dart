@@ -9,6 +9,10 @@ import 'package:stanomer/features/property/domain/property.dart';
 import 'package:stanomer/features/property/domain/rent_payment.dart';
 import 'package:stanomer/features/property/domain/tenant_secondary_contact.dart';
 import 'package:stanomer/features/property/presentation/invite_tenant_screen.dart';
+import 'package:stanomer/features/property/presentation/property_settings_screen.dart';
+import 'package:stanomer/features/property/data/property_repository.dart';
+import 'package:stanomer/features/agency/domain/agency_color_scheme.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
   group('Tenant Secondary Contact Tests', () {
@@ -287,6 +291,207 @@ void main() {
       expect(find.text('Kişi Ekle'), findsOneWidget);
       // 5. Expense Payment Method chips
       expect(find.text('Ödeme Yöntemi:'), findsOneWidget);
+      expect(find.text('Banka'), findsOneWidget);
+      expect(find.text('Nakit'), findsOneWidget);
+    });
+  });
+
+  group('PropertySettingsScreen Contract & Property Settings Visibility Tests', () {
+    final independentProperty = Property(
+      id: 'prop-independent',
+      name: 'Standalone Flat',
+      address: 'Main St 10',
+      city: 'Belgrade',
+      landlordId: 'landlord-user',
+      currency: 'EUR',
+      defaultMonthlyRent: 500,
+      expensesTemplate: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    final agencyProperty = Property(
+      id: 'prop-agency',
+      name: 'Agency Managed Apt',
+      address: 'Center St 5',
+      city: 'Belgrade',
+      landlordId: 'landlord-user',
+      agencyId: 'agency-user',
+      currency: 'EUR',
+      defaultMonthlyRent: 800,
+      expensesTemplate: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    final testContract = Contract(
+      id: 'contract-test',
+      propertyId: 'prop-agency',
+      landlordId: 'landlord-user',
+      monthlyRent: 800,
+      currency: 'EUR',
+      depositCurrency: 'EUR',
+      dueDay: 5,
+      inviteeEmail: 'tenant@example.com',
+      token: 'tok-123',
+      expensesConfig: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    final testIndependentContract = Contract(
+      id: 'contract-independent',
+      propertyId: 'prop-independent',
+      landlordId: 'landlord-user',
+      monthlyRent: 500,
+      currency: 'EUR',
+      depositCurrency: 'EUR',
+      dueDay: 5,
+      inviteeEmail: 'tenant@example.com',
+      token: 'tok-indep',
+      expensesConfig: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    const landlordUser = User(
+      id: 'landlord-user',
+      appMetadata: {},
+      userMetadata: {'role': 'landlord'},
+      aud: 'authenticated',
+      createdAt: '2026-01-01',
+    );
+
+    const agencyUser = User(
+      id: 'agency-user',
+      appMetadata: {},
+      userMetadata: {'role': 'agency'},
+      aud: 'authenticated',
+      createdAt: '2026-01-01',
+    );
+
+    testWidgets('Contract Tab: Independent landlord does NOT see extra tenant details or expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => landlordUser),
+            userRoleProvider.overrideWithValue('landlord'),
+            agencyColorSchemeProvider.overrideWithValue(const AgencyColorScheme.landlordScheme()),
+            activeContractProvider(independentProperty.id).overrideWith((ref) => Stream.value(testIndependentContract)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: PropertySettingsScreen(property: independentProperty, initialTab: 'contract'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Independent landlord should NOT see extra tenant details:
+      expect(find.text('Kimlik / Pasaport / JMBG'), findsNothing);
+      expect(find.text('Kiracıya İlişkin Notlar'), findsNothing);
+      expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsNothing);
+      expect(find.text('Ek İletişim Kişileri'), findsNothing);
+      // Independent landlord should NOT see payment method chips in expenses:
+      expect(find.text('Ödeme Yöntemi:'), findsNothing);
+    });
+
+    testWidgets('Contract Tab: Agency-managed property DOES see extra tenant details and expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => agencyUser),
+            userRoleProvider.overrideWithValue('agency'),
+            agencyColorSchemeProvider.overrideWithValue(const AgencyColorScheme.agencyScheme()),
+            activeContractProvider(agencyProperty.id).overrideWith((ref) => Stream.value(testContract)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: PropertySettingsScreen(property: agencyProperty, initialTab: 'contract'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Agency property MUST see extra tenant details:
+      expect(find.text('Kimlik / Pasaport / JMBG'), findsOneWidget);
+      expect(find.text('Kiracıya İlişkin Notlar'), findsOneWidget);
+      expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsOneWidget);
+      expect(find.text('Ek İletişim Kişileri'), findsOneWidget);
+      // Agency property MUST see payment method chips in expenses:
+      expect(find.text('Ödeme Yöntemi:'), findsOneWidget);
+      expect(find.text('Banka'), findsOneWidget);
+      expect(find.text('Nakit'), findsOneWidget);
+    });
+
+    testWidgets('Property Tab: Independent landlord does NOT see physical specs or expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => landlordUser),
+            userRoleProvider.overrideWithValue('landlord'),
+            agencyColorSchemeProvider.overrideWithValue(const AgencyColorScheme.landlordScheme()),
+            activeContractProvider(independentProperty.id).overrideWith((ref) => Stream.value(testIndependentContract)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: PropertySettingsScreen(property: independentProperty, initialTab: 'property'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Standard fields are visible:
+      expect(find.byType(TextFormField), findsWidgets);
+      // Physical specs MUST NOT be visible for independent landlord:
+      expect(find.byIcon(LucideIcons.doorOpen), findsNothing);
+      expect(find.text('Banka'), findsNothing);
+      expect(find.text('Nakit'), findsNothing);
+    });
+
+    testWidgets('Property Tab: Agency-managed property DOES see physical specs and expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => agencyUser),
+            userRoleProvider.overrideWithValue('agency'),
+            agencyColorSchemeProvider.overrideWithValue(const AgencyColorScheme.agencyScheme()),
+            activeContractProvider(agencyProperty.id).overrideWith((ref) => Stream.value(testContract)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: PropertySettingsScreen(property: agencyProperty, initialTab: 'property'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Physical specs MUST be visible:
+      expect(find.byIcon(LucideIcons.doorOpen), findsOneWidget);
       expect(find.text('Banka'), findsOneWidget);
       expect(find.text('Nakit'), findsOneWidget);
     });

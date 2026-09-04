@@ -4,7 +4,6 @@ import 'package:universal_io/io.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_filex/open_filex.dart';
@@ -18,9 +17,11 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/expense_utils.dart';
 import '../domain/property.dart';
 import '../domain/contract.dart';
+import '../domain/tenant_secondary_contact.dart';
 import '../../auth/data/auth_providers.dart';
 import '../data/property_repository.dart';
 import '../presentation/widgets/payment_responsibility_selector.dart';
+import 'widgets/tenant_secondary_contacts_section.dart';
 
 class PropertySettingsScreen extends ConsumerStatefulWidget {
   final Property property;
@@ -41,6 +42,18 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
   // Property controllers
   late TextEditingController _nameController;
   late TextEditingController _addressController;
+
+  // Physical parameters for agency properties
+  String? _propertyType;
+  late TextEditingController _unitNumberController;
+  String? _roomCount;
+  late TextEditingController _areaSqmController;
+  String? _floor;
+  late TextEditingController _totalFloorsController;
+  String? _furnishing;
+  String? _heatingType;
+  Set<String> _selectedAmenities = {};
+  late TextEditingController _descriptionController;
 
   // Contract (property defaults) controllers
   late TextEditingController _rentController;
@@ -63,6 +76,16 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
   bool _isContractLoading = false;
   String? _loadedContractId;
 
+  // New contract tenant controllers for agency
+  late TextEditingController _contractTenantNameController;
+  late TextEditingController _contractTenantIdController;
+  late TextEditingController _contractTenantPhoneController;
+  late TextEditingController _contractTenantNotesController;
+  String? _contractTenantIdDocUrl;
+  String? _contractTenantIdDocFileName;
+  bool _isUploadingTenantIdDoc = false;
+  List<TenantSecondaryContact> _contractSecondaryContacts = [];
+
   @override
   void initState() {
     super.initState();
@@ -76,12 +99,29 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     _selectedCurrency = widget.property.currency;
     _depositCurrency = widget.property.defaultDepositCurrency;
     _expenses = List.from(widget.property.expensesTemplate.where((e) => e.name != 'Porez (Tax)'));
+
+    // Physical parameters
+    _propertyType = widget.property.propertyType ?? 'apartment';
+    _unitNumberController = TextEditingController(text: widget.property.unitNumber ?? '');
+    _roomCount = widget.property.roomCount;
+    _areaSqmController = TextEditingController(text: widget.property.areaSqm != null ? widget.property.areaSqm.toString() : '');
+    _floor = widget.property.floor;
+    _totalFloorsController = TextEditingController(text: widget.property.totalFloors != null ? widget.property.totalFloors.toString() : '');
+    _furnishing = widget.property.furnishing;
+    _heatingType = widget.property.heatingType;
+    _selectedAmenities = Set.from(widget.property.amenities);
+    _descriptionController = TextEditingController(text: widget.property.description ?? '');
+
     // Contract controllers (empty; will be populated when active contract loads)
     _contractRentController = TextEditingController();
     _contractDepositController = TextEditingController();
     _contractDueDayController = TextEditingController();
     _contractCurrency = 'EUR';
     _contractDepositCurrency = 'EUR';
+    _contractTenantNameController = TextEditingController();
+    _contractTenantIdController = TextEditingController();
+    _contractTenantPhoneController = TextEditingController();
+    _contractTenantNotesController = TextEditingController();
   }
 
   @override
@@ -96,6 +136,17 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
       _selectedCurrency = widget.property.currency;
       _depositCurrency = widget.property.defaultDepositCurrency;
       _expenses = List.from(widget.property.expensesTemplate.where((e) => e.name != 'Porez (Tax)'));
+
+      _propertyType = widget.property.propertyType ?? 'apartment';
+      _unitNumberController.text = widget.property.unitNumber ?? '';
+      _roomCount = widget.property.roomCount;
+      _areaSqmController.text = widget.property.areaSqm != null ? widget.property.areaSqm.toString() : '';
+      _floor = widget.property.floor;
+      _totalFloorsController.text = widget.property.totalFloors != null ? widget.property.totalFloors.toString() : '';
+      _furnishing = widget.property.furnishing;
+      _heatingType = widget.property.heatingType;
+      _selectedAmenities = Set.from(widget.property.amenities);
+      _descriptionController.text = widget.property.description ?? '';
     }
   }
 
@@ -108,9 +159,17 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     _rentController.dispose();
     _depositController.dispose();
     _dueDayController.dispose();
+    _unitNumberController.dispose();
+    _areaSqmController.dispose();
+    _totalFloorsController.dispose();
+    _descriptionController.dispose();
     _contractRentController.dispose();
     _contractDepositController.dispose();
     _contractDueDayController.dispose();
+    _contractTenantNameController.dispose();
+    _contractTenantIdController.dispose();
+    _contractTenantPhoneController.dispose();
+    _contractTenantNotesController.dispose();
     super.dispose();
   }
 
@@ -125,7 +184,12 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     setState(() => _isLoading = true);
     try {
       final repo = ref.read(propertyRepositoryProvider);
-      
+      final user = ref.read(currentUserProvider);
+      final userRole = ref.read(userRoleProvider);
+      final isAgencyUser = userRole == 'agency' || user?.id == widget.property.agencyId;
+      final isManagedByAgency = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+      final showAgencyDetails = isManagedByAgency || isAgencyUser;
+
       await repo.updateProperty(widget.property.copyWith(
             name: _nameController.text.trim(),
             address: _addressController.text.trim(),
@@ -136,6 +200,16 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             defaultDueDay: int.tryParse(_dueDayController.text) ?? 1,
             taxType: TaxType.included,
             expensesTemplate: _expenses,
+            propertyType: showAgencyDetails ? _propertyType : widget.property.propertyType,
+            unitNumber: showAgencyDetails ? (_unitNumberController.text.trim().isEmpty ? null : _unitNumberController.text.trim()) : widget.property.unitNumber,
+            roomCount: showAgencyDetails ? _roomCount : widget.property.roomCount,
+            areaSqm: showAgencyDetails ? double.tryParse(_areaSqmController.text.trim()) : widget.property.areaSqm,
+            floor: showAgencyDetails ? _floor : widget.property.floor,
+            totalFloors: showAgencyDetails ? int.tryParse(_totalFloorsController.text.trim()) : widget.property.totalFloors,
+            furnishing: showAgencyDetails ? _furnishing : widget.property.furnishing,
+            heatingType: showAgencyDetails ? _heatingType : widget.property.heatingType,
+            amenities: showAgencyDetails ? _selectedAmenities.toList() : widget.property.amenities,
+            description: showAgencyDetails ? (_descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim()) : widget.property.description,
           ));
       
       ref.invalidate(propertiesStreamProvider);
@@ -155,6 +229,36 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     }
   }
 
+  Future<void> _pickTenantIdDoc() async {
+    final result = await pickContractFile(context);
+    if (result == null) return;
+    
+    List<int>? fileBytes = result.files.single.bytes?.toList();
+    if (fileBytes == null && !kIsWeb && result.files.single.path != null) {
+      fileBytes = await io.File(result.files.single.path!).readAsBytes();
+    }
+    if (fileBytes == null) return;
+
+    setState(() => _isUploadingTenantIdDoc = true);
+    try {
+      final repo = ref.read(propertyRepositoryProvider);
+      final url = await repo.uploadContract(
+        'tenant_id_${result.files.single.name}',
+        filePath: result.files.single.path,
+        bytes: Uint8List.fromList(fileBytes),
+      );
+      setState(() {
+        _contractTenantIdDocUrl = url;
+        _contractTenantIdDocFileName = result.files.single.name;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingTenantIdDoc = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +267,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     final user = ref.watch(currentUserProvider);
     final roleColor = ref.watch(agencyColorSchemeProvider).primary;
     final userRole = ref.watch(userRoleProvider);
+    final isAgencyUser = userRole == 'agency' || user?.id == widget.property.agencyId;
+    final isManagedByAgency = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final showAgencyDetails = isManagedByAgency || isAgencyUser;
     final isManager = widget.property.landlordId == user?.id ||
         widget.property.agencyId == user?.id ||
         userRole == 'agency';
@@ -200,22 +307,22 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               ),
             ),
           ),
-
-        // ── Panel ──────────────────────────────────────────────
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: (isManager && settingsSectionNotifier.value == 'property')
-                ? _buildPropertyPanel(loc, roleColor)
-                : _buildContractPanel(loc, user, roleColor),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: (isManager && settingsSectionNotifier.value == 'property')
+                  ? _buildPropertyPanel(loc, roleColor, showAgencyDetails)
+                  : _buildContractPanel(loc, user, roleColor, showAgencyDetails),
+            ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
 
-  Widget _buildContractPanel(AppLocalizations loc, User? user, Color roleColor) {
+  Widget _buildContractPanel(AppLocalizations loc, User? user, Color roleColor, bool showAgencyDetails) {
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     final activeContractAsync = ref.watch(activeContractProvider(widget.property.id));
     final userRole = ref.watch(userRoleProvider);
     final isManager = widget.property.landlordId == user?.id ||
@@ -252,6 +359,13 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
           _contractExpenses = List.from(contract.expensesConfig);
           _contractStartDate = contract.startDate;
           _contractEndDate = contract.endDate;
+
+          _contractTenantNameController.text = contract.tenantName ?? '';
+          _contractTenantIdController.text = contract.tenantIdNumber ?? '';
+          _contractTenantPhoneController.text = contract.tenantPhone ?? '';
+          _contractTenantNotesController.text = contract.tenantNotes ?? '';
+          _contractTenantIdDocUrl = contract.tenantIdDocumentUrl;
+          _contractSecondaryContacts = List.from(contract.tenantSecondaryContacts);
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -330,6 +444,134 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               _buildTerminationBanner(loc, contract, user?.id, roleColor),
               const SizedBox(height: 16),
             ],
+
+            // Kiracı Bilgileri (Sadece Acente Yönetiminde)
+            if (showAgencyDetails) ...[
+              const SizedBox(height: 24),
+              _buildSectionHeader(loc.roleTenant.toUpperCase(), LucideIcons.user, roleColor),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _contractTenantNameController,
+                decoration: InputDecoration(
+                  labelText: isTr ? 'Kiracı Adı & Soyadı' : (isSr ? 'Ime i prezime zakupca' : 'Tenant Full Name'),
+                  prefixIcon: const Icon(LucideIcons.user, size: 20),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _contractTenantIdController,
+                      decoration: InputDecoration(
+                        labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
+                        prefixIcon: const Icon(LucideIcons.idCard, size: 20),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _contractTenantPhoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                        prefixIcon: const Icon(LucideIcons.phone, size: 20),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _contractTenantNotesController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: isTr ? 'Kiracıya İlişkin Notlar' : (isSr ? 'Napomene o zakupcu' : 'Tenant Notes'),
+                  prefixIcon: const Icon(LucideIcons.fileText, size: 20),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: StanomerColors.borderDefault),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _contractTenantIdDocUrl != null ? LucideIcons.fileCheck2 : LucideIcons.fileUp,
+                      size: 20,
+                      color: _contractTenantIdDocUrl != null ? Colors.green : roleColor,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _contractTenantIdDocUrl != null
+                                ? (_contractTenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
+                                : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: _contractTenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_isUploadingTenantIdDoc)
+                      const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    else if (_contractTenantIdDocUrl != null) ...[
+                      IconButton(
+                        icon: const Icon(LucideIcons.externalLink, size: 18, color: StanomerColors.brandPrimary),
+                        onPressed: () => _openFileOrUrl(context, _contractTenantIdDocUrl!, mounted: mounted),
+                      ),
+                      IconButton(
+                        icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.redAccent),
+                        onPressed: () => setState(() {
+                          _contractTenantIdDocUrl = null;
+                          _contractTenantIdDocFileName = null;
+                        }),
+                      ),
+                    ] else
+                      OutlinedButton.icon(
+                        onPressed: _pickTenantIdDoc,
+                        icon: const Icon(LucideIcons.upload, size: 14),
+                        label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: roleColor,
+                          side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              TenantSecondaryContactsSection(
+                initialContacts: _contractSecondaryContacts,
+                onContactsChanged: (contacts) {
+                  _contractSecondaryContacts = contacts;
+                  setState(() {});
+                },
+              ),
+            ],
+
             const SizedBox(height: 32),
             _buildSectionHeader(loc.rentPaymentHeader, LucideIcons.banknote, roleColor),
             const SizedBox(height: 16),
@@ -465,7 +707,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             ),
             const SizedBox(height: 24),
             // Masraflar
-            _buildContractExpensesSection(loc, roleColor),
+            _buildContractExpensesSection(loc, roleColor, showAgencyDetails),
             const SizedBox(height: 24),
             // Belgeler
             _buildAdditionalDocumentsSection(loc, contract, roleColor),
@@ -492,62 +734,82 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              icon: const Icon(LucideIcons.send, size: 18),
-              onPressed: (_isContractLoading || !_hasContractChanges(contract)) ? null : () async {
-                if (_contractExpenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
-                  );
-                  return;
-                }
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text(loc.proposeChanges),
-                    content: Text(loc.proposeChangesInfo(targetRole)),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
-                      ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.send)),
-                    ],
+            Builder(
+              builder: (context) {
+                final hasFinance = _hasFinancialChanges(contract);
+                return ElevatedButton.icon(
+                  icon: const Icon(LucideIcons.send, size: 18),
+                  onPressed: (_isContractLoading || !_hasContractChanges(contract, showAgencyDetails)) ? null : () async {
+                    if (hasFinance) {
+                      if (_contractExpenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
+                        );
+                        return;
+                      }
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(loc.proposeChanges),
+                          content: Text(loc.proposeChangesInfo(targetRole)),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+                            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.send)),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                    }
+                    setState(() => _isContractLoading = true);
+                    try {
+                      if (hasFinance) {
+                        final changes = <String, dynamic>{
+                          'monthly_rent': double.tryParse(_contractRentController.text),
+                          'currency': _contractCurrency,
+                          if (_contractDepositController.text.isNotEmpty)
+                            'deposit_amount': double.tryParse(_contractDepositController.text),
+                          'deposit_currency': _contractDepositCurrency,
+                          'due_day': int.tryParse(_contractDueDayController.text),
+                          if (_contractStartDate != null) 'start_date': _contractStartDate!.toIso8601String(),
+                          if (_contractEndDate != null) 'end_date': _contractEndDate!.toIso8601String(),
+                          'tax_type': TaxType.included.name,
+                          'expenses_config': _contractExpenses.map((e) => e.toJson()).toList(),
+                        };
+                        await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
+                      }
+                      if (showAgencyDetails) {
+                        await ref.read(propertyRepositoryProvider).updateContractTenantDetails(
+                          contract.id,
+                          tenantName: _contractTenantNameController.text.trim().isEmpty ? null : _contractTenantNameController.text.trim(),
+                          tenantIdNumber: _contractTenantIdController.text.trim().isEmpty ? null : _contractTenantIdController.text.trim(),
+                          tenantPhone: _contractTenantPhoneController.text.trim().isEmpty ? null : _contractTenantPhoneController.text.trim(),
+                          tenantNotes: _contractTenantNotesController.text.trim().isEmpty ? null : _contractTenantNotesController.text.trim(),
+                          tenantIdDocumentUrl: _contractTenantIdDocUrl,
+                          tenantSecondaryContacts: _contractSecondaryContacts,
+                        );
+                      }
+                      ref.invalidate(activeContractProvider(widget.property.id));
+                      ref.invalidate(contractProposalProvider(contract.id));
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(hasFinance ? loc.revisionSent : loc.propertyUpdatedSuccess)),
+                      );
+                    } catch (e) {
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e'), backgroundColor: StanomerColors.alertPrimary),
+                      );
+                    } finally {
+                      if (mounted) setState(() => _isContractLoading = false);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: roleColor,
+                    foregroundColor: Colors.white,
                   ),
+                  label: _isContractLoading
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : Text(hasFinance ? loc.proposeChanges : loc.save),
                 );
-                if (confirmed != true) return;
-                setState(() => _isContractLoading = true);
-                try {
-                  final changes = <String, dynamic>{
-                    'monthly_rent': double.tryParse(_contractRentController.text),
-                    'currency': _contractCurrency,
-                    if (_contractDepositController.text.isNotEmpty)
-                      'deposit_amount': double.tryParse(_contractDepositController.text),
-                    'deposit_currency': _contractDepositCurrency,
-                    'due_day': int.tryParse(_contractDueDayController.text),
-                    if (_contractStartDate != null) 'start_date': _contractStartDate!.toIso8601String(),
-                    if (_contractEndDate != null) 'end_date': _contractEndDate!.toIso8601String(),
-                    'tax_type': TaxType.included.name,
-                    'expenses_config': _contractExpenses.map((e) => e.toJson()).toList(),
-                  };
-                  await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
-                  ref.invalidate(activeContractProvider(widget.property.id));
-                  ref.invalidate(contractProposalProvider(contract.id));
-                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.revisionSent)),
-                  );
-                } catch (e) {
-                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e'), backgroundColor: StanomerColors.alertPrimary),
-                  );
-                } finally {
-                  if (mounted) setState(() => _isContractLoading = false);
-                }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: roleColor,
-                foregroundColor: Colors.white,
-              ),
-              label: _isContractLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(loc.proposeChanges),
             ),
             if (contract.status == ContractStatus.active) ...[
               const SizedBox(height: 24),
@@ -570,8 +832,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     );
   }
 
-  bool _hasContractChanges(Contract contract) {
-    // Basic fields
+  bool _hasFinancialChanges(Contract contract) {
     if (_contractRentController.text != contract.monthlyRent.toStringAsFixed(0)) return true;
     if (_contractCurrency != contract.currency) return true;
     
@@ -581,14 +842,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     
     if (_contractDueDayController.text != contract.dueDay.toString()) return true;
     
-    if (_selectedCurrency != widget.property.currency) return true;
-    if (_depositCurrency != widget.property.defaultDepositCurrency) return true;
-    
-    // Dates
     if (_contractStartDate != contract.startDate) return true;
     if (_contractEndDate != contract.endDate) return true;
     
-    // Expenses
     if (_contractExpenses.length != contract.expensesConfig.length) return true;
     for (int i = 0; i < _contractExpenses.length; i++) {
       if (_contractExpenses[i] != contract.expensesConfig[i]) return true;
@@ -597,9 +853,29 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     return false;
   }
 
+  bool _hasContractChanges(Contract contract, bool showAgencyDetails) {
+    if (_hasFinancialChanges(contract)) return true;
+    if (showAgencyDetails) {
+      final origName = contract.tenantName ?? '';
+      if (_contractTenantNameController.text.trim() != origName) return true;
+      final origId = contract.tenantIdNumber ?? '';
+      if (_contractTenantIdController.text.trim() != origId) return true;
+      final origPhone = contract.tenantPhone ?? '';
+      if (_contractTenantPhoneController.text.trim() != origPhone) return true;
+      final origNotes = contract.tenantNotes ?? '';
+      if (_contractTenantNotesController.text.trim() != origNotes) return true;
+      if (_contractTenantIdDocUrl != contract.tenantIdDocumentUrl) return true;
+      final origContacts = contract.tenantSecondaryContacts;
+      if (_contractSecondaryContacts.length != origContacts.length) return true;
+      for (int i = 0; i < _contractSecondaryContacts.length; i++) {
+        if (_contractSecondaryContacts[i] != origContacts[i]) return true;
+      }
+    }
+    return false;
+  }
+
   Widget _buildAdditionalDocumentsSection(AppLocalizations loc, Contract contract, Color roleColor) {
     final hasMainContract = contract.contractUrl != null && contract.contractUrl!.isNotEmpty;
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1107,8 +1383,10 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     );
   }
 
-  Widget _buildContractExpensesSection(AppLocalizations loc, Color roleColor) {
+  Widget _buildContractExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyDetails) {
     if (_contractExpenses.isEmpty) return const SizedBox.shrink();
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1161,6 +1439,53 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                               });
                             },
                           ),
+                          if (showAgencyDetails) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                                  avatar: const Icon(LucideIcons.landmark, size: 13),
+                                  selected: expense.paymentMethod != 'cash',
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _contractExpenses[index] = expense.copyWith(paymentMethod: 'bank_transfer');
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFEFF6FF),
+                                  labelStyle: TextStyle(
+                                    color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
+                                    fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                const SizedBox(width: 6),
+                                ChoiceChip(
+                                  label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                                  avatar: const Icon(LucideIcons.banknote, size: 13),
+                                  selected: expense.paymentMethod == 'cash',
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _contractExpenses[index] = expense.copyWith(paymentMethod: 'cash');
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFFEF3C7),
+                                  labelStyle: TextStyle(
+                                    color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
+                                    fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1176,7 +1501,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     );
   }
 
-  Widget _buildPropertyPanel(AppLocalizations loc, Color roleColor) {
+  Widget _buildPropertyPanel(AppLocalizations loc, Color roleColor, bool showAgencyDetails) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1214,6 +1539,37 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
           maxLines: 2,
           decoration: InputDecoration(labelText: loc.address),
         ),
+        if (showAgencyDetails) ...[
+          const SizedBox(height: 24),
+          _buildPropertyTypeSegmented(loc),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _unitNumberController,
+            decoration: InputDecoration(
+              labelText: loc.unitNumberLabel,
+              hintText: loc.unitNumberHint,
+              prefixIcon: const Icon(LucideIcons.doorOpen, size: 20),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(loc.structuralAndFinancialMetrics, LucideIcons.building, roleColor),
+          const SizedBox(height: 16),
+          _buildRoomCountPills(loc),
+          const SizedBox(height: 16),
+          _buildMetricsRow(loc),
+          const SizedBox(height: 24),
+          _buildSectionHeader(loc.equipmentAndHeatingStandards, LucideIcons.flame, roleColor),
+          const SizedBox(height: 16),
+          _buildFurnishingCards(loc),
+          const SizedBox(height: 16),
+          _buildHeatingTypeDropdown(loc),
+          const SizedBox(height: 24),
+          _buildSectionHeader(loc.featuredAmenitiesLabel, LucideIcons.sparkles, roleColor),
+          const SizedBox(height: 16),
+          _buildAmenitiesGrid(loc),
+          const SizedBox(height: 16),
+          _buildDescriptionField(loc),
+        ],
         const SizedBox(height: 24),
         const Divider(),
         const SizedBox(height: 16),
@@ -1285,7 +1641,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
         ),
         const SizedBox(height: 16),
         const SizedBox(height: 24),
-        _buildExpensesSection(loc, roleColor),
+        _buildExpensesSection(loc, roleColor, showAgencyDetails),
         const SizedBox(height: 24),
         ElevatedButton(
           onPressed: _isLoading ? null : _update,
@@ -1299,11 +1655,426 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     );
   }
 
+  Widget _buildPropertyTypeSegmented(AppLocalizations loc) {
+    final types = [
+      {'id': 'apartment', 'label': loc.propertyTypeApartment, 'icon': LucideIcons.building2},
+      {'id': 'house', 'label': loc.propertyTypeHouse, 'icon': LucideIcons.home},
+      {'id': 'commercial', 'label': loc.propertyTypeCommercial, 'icon': LucideIcons.briefcase},
+      {'id': 'garage', 'label': loc.propertyTypeGarage, 'icon': LucideIcons.warehouse},
+    ];
 
-  Widget _buildExpensesSection(AppLocalizations loc, Color roleColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.propertyTypeLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: types.map((t) {
+              final isSelected = _propertyType == t['id'];
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _propertyType = t['id'] as String),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          t['icon'] as IconData,
+                          size: 15,
+                          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            t['label'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoomCountPills(AppLocalizations loc) {
+    final rooms = ['studio', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '5.0+'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.roomCountLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: rooms.map((r) {
+            final isSelected = _roomCount == r;
+            final label = r == 'studio' ? (loc.localeName == 'tr' ? 'Stüdyo' : 'Studio') : r;
+            return ChoiceChip(
+              label: Text(label),
+              selected: isSelected,
+              onSelected: (_) => setState(() => _roomCount = r),
+              selectedColor: const Color(0xFFEFF6FF),
+              backgroundColor: Colors.white,
+              labelStyle: TextStyle(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                  width: isSelected ? 1.5 : 1.0,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricsRow(AppLocalizations loc) {
+    final floorDropdown = DropdownButtonFormField<String>(
+      value: _floor,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: loc.floorLevelLabel,
+        prefixIcon: const Icon(LucideIcons.layers, size: 20),
+      ),
+      items: [
+        DropdownMenuItem(value: 'suteren', child: Text(loc.floorSuteren, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'prizemlje', child: Text(loc.floorPrizemlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'visoko_prizemlje', child: Text(loc.floorVisokoPrizemlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '1', child: Text(loc.floorNth('1'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '2', child: Text(loc.floorNth('2'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '3', child: Text(loc.floorNth('3'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '4', child: Text(loc.floorNth('4'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '5', child: Text(loc.floorNth('5'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '6', child: Text(loc.floorNth('6'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '7', child: Text(loc.floorNth('7'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '8', child: Text(loc.floorNth('8'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '9', child: Text(loc.floorNth('9'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: '10+', child: Text(loc.floorNth('10+'), overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'potkrovlje', child: Text(loc.floorPotkrovlje, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'other', child: Text(loc.floorOther, overflow: TextOverflow.ellipsis)),
+      ],
+      onChanged: (val) => setState(() => _floor = val),
+    );
+
+    final areaField = TextFormField(
+      controller: _areaSqmController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: loc.areaSqmLabel,
+        hintText: '85',
+        suffixText: 'm²',
+        prefixIcon: const Icon(LucideIcons.maximize2, size: 20),
+      ),
+    );
+
+    final totalFloorsField = TextFormField(
+      controller: _totalFloorsController,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: loc.totalFloorsLabel,
+        hintText: '6',
+        prefixIcon: const Icon(LucideIcons.building2, size: 20),
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: areaField),
+                  const SizedBox(width: 12),
+                  Expanded(child: totalFloorsField),
+                ],
+              ),
+              const SizedBox(height: 16),
+              floorDropdown,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 2, child: areaField),
+            const SizedBox(width: 12),
+            Expanded(flex: 3, child: floorDropdown),
+            const SizedBox(width: 12),
+            Expanded(flex: 2, child: totalFloorsField),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFurnishingCards(AppLocalizations loc) {
+    final options = [
+      {
+        'id': 'furnished',
+        'title': loc.furnishingFurnished,
+        'desc': loc.furnishingFurnishedDesc,
+        'icon': LucideIcons.armchair,
+      },
+      {
+        'id': 'semi_furnished',
+        'title': loc.furnishingSemi,
+        'desc': loc.furnishingSemiDesc,
+        'icon': LucideIcons.utensils,
+      },
+      {
+        'id': 'unfurnished',
+        'title': loc.furnishingUnfurnished,
+        'desc': loc.furnishingUnfurnishedDesc,
+        'icon': LucideIcons.box,
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          loc.furnishingLabel,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          children: options.map((opt) {
+            final isSelected = _furnishing == opt['id'];
+            return GestureDetector(
+              onTap: () => setState(() => _furnishing = opt['id'] as String),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                    width: isSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
+                      size: 18,
+                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(
+                      opt['icon'] as IconData,
+                      size: 16,
+                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            opt['title'] as String,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            opt['desc'] as String,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeatingTypeDropdown(AppLocalizations loc) {
+    return DropdownButtonFormField<String>(
+      value: _heatingType,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: loc.heatingTypeLabel,
+        prefixIcon: const Icon(LucideIcons.flame, size: 20),
+      ),
+      items: [
+        DropdownMenuItem(value: 'cg', child: Text(loc.heatingCg, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'eg', child: Text(loc.heatingEg, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'gas', child: Text(loc.heatingGas, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'underfloor', child: Text(loc.heatingUnderfloor, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: 'ta', child: Text(loc.heatingTa, overflow: TextOverflow.ellipsis)),
+      ],
+      onChanged: (val) => setState(() => _heatingType = val),
+    );
+  }
+
+  Widget _buildAmenitiesGrid(AppLocalizations loc) {
+    final amenities = [
+      {'id': 'pets_allowed', 'label': loc.amenityPets, 'icon': LucideIcons.pawPrint},
+      {'id': 'elevator', 'label': loc.amenityElevator, 'icon': LucideIcons.arrowUpCircle},
+      {'id': 'balcony', 'label': loc.amenityBalcony, 'icon': LucideIcons.sunMedium},
+      {'id': 'parking', 'label': loc.amenityParking, 'icon': LucideIcons.car},
+      {'id': 'storage', 'label': loc.amenityStorage, 'icon': LucideIcons.package},
+    ];
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: amenities.map((a) {
+        final id = a['id'] as String;
+        final isChecked = _selectedAmenities.contains(id);
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isChecked) {
+                _selectedAmenities.remove(id);
+              } else {
+                _selectedAmenities.add(id);
+              }
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isChecked ? const Color(0xFFEFF6FF) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isChecked ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                width: isChecked ? 1.5 : 1.0,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isChecked ? LucideIcons.checkSquare : LucideIcons.square,
+                  size: 16,
+                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  a['icon'] as IconData,
+                  size: 15,
+                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  a['label'] as String,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
+                    color: isChecked ? const Color(0xFF1E3A8A) : const Color(0xFF334155),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDescriptionField(AppLocalizations loc) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              loc.extendedDescriptionLabel,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+            ),
+            Text(
+              '${_descriptionController.text.length} / 2000',
+              style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _descriptionController,
+          maxLines: 4,
+          maxLength: 2000,
+          decoration: InputDecoration(
+            hintText: loc.localeName == 'tr'
+                ? 'Dairenin durumu, tadilat geçmişi, manzara vb. detayları belirtebilirsiniz...'
+                : (loc.localeName.startsWith('sr')
+                    ? 'Navedite detalje kao što su stanje stana, renoviranje, pogled itd...'
+                    : 'Specify details such as apartment condition, renovation, view, etc...'),
+            counterText: '',
+          ),
+          onChanged: (_) => setState(() {}),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyDetails) {
     String getTooltip(String name) {
       return ExpenseUtils.getLocalizedTooltip(name, loc);
     }
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1376,10 +2147,10 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                            Text(
-                              loc.tenantPaysTo,
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
-                            ),
+                          Text(
+                            loc.tenantPaysTo,
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
+                          ),
                           const SizedBox(height: 6),
                           PaymentResponsibilitySelector(
                             value: expense.receiver,
@@ -1389,6 +2160,53 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                               });
                             },
                           ),
+                          if (showAgencyDetails) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                                  avatar: const Icon(LucideIcons.landmark, size: 13),
+                                  selected: expense.paymentMethod != 'cash',
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _expenses[index] = expense.copyWith(paymentMethod: 'bank_transfer');
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFEFF6FF),
+                                  labelStyle: TextStyle(
+                                    color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
+                                    fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                const SizedBox(width: 6),
+                                ChoiceChip(
+                                  label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                                  avatar: const Icon(LucideIcons.banknote, size: 13),
+                                  selected: expense.paymentMethod == 'cash',
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _expenses[index] = expense.copyWith(paymentMethod: 'cash');
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFFEF3C7),
+                                  labelStyle: TextStyle(
+                                    color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
+                                    fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),

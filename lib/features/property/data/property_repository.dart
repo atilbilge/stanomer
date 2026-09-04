@@ -1529,6 +1529,27 @@ class PropertyRepository {
     }
   }
 
+  Future<void> updateContractTenantDetails(String contractId, {
+    String? tenantName,
+    String? tenantIdNumber,
+    String? tenantPhone,
+    String? tenantNotes,
+    String? tenantIdDocumentUrl,
+    List<TenantSecondaryContact>? tenantSecondaryContacts,
+  }) async {
+    final payload = <String, dynamic>{
+      'tenant_name': tenantName,
+      'tenant_id_number': tenantIdNumber,
+      'tenant_phone': tenantPhone,
+      'tenant_notes': tenantNotes,
+      'tenant_id_document_url': tenantIdDocumentUrl,
+      if (tenantSecondaryContacts != null)
+        'tenant_secondary_contacts': tenantSecondaryContacts.map((c) => c.toJson()).toList(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+    await _client.from('contracts').update(payload).eq('id', contractId);
+  }
+
   Future<void> acceptContract(String? token) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
