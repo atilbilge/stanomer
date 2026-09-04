@@ -1228,6 +1228,11 @@ class _OverviewTab extends ConsumerWidget {
   void _showContractDetailsSheet(BuildContext context, WidgetRef ref, Contract contract, String resolvedLandlordName, String resolvedTenantName, bool isTenant, bool isLandlord) {
     final loc = AppLocalizations.of(context)!;
     final roleColor = ref.read(propertyAgencyColorSchemeProvider(property)).primary;
+    final isAgencyManaged = property.agencyId != null && property.agencyId!.isNotEmpty;
+    final user = ref.read(currentUserProvider);
+    final role = user?.userMetadata?['role'] as String?;
+    final isAgencyUser = role == 'agency' || user?.id == property.agencyId;
+    final showAgencyTenantDetails = isAgencyManaged || isAgencyUser;
 
     showModalBottomSheet(
       context: context,
@@ -1265,13 +1270,13 @@ class _OverviewTab extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _ContractDetailRow(icon: LucideIcons.user, label: isTenant ? loc.landlord : loc.tenant, value: isTenant ? resolvedLandlordName : resolvedTenantName),
-              if (contract.tenantIdNumber != null && contract.tenantIdNumber!.isNotEmpty)
+              if (showAgencyTenantDetails && contract.tenantIdNumber != null && contract.tenantIdNumber!.isNotEmpty)
                 _ContractDetailRow(icon: LucideIcons.idCard, label: loc.localeName == 'tr' ? 'Kimlik / Pasaport' : 'ID / Passport', value: contract.tenantIdNumber!),
               if (contract.tenantPhone != null && contract.tenantPhone!.isNotEmpty)
                 _ContractDetailRow(icon: LucideIcons.phone, label: loc.localeName == 'tr' ? 'Kiracı Telefonu' : 'Tenant Phone', value: contract.tenantPhone!),
-              if (contract.tenantNotes != null && contract.tenantNotes!.isNotEmpty)
+              if (showAgencyTenantDetails && contract.tenantNotes != null && contract.tenantNotes!.isNotEmpty)
                 _ContractDetailRow(icon: LucideIcons.fileText, label: loc.localeName == 'tr' ? 'Kiracı Notları' : 'Tenant Notes', value: contract.tenantNotes!),
-              if (contract.tenantIdDocumentUrl != null && contract.tenantIdDocumentUrl!.isNotEmpty) ...[
+              if (showAgencyTenantDetails && contract.tenantIdDocumentUrl != null && contract.tenantIdDocumentUrl!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
@@ -1285,7 +1290,7 @@ class _OverviewTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
               ],
-              if (contract.tenantSecondaryContacts.isNotEmpty) ...[
+              if (showAgencyTenantDetails && contract.tenantSecondaryContacts.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
                   loc.localeName == 'tr' ? 'Ek İletişim Kişileri' : 'Secondary Contacts',
@@ -1343,7 +1348,7 @@ class _OverviewTab extends ConsumerWidget {
                   return _ContractDetailRow(
                     icon: LucideIcons.zap,
                     label: e.name,
-                    value: '$receiverLabel · $methodLabel',
+                    value: showAgencyTenantDetails ? '$receiverLabel · $methodLabel' : receiverLabel,
                   );
                 }),
               ],

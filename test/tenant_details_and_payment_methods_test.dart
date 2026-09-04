@@ -1,7 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:stanomer/core/l10n/app_localizations.dart';
+import 'package:stanomer/features/auth/data/auth_providers.dart';
 import 'package:stanomer/features/property/domain/contract.dart';
+import 'package:stanomer/features/property/domain/property.dart';
 import 'package:stanomer/features/property/domain/rent_payment.dart';
 import 'package:stanomer/features/property/domain/tenant_secondary_contact.dart';
+import 'package:stanomer/features/property/presentation/invite_tenant_screen.dart';
 
 void main() {
   group('Tenant Secondary Contact Tests', () {
@@ -159,6 +166,129 @@ void main() {
       final fromJson = RentPayment.fromJson(json);
       expect(fromJson.paymentMethod, 'cash');
       expect(fromJson.isCashPayment, isTrue);
+    });
+  });
+
+  group('InviteTenantScreen Extra Details & Payment Method Visibility Tests', () {
+    final independentProperty = Property(
+      id: 'prop-independent',
+      name: 'Standalone Flat',
+      address: 'Main St 10',
+      city: 'Belgrade',
+      landlordId: 'landlord-user',
+      currency: 'EUR',
+      defaultMonthlyRent: 500,
+      expensesTemplate: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    final agencyProperty = Property(
+      id: 'prop-agency',
+      name: 'Agency Managed Apt',
+      address: 'Center St 5',
+      city: 'Belgrade',
+      landlordId: 'landlord-user',
+      agencyId: 'agency-user',
+      currency: 'EUR',
+      defaultMonthlyRent: 800,
+      expensesTemplate: [
+        ExpenseItem(name: 'Struja', receiver: PaymentReceiver.utility),
+      ],
+    );
+
+    const landlordUser = User(
+      id: 'landlord-user',
+      appMetadata: {},
+      userMetadata: {'role': 'landlord'},
+      aud: 'authenticated',
+      createdAt: '2026-01-01',
+    );
+
+    const agencyUser = User(
+      id: 'agency-user',
+      appMetadata: {},
+      userMetadata: {'role': 'agency'},
+      aud: 'authenticated',
+      createdAt: '2026-01-01',
+    );
+
+    testWidgets('Independent landlord does NOT see extra tenant details or expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => landlordUser),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: InviteTenantScreen(property: independentProperty),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Independent landlord should see standard tenant fields:
+      expect(find.textContaining('Kiracı Adı & Soyadı'), findsOneWidget);
+      expect(find.text('Telefon'), findsOneWidget);
+
+      // Independent landlord must NOT see the 5 extra agency fields:
+      // 1. ID Number
+      expect(find.text('Kimlik / Pasaport / JMBG'), findsNothing);
+      // 2. Tenant Notes
+      expect(find.text('Kiracıya İlişkin Notlar (İsteğe Bağlı)'), findsNothing);
+      // 3. ID Document upload
+      expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsNothing);
+      // 4. Secondary contacts
+      expect(find.text('Ek İletişim Kişileri'), findsNothing);
+      expect(find.text('Kişi Ekle'), findsNothing);
+      // 5. Expense Payment Method chips
+      expect(find.text('Ödeme Yöntemi:'), findsNothing);
+    });
+
+    testWidgets('Agency-managed property DOES see extra tenant details and expense payment methods', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => agencyUser),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: InviteTenantScreen(property: agencyProperty),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Agency should see standard fields
+      expect(find.textContaining('Kiracı Adı & Soyadı'), findsOneWidget);
+      expect(find.text('Telefon'), findsOneWidget);
+
+      // Agency MUST see all 5 extra fields:
+      // 1. ID Number
+      expect(find.text('Kimlik / Pasaport / JMBG'), findsOneWidget);
+      // 2. Tenant Notes
+      expect(find.text('Kiracıya İlişkin Notlar (İsteğe Bağlı)'), findsOneWidget);
+      // 3. ID Document upload
+      expect(find.text('Kiracı Kimlik Belgesi / Pasaport'), findsOneWidget);
+      // 4. Secondary contacts
+      expect(find.text('Ek İletişim Kişileri'), findsOneWidget);
+      expect(find.text('Kişi Ekle'), findsOneWidget);
+      // 5. Expense Payment Method chips
+      expect(find.text('Ödeme Yöntemi:'), findsOneWidget);
+      expect(find.text('Banka'), findsOneWidget);
+      expect(find.text('Nakit'), findsOneWidget);
     });
   });
 }

@@ -302,15 +302,25 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
           startDate: _startDate!,
           endDate: _endDate!,
           taxType: TaxType.included,
-          expensesConfig: _expenses,
+          expensesConfig: (widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) || (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' || ref.read(currentUserProvider)?.id == widget.property.agencyId)
+              ? _expenses
+              : _expenses.map((e) => e.copyWith(paymentMethod: 'bank_transfer')).toList(),
           inviterName: inviterName,
           contractUrl: contractUrl,
           tenantName: _tenantNameController.text.trim().isEmpty ? null : _tenantNameController.text.trim(),
-          tenantIdNumber: _idNumberController.text.trim().isEmpty ? null : _idNumberController.text.trim(),
+          tenantIdNumber: ((widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) || (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' || ref.read(currentUserProvider)?.id == widget.property.agencyId)) && _idNumberController.text.trim().isNotEmpty
+              ? _idNumberController.text.trim()
+              : null,
           tenantPhone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-          tenantNotes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-          tenantIdDocumentUrl: _tenantIdDocUrl,
-          tenantSecondaryContacts: _secondaryContacts,
+          tenantNotes: ((widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) || (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' || ref.read(currentUserProvider)?.id == widget.property.agencyId)) && _notesController.text.trim().isNotEmpty
+              ? _notesController.text.trim()
+              : null,
+          tenantIdDocumentUrl: ((widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) || (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' || ref.read(currentUserProvider)?.id == widget.property.agencyId))
+              ? _tenantIdDocUrl
+              : null,
+          tenantSecondaryContacts: ((widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty) || (ref.read(currentUserProvider)?.userMetadata?['role'] == 'agency' || ref.read(currentUserProvider)?.id == widget.property.agencyId))
+              ? _secondaryContacts
+              : const [],
         );
         
         setState(() {
@@ -339,6 +349,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     final roleColor = StanomerColors.getRoleColor(role);
     final isAgencyUser = role == 'agency' || user?.id == widget.property.agencyId;
     final isManagedByAgency = widget.property.agencyId != null && widget.property.agencyId!.isNotEmpty;
+    final showAgencyTenantDetails = isManagedByAgency || isAgencyUser;
 
     if (isManagedByAgency && !isAgencyUser) {
       return Scaffold(
@@ -464,113 +475,124 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _idNumberController,
-                            decoration: InputDecoration(
-                              labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
-                              prefixIcon: const Icon(LucideIcons.idCard, size: 20),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
-                              prefixIcon: const Icon(LucideIcons.phone, size: 20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _notesController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: isTr ? 'Kiracıya İlişkin Notlar (İsteğe Bağlı)' : (isSr ? 'Napomene o zakupcu (Opciono)' : 'Tenant Notes (Optional)'),
-                        prefixIcon: const Icon(LucideIcons.fileText, size: 20),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Kiracı Kimlik Belgesi Yükleme
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: StanomerColors.borderDefault),
-                      ),
-                      child: Row(
+                    if (showAgencyTenantDetails) ...[
+                      Row(
                         children: [
-                          Icon(
-                            _tenantIdDocUrl != null ? LucideIcons.fileCheck2 : LucideIcons.fileUp,
-                            size: 20,
-                            color: _tenantIdDocUrl != null ? Colors.green : roleColor,
+                          Expanded(
+                            child: TextFormField(
+                              controller: _idNumberController,
+                              decoration: InputDecoration(
+                                labelText: isTr ? 'Kimlik / Pasaport / JMBG' : (isSr ? 'Br. l.k. / Pasoša / JMBG' : 'ID / Passport / JMBG'),
+                                prefixIcon: const Icon(LucideIcons.idCard, size: 20),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _tenantIdDocUrl != null
-                                      ? (_tenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
-                                      : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: _tenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_isUploadingTenantIdDoc)
-                            const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                          else if (_tenantIdDocUrl != null)
-                            IconButton(
-                              icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.redAccent),
-                              onPressed: () => setState(() {
-                                _tenantIdDocUrl = null;
-                                _tenantIdDocFileName = null;
-                              }),
-                            )
-                          else
-                            OutlinedButton.icon(
-                              onPressed: _pickTenantIdDoc,
-                              icon: const Icon(LucideIcons.upload, size: 14),
-                              label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: roleColor,
-                                side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            child: TextFormField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                                prefixIcon: const Icon(LucideIcons.phone, size: 20),
                               ),
                             ),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _notesController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: isTr ? 'Kiracıya İlişkin Notlar (İsteğe Bağlı)' : (isSr ? 'Napomene o zakupcu (Opciono)' : 'Tenant Notes (Optional)'),
+                          prefixIcon: const Icon(LucideIcons.fileText, size: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
-                    // İkincil İletişim Kişileri
-                    TenantSecondaryContactsSection(
-                      initialContacts: _secondaryContacts,
-                      onContactsChanged: (contacts) {
-                        _secondaryContacts = contacts;
-                      },
-                    ),
+                      // Kiracı Kimlik Belgesi Yükleme
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: StanomerColors.borderDefault),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _tenantIdDocUrl != null ? LucideIcons.fileCheck2 : LucideIcons.fileUp,
+                              size: 20,
+                              color: _tenantIdDocUrl != null ? Colors.green : roleColor,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isTr ? 'Kiracı Kimlik Belgesi / Pasaport' : (isSr ? 'Lični dokument / Pasoš zakupca' : 'Tenant ID Document / Passport'),
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _tenantIdDocUrl != null
+                                        ? (_tenantIdDocFileName ?? (isTr ? 'Kimlik belgesi yüklendi' : 'ID document uploaded'))
+                                        : (isTr ? 'PDF veya fotoğraf formatında yükleyebilirsiniz' : (isSr ? 'Otpremite u PDF ili formatu slike' : 'Upload PDF or photo copy')),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: _tenantIdDocUrl != null ? Colors.green.shade700 : StanomerColors.textSecondary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_isUploadingTenantIdDoc)
+                              const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                            else if (_tenantIdDocUrl != null)
+                              IconButton(
+                                icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.redAccent),
+                                onPressed: () => setState(() {
+                                  _tenantIdDocUrl = null;
+                                  _tenantIdDocFileName = null;
+                                }),
+                              )
+                            else
+                              OutlinedButton.icon(
+                                onPressed: _pickTenantIdDoc,
+                                icon: const Icon(LucideIcons.upload, size: 14),
+                                label: Text(isTr ? 'Yükle' : (isSr ? 'Otpremi' : 'Upload'), style: const TextStyle(fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: roleColor,
+                                  side: BorderSide(color: roleColor.withValues(alpha: 0.5)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // İkincil İletişim Kişileri
+                      TenantSecondaryContactsSection(
+                        initialContacts: _secondaryContacts,
+                        onContactsChanged: (contacts) {
+                          _secondaryContacts = contacts;
+                        },
+                      ),
+                    ] else ...[
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          labelText: isTr ? 'Telefon' : (isSr ? 'Telefon' : 'Phone'),
+                          prefixIcon: const Icon(LucideIcons.phone, size: 20),
+                        ),
+                      ),
+                    ],
 
                     if (_isLeaseLocked) ...[
                       const SizedBox(height: 16),
@@ -692,7 +714,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                     const SizedBox(height: 32),
                     _buildSectionHeader(loc.expenseSettingsHeader, LucideIcons.receipt, roleColor),
                     const SizedBox(height: 16),
-                    _buildExpensesSection(loc, roleColor),
+                    _buildExpensesSection(loc, roleColor, showAgencyTenantDetails),
 
                     const SizedBox(height: 48),
                     ElevatedButton(
@@ -801,7 +823,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
     );
   }
 
-  Widget _buildExpensesSection(AppLocalizations loc, Color roleColor) {
+  Widget _buildExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyTenantDetails) {
     final isTr = loc.localeName == 'tr';
     final isSr = loc.localeName.startsWith('sr');
     return Material(
@@ -876,51 +898,53 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                           });
                         },
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
-                          ),
-                          const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
-                            avatar: const Icon(LucideIcons.landmark, size: 13),
-                            selected: expense.paymentMethod != 'cash',
-                            onSelected: _isLeaseLocked ? null : (_) {
-                              setState(() {
-                                _expenses[index] = expense.copyWith(paymentMethod: 'bank_transfer');
-                              });
-                            },
-                            selectedColor: const Color(0xFFEFF6FF),
-                            labelStyle: TextStyle(
-                              color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
-                              fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                      if (showAgencyTenantDetails) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              isTr ? 'Ödeme Yöntemi:' : (isSr ? 'Način plaćanja:' : 'Payment Method:'),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: StanomerColors.textTertiary),
                             ),
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          const SizedBox(width: 6),
-                          ChoiceChip(
-                            label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
-                            avatar: const Icon(LucideIcons.banknote, size: 13),
-                            selected: expense.paymentMethod == 'cash',
-                            onSelected: _isLeaseLocked ? null : (_) {
-                              setState(() {
-                                _expenses[index] = expense.copyWith(paymentMethod: 'cash');
-                              });
-                            },
-                            selectedColor: const Color(0xFFFEF3C7),
-                            labelStyle: TextStyle(
-                              color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
-                              fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              label: Text(isTr ? 'Banka' : (isSr ? 'Banka' : 'Bank'), style: const TextStyle(fontSize: 11)),
+                              avatar: const Icon(LucideIcons.landmark, size: 13),
+                              selected: expense.paymentMethod != 'cash',
+                              onSelected: _isLeaseLocked ? null : (_) {
+                                setState(() {
+                                  _expenses[index] = expense.copyWith(paymentMethod: 'bank_transfer');
+                                });
+                              },
+                              selectedColor: const Color(0xFFEFF6FF),
+                              labelStyle: TextStyle(
+                                color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
+                                fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              label: Text(isTr ? 'Nakit' : (isSr ? 'Gotovina' : 'Cash'), style: const TextStyle(fontSize: 11)),
+                              avatar: const Icon(LucideIcons.banknote, size: 13),
+                              selected: expense.paymentMethod == 'cash',
+                              onSelected: _isLeaseLocked ? null : (_) {
+                                setState(() {
+                                  _expenses[index] = expense.copyWith(paymentMethod: 'cash');
+                                });
+                              },
+                              selectedColor: const Color(0xFFFEF3C7),
+                              labelStyle: TextStyle(
+                                color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
+                                fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
