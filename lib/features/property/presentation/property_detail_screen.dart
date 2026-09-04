@@ -375,6 +375,8 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
     final topPadding = MediaQuery.of(context).padding.top;
     final user = ref.watch(currentUserProvider);
     final userProfileAsync = user?.id != null
@@ -551,14 +553,14 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildHeaderPillTab(
-                    label: loc.overview,
-                    icon: LucideIcons.fileText,
+                    label: isTr ? 'Kontrat & Kiracı' : (isSr ? 'Ugovor i Zakupac' : 'Lease & Tenant'),
+                    icon: LucideIcons.scrollText,
                     isSelected: selectedSidebarIndex == 0,
                     onTap: () => onSidebarTabSelected?.call(0),
                   ),
                   const SizedBox(width: 2),
                   _buildHeaderPillTab(
-                    label: loc.activity,
+                    label: isTr ? 'İşlem Geçmişi' : (isSr ? 'Istorija' : 'Audit Log'),
                     icon: LucideIcons.history,
                     isSelected: selectedSidebarIndex == 1,
                     onTap: () => onSidebarTabSelected?.call(1),
@@ -566,14 +568,14 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
                   const SizedBox(width: 2),
                   ref.watch(maintenanceRequestsProvider(property.id)).maybeWhen(
                     data: (reqs) => _buildHeaderPillTab(
-                      label: loc.maintenance,
+                      label: isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
                       icon: LucideIcons.wrench,
                       isSelected: selectedSidebarIndex == 2,
                       badgeCount: reqs.isNotEmpty ? reqs.length : null,
                       onTap: () => onSidebarTabSelected?.call(2),
                     ),
                     orElse: () => _buildHeaderPillTab(
-                      label: loc.maintenance,
+                      label: isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
                       icon: LucideIcons.wrench,
                       isSelected: selectedSidebarIndex == 2,
                       onTap: () => onSidebarTabSelected?.call(2),
@@ -791,6 +793,8 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isTr = loc.localeName == 'tr';
+    final isSr = loc.localeName.startsWith('sr');
 
     return Column(
       children: [
@@ -835,11 +839,11 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(LucideIcons.fileText, size: 13),
+                      const Icon(LucideIcons.scrollText, size: 13),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          loc.overview,
+                          isTr ? 'Kontrat & Kiracı' : (isSr ? 'Ugovor i Zakupac' : 'Lease & Tenant'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -857,7 +861,7 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          loc.activity,
+                          isTr ? 'İşlem Geçmişi' : (isSr ? 'Istorija' : 'Audit Log'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -875,7 +879,7 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          loc.maintenance,
+                          isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

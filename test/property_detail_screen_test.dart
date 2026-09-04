@@ -189,7 +189,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Switch to Activity Tab inside modal sheet
-      await tester.tap(find.text('Aktivite'));
+      await tester.tap(find.text('İşlem Geçmişi').last);
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -238,8 +238,8 @@ void main() {
 
       // Both financials on left and overview/activity panel on right are displayed simultaneously on wide screen
       expect(find.text('Luxury Residence 10A'), findsWidgets);
-      expect(find.text('Genel Bakış'), findsWidgets);
-      expect(find.text('Aktivite'), findsWidgets);
+      expect(find.text('Kontrat & Kiracı'), findsWidgets);
+      expect(find.text('İşlem Geçmişi'), findsWidgets);
     });
 
     testWidgets('tapping Edit Owners button opens edit owners sheet with form section', (tester) async {
