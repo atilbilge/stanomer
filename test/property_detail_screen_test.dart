@@ -99,11 +99,14 @@ void main() {
       expect(find.text('Luxury Residence 10A'), findsWidgets);
       expect(find.text('Terazije 25, Belgrade'), findsWidgets);
 
-      // Check only Overview action button is present in mobile header
-      expect(find.byIcon(LucideIcons.fileText), findsOneWidget);
+      // Check mobile cockpit tabs are present
+      expect(find.text('Kira & Finans'), findsOneWidget);
+      expect(find.text('Kontrat & Kiracı'), findsOneWidget);
+      expect(find.text('Arıza & Bakım'), findsOneWidget);
+      expect(find.text('İşlem Geçmişi'), findsOneWidget);
     });
 
-    testWidgets('tapping info button opens Overview Modal Sheet with contract info on mobile', (tester) async {
+    testWidgets('tapping Kontrat & Kiracı tab displays contract and tenant info on mobile', (tester) async {
       tester.view.physicalSize = const Size(412, 915);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -139,16 +142,16 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on Overview Action Icon Button
-      await tester.tap(find.byIcon(LucideIcons.fileText));
+      // Tap on Kontrat & Kiracı cockpit tab
+      await tester.tap(find.text('Kontrat & Kiracı'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Check modal bottom sheet opened
+      // Check contract view renders
       expect(find.text('Luxury Residence 10A'), findsWidgets);
     });
 
-    testWidgets('tapping activity tab inside modal sheet shows activity timeline', (tester) async {
+    testWidgets('tapping İşlem Geçmişi tab shows activity timeline on mobile', (tester) async {
       tester.view.physicalSize = const Size(412, 915);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -184,16 +187,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on Info Action Icon Button on mobile
-      await tester.tap(find.byIcon(LucideIcons.fileText));
-      await tester.pumpAndSettle();
-
-      // Switch to Activity Tab inside modal sheet
-      await tester.tap(find.text('İşlem Geçmişi').last);
+      // Switch to Activity Tab directly via mobile cockpit tab
+      await tester.tap(find.text('İşlem Geçmişi'));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Check activity log description is visible inside sheet
+      // Check activity log description is visible
       expect(find.text('Sistem borç kaydını otomatik oluşturdu'), findsOneWidget);
     });
 

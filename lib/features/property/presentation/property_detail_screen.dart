@@ -67,75 +67,6 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
     _mobileTabIndex = widget.initialTabIndex.clamp(0, 3);
   }
 
-  void _openOverviewModal(BuildContext context, Property property, {int initialTab = 0}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(ctx).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 16, 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(LucideIcons.home, color: StanomerColors.brandPrimary, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          property.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: StanomerColors.textPrimary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          property.address,
-                          style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(LucideIcons.x, size: 20),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: _OverviewAndActivityPanel(
-                property: property,
-                initialTabIndex: initialTab,
-                isSidebar: true,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildMobileTabBar(BuildContext context, Property property, Color roleColor, AppLocalizations loc) {
     final maintenanceAsync = ref.watch(maintenanceRequestsProvider(property.id));
@@ -287,16 +218,6 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                 // Ultra-Compact Role-Aware Hero Header
                 _PropertyDetailHeroHeader(
                   property: property,
-                  onOpenPanel: (tabIndex) {
-                    if (isWide) {
-                      setState(() => _selectedPanelIndex = tabIndex);
-                    } else {
-                      _openOverviewModal(context, property, initialTab: tabIndex);
-                    }
-                  },
-                  isWideScreen: isWide,
-                  selectedSidebarIndex: _selectedPanelIndex,
-                  onSidebarTabSelected: (tabIndex) => setState(() => _selectedPanelIndex = tabIndex),
                 ),
 
                 // Responsive Operational Body
@@ -359,24 +280,14 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
 class _PropertyDetailHeroHeader extends ConsumerWidget {
   final Property property;
-  final Function(int tabIndex) onOpenPanel;
-  final bool isWideScreen;
-  final int selectedSidebarIndex;
-  final Function(int tabIndex)? onSidebarTabSelected;
 
   const _PropertyDetailHeroHeader({
     required this.property,
-    required this.onOpenPanel,
-    this.isWideScreen = false,
-    this.selectedSidebarIndex = 0,
-    this.onSidebarTabSelected,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final isTr = loc.localeName == 'tr';
-    final isSr = loc.localeName.startsWith('sr');
     final topPadding = MediaQuery.of(context).padding.top;
     final user = ref.watch(currentUserProvider);
     final userProfileAsync = user?.id != null
@@ -388,7 +299,6 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
     final colorScheme = ref.watch(propertyAgencyColorSchemeProvider(property));
     final agencyColor = colorScheme.primary;
     final isAgencyManager = user?.id == property.agencyId || role == 'agency';
-    final isLandlord = user?.id == property.landlordId || isAgencyManager;
     final isTenant = user != null && user.id == property.tenantId && !isAgencyManager;
     final hasAgency = property.agencyId != null && property.agencyId!.isNotEmpty;
 
@@ -453,295 +363,88 @@ class _PropertyDetailHeroHeader extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
 
-          // Clickable Property Title & Status
+          // Property Title & Status
           Expanded(
-            child: InkWell(
-              onTap: () => onOpenPanel(0),
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            property.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isContractEnded
-                                ? Colors.red.withValues(alpha: 0.25)
-                                : (isRented
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.28)
-                                    : Colors.orange.withValues(alpha: 0.28)),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: isContractEnded
-                                  ? Colors.red.withValues(alpha: 0.45)
-                                  : (isRented
-                                      ? const Color(0xFF10B981).withValues(alpha: 0.55)
-                                      : Colors.orange.withValues(alpha: 0.55)),
-                            ),
-                          ),
-                          child: Text(
-                            isContractEnded
-                                ? loc.ended
-                                : (isRented ? loc.activeLease : loc.statusVacant),
-                            style: TextStyle(
-                              color: isContractEnded
-                                  ? const Color(0xFFFCA5A5)
-                                  : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(LucideIcons.mapPin, size: 10.5, color: Colors.white70),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            property.address,
-                            style: const TextStyle(color: Colors.white70, fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (property.areaSqm != null || property.roomCount != null) ...[
-                          Text(
-                            ' · ${[if (property.areaSqm != null) '${property.areaSqm!.toStringAsFixed(0)} m²', if (property.roomCount != null) property.roomCount!].join(' · ')}',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 11, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Action Buttons / Tabs (Overview, Activity, Maintenance)
-          if (isWideScreen) ...[
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-              ),
-              child: Row(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildHeaderPillTab(
-                    label: isTr ? 'Kontrat & Kiracı' : (isSr ? 'Ugovor i Zakupac' : 'Lease & Tenant'),
-                    icon: LucideIcons.scrollText,
-                    isSelected: selectedSidebarIndex == 0,
-                    onTap: () => onSidebarTabSelected?.call(0),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          property.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isContractEnded
+                              ? Colors.red.withValues(alpha: 0.25)
+                              : (isRented
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.28)
+                                  : Colors.orange.withValues(alpha: 0.28)),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isContractEnded
+                                ? Colors.red.withValues(alpha: 0.45)
+                                : (isRented
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.55)
+                                    : Colors.orange.withValues(alpha: 0.55)),
+                          ),
+                        ),
+                        child: Text(
+                          isContractEnded
+                              ? loc.ended
+                              : (isRented ? loc.activeLease : loc.statusVacant),
+                          style: TextStyle(
+                            color: isContractEnded
+                                ? const Color(0xFFFCA5A5)
+                                : (isRented ? const Color(0xFF6EE7B7) : const Color(0xFFFDBA74)),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 2),
-                  _buildHeaderPillTab(
-                    label: isTr ? 'İşlem Geçmişi' : (isSr ? 'Istorija' : 'Audit Log'),
-                    icon: LucideIcons.history,
-                    isSelected: selectedSidebarIndex == 1,
-                    onTap: () => onSidebarTabSelected?.call(1),
-                  ),
-                  const SizedBox(width: 2),
-                  ref.watch(maintenanceRequestsProvider(property.id)).maybeWhen(
-                    data: (reqs) => _buildHeaderPillTab(
-                      label: isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
-                      icon: LucideIcons.wrench,
-                      isSelected: selectedSidebarIndex == 2,
-                      badgeCount: reqs.isNotEmpty ? reqs.length : null,
-                      onTap: () => onSidebarTabSelected?.call(2),
-                    ),
-                    orElse: () => _buildHeaderPillTab(
-                      label: isTr ? 'Arıza & Bakım' : (isSr ? 'Održavanje' : 'Maintenance'),
-                      icon: LucideIcons.wrench,
-                      isSelected: selectedSidebarIndex == 2,
-                      onTap: () => onSidebarTabSelected?.call(2),
-                    ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.mapPin, size: 10.5, color: Colors.white70),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          property.address,
+                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (property.areaSqm != null || property.roomCount != null) ...[
+                        Text(
+                          ' · ${[if (property.areaSqm != null) '${property.areaSqm!.toStringAsFixed(0)} m²', if (property.roomCount != null) property.roomCount!].join(' · ')}',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 11, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
-          ] else ...[
-            const SizedBox(width: 6),
-            // Overview Button
-            Tooltip(
-              message: loc.overview,
-              child: InkWell(
-                onTap: () => onOpenPanel(0),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 34,
-                  width: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-                  ),
-                  child: const Icon(LucideIcons.fileText, size: 16, color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Activity Button
-            Tooltip(
-              message: loc.activity,
-              child: InkWell(
-                onTap: () => onOpenPanel(1),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 34,
-                  width: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-                  ),
-                  child: const Icon(LucideIcons.history, size: 16, color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Maintenance Button
-            Tooltip(
-              message: loc.maintenance,
-              child: InkWell(
-                onTap: () => onOpenPanel(2),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 34,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(LucideIcons.wrench, size: 15, color: Colors.white),
-                      ref.watch(maintenanceRequestsProvider(property.id)).maybeWhen(
-                        data: (reqs) => reqs.isNotEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    '${reqs.length}',
-                                    style: TextStyle(
-                                      color: isTenant ? const Color(0xFF064E3B) : agencyColor,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                        orElse: () => const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderPillTab({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-    int? badgeCount,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(7),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(7),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13,
-              color: isSelected ? const Color(0xFF0F172A) : Colors.white.withValues(alpha: 0.85),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFF0F172A) : Colors.white.withValues(alpha: 0.85),
-                fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-            if (badgeCount != null) ...[
-              const SizedBox(width: 5),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF2563EB) : Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$badgeCount',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }
