@@ -11,6 +11,9 @@ import 'package:stanomer/features/property/data/property_repository.dart';
 import 'package:stanomer/features/property/presentation/add_property_screen.dart';
 import 'package:stanomer/features/property/presentation/widgets/agency_contact_autocomplete.dart';
 
+import 'package:stanomer/features/property/domain/property_owner.dart';
+import 'package:stanomer/features/property/presentation/widgets/property_owners_form_section.dart';
+
 void main() {
   group('AgencyContact Domain Model Tests', () {
     test('Landlord contact properties and roles', () {
@@ -103,7 +106,7 @@ void main() {
       expect(find.text('Ev Sahibi'), findsOneWidget);
       expect(find.text('Kiracı'), findsOneWidget);
 
-      // Tap on the tenant suggestion (Marko)
+      // Select Marko (Tenant)
       await tester.tap(find.text('Marko Petrović'));
       await tester.pumpAndSettle();
 
@@ -111,8 +114,141 @@ void main() {
       expect(selected!.name, 'Marko Petrović');
       expect(selected!.isTenant, isTrue);
 
-      // Verify that tenant callout info is displayed
-      expect(find.textContaining('Bu kişi şu anda portföyünüzde kiracı olarak kayıtlıdır'), findsOneWidget);
+      // Tenant notification card should appear
+      expect(find.textContaining('kiracı olarak kayıtlıdır'), findsOneWidget);
+    });
+  });
+
+  group('PropertyOwnersFormSection Inline Autocomplete Tests', () {
+    final testContacts = [
+      const AgencyContact(
+        name: 'Stefan Nemanja',
+        email: 'stefan@example.com',
+        phone: '+38163123456',
+        idNumber: 'ID998877',
+        role: AgencyContactRole.landlord,
+        propertySummary: 'Novi Beograd 12',
+      ),
+      const AgencyContact(
+        name: 'Jelena Karleusa',
+        email: 'jelena@tenant.com',
+        phone: '+381647778899',
+        idNumber: 'PASSPORT4455',
+        role: AgencyContactRole.tenant,
+        propertySummary: 'Dorćol Apt 5',
+      ),
+    ];
+
+    testWidgets('Typing in email field opens autocomplete and populates card', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      List<PropertyOwner> updatedOwners = [];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            agencyContactsProvider.overrideWith((ref) => Future.value(testContacts)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: PropertyOwnersFormSection(
+                  initialOwners: const [],
+                  tempPropertyId: 'test_prop',
+                  onOwnersChanged: (owners) => updatedOwners = owners,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Email field inside PropertyOwnersFormSection
+      final emailFinder = find.widgetWithText(TextFormField, 'E-posta Adresi (Ana Malik İçin Zorunlu) *');
+      expect(emailFinder, findsOneWidget);
+
+      // Tap and type 'stefan'
+      await tester.tap(emailFinder);
+      await tester.enterText(emailFinder, 'stefan');
+      await tester.pumpAndSettle();
+
+      // Suggestions dropdown should display Stefan
+      expect(find.text('Stefan Nemanja'), findsOneWidget);
+      expect(find.text('Ev Sahibi'), findsOneWidget);
+
+      // Tap Stefan
+      await tester.tap(find.text('Stefan Nemanja'));
+      await tester.pumpAndSettle();
+
+      // Fields should be populated
+      expect(find.widgetWithText(TextFormField, 'Stefan'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Nemanja'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'stefan@example.com'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '+38163123456'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'ID998877'), findsOneWidget);
+
+      // Confirmation badge shown
+      expect(find.text('Kayıtlı ev sahibi bilgileri otomatik dolduruldu.'), findsOneWidget);
+    });
+
+    testWidgets('Selecting a tenant in email field populates card and shows tenant warning', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            agencyContactsProvider.overrideWith((ref) => Future.value(testContacts)),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: PropertyOwnersFormSection(
+                  initialOwners: const [],
+                  tempPropertyId: 'test_prop',
+                  onOwnersChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final emailFinder = find.widgetWithText(TextFormField, 'E-posta Adresi (Ana Malik İçin Zorunlu) *');
+      expect(emailFinder, findsOneWidget);
+
+      // Tap and type 'jelena'
+      await tester.tap(emailFinder);
+      await tester.enterText(emailFinder, 'jelena');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Jelena Karleusa'), findsOneWidget);
+      expect(find.text('Kiracı'), findsOneWidget);
+
+      // Tap Jelena
+      await tester.tap(find.text('Jelena Karleusa'));
+      await tester.pumpAndSettle();
+
+      // Fields should be populated
+      expect(find.widgetWithText(TextFormField, 'Jelena'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Karleusa'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'jelena@tenant.com'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '+381647778899'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'PASSPORT4455'), findsOneWidget);
+
+      // Tenant alert banner shown
+      expect(find.textContaining('kiracı olarak kayıtlıdır'), findsOneWidget);
     });
   });
 

@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../agency/domain/agency_contact.dart';
 import '../../data/property_repository.dart';
 import '../../domain/property_owner.dart';
 
@@ -129,6 +130,9 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
     final isRu = loc.localeName == 'ru';
     final isSr = loc.localeName.startsWith('sr');
 
+    final contactsAsync = ref.watch(agencyContactsProvider);
+    final contacts = contactsAsync.valueOrNull ?? <AgencyContact>[];
+
     final sectionTitle = isTr
         ? 'Mülk Sahibi / Malik Bilgileri'
         : (isRu
@@ -143,12 +147,13 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
             ? 'Вы можете добавить нескольких собственников, юридические или физические лица, и загрузить подтверждающие документы.'
             : (isSr
                 ? 'Možete dodati više suvlasnika, pravna ili fizička lica, kao i priložiti dokumenta o vlasništvu i ovlašćenja.'
-                : 'Add multiple co-owners, individual or company entities, and upload ownership documents or POA.'));
+                : 'You can add multiple co-owners, corporate or individual, and attach ownership and authorization documents.'));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(8),
@@ -156,7 +161,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                 color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(LucideIcons.users, color: StanomerColors.brandPrimary, size: 20),
+              child: const Icon(LucideIcons.users, size: 20, color: StanomerColors.brandPrimary),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -165,7 +170,11 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                 children: [
                   Text(
                     sectionTitle,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -181,7 +190,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
 
         // Owner Cards
         ...List.generate(_ownerForms.length, (index) {
-          return _buildOwnerCard(index, _ownerForms[index], isTr, isRu, isSr, loc);
+          return _buildOwnerCard(index, _ownerForms[index], isTr, isRu, isSr, loc, contacts);
         }),
 
         const SizedBox(height: 8),
@@ -217,6 +226,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
     bool isRu,
     bool isSr,
     AppLocalizations loc,
+    List<AgencyContact> contacts,
   ) {
     final isPrimary = form.isPrimary;
     final isCompany = form.ownerType == PropertyOwnerType.company;
@@ -525,39 +535,260 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
 
             const SizedBox(height: 12),
             // Email Address: REQUIRED for primary owner, OPTIONAL for co-owners!
-            TextFormField(
-              controller: form.emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: isPrimary
-                    ? (isTr ? 'E-posta Adresi (Ana Malik İçin Zorunlu) *' : (isRu ? 'Email (Обязательно для основного) *' : (isSr ? 'Email adresa (Obavezno za glavnog) *' : 'Email Address (Required for Primary) *')))
-                    : (isTr ? 'E-posta Adresi (İsteğe Bağlı)' : (isRu ? 'Email (Опционально)' : (isSr ? 'Email adresa (Opciono)' : 'Email Address (Optional)'))),
-                hintText: 'ornek@email.com',
-                helperText: isPrimary
-                    ? null
-                    : (isTr
-                        ? 'E-posta girilirse malik bu adresle giriş yaptığında mülkü ev sahibi olarak görür.'
-                        : (isRu
-                            ? 'При указании email совладелец сможет видеть объект после входа в систему.'
-                            : (isSr
-                                ? 'Ukoliko unesete email, suvlasnik će videti nekretninu u svom nalogu.'
-                                : 'If entered, the co-owner will see the property in their landlord dashboard upon login.'))),
-                helperMaxLines: 2,
-                prefixIcon: const Icon(LucideIcons.mail, size: 18),
-              ),
-              validator: (val) {
-                if (isPrimary && (val == null || val.trim().isEmpty)) {
-                  return loc.fieldRequired;
+            // Enhanced with inline autocomplete from agency contacts (landlords and tenants)
+            RawAutocomplete<AgencyContact>(
+              textEditingController: form.emailController,
+              focusNode: form.emailFocusNode,
+              displayStringForOption: (contact) => contact.email ?? contact.name,
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (contacts.isEmpty) {
+                  return const Iterable<AgencyContact>.empty();
                 }
-                if (val != null && val.trim().isNotEmpty) {
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
-                    return isTr ? 'Geçerli bir e-posta giriniz' : 'Please enter a valid email address';
-                  }
+                final query = textEditingValue.text.trim().toLowerCase();
+                if (query.isEmpty) {
+                  return contacts.take(6);
                 }
-                return null;
+                return contacts.where((c) {
+                  final emailMatch = c.email?.toLowerCase().contains(query) ?? false;
+                  final nameMatch = c.name.toLowerCase().contains(query);
+                  final phoneMatch = c.phone?.toLowerCase().contains(query) ?? false;
+                  return emailMatch || nameMatch || phoneMatch;
+                });
               },
-              onChanged: (_) => _notifyParent(),
+              onSelected: (contact) {
+                setState(() {
+                  form.selectedContact = contact;
+                  form.ownerType = contact.isCompany ? PropertyOwnerType.company : PropertyOwnerType.individual;
+                  if (contact.isCompany) {
+                    form.companyNameController.text = contact.companyName ?? contact.name;
+                    if (contact.pib != null) form.pibController.text = contact.pib!;
+                    if (contact.representativeName != null) form.representativeNameController.text = contact.representativeName!;
+                  } else {
+                    final parts = contact.name.trim().split(' ');
+                    form.firstNameController.text = parts.isNotEmpty ? parts.first : contact.name;
+                    form.lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+                  }
+                  if (contact.email != null) form.emailController.text = contact.email!;
+                  if (contact.phone != null) form.phoneController.text = contact.phone!;
+                  if (contact.idNumber != null) form.idNumberController.text = contact.idNumber!;
+                });
+                _notifyParent();
+              },
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                return TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: isPrimary
+                        ? (isTr ? 'E-posta Adresi (Ana Malik İçin Zorunlu) *' : (isRu ? 'Email (Обязательно для основного) *' : (isSr ? 'Email adresa (Obavezno za glavnog) *' : 'Email Address (Required for Primary) *')))
+                        : (isTr ? 'E-posta Adresi (İsteğe Bağlı)' : (isRu ? 'Email (Опционально)' : (isSr ? 'Email adresa (Opciono)' : 'Email Address (Optional)'))),
+                    hintText: 'ornek@email.com',
+                    helperText: isPrimary
+                        ? null
+                        : (isTr
+                            ? 'E-posta girilirse malik bu adresle giriş yaptığında mülkü ev sahibi olarak görür.'
+                            : (isRu
+                                ? 'При указании email совладелец сможет видеть объект после входа в систему.'
+                                : (isSr
+                                    ? 'Ukoliko unesete email, suvlasnik će videti nekretninu u svom nalogu.'
+                                    : 'If entered, the co-owner will see the property in their landlord dashboard upon login.'))),
+                    helperMaxLines: 2,
+                    prefixIcon: const Icon(LucideIcons.mail, size: 18),
+                    suffixIcon: form.selectedContact != null
+                        ? IconButton(
+                            icon: const Icon(LucideIcons.x, size: 16),
+                            tooltip: isTr ? 'Seçimi temizle' : 'Clear selection',
+                            onPressed: () {
+                              setState(() {
+                                form.selectedContact = null;
+                                form.emailController.clear();
+                              });
+                              _notifyParent();
+                            },
+                          )
+                        : null,
+                  ),
+                  validator: (val) {
+                    if (isPrimary && (val == null || val.trim().isEmpty)) {
+                      return loc.fieldRequired;
+                    }
+                    if (val != null && val.trim().isNotEmpty) {
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                        return isTr ? 'Geçerli bir e-posta giriniz' : 'Please enter a valid email address';
+                      }
+                    }
+                    return null;
+                  },
+                  onChanged: (val) {
+                    if (form.selectedContact != null && form.selectedContact!.email != val.trim()) {
+                      setState(() {
+                        form.selectedContact = null;
+                      });
+                    }
+                    _notifyParent();
+                  },
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 250, maxWidth: 360),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        itemBuilder: (BuildContext context, int index) {
+                          final contact = options.elementAt(index);
+                          final isLandlord = contact.isLandlord;
+
+                          return InkWell(
+                            onTap: () => onSelected(contact),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 14,
+                                    backgroundColor: isLandlord
+                                        ? const Color(0xFFEFF6FF)
+                                        : const Color(0xFFECFDF5),
+                                    child: Icon(
+                                      isLandlord ? LucideIcons.userCheck : LucideIcons.keyRound,
+                                      size: 14,
+                                      color: isLandlord
+                                          ? const Color(0xFF2563EB)
+                                          : const Color(0xFF059669),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                contact.name,
+                                                style: const TextStyle(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: StanomerColors.textPrimary,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: isLandlord
+                                                    ? const Color(0xFFDBEAFE)
+                                                    : const Color(0xFFD1FAE5),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                isLandlord
+                                                    ? (isTr ? 'Ev Sahibi' : (isRu ? 'Арендодатель' : (isSr ? 'Stanodavac' : 'Landlord')))
+                                                    : (isTr ? 'Kiracı' : (isRu ? 'Арендатор' : (isSr ? 'Stanar' : 'Tenant'))),
+                                                style: TextStyle(
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isLandlord
+                                                      ? const Color(0xFF1D4ED8)
+                                                      : const Color(0xFF047857),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (contact.email != null)
+                                          Text(
+                                            contact.email!,
+                                            style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        if (contact.propertySummary != null)
+                                          Text(
+                                            contact.propertySummary!,
+                                            style: const TextStyle(fontSize: 10, color: StanomerColors.textTertiary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
+
+            if (form.selectedContact?.isTenant == true) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.info, size: 16, color: Color(0xFF16A34A)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        isTr
+                            ? 'Bu kişi ${form.selectedContact!.propertySummary ?? "başka bir mülkünüzde"} kiracı olarak kayıtlıdır. Şimdi bu mülke ev sahibi olarak atanıyor.'
+                            : (isRu
+                                ? 'Этот контакт зарегистрирован как арендатор (${form.selectedContact!.propertySummary ?? ""}). Теперь добавляется как собственник.'
+                                : (isSr
+                                    ? 'Ova osoba je registrovana kao stanar (${form.selectedContact!.propertySummary ?? ""}). Sada se dodaje kao vlasnik.'
+                                    : 'This contact is registered as a tenant (${form.selectedContact!.propertySummary ?? ""}). Now being added as a landlord.')),
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF15803D), fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            if (form.selectedContact?.isLandlord == true) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(LucideIcons.checkCircle2, size: 14, color: Color(0xFF2563EB)),
+                  const SizedBox(width: 6),
+                  Text(
+                    isTr
+                        ? 'Kayıtlı ev sahibi bilgileri otomatik dolduruldu.'
+                        : (isRu
+                            ? 'Данные зарегистрированного собственника заполнены.'
+                            : (isSr
+                                ? 'Podaci registrovanog stanodavca su automatski popunjeni.'
+                                : 'Registered landlord details auto-filled.')),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF2563EB), fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ],
 
             const SizedBox(height: 16),
             const Divider(height: 1),
@@ -799,6 +1030,8 @@ class _OwnerFormState {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController secondaryContactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final FocusNode emailFocusNode = FocusNode();
+  AgencyContact? selectedContact;
   final TextEditingController idNumberController = TextEditingController();
   final TextEditingController idDetailsController = TextEditingController();
 
@@ -875,6 +1108,7 @@ class _OwnerFormState {
     phoneController.dispose();
     secondaryContactController.dispose();
     emailController.dispose();
+    emailFocusNode.dispose();
     idNumberController.dispose();
     idDetailsController.dispose();
     companyNameController.dispose();
