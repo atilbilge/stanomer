@@ -15,6 +15,7 @@ import '../../../core/providers/agency_branding_provider.dart';
 import '../../auth/data/auth_providers.dart';
 import '../domain/property_owner.dart';
 import 'widgets/property_owners_form_section.dart';
+import 'widgets/property_specs_form_section.dart';
 import 'widgets/ownership_share_sheet.dart';
 import 'join_property_sheet.dart';
 
@@ -525,30 +526,75 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 ),
               ] else ...[
                 // ==========================================
-                // 2. DETAILED ENTRY MODE (RICH SECTIONS)
+                // 2. DETAILED ENTRY MODE (PREMIUM CARDS)
                 // ==========================================
-                
-                // Section 1: Property and Location
-                _buildStepHeader(1, loc.propertyAndLocationInfo),
-                const SizedBox(height: 16),
-                _buildPropertyTypeSegmented(loc),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _addressController,
-                  decoration: InputDecoration(
-                    labelText: loc.address,
-                    hintText: loc.addressDetailedHint,
-                    prefixIcon: const Icon(LucideIcons.mapPin, size: 20),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(LucideIcons.mapPin, size: 18, color: Color(0xFF2563EB)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc.propertyAndLocationInfo,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  loc.localeName == 'tr'
+                                      ? 'Açık adres, şehir ve mülk rumuzu'
+                                      : 'Full address, city and property title',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: loc.address,
+                          hintText: loc.addressDetailedHint,
+                          prefixIcon: const Icon(LucideIcons.mapPin, size: 20),
+                        ),
+                        validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
                         controller: _cityController,
                         decoration: InputDecoration(
                           labelText: loc.localeName == 'tr' ? 'Şehir' : 'City',
@@ -556,59 +602,39 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                           prefixIcon: const Icon(LucideIcons.building, size: 20),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 1,
-                      child: TextFormField(
-                        controller: _unitNumberController,
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _nameController,
                         decoration: InputDecoration(
-                          labelText: loc.unitNumberLabel,
-                          hintText: loc.unitNumberHint,
-                          prefixIcon: const Icon(LucideIcons.doorOpen, size: 20),
+                          labelText: loc.propertyName,
+                          hintText: loc.propertyNameHint,
+                          prefixIcon: const Icon(LucideIcons.tag, size: 20),
                         ),
+                        onChanged: (val) => _nameManuallyEdited = true,
+                        validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: loc.propertyName,
-                    hintText: loc.propertyNameHint,
-                    prefixIcon: const Icon(LucideIcons.tag, size: 20),
+                    ],
                   ),
-                  onChanged: (val) => _nameManuallyEdited = true,
-                  validator: (val) => val == null || val.isEmpty ? loc.fieldRequired : null,
                 ),
-
-                const SizedBox(height: 32),
-
-                // Section 2: Structural and Financial Metrics
-                _buildStepHeader(2, loc.structuralAndFinancialMetrics),
-                const SizedBox(height: 16),
-                _buildRoomCountPills(loc),
-                const SizedBox(height: 16),
-                _buildMetricsRow(loc),
-
-                const SizedBox(height: 32),
-
-                // Section 3: Equipment and Heating Standards
-                _buildStepHeader(3, loc.equipmentAndHeatingStandards),
-                const SizedBox(height: 16),
-                _buildFurnishingCards(loc),
-                const SizedBox(height: 16),
-                _buildHeatingTypeDropdown(loc),
-
-                const SizedBox(height: 32),
-
-                // Section 4: Amenities and Extended Details
-                _buildStepHeader(4, loc.featuredAmenitiesLabel),
-                const SizedBox(height: 16),
-                _buildAmenitiesGrid(loc),
-                const SizedBox(height: 16),
-                _buildDescriptionField(loc),
+                const SizedBox(height: 20),
+                PropertySpecsFormSection(
+                  propertyType: _propertyType,
+                  onPropertyTypeChanged: (val) => setState(() => _propertyType = val),
+                  unitNumberController: _unitNumberController,
+                  roomCount: _roomCount,
+                  onRoomCountChanged: (val) => setState(() => _roomCount = val),
+                  areaController: _areaController,
+                  floor: _floor,
+                  onFloorChanged: (val) => setState(() => _floor = val),
+                  totalFloorsController: _totalFloorsController,
+                  furnishing: _furnishing,
+                  onFurnishingChanged: (val) => setState(() => _furnishing = val),
+                  heatingType: _heatingType,
+                  onHeatingTypeChanged: (val) => setState(() => _heatingType = val),
+                  selectedAmenities: _selectedAmenities,
+                  onAmenitiesChanged: (val) => setState(() => _selectedAmenities = val),
+                  descriptionController: _descriptionController,
+                ),
               ],
 
               const SizedBox(height: 32),
@@ -837,454 +863,6 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
         ),
         const SizedBox(height: 8),
         const Divider(),
-      ],
-    );
-  }
-
-  Widget _buildStepHeader(int step, String title) {
-    return Row(
-      children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
-          ),
-          child: Center(
-            child: Text(
-              '$step',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF2563EB),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPropertyTypeSegmented(AppLocalizations loc) {
-    final types = [
-      {'id': 'apartment', 'label': loc.propertyTypeApartment, 'icon': LucideIcons.building},
-      {'id': 'house', 'label': loc.propertyTypeHouse, 'icon': LucideIcons.home},
-      {'id': 'commercial', 'label': loc.propertyTypeCommercial, 'icon': LucideIcons.briefcase},
-      {'id': 'garage', 'label': loc.propertyTypeGarage, 'icon': LucideIcons.warehouse},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          loc.propertyTypeLabel,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: types.map((t) {
-              final isSelected = _propertyType == t['id'];
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _propertyType = t['id'] as String),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          t['icon'] as IconData,
-                          size: 15,
-                          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            t['label'] as String,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRoomCountPills(AppLocalizations loc) {
-    final rooms = ['studio', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '5.0+'];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          loc.roomCountLabel,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: rooms.map((r) {
-            final isSelected = _roomCount == r;
-            final label = r == 'studio' ? (loc.localeName == 'tr' ? 'Stüdyo' : 'Studio') : r;
-            return ChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (_) => setState(() => _roomCount = r),
-              selectedColor: const Color(0xFFEFF6FF),
-              backgroundColor: Colors.white,
-              labelStyle: TextStyle(
-                fontSize: 12.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF475569),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
-                  width: isSelected ? 1.5 : 1.0,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricsRow(AppLocalizations loc) {
-    final floorDropdown = DropdownButtonFormField<String>(
-      value: _floor,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: loc.floorLevelLabel,
-        prefixIcon: const Icon(LucideIcons.layers, size: 20),
-      ),
-      items: [
-        DropdownMenuItem(value: 'suteren', child: Text(loc.floorSuteren, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'prizemlje', child: Text(loc.floorPrizemlje, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'visoko_prizemlje', child: Text(loc.floorVisokoPrizemlje, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '1', child: Text(loc.floorNth('1'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '2', child: Text(loc.floorNth('2'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '3', child: Text(loc.floorNth('3'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '4', child: Text(loc.floorNth('4'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '5', child: Text(loc.floorNth('5'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '6', child: Text(loc.floorNth('6'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '7', child: Text(loc.floorNth('7'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '8', child: Text(loc.floorNth('8'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '9', child: Text(loc.floorNth('9'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: '10+', child: Text(loc.floorNth('10+'), overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'potkrovlje', child: Text(loc.floorPotkrovlje, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'other', child: Text(loc.floorOther, overflow: TextOverflow.ellipsis)),
-      ],
-      onChanged: (val) => setState(() => _floor = val),
-    );
-
-    final areaField = TextFormField(
-      controller: _areaController,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: loc.areaSqmLabel,
-        hintText: '85',
-        suffixText: 'm²',
-        prefixIcon: const Icon(LucideIcons.maximize2, size: 20),
-      ),
-    );
-
-    final totalFloorsField = TextFormField(
-      controller: _totalFloorsController,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: loc.totalFloorsLabel,
-        hintText: '6',
-        prefixIcon: const Icon(LucideIcons.building2, size: 20),
-      ),
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 600) {
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(child: areaField),
-                  const SizedBox(width: 12),
-                  Expanded(child: totalFloorsField),
-                ],
-              ),
-              const SizedBox(height: 16),
-              floorDropdown,
-            ],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 2, child: areaField),
-            const SizedBox(width: 12),
-            Expanded(flex: 3, child: floorDropdown),
-            const SizedBox(width: 12),
-            Expanded(flex: 2, child: totalFloorsField),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildFurnishingCards(AppLocalizations loc) {
-    final options = [
-      {
-        'id': 'furnished',
-        'title': loc.furnishingFurnished,
-        'desc': loc.furnishingFurnishedDesc,
-        'icon': LucideIcons.armchair,
-      },
-      {
-        'id': 'semi_furnished',
-        'title': loc.furnishingSemi,
-        'desc': loc.furnishingSemiDesc,
-        'icon': LucideIcons.utensils,
-      },
-      {
-        'id': 'unfurnished',
-        'title': loc.furnishingUnfurnished,
-        'desc': loc.furnishingUnfurnishedDesc,
-        'icon': LucideIcons.box,
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          loc.furnishingLabel,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
-        ),
-        const SizedBox(height: 8),
-        Column(
-          children: options.map((opt) {
-            final isSelected = _furnishing == opt['id'];
-            return GestureDetector(
-              onTap: () => setState(() => _furnishing = opt['id'] as String),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
-                    width: isSelected ? 1.5 : 1.0,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
-                      size: 18,
-                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      opt['icon'] as IconData,
-                      size: 16,
-                      color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            opt['title'] as String,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF0F172A),
-                            ),
-                          ),
-                          Text(
-                            opt['desc'] as String,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeatingTypeDropdown(AppLocalizations loc) {
-    return DropdownButtonFormField<String>(
-      value: _heatingType,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: loc.heatingTypeLabel,
-        prefixIcon: const Icon(LucideIcons.flame, size: 20),
-      ),
-      items: [
-        DropdownMenuItem(value: 'cg', child: Text(loc.heatingCg, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'eg', child: Text(loc.heatingEg, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'gas', child: Text(loc.heatingGas, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'underfloor', child: Text(loc.heatingUnderfloor, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: 'ta', child: Text(loc.heatingTa, overflow: TextOverflow.ellipsis)),
-      ],
-      onChanged: (val) => setState(() => _heatingType = val),
-    );
-  }
-
-  Widget _buildAmenitiesGrid(AppLocalizations loc) {
-    final amenities = [
-      {'id': 'pets_allowed', 'label': loc.amenityPets, 'icon': LucideIcons.pawPrint},
-      {'id': 'elevator', 'label': loc.amenityElevator, 'icon': LucideIcons.arrowUpCircle},
-      {'id': 'balcony', 'label': loc.amenityBalcony, 'icon': LucideIcons.sunMedium},
-      {'id': 'parking', 'label': loc.amenityParking, 'icon': LucideIcons.car},
-      {'id': 'storage', 'label': loc.amenityStorage, 'icon': LucideIcons.package},
-    ];
-
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: amenities.map((a) {
-        final id = a['id'] as String;
-        final isChecked = _selectedAmenities.contains(id);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isChecked) {
-                _selectedAmenities.remove(id);
-              } else {
-                _selectedAmenities.add(id);
-              }
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isChecked ? const Color(0xFFEFF6FF) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isChecked ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
-                width: isChecked ? 1.5 : 1.0,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isChecked ? LucideIcons.checkSquare : LucideIcons.square,
-                  size: 16,
-                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  a['icon'] as IconData,
-                  size: 15,
-                  color: isChecked ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  a['label'] as String,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                    color: isChecked ? const Color(0xFF1E3A8A) : const Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildDescriptionField(AppLocalizations loc) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              loc.extendedDescriptionLabel,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
-            ),
-            Text(
-              '${_descriptionController.text.length} / 2000',
-              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _descriptionController,
-          maxLength: 2000,
-          maxLines: 4,
-          buildCounter: (ctx, {required currentLength, required isFocused, maxLength}) => null,
-          decoration: InputDecoration(
-            hintText: loc.extendedDescriptionHint,
-            alignLabelWithHint: true,
-          ),
-        ),
       ],
     );
   }
