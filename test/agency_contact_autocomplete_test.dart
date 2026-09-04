@@ -97,8 +97,13 @@ void main() {
       final emailFinder = find.widgetWithText(TextFormField, 'E-posta Adresi (Ana Malik İçin Zorunlu) *');
       expect(emailFinder, findsOneWidget);
 
-      // Tap and type 'stefan'
+      // Tapping on empty email field should NOT show suggestions dropdown
       await tester.tap(emailFinder);
+      await tester.pumpAndSettle();
+      expect(find.text('Stefan Nemanja'), findsNothing);
+      expect(find.text('Ev Sahibi'), findsNothing);
+
+      // Now type 'stefan' -> suggestions dropdown should display Stefan
       await tester.enterText(emailFinder, 'stefan');
       await tester.pumpAndSettle();
 

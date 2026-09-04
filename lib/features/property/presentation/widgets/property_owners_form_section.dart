@@ -546,7 +546,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                 }
                 final query = textEditingValue.text.trim().toLowerCase();
                 if (query.isEmpty) {
-                  return contacts.take(6);
+                  return const Iterable<AgencyContact>.empty();
                 }
                 return contacts.where((c) {
                   final emailMatch = c.email?.toLowerCase().contains(query) ?? false;
