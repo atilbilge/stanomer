@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
+import { AgencyAppWalkthroughStack } from "../../components/AgencyAppWalkthroughStack";
 import {
   Palette,
   ShieldCheck,
@@ -53,7 +54,7 @@ export default function AgenciesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-x-clip">
       <Navbar />
 
       {/* Spacer for fixed Navbar */}
@@ -211,6 +212,9 @@ export default function AgenciesPage() {
             </div>
           </div>
         </div>
+
+        {/* 6-Stage Interactive App Walkthrough Stack */}
+        <AgencyAppWalkthroughStack />
       </section>
 
       {/* ═══════════════════════════════════════════
