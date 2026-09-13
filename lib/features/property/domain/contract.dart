@@ -31,8 +31,8 @@ class ExpenseItem {
 
   factory ExpenseItem.fromJson(Map<String, dynamic> json) {
     return ExpenseItem(
-      name: json['name'] as String,
-      receiver: _parseReceiver(json['receiver'] as String?),
+      name: (json['name'] ?? json['title'] ?? '') as String,
+      receiver: _parseReceiver(json['receiver'] as String? ?? (json['is_included'] == true ? 'included' : 'owner')),
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       paymentMethod: json['payment_method'] as String? ?? 'bank_transfer',
     );

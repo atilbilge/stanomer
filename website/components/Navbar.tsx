@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLanguage, Language } from "./LanguageProvider";
 import { captureUtmParams } from "../lib/utm";
@@ -730,6 +731,15 @@ export function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Direct Request Demo CTA (Desktop) */}
+          <Link
+            href="/agency-demo"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100/80 border border-blue-200/80 transition-all shadow-xs cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>{t("agencies_cta_demo")}</span>
+          </Link>
 
           {/* APP LAUNCHER DROPDOWN (Desktop) */}
           <div 

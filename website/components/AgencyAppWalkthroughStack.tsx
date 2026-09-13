@@ -35,15 +35,18 @@ import {
   MapPin,
   ChevronRight,
   ChevronLeft,
+  ArrowRight,
   Plus,
   MoreVertical,
   ScrollText,
   History,
 } from "lucide-react";
+import { AgencyDemoModal } from "./AgencyDemoModal";
 
 export function AgencyAppWalkthroughStack() {
   const { lang } = useLanguage();
   const [activeStep, setActiveStep] = useState(0);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   // Real-time scroll observer to automatically highlight the current card's step box
   useEffect(() => {
@@ -102,6 +105,36 @@ export function AgencyAppWalkthroughStack() {
 
   const isTR = lang === "TR";
   const isSR = lang === "SR_LAT" || lang === "SR_CYR";
+
+  const renderCardHoverCta = () => (
+    <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none transition-all duration-200 group-hover:bg-slate-950/10">
+      <div className="pointer-events-auto opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsDemoModalOpen(true);
+          }}
+          className="group/pill inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-sm font-semibold shadow-[0_12px_40px_rgba(0,0,0,0.4)] border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <span>{isTR ? "SİMÜLASYON" : isSR ? "SIMULACIJA" : "SIMULATION"}</span>
+          </span>
+          <span>
+            {isTR
+              ? "Acentenizi Simüle Edin"
+              : isSR
+              ? "Simulirajte za Vašu Agenciju"
+              : "Simulate for Your Agency"}
+          </span>
+          <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white/80 group-hover/pill:bg-blue-600 group-hover/pill:text-white transition-all duration-150">
+            <ArrowRight className="w-3.5 h-3.5 group-hover/pill:translate-x-0.5 transition-transform" />
+          </div>
+        </button>
+      </div>
+    </div>
+  );
 
   const steps = [
     {
@@ -226,8 +259,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-0"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "110px", zIndex: 10, marginBottom: "60px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 ${cardShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-white px-4 sm:px-5 border-b border-slate-200/80 flex items-center justify-between gap-3">
@@ -246,12 +280,12 @@ export function AgencyAppWalkthroughStack() {
                 <span className="text-[10px] font-normal text-slate-400 hidden md:inline">• stanomer.online/app</span>
               </span>
             </div>
-            <div className="flex items-center gap-2.5 text-slate-500">
-              <div className="relative p-1 rounded-lg hover:bg-slate-100 cursor-pointer">
+            <div className="flex items-center gap-2 text-slate-500">
+              <div className="relative p-1 rounded-lg hover:bg-slate-100 cursor-pointer hidden md:block">
                 <Bell className="w-3.5 h-3.5" />
                 <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500" />
               </div>
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5 hidden md:block" />
             </div>
           </div>
 
@@ -395,6 +429,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
         {/* Scroll travel spacer between Card 1 and Card 2 */}
@@ -405,8 +440,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-1"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "122px", zIndex: 20, marginBottom: "48px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 ${cardShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-white px-4 sm:px-5 border-b border-slate-200/80 flex items-center justify-between gap-3">
@@ -574,6 +610,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
         {/* Scroll travel spacer between Card 2 and Card 3 */}
@@ -584,8 +621,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-2"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "134px", zIndex: 30, marginBottom: "36px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 ${cardShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-white px-4 sm:px-5 border-b border-slate-200/80 flex items-center justify-between gap-3">
@@ -792,6 +830,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
         {/* Scroll travel spacer between Card 3 and Card 4 */}
@@ -802,8 +841,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-3"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "146px", zIndex: 40, marginBottom: "24px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 ${cardShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-white px-4 sm:px-5 border-b border-slate-200/80 flex items-center justify-between gap-3">
@@ -986,6 +1026,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
         {/* Scroll travel spacer between Card 4 and Card 5 */}
@@ -996,8 +1037,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-4"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "158px", zIndex: 50, marginBottom: "12px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 ${cardShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-white px-4 sm:px-5 border-b border-slate-200/80 flex items-center justify-between gap-3">
@@ -1156,6 +1198,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
         {/* Scroll travel spacer between Card 5 and Card 6 */}
@@ -1166,8 +1209,9 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-5"
+          onClick={() => setIsDemoModalOpen(true)}
           style={{ top: "170px", zIndex: 60, marginBottom: "0px", height: "520px", maxHeight: "520px" }}
-          className={`sticky rounded-3xl bg-white border-2 border-emerald-400/90 overflow-hidden transition-shadow duration-300 ${card6ShadowClass} ${cardHeightClass}`}
+          className={`group sticky rounded-3xl bg-white border-2 border-emerald-400/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${card6ShadowClass} ${cardHeightClass}`}
         >
           {/* Top Window Header */}
           <div className="h-[40px] flex-shrink-0 bg-emerald-900 text-white px-4 sm:px-5 border-b border-emerald-800 flex items-center justify-between gap-3">
@@ -1311,9 +1355,49 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
+          {renderCardHoverCta()}
         </div>
 
       </div>
+
+      {/* Floating / Bottom Call to Action for Personalized Agency Preview */}
+      <div className="mt-16 text-center max-w-xl mx-auto px-4 flex flex-col items-center">
+        <button
+          type="button"
+          onClick={() => setIsDemoModalOpen(true)}
+          className="group relative inline-flex items-center gap-3 px-6 py-3.5 sm:px-7 sm:py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(15,23,42,0.12)] border border-slate-700/80 hover:border-slate-600 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold tracking-wide">
+            <Sparkles className="w-3 h-3 text-blue-400" />
+            <span>{isTR ? "SİMÜLASYON" : isSR ? "SIMULACIJA" : "SIMULATION"}</span>
+          </span>
+          <span className="text-sm sm:text-base font-semibold tracking-tight text-white">
+            {isTR
+              ? "Acentenizi Simüle Edin"
+              : isSR
+              ? "Simulirajte za Vašu Agenciju"
+              : "Simulate for Your Agency"}
+          </span>
+          <div className="w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center text-white/80 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </button>
+        <p className="mt-2.5 text-xs sm:text-sm text-slate-500 font-medium flex items-center justify-center gap-2">
+          <span>✨</span>
+          <span>
+            {isTR
+              ? "3 günlük ücretsiz sandbox ortamı • Logonuz ve renklerinizle hazır gelir"
+              : isSR
+              ? "3-dnevni besplatan sandbox nalog • Sa vašim logotipom i bojama"
+              : "3-day free sandbox • Pre-configured with your logo and colors"}
+          </span>
+        </p>
+      </div>
+
+      <AgencyDemoModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+      />
     </section>
   );
 }

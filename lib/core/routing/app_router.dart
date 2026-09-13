@@ -18,6 +18,7 @@ import '../../features/auth/data/auth_providers.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/agency/presentation/agency_dashboard_screen.dart';
 import '../../features/agency/presentation/agency_demo_request_screen.dart';
+import '../../features/agency/presentation/agency_demo_login_screen.dart';
 
 import '../../features/property/presentation/join_property_sheet.dart';
 
@@ -50,9 +51,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToSignup = state.matchedLocation == '/signup';
       final isGoingToInvite = state.matchedLocation == '/invite';
+      final isGoingToDemoLogin = state.matchedLocation == '/demo-login';
+
+      // Deep link / query parameter check: automatic routing to demo login
+      final demoToken = state.uri.queryParameters['demo_token'] ?? (state.matchedLocation == '/' ? state.uri.queryParameters['token'] : null);
+      final langParam = state.uri.queryParameters['lang'] ?? state.uri.queryParameters['locale'];
+      if (demoToken != null && demoToken.isNotEmpty && state.matchedLocation != '/demo-login') {
+        final langQuery = (langParam != null && langParam.isNotEmpty) ? '&lang=$langParam' : '';
+        return '/demo-login?token=$demoToken$langQuery';
+      }
 
       if (user == null) {
-        if (!isGoingToLogin && !isGoingToSignup && !isGoingToInvite) return '/login';
+        if (!isGoingToLogin && !isGoingToSignup && !isGoingToInvite && !isGoingToDemoLogin) return '/login';
       } else {
         // Agency users go to their own dashboard
         if (role == 'agency') {
@@ -70,6 +80,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/demo-login',
+        builder: (context, state) => AgencyDemoLoginScreen(
+          token: state.uri.queryParameters['token'] ?? state.uri.queryParameters['demo_token'] ?? '',
+          lang: state.uri.queryParameters['lang'] ?? state.uri.queryParameters['locale'],
+        ),
       ),
       GoRoute(
         path: '/login',

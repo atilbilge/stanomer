@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
 import { AgencyAppWalkthroughStack } from "../../components/AgencyAppWalkthroughStack";
+import { AgencyDemoModal } from "../../components/AgencyDemoModal";
 import {
   Palette,
   ShieldCheck,
@@ -21,7 +22,8 @@ import {
 } from "lucide-react";
 
 export default function AgenciesPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   const comparisonRows = [
     {
@@ -149,18 +151,44 @@ export default function AgenciesPage() {
             <div className="pt-4 flex flex-col sm:flex-row gap-4 sm:items-center">
               <Link
                 href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
                 <span>{t("agencies_cta_demo")}</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
+              <button
+                type="button"
+                onClick={() => setIsDemoModalOpen(true)}
+                className="group inline-flex justify-center items-center gap-2.5 px-6 py-4 rounded-xl text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-slate-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-[10px] font-bold tracking-wide">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span>
+                    {lang === "TR"
+                      ? "SİMÜLASYON"
+                      : lang === "SR_LAT" || lang === "SR_CYR"
+                      ? "SIMULACIJA"
+                      : "SIMULATION"}
+                  </span>
+                </span>
+                <span>
+                  {lang === "TR"
+                    ? "Acentenizi Simüle Edin"
+                    : lang === "SR_LAT" || lang === "SR_CYR"
+                    ? "Simulirajte za Vašu Agenciju"
+                    : "Simulate for Your Agency"}
+                </span>
+              </button>
             </div>
           </div>
 
           {/* Right Side: White-Label Product Mockup */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
             <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-3xl transform scale-90 -z-10" />
-            <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-2xl space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500">
+            <div
+              onClick={() => setIsDemoModalOpen(true)}
+              className="group relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-2xl space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500 overflow-hidden cursor-pointer"
+            >
 
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
@@ -208,6 +236,30 @@ export default function AgenciesPage() {
               <div className="absolute -bottom-3 -left-3 bg-white text-slate-800 px-3.5 py-2 rounded-xl shadow-lg border border-slate-200 text-xs font-bold flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                 <span>{t("agencies_mockup_white_label_badge")}</span>
+              </div>
+
+              {/* Modern SaaS Floating CTA on Preview Card */}
+              <div className="absolute inset-x-0 bottom-4 z-30 flex justify-center pointer-events-none transition-all duration-200">
+                <div className="pointer-events-auto opacity-0 group-hover:opacity-100 translate-y-1.5 group-hover:translate-y-0 transition-all duration-200">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDemoModalOpen(true);
+                    }}
+                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold shadow-xl shadow-slate-950/25 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                    <span>
+                      {lang === "TR"
+                        ? "Acentenizi Simüle Edin"
+                        : lang === "SR_LAT" || lang === "SR_CYR"
+                        ? "Simulirajte za Vašu Agenciju"
+                        : "Simulate for Your Agency"}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover/pill:text-white group-hover/pill:translate-x-0.5 transition-all" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -531,6 +583,10 @@ export default function AgenciesPage() {
         </div>
       </footer>
 
+      <AgencyDemoModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+      />
     </div>
   );
 }

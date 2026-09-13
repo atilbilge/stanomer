@@ -46,12 +46,6 @@ class ExpandableAgencyLogo extends StatelessWidget {
       rawUrl.contains('supabase.co') ||
       rawUrl.contains('localhost') ||
       rawUrl.contains('127.0.0.1') ||
-      rawUrl.contains('gstatic.com') ||
-      rawUrl.contains('googleusercontent.com') ||
-      rawUrl.contains('google.com') ||
-      rawUrl.contains('googleapis.com') ||
-      rawUrl.contains('unsplash.com') ||
-      rawUrl.contains('cloudinary.com') ||
       rawUrl.contains('weserv.nl')
     );
     final effectiveUrl = hasUrl && kIsWeb
@@ -71,7 +65,7 @@ class ExpandableAgencyLogo extends StatelessWidget {
           fit: BoxFit.contain,
           errorBuilder: (ctx, err, stack) {
             // If proxied URL failed, try original rawUrl before fallback
-            if (effectiveUrl != rawUrl && rawUrl != null) {
+            if (effectiveUrl != rawUrl) {
               return Image.network(
                 rawUrl,
                 height: height,
@@ -195,7 +189,7 @@ class _AgencyLogoViewerDialog extends StatelessWidget {
                           tag: 'agency_logo_${logoUrl ?? title}',
                           child: hasUrl
                               ? Image.network(
-                                  (kIsWeb && !(logoUrl!.contains('supabase.co') || logoUrl!.contains('localhost') || logoUrl!.contains('127.0.0.1') || logoUrl!.contains('gstatic.com') || logoUrl!.contains('googleusercontent.com') || logoUrl!.contains('google.com') || logoUrl!.contains('googleapis.com') || logoUrl!.contains('weserv.nl')))
+                                  (kIsWeb && !(logoUrl!.contains('supabase.co') || logoUrl!.contains('localhost') || logoUrl!.contains('127.0.0.1') || logoUrl!.contains('weserv.nl')))
                                       ? 'https://images.weserv.nl/?url=${Uri.encodeComponent(logoUrl!.replaceFirst(RegExp(r'^https?://'), ''))}'
                                       : logoUrl!,
                                   fit: BoxFit.contain,

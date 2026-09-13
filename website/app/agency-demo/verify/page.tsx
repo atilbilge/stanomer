@@ -5,62 +5,190 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "../../../components/Navbar";
 import { useLanguage } from "../../../components/LanguageProvider";
+import { Sparkles, ArrowRight, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 function VerificationContent() {
-  const { t } = useLanguage();
+  const { lang, t, setLang } = useLanguage();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const rawUrlLang = searchParams.get("lang") || searchParams.get("locale");
 
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
-  const [alreadyVerified, setAlreadyVerified] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [agencyName, setAgencyName] = useState<string | null>(null);
+  const [targetUrl, setTargetUrl] = useState<string>("/dev-app/");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Synchronize language from URL if present
+  useEffect(() => {
+    if (rawUrlLang) {
+      let clean = rawUrlLang.toUpperCase().replace("-", "_");
+      if (clean === "SR" || clean === "RS" || clean === "SRB") clean = "SR_LAT";
+      if (["TR", "EN", "SR_LAT", "SR_CYR", "RU"].includes(clean)) {
+        setLang(clean as any);
+      }
+    }
+  }, [rawUrlLang, setLang]);
+
+  // Determine active language and Flutter locale
+  let activeLang = "SR_LAT";
+  if (rawUrlLang) {
+    let clean = rawUrlLang.toUpperCase().replace("-", "_");
+    if (clean === "SR" || clean === "RS" || clean === "SRB") clean = "SR_LAT";
+    if (["TR", "EN", "SR_LAT", "SR_CYR", "RU"].includes(clean)) activeLang = clean;
+  } else if (lang) {
+    activeLang = lang;
+  }
+
+  let flutterLocale = "sr_Latn";
+  if (activeLang === "TR") flutterLocale = "tr";
+  else if (activeLang === "EN") flutterLocale = "en";
+  else if (activeLang === "RU") flutterLocale = "ru";
+  else if (activeLang === "SR_CYR") flutterLocale = "sr_Cyrl";
+  else if (activeLang === "SR_LAT") flutterLocale = "sr_Latn";
+
+  const isTR = activeLang === "TR";
+  const isSR = activeLang === "SR_LAT" || activeLang === "SR_CYR";
 
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setMessage(t("agency_demo_error_msg"));
+      setErrorMessage(
+        isTR
+          ? "Geçersiz veya eksik demo bağlantısı."
+          : isSR
+          ? "Nevažeći ili nepotpun link za demo nalog."
+          : "Invalid or missing demo access link."
+      );
       return;
     }
 
-    const verifyToken = async () => {
+    const verifyAndLogin = async () => {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ustcsvvkzsmsgzbptvpm.supabase.co";
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g";
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://thvbpifahvasyzmngpzp.supabase.co";
+        const supabaseKey =
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
 
+        // 1. Verify demo token and provision agency sandbox user on Dev Supabase
         const res = await fetch(`${supabaseUrl}/rest/v1/rpc/verify_agency_demo_token`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": supabaseKey,
-            "Authorization": `Bearer ${supabaseKey}`
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({
-            p_token: token
-          })
+            p_token: token,
+          }),
         });
 
         const data = await res.json();
 
         if (res.ok && data?.success) {
           setSuccess(true);
-          if (data.already_verified) {
-            setAlreadyVerified(true);
+          setAgencyName(data.agency_name || null);
+
+          // 2. Perform browser authentication with Supabase
+          if (data.email && data.temp_password) {
+            try {
+              const authRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  apikey: supabaseKey,
+                },
+                body: JSON.stringify({
+                  email: data.email,
+                  password: data.temp_password,
+                }),
+              });
+
+              if (authRes.ok) {
+                const sessionData = await authRes.json();
+                if (typeof window !== "undefined") {
+                  try {
+                    const hostRef = new URL(supabaseUrl).hostname.split(".")[0];
+                    localStorage.setItem(`sb-${hostRef}-auth-token`, JSON.stringify(sessionData));
+                  } catch (_) {}
+                }
+              }
+            } catch (authErr) {
+              console.warn("Direct session initialization note:", authErr);
+            }
           }
-          setMessage(data.message || t("agency_demo_verified_desc"));
+
+          // 2.2 Store Flutter app locale and stanomer website lang
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("flutter.app_locale", flutterLocale);
+              localStorage.setItem("stanomer_lang", activeLang);
+            } catch (_) {}
+          }
+
+          // 2.5 Auto-trigger agency theme & logo scraping if website is configured
+          if (data.user_id) {
+            try {
+              fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${data.user_id}&select=website_url`, {
+                headers: {
+                  apikey: supabaseKey,
+                  Authorization: `Bearer ${supabaseKey}`,
+                },
+              })
+                .then((r) => r.json())
+                .then((rows) => {
+                  const siteUrl = rows?.[0]?.website_url;
+                  if (siteUrl && typeof siteUrl === "string" && siteUrl.trim()) {
+                    fetch("/api/scrape-agency-theme", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        url: siteUrl.trim(),
+                        agency_id: data.user_id,
+                      }),
+                    }).catch(() => {});
+                  }
+                })
+                .catch(() => {});
+            } catch (_) {}
+          }
+
+          // 3. Target URL for the Flutter Dev App with token and language
+          const appUrl = `/dev-app?demo_token=${encodeURIComponent(token)}&lang=${encodeURIComponent(flutterLocale)}`;
+          setTargetUrl(appUrl);
+
+          // 4. Auto-redirect to the dev app so user doesn't have to do anything
+          setTimeout(() => {
+            if (typeof window !== "undefined") {
+              window.location.href = appUrl;
+            }
+          }, 1400);
         } else {
           setSuccess(false);
-          setMessage(data?.message || t("agency_demo_verify_failed"));
+          setErrorMessage(
+            data?.message ||
+              (isTR
+                ? "Test datanız silindi veya süresi doldu."
+                : isSR
+                ? "Vaši test podaci su obrisani ili je link istekao."
+                : "Your test data has expired or was cleared.")
+          );
         }
-      } catch (err) {
+      } catch (err: any) {
         setSuccess(false);
-        setMessage(t("agency_demo_error_msg"));
+        setErrorMessage(
+          isTR
+            ? "Giriş yapılırken bir sorun oluştu. Lütfen bağlantınızı kontrol ediniz."
+            : isSR
+            ? "Došlo je do greške prilikom prijave. Proverite vašu internet vezu."
+            : "An error occurred while connecting to your demo. Please check your connection."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    verifyToken();
+    verifyAndLogin();
   }, [token]);
 
   return (
@@ -68,60 +196,103 @@ function VerificationContent() {
       <Navbar />
 
       <div className="pt-28 pb-12 flex-grow flex flex-col justify-center sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-          <h2 className="text-3xl font-extrabold text-slate-900">
-            {t("agency_demo_verify_page_title")}
-          </h2>
-        </div>
-
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-          <div className="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-slate-100 text-center">
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg px-4">
+          <div className="bg-white py-10 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-100 text-center">
             {loading ? (
-              <div className="py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-slate-600 font-medium">{t("agency_demo_verifying")}</p>
+              <div className="py-12 space-y-4">
+                <div className="relative mx-auto w-16 h-16">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">
+                  {isTR ? "Acente Kokpitiniz Hazırlanıyor..." : isSR ? "Otvaranje Agencijskog Panela..." : "Preparing Your Agency Cockpit..."}
+                </h3>
+                <p className="text-slate-500 text-sm">
+                  {isTR ? "Tek tıkla güvenli giriş yapılıyor..." : isSR ? "Povezivanje jednim klikom..." : "Connecting via magic link..."}
+                </p>
               </div>
             ) : success ? (
-              <div className="py-6">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-6">
-                  <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+              <div className="py-4 space-y-6">
+                <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-emerald-100 ring-8 ring-emerald-50 text-emerald-600 animate-in zoom-in-75 duration-300">
+                  <CheckCircle2 className="h-10 w-10" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                  {alreadyVerified ? t("agency_demo_already_verified") : t("agency_demo_verified_success")}
-                </h3>
-                <p className="text-slate-600 mb-8 text-base leading-relaxed max-w-md mx-auto">
-                  {alreadyVerified ? t("agency_demo_already_verified_desc") : t("agency_demo_verified_desc")}
-                </p>
-                <Link
-                  href="/"
-                  className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition"
-                >
-                  {t("agency_demo_back_home")}
-                </Link>
+
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-3 border border-blue-100">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>{agencyName ? `${agencyName} Demo Sandbox` : "Stanomer Agency Sandbox"}</span>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900">
+                    {isTR ? "Giriş Yapıldı! Panelinize Aktarılıyorsunuz..." : isSR ? "Prijavljeni ste! Panel se otvara..." : "Connected! Opening Your Panel..."}
+                  </h3>
+                  <p className="text-slate-600 text-xs sm:text-sm mt-2 leading-relaxed max-w-md mx-auto">
+                    {isTR
+                      ? "Acenteniz için 3 günlük sandbox ortamınız başarıyla açıldı. Birkaç saniye içinde doğrudan kokpitinize yönlendirileceksiniz."
+                      : isSR
+                      ? "Vaš 3-dnevni sandbox nalog je uspešno aktiviran. Za nekoliko sekundi bićete automatski prebačeni u panel."
+                      : "Your 3-day agency sandbox has been activated. You will be redirected to your dashboard in a few seconds."}
+                  </p>
+                </div>
+
+                {/* Direct Action Button */}
+                <div className="pt-2">
+                  <a
+                    href={targetUrl}
+                    className="w-full inline-flex justify-center items-center gap-3 px-8 py-4 rounded-2xl text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 font-black text-sm sm:text-base shadow-xl shadow-blue-500/30 transform hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+                  >
+                    <span>{isTR ? "Acente Panelini Aç (Doğrudan Bağlan)" : isSR ? "Otvorite Agencijski Panel" : "Launch Agency Panel Now"}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                </div>
+
+                {/* Sandbox Features Tip */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 text-left space-y-1.5 text-xs text-slate-600">
+                  <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <span>💡</span>
+                    <span>{isTR ? "Panelde Sizi Neler Bekliyor?" : isSR ? "Šta vas čeka u panelu?" : "What to do next?"}</span>
+                  </p>
+                  <p className="leading-relaxed">
+                    {isTR
+                      ? "Panel açıldığında üstteki asistan çubuğundan 'Temayı Al' ile web sitenizden logonuzu ve kurumsal renklerinizi çekebilir; 'Örnek Portföy Üret' ile anında 5 mülk, ev sahipleri ve kiracılardan oluşan canlı portföyü test edebilirsiniz."
+                      : isSR
+                      ? "Kada se panel otvori, kliknite na 'Preuzmi temu' da automatski povučete vaš logo i boje, ili 'Generiši primer portfolija' za trenutni test sa 5 nekretnina, vlasnicima i zakupcima."
+                      : "Once in the dashboard, use 'Fetch Theme' to automatically load your agency logo and colors, and 'Generate Sample Portfolio' to test 5 realistic properties with active tenants and owners."}
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className="py-6">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
-                  <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+              <div className="py-6 space-y-6">
+                <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-amber-100 ring-8 ring-amber-50 text-amber-600">
+                  <AlertTriangle className="h-10 w-10" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">{t("agency_demo_verify_failed")}</h3>
-                <p className="text-slate-600 mb-6 leading-relaxed">
-                  {message}
-                </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
+
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900">
+                    {isTR ? "Test Datanız Silindi veya Süresi Doldu" : isSR ? "Test podaci su obrisani ili je link istekao" : "Test Data Expired or Cleared"}
+                  </h3>
+                  <p className="text-slate-600 text-sm mt-2 leading-relaxed max-w-md mx-auto">
+                    {errorMessage ||
+                      (isTR
+                        ? "3 günlük deneme süreniz sona erdiği için sandbox verileriniz güvenlik gereği silinmiştir. Dilediğiniz an tek tıkla yeni bir test portföyü oluşturabilirsiniz."
+                        : isSR
+                        ? "Vaš 3-dnevni test period je istekao i podaci su obrisani. Možete u bilo kom trenutku ponovo kreirati novi primer portfolija."
+                        : "Your 3-day trial period has ended and test data was cleared. You can recreate a fresh sample portfolio anytime.")}
+                  </p>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
                   <Link
-                    href="/agency-demo"
-                    className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition"
+                    href="/agencies"
+                    className="inline-flex justify-center items-center gap-2 px-7 py-3.5 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-500/25 transition"
                   >
-                    {t("agency_demo_recreate_btn")}
+                    <RefreshCw className="w-4 h-4" />
+                    <span>{isTR ? "Yeniden Test Portföyü Oluştur" : isSR ? "Kreirajte Novi Test Portfolio" : "Recreate Sample Portfolio"}</span>
                   </Link>
                   <Link
                     href="/"
-                    className="inline-flex justify-center items-center px-6 py-3 border border-slate-300 text-base font-medium rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition"
+                    className="inline-flex justify-center items-center px-5 py-3.5 border border-slate-200 text-sm font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition"
                   >
                     {t("agency_demo_back_home")}
                   </Link>
@@ -137,11 +308,13 @@ function VerificationContent() {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-slate-600 font-medium">Yükleniyor...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <p className="text-slate-600 font-medium">Yükleniyor...</p>
+        </div>
+      }
+    >
       <VerificationContent />
     </Suspense>
   );

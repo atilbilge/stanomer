@@ -66,6 +66,9 @@ Kullanıcıların profil, kimlik ve rol bilgilerini saklar. `auth.users` ile Bir
 | `utm_medium` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM mecrası (örn. `cpc`, `email`) |
 | `utm_campaign` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kampanya adı (örn. `summer_promo`) |
 | `referred_by_agency_code` | `TEXT` | YES | `NULL` | - | **[YENİ]** Kullanıcının bağlandığı acente referral kodu (örn. `agency_ref_axia-exclusive`) |
+| `is_demo` | `BOOLEAN` | YES | `FALSE` | - | **[YENİ]** Sandbox/Demo acente hesabı mı |
+| `demo_expires_at` | `TIMESTAMPTZ` | YES | `NULL` | - | **[YENİ]** Demo portföyünün 3 günlük silinme süresi (TTL) |
+| `website_url` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente web sitesi URL'si (logo ve tema çekimi için) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
 
@@ -1238,6 +1241,31 @@ BEGIN
 END;
 $$;
 ```
+
+---
+
+### 4.15 `generate_agency_demo_data(p_agency_id UUID)`
+**Açıklama**: Verilen acente kimliği için 10 daire, 10 sözleşme, standart Stanomer formatında (`title = 'Kira'`, `receiver_type = 'owner'`) geçmiş ve cari ay ödemeleri, Sırpça bakım talepleri, mesajlar ve masraf kayıtlarından oluşan tam teşekküllü gerçekçi bir sandbox portföyü üretir. Acente profilini `is_demo = true` ve `demo_expires_at = now() + 3 days` olarak işaretler.
+
+---
+
+### 4.16 `clear_agency_demo_data(p_agency_id UUID)`
+**Açıklama**: Belirtilen acenteye ait tüm demo mülkleri, sözleşmeleri, ödemeleri, bakım kayıtlarını ve ilişkili demo kullanıcıları temizler. Acente profilini korur.
+
+---
+
+### 4.17 `cleanup_expired_demo_data()`
+**Açıklama**: 3 günlük deneme süresi (`demo_expires_at < now()`) dolan acentelerin demo portföy verilerini otomatik olarak temizler. Acente profili korunur ve yeniden portföy oluşturma çağrısına hazır bırakılır.
+
+---
+
+### 4.18 `update_agency_demo_theme(p_agency_id UUID, p_logo_url TEXT, p_website_url TEXT, p_color_scheme JSONB)`
+**Açıklama**: Demo veya normal acentenin profil logosunu (`logo_url`), web sitesini (`website_url`) ve kurumsal renk paletini (`color_scheme`) güvenli şekilde (`SECURITY DEFINER`) günceller. Acente dashboard ve web scraper entegrasyonu tarafından kullanılır.
+
+---
+
+### 4.19 GoTrue Uyumluluğu & Token / Kimlik Yönetimi
+**Açıklama**: Supabase Auth (GoTrue Go runtime) motorunun `Scan error on column ... converting NULL to string is unsupported` (500 Database error querying schema) hatasını önlemek için `verify_agency_demo_token` ve ilgili fonksiyonlarda `confirmation_token`, `recovery_token`, `email_change` kolonları `NULL` yerine boş dize (`''`) olarak yazılır ve `auth.identities` kaydı otomatik oluşturulur.
 
 ---
 
