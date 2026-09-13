@@ -6,6 +6,8 @@ const DEV_SUPABASE_URL = "https://thvbpifahvasyzmngpzp.supabase.co";
 const DEV_SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
 
+const BRANDFETCH_CLIENT_ID = "1idDi7dRCAP3DFQFv4c";
+
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
@@ -54,9 +56,16 @@ function resolveRelativeUrl(href: string, baseUrl: string): string {
   }
 }
 
+function getBrandfetchLogoUrl(domain: string, clientId = BRANDFETCH_CLIENT_ID): string {
+  const cleanDomain = domain.replace(/^www\./i, "").toLowerCase();
+  return `https://cdn.brandfetch.io/${cleanDomain}/w/512/h/512/type/logo/fallback/lettermark?c=${clientId}`;
+}
+
 function toCorsSafeUrl(rawUrl: string): string {
   if (!rawUrl) return "";
-  if (rawUrl.includes("weserv.nl")) return rawUrl;
+  // Brandfetch CDN already supports CORS natively (Access-Control-Allow-Origin: *)
+  // and blocks weserv.nl proxy requests with 404, so return direct CDN URL.
+  if (rawUrl.includes("brandfetch.io") || rawUrl.includes("weserv.nl")) return rawUrl;
   const clean = rawUrl.replace(/^https?:\/\//i, "");
   return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}`;
 }
@@ -481,6 +490,9 @@ export async function POST(req: NextRequest) {
       externalCss = await fetchExternalCss(html, fullUrl);
     }
 
+    const brandfetchClientId =
+      body.brandfetch_client_id || body.brandfetchClientId || BRANDFETCH_CLIENT_ID;
+
     // 3. Logo Discovery
     let foundLogo: string | null = null;
 
@@ -488,17 +500,22 @@ export async function POST(req: NextRequest) {
       const brandKey = domain.replace(/^www\./i, "").split(".")[0].toLowerCase();
       const blacklist = [
         "nadjidom", "4zida", "imovina", "facebook", "twitter", "instagram",
-        "google", "app-store", "play-store", "apple", "card", "visa",
-        "mastercard", "kreditni_most", "kredit", "partner", "client", "sponsor"
+        "google", "app-store", "play-store", "card", "visa",
+        "mastercard", "kreditni_most", "kredit", "partner", "client", "sponsor", "favicon"
       ];
 
-      // Priority 1: Apple Touch Icon or Webclip containing brandKey
+      // Priority 1: Apple Touch Icon containing brandKey (high-res mobile/webclip, excluding favicons)
       const appleIconMatch =
         html.match(/<link[^>]+rel=["']apple-touch-icon(?:-precomposed)?["'][^>]+href=["']([^"']+)["']/i) ||
-        html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']apple-touch-icon(?:-precomposed)?["']/i) ||
-        html.match(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']+)["']/i);
+        html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']apple-touch-icon(?:-precomposed)?["']/i);
 
-      if (appleIconMatch && appleIconMatch[1] && brandKey.length > 2 && appleIconMatch[1].toLowerCase().includes(brandKey)) {
+      if (
+        appleIconMatch &&
+        appleIconMatch[1] &&
+        brandKey.length > 2 &&
+        appleIconMatch[1].toLowerCase().includes(brandKey) &&
+        !appleIconMatch[1].toLowerCase().includes("favicon")
+      ) {
         foundLogo = resolveRelativeUrl(appleIconMatch[1], fullUrl);
       }
 
@@ -537,9 +554,9 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Priority 5: Fallback to apple-touch-icon / high-res icons if available
-      if (!foundLogo && appleIconMatch && appleIconMatch[1]) {
-        foundLogo = resolveRelativeUrl(appleIconMatch[1], fullUrl);
+      // Priority 5: Brandfetch 512x512 Logo CDN (high-res brand logo before tiny icons or random page images)
+      if (!foundLogo && domain) {
+        foundLogo = getBrandfetchLogoUrl(domain, brandfetchClientId);
       }
 
       // Priority 6: Any img with "logo" in src
@@ -578,6 +595,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Fallback if no on-page logo or HTML fetch was bypassed: Brandfetch Logo CDN
+    if (!foundLogo && domain) {
+      foundLogo = getBrandfetchLogoUrl(domain, brandfetchClientId);
+    }
+
     // Ultimate Fallback: Google Favicon API
     if (!foundLogo) {
       foundLogo = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
@@ -585,19 +607,52 @@ export async function POST(req: NextRequest) {
 
     // 4. Download Logo & Extract Colors via Sharp
     let logoColors: string[] = [];
+    let downloaded = false;
+
+    const imageHeaders: Record<string, string> = {
+      "User-Agent": USER_AGENT,
+      Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      "Sec-Fetch-Dest": "image",
+      "Sec-Fetch-Mode": "no-cors",
+      "Sec-Fetch-Site": "cross-site",
+      Referer: "https://www.stanomer.online/",
+    };
+
     if (foundLogo) {
       try {
         const logoRes = await fetch(foundLogo, {
-          headers: { "User-Agent": USER_AGENT },
+          headers: imageHeaders,
           signal: AbortSignal.timeout(4000),
         });
         if (logoRes.ok) {
           const buffer = Buffer.from(await logoRes.arrayBuffer());
-          const isSvg = foundLogo.toLowerCase().includes(".svg") || buffer.toString("utf-8", 0, 100).includes("<svg");
+          const isSvg =
+            foundLogo.toLowerCase().includes(".svg") ||
+            buffer.toString("utf-8", 0, 100).includes("<svg");
           logoColors = await extractLogoColors(buffer, isSvg);
+          downloaded = true;
         }
       } catch (logoErr: any) {
         console.warn("Logo download or analysis note:", logoErr.message);
+      }
+    }
+
+    // If initial logo candidate failed to download, try Brandfetch fallback
+    const bfFallbackUrl = getBrandfetchLogoUrl(domain, brandfetchClientId);
+    if (!downloaded && domain && foundLogo !== bfFallbackUrl) {
+      try {
+        const bfRes = await fetch(bfFallbackUrl, {
+          headers: imageHeaders,
+          signal: AbortSignal.timeout(4000),
+        });
+        if (bfRes.ok) {
+          const buffer = Buffer.from(await bfRes.arrayBuffer());
+          logoColors = await extractLogoColors(buffer, false);
+          foundLogo = bfFallbackUrl;
+          downloaded = true;
+        }
+      } catch (bfErr: any) {
+        console.warn("Brandfetch fallback download note:", bfErr.message);
       }
     }
 
