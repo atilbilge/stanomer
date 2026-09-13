@@ -8,6 +8,7 @@
 //
 // Global FAB: Mülk Ekle (+)
 
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/utils/expense_utils.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -305,6 +307,7 @@ class AgencyDashboardScreen extends ConsumerStatefulWidget {
 
 class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
   int _currentTab = 0; // 0: Ana Sayfa, 1: Portföy, 2: Finans, 3: Bakım
+  bool _hasAppliedTheme = false;
 
   final _searchController = TextEditingController();
   String _searchQuery = '';
@@ -313,6 +316,25 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
   int? _selectedFinanceSegment;
   String _groupBy = 'none'; // 'none', 'landlord', 'city', 'status', 'debt_consent'
   String _sortBy = 'newest'; // 'newest', 'name_asc', 'city_asc', 'landlord_asc'
+
+  @override
+  void initState() {
+    super.initState();
+    _checkThemeStatus();
+  }
+
+  Future<void> _checkThemeStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final agencyId = ref.read(currentUserProvider)?.id ?? '';
+      if (agencyId.isNotEmpty) {
+        final applied = prefs.getBool('theme_applied_$agencyId') ?? false;
+        if (applied && mounted) {
+          setState(() => _hasAppliedTheme = true);
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -586,69 +608,113 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
           index: _currentTab.clamp(0, 3),
           children: [
             // ── Tab 0: Ana Sayfa (Ajans Kokpiti) ─────────────────────────
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (profileData?['is_demo'] == true) ...[
-                    AgencyDemoSandboxBanner(
-                      agencyId: ref.watch(currentUserProvider)?.id ?? '',
-                      companyName: companyName,
-                      websiteUrl: profileData?['website_url'] as String?,
-                      isDemo: true,
-                      hasProperties: (propertiesAsync.value ?? []).isNotEmpty,
-                      onRefreshNeeded: () {
-                        ref.invalidate(agencyPropertiesProvider);
-                        ref.invalidate(agencyContractsMapProvider);
-                        ref.invalidate(agencyAllPaymentsProvider);
-                        ref.invalidate(agencyPendingPaymentsProvider);
-                        ref.invalidate(agencyMaintenanceRequestsProvider);
-                        setState(() {});
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  _WelcomeBanner(
-                    companyName: companyName,
-                    email: ref.watch(currentUserProvider)?.email ?? '',
-                    colors: colors,
-                  ),
-                  const SizedBox(height: 24),
+            Builder(
+              builder: (context) {
+                final isDemo = profileData?['is_demo'] == true;
+                final hasThemeInProfile = profileData?['color_scheme'] != null;
+                final hasThemeApplied = _hasAppliedTheme || hasThemeInProfile;
+                final shouldSpotlightTheme = isDemo && !hasThemeApplied;
 
-                  // ── Apple Stili Bento Kokpit Kartları ─────────────────
-                  _AgencyCockpitSection(
-                    properties: propertiesAsync.value ?? [],
-                    contractsMap: contractsMap,
-                    allPayments: allPayments,
-                    pendingPayments: pendingPayments,
-                    maintenanceRequests: maintenanceRequests,
-                    colors: colors,
-                    loc: loc,
-                    lang: Localizations.localeOf(context).languageCode.toLowerCase(),
-                    onSelectInsight: (type) {
-                      setState(() {
-                        _selectedInsight = type;
-                        _currentTab = 1; // Portföy tab
-                      });
-                    },
-                    onSelectFinanceSegment: (segment) {
-                      setState(() {
-                        _selectedFinanceSegment = segment;
-                        _currentTab = 2; // Finans tab
-                      });
-                    },
-                    onOpenMaintenance: () {
-                      setState(() {
-                        _currentTab = 3; // Bakım tab
-                      });
-                    },
-                  ),
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isDemo) ...[
+                        AgencyDemoSandboxBanner(
+                          agencyId: ref.watch(currentUserProvider)?.id ?? '',
+                          companyName: companyName,
+                          websiteUrl: profileData?['website_url'] as String?,
+                          isDemo: true,
+                          hasProperties: (propertiesAsync.value ?? []).isNotEmpty,
+                          isSpotlight: shouldSpotlightTheme,
+                          onThemeApplied: () {
+                            setState(() => _hasAppliedTheme = true);
+                          },
+                          onRefreshNeeded: () {
+                            ref.invalidate(agencyPropertiesProvider);
+                            ref.invalidate(agencyContractsMapProvider);
+                            ref.invalidate(agencyAllPaymentsProvider);
+                            ref.invalidate(agencyPendingPaymentsProvider);
+                            ref.invalidate(agencyMaintenanceRequestsProvider);
+                            setState(() {});
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      // Dashboard body with frosted blur when theme needs fetching
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
+                          children: [
+                            ImageFiltered(
+                              imageFilter: ui.ImageFilter.blur(
+                                sigmaX: shouldSpotlightTheme ? 6.0 : 0.0,
+                                sigmaY: shouldSpotlightTheme ? 6.0 : 0.0,
+                              ),
+                              child: IgnorePointer(
+                                ignoring: shouldSpotlightTheme,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _WelcomeBanner(
+                                      companyName: companyName,
+                                      email: ref.watch(currentUserProvider)?.email ?? '',
+                                      colors: colors,
+                                    ),
+                                    const SizedBox(height: 24),
 
-                  SizedBox(height: isDesktop ? 24 : 80), // Padding for FAB & BottomNav
-                ],
-              ),
+                                    // ── Apple Stili Bento Kokpit Kartları ─────────────────
+                                    _AgencyCockpitSection(
+                                      properties: propertiesAsync.value ?? [],
+                                      contractsMap: contractsMap,
+                                      allPayments: allPayments,
+                                      pendingPayments: pendingPayments,
+                                      maintenanceRequests: maintenanceRequests,
+                                      colors: colors,
+                                      loc: loc,
+                                      lang: Localizations.localeOf(context).languageCode.toLowerCase(),
+                                      onSelectInsight: (type) {
+                                        setState(() {
+                                          _selectedInsight = type;
+                                          _currentTab = 1; // Portföy tab
+                                        });
+                                      },
+                                      onSelectFinanceSegment: (segment) {
+                                        setState(() {
+                                          _selectedFinanceSegment = segment;
+                                          _currentTab = 2; // Finans tab
+                                        });
+                                      },
+                                      onOpenMaintenance: () {
+                                        setState(() {
+                                          _currentTab = 3; // Bakım tab
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            if (shouldSpotlightTheme)
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: isDesktop ? 24 : 80), // Padding for FAB & BottomNav
+                    ],
+                  ),
+                );
+              },
             ),
 
             // ── Tab 1: Portföy (Tüm Yönetilen Mülkler) ────────────────────
