@@ -106,35 +106,60 @@ export function AgencyAppWalkthroughStack() {
   const isTR = lang === "TR";
   const isSR = lang === "SR_LAT" || lang === "SR_CYR";
 
-  const renderCardHoverCta = () => (
-    <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none transition-all duration-200 group-hover:bg-slate-950/10">
-      <div className="pointer-events-auto opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsDemoModalOpen(true);
-          }}
-          className="group/pill inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-sm font-semibold shadow-[0_12px_40px_rgba(0,0,0,0.4)] border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
+  const [activePillCard, setActivePillCard] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (activePillCard === null) return;
+    const handleWindowClick = () => {
+      setActivePillCard(null);
+    };
+    window.addEventListener("click", handleWindowClick);
+    return () => window.removeEventListener("click", handleWindowClick);
+  }, [activePillCard]);
+
+  const renderCardCta = (cardIndex: number) => {
+    const isVisible = activePillCard === cardIndex;
+    if (!isVisible) return null;
+
+    return (
+      <div
+        className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/25 backdrop-blur-[2px] transition-all duration-200"
+        onClick={(e) => {
+          e.stopPropagation();
+          setActivePillCard(null);
+        }}
+      >
+        <div
+          className="relative transition-all duration-200"
+          onClick={(e) => e.stopPropagation()}
         >
-          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-            <span>{isTR ? "SİMÜLASYON" : isSR ? "SIMULACIJA" : "SIMULATION"}</span>
-          </span>
-          <span>
-            {isTR
-              ? "Acentenizi Simüle Edin"
-              : isSR
-              ? "Simulirajte za Vašu Agenciju"
-              : "Simulate for Your Agency"}
-          </span>
-          <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white/80 group-hover/pill:bg-blue-600 group-hover/pill:text-white transition-all duration-150">
-            <ArrowRight className="w-3.5 h-3.5 group-hover/pill:translate-x-0.5 transition-transform" />
-          </div>
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDemoModalOpen(true);
+            }}
+            className="group/pill inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-sm font-semibold shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              <span>{isTR ? "SİMÜLASYON" : isSR ? "SIMULACIJA" : "SIMULATION"}</span>
+            </span>
+            <span>
+              {isTR
+                ? "Acentenizi Simüle Edin"
+                : isSR
+                ? "Simulirajte za Vašu Agenciju"
+                : "Simulate for Your Agency"}
+            </span>
+            <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white/80 group-hover/pill:bg-blue-600 group-hover/pill:text-white transition-all duration-150">
+              <ArrowRight className="w-3.5 h-3.5 group-hover/pill:translate-x-0.5 transition-transform" />
+            </div>
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const steps = [
     {
@@ -259,7 +284,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-0"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 0 ? null : 0));
+          }}
           style={{ top: "110px", zIndex: 10, marginBottom: "60px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
@@ -429,7 +457,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(0)}
         </div>
 
         {/* Scroll travel spacer between Card 1 and Card 2 */}
@@ -440,7 +468,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-1"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 1 ? null : 1));
+          }}
           style={{ top: "122px", zIndex: 20, marginBottom: "48px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
@@ -610,7 +641,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(1)}
         </div>
 
         {/* Scroll travel spacer between Card 2 and Card 3 */}
@@ -621,7 +652,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-2"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 2 ? null : 2));
+          }}
           style={{ top: "134px", zIndex: 30, marginBottom: "36px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
@@ -830,7 +864,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(2)}
         </div>
 
         {/* Scroll travel spacer between Card 3 and Card 4 */}
@@ -841,7 +875,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-3"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 3 ? null : 3));
+          }}
           style={{ top: "146px", zIndex: 40, marginBottom: "24px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
@@ -1026,7 +1063,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(3)}
         </div>
 
         {/* Scroll travel spacer between Card 4 and Card 5 */}
@@ -1037,7 +1074,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-4"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 4 ? null : 4));
+          }}
           style={{ top: "158px", zIndex: 50, marginBottom: "12px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-slate-200/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${cardShadowClass} ${cardHeightClass}`}
         >
@@ -1198,7 +1238,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(4)}
         </div>
 
         {/* Scroll travel spacer between Card 5 and Card 6 */}
@@ -1209,7 +1249,10 @@ export function AgencyAppWalkthroughStack() {
         ═════════════════════════════════════════════════════════════════ */}
         <div
           id="walkthrough-card-5"
-          onClick={() => setIsDemoModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActivePillCard((prev) => (prev === 5 ? null : 5));
+          }}
           style={{ top: "170px", zIndex: 60, marginBottom: "0px", height: "520px", maxHeight: "520px" }}
           className={`group sticky rounded-3xl bg-white border-2 border-emerald-400/90 overflow-hidden transition-shadow duration-300 cursor-pointer ${card6ShadowClass} ${cardHeightClass}`}
         >
@@ -1355,7 +1398,7 @@ export function AgencyAppWalkthroughStack() {
               </div>
             </div>
           </div>
-          {renderCardHoverCta()}
+          {renderCardCta(5)}
         </div>
 
       </div>

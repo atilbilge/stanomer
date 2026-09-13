@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
@@ -24,6 +24,16 @@ import {
 export default function AgenciesPage() {
   const { t, lang } = useLanguage();
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isHeroPillOpen, setIsHeroPillOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isHeroPillOpen) return;
+    const handleWindowClick = () => {
+      setIsHeroPillOpen(false);
+    };
+    window.addEventListener("click", handleWindowClick);
+    return () => window.removeEventListener("click", handleWindowClick);
+  }, [isHeroPillOpen]);
 
   const comparisonRows = [
     {
@@ -186,7 +196,10 @@ export default function AgenciesPage() {
           <div className="lg:col-span-5 relative flex justify-center items-center">
             <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-3xl transform scale-90 -z-10" />
             <div
-              onClick={() => setIsDemoModalOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsHeroPillOpen((prev) => !prev);
+              }}
               className="group relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-2xl space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500 overflow-hidden cursor-pointer"
             >
 
@@ -238,16 +251,19 @@ export default function AgenciesPage() {
                 <span>{t("agencies_mockup_white_label_badge")}</span>
               </div>
 
-              {/* Modern SaaS Floating CTA on Preview Card */}
-              <div className="absolute inset-x-0 bottom-4 z-30 flex justify-center pointer-events-none transition-all duration-200">
-                <div className="pointer-events-auto opacity-0 group-hover:opacity-100 translate-y-1.5 group-hover:translate-y-0 transition-all duration-200">
+              {/* Modern SaaS Floating CTA on Preview Card (shown on click) */}
+              {isHeroPillOpen && (
+                <div
+                  className="absolute inset-x-0 bottom-4 z-30 flex justify-center transition-all duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsDemoModalOpen(true);
                     }}
-                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold shadow-xl shadow-slate-950/25 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
+                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-xs font-semibold shadow-xl shadow-slate-950/30 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                     <span>
@@ -260,7 +276,7 @@ export default function AgenciesPage() {
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover/pill:text-white group-hover/pill:translate-x-0.5 transition-all" />
                   </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

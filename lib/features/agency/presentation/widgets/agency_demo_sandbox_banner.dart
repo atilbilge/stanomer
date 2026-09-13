@@ -228,14 +228,21 @@ class _AgencyDemoSandboxBannerState
   }
 
   Future<void> _fetchThemeAndLogo() async {
+    // Mark as clicked immediately so spotlight/blur clears on actual button press
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('theme_btn_clicked_${widget.agencyId}', true);
+    } catch (_) {}
+    widget.onThemeApplied?.call();
+
     String? domain = widget.websiteUrl;
     final isSR = _isSR;
     final isCyrl = _isCyrl;
     final isEN = _isEN;
     final isRU = _isRU;
 
-    if (domain == null || domain.trim().isEmpty) {
-      final controller = TextEditingController();
+    // Always open input dialog prefilled with current website URL so user can update it anytime from the screen
+    final controller = TextEditingController(text: domain ?? '');
 
       final inputTitle = isSR
           ? (isCyrl ? 'Унесите Ваш Веб-Сајт' : 'Unesite Vaš Veb-Sajt')
@@ -309,7 +316,6 @@ class _AgencyDemoSandboxBannerState
 
       if (entered == null || entered.isEmpty) return;
       domain = entered;
-    }
 
     setState(() => _isLoadingTheme = true);
 
@@ -723,14 +729,66 @@ class _AgencyDemoSandboxBannerState
                   ),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(
-                      '${widget.companyName.isNotEmpty ? widget.companyName : "Stanomer Agency"} • $subLabel',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            '${widget.companyName.isNotEmpty ? widget.companyName : "Stanomer Agency"} • $subLabel',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: _fetchThemeAndLogo,
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isDark ? Colors.white24 : Colors.black12,
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  LucideIcons.globe,
+                                  size: 11,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.websiteUrl != null && widget.websiteUrl!.isNotEmpty
+                                      ? widget.websiteUrl!
+                                          .replaceAll(RegExp(r'^https?:\/\/'), '')
+                                          .replaceAll(RegExp(r'\/.*$'), '')
+                                      : (isSR ? 'Постави сајт' : 'Siteyi Güncelle'),
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                Icon(
+                                  LucideIcons.pencil,
+                                  size: 10,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1028,7 +1086,7 @@ class _AgencyDemoSandboxBannerState
                       onPressed: () async {
                         try {
                           final prefs = await SharedPreferences.getInstance();
-                          await prefs.setBool('theme_applied_${widget.agencyId}', true);
+                          await prefs.setBool('theme_btn_clicked_${widget.agencyId}', true);
                         } catch (_) {}
                         widget.onThemeApplied?.call();
                       },

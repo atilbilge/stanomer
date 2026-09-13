@@ -328,8 +328,8 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
       final prefs = await SharedPreferences.getInstance();
       final agencyId = ref.read(currentUserProvider)?.id ?? '';
       if (agencyId.isNotEmpty) {
-        final applied = prefs.getBool('theme_applied_$agencyId') ?? false;
-        if (applied && mounted) {
+        final clicked = prefs.getBool('theme_btn_clicked_$agencyId') ?? false;
+        if (clicked && mounted) {
           setState(() => _hasAppliedTheme = true);
         }
       }
@@ -611,9 +611,8 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
             Builder(
               builder: (context) {
                 final isDemo = profileData?['is_demo'] == true;
-                final hasThemeInProfile = profileData?['color_scheme'] != null;
-                final hasThemeApplied = _hasAppliedTheme || hasThemeInProfile;
-                final shouldSpotlightTheme = isDemo && !hasThemeApplied;
+                // Spotlight/blur is strictly based on whether the button was actually pressed at least once
+                final shouldSpotlightTheme = isDemo && !_hasAppliedTheme;
 
                 return SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),

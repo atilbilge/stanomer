@@ -144,6 +144,9 @@ class AgencyColorScheme {
   static Color? _parseColorHex(String? hexString) {
     if (hexString == null || hexString.trim().isEmpty) return null;
     String hex = hexString.trim().replaceAll('#', '').replaceAll('0x', '');
+    if (hex.length == 3) {
+      hex = hex.split('').map((c) => '$c$c').join();
+    }
     if (hex.length == 6) {
       hex = 'FF$hex';
     }
