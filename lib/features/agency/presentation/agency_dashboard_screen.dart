@@ -323,13 +323,13 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
     _checkThemeStatus();
   }
 
-  Future<void> _checkThemeStatus() async {
+  Future<void> _checkThemeStatus([String? explicitAgencyId]) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final agencyId = ref.read(currentUserProvider)?.id ?? '';
+      final agencyId = explicitAgencyId ?? ref.read(currentUserProvider)?.id ?? '';
       if (agencyId.isNotEmpty) {
         final clicked = prefs.getBool('theme_btn_clicked_$agencyId') ?? false;
-        if (clicked && mounted) {
+        if (clicked && mounted && !_hasAppliedTheme) {
           setState(() => _hasAppliedTheme = true);
         }
       }
@@ -429,6 +429,11 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
     final companyName = (profileData?['company_name'] as String?)?.isNotEmpty == true
         ? profileData!['company_name'] as String
         : (profileData?['full_name'] as String? ?? 'Stanomer');
+
+    final resolvedAgencyId = (profileData?['id'] as String?) ?? ref.watch(currentUserProvider)?.id ?? '';
+    if (resolvedAgencyId.isNotEmpty && !_hasAppliedTheme) {
+      _checkThemeStatus(resolvedAgencyId);
+    }
 
     final colors = ref.watch(agencyColorSchemeProvider);
 
