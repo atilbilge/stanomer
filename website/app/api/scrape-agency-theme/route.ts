@@ -58,7 +58,39 @@ function resolveRelativeUrl(href: string, baseUrl: string): string {
 
 function getBrandfetchLogoUrl(domain: string, clientId = BRANDFETCH_CLIENT_ID): string {
   const cleanDomain = domain.replace(/^www\./i, "").toLowerCase();
-  return `https://cdn.brandfetch.io/${cleanDomain}/w/512/h/512/type/logo/fallback/lettermark?c=${clientId}`;
+  return `https://cdn.brandfetch.io/${cleanDomain}/w/512/h/512/type/logo/fallback/404?c=${clientId}`;
+}
+
+const IMAGE_FETCH_HEADERS: Record<string, string> = {
+  "User-Agent": USER_AGENT,
+  Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+  "Sec-Fetch-Dest": "image",
+  "Sec-Fetch-Mode": "no-cors",
+  "Sec-Fetch-Site": "cross-site",
+  Referer: "https://www.stanomer.online/",
+};
+
+async function fetchBrandfetchLogo(
+  domain: string,
+  clientId = BRANDFETCH_CLIENT_ID
+): Promise<{ url: string; buffer: Buffer } | null> {
+  if (!domain) return null;
+  const bfUrl = getBrandfetchLogoUrl(domain, clientId);
+  try {
+    const res = await fetch(bfUrl, {
+      headers: IMAGE_FETCH_HEADERS,
+      signal: AbortSignal.timeout(3500),
+    });
+    if (res.ok && res.status === 200) {
+      const buffer = Buffer.from(await res.arrayBuffer());
+      if (buffer.length > 500) {
+        return { url: bfUrl, buffer };
+      }
+    }
+  } catch (err: any) {
+    console.warn("Brandfetch fetch note:", err.message);
+  }
+  return null;
 }
 
 function toCorsSafeUrl(rawUrl: string): string {
@@ -493,8 +525,10 @@ export async function POST(req: NextRequest) {
     const brandfetchClientId =
       body.brandfetch_client_id || body.brandfetchClientId || BRANDFETCH_CLIENT_ID;
 
-    // 3. Logo Discovery
+    // 3. Logo Discovery & Verification
     let foundLogo: string | null = null;
+    let logoBuffer: Buffer | null = null;
+    let isSvgLogo = false;
 
     if (html && html.length > 0) {
       const brandKey = domain.replace(/^www\./i, "").split(".")[0].toLowerCase();
@@ -554,9 +588,34 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Priority 5: Brandfetch 512x512 Logo CDN (high-res brand logo before tiny icons or random page images)
+      // If an on-page logo candidate was found, verify download
+      if (foundLogo) {
+        try {
+          const logoRes = await fetch(foundLogo, {
+            headers: IMAGE_FETCH_HEADERS,
+            signal: AbortSignal.timeout(3500),
+          });
+          if (logoRes.ok) {
+            logoBuffer = Buffer.from(await logoRes.arrayBuffer());
+            isSvgLogo =
+              foundLogo.toLowerCase().includes(".svg") ||
+              logoBuffer.toString("utf-8", 0, 100).includes("<svg");
+          } else {
+            foundLogo = null;
+          }
+        } catch {
+          foundLogo = null;
+        }
+      }
+
+      // Priority 5: Brandfetch 512x512 Logo CDN (probed with /fallback/404)
       if (!foundLogo && domain) {
-        foundLogo = getBrandfetchLogoUrl(domain, brandfetchClientId);
+        const bfResult = await fetchBrandfetchLogo(domain, brandfetchClientId);
+        if (bfResult) {
+          foundLogo = bfResult.url;
+          logoBuffer = bfResult.buffer;
+          isSvgLogo = false;
+        }
       }
 
       // Priority 6: Any img with "logo" in src
@@ -565,8 +624,21 @@ export async function POST(req: NextRequest) {
         for (const m of anyLogoMatches) {
           const src = m[1];
           if (!blacklist.some(b => src.toLowerCase().includes(b))) {
-            foundLogo = resolveRelativeUrl(src, fullUrl);
-            break;
+            const candidateUrl = resolveRelativeUrl(src, fullUrl);
+            try {
+              const res = await fetch(candidateUrl, {
+                headers: IMAGE_FETCH_HEADERS,
+                signal: AbortSignal.timeout(3000),
+              });
+              if (res.ok) {
+                foundLogo = candidateUrl;
+                logoBuffer = Buffer.from(await res.arrayBuffer());
+                isSvgLogo =
+                  candidateUrl.toLowerCase().includes(".svg") ||
+                  logoBuffer.toString("utf-8", 0, 100).includes("<svg");
+                break;
+              }
+            } catch {}
           }
         }
       }
@@ -579,7 +651,18 @@ export async function POST(req: NextRequest) {
           html.match(/<link[^>]+rel=["']icon["'][^>]+sizes=["'](?:192x192|512x512|180x180)["'][^>]+href=["']([^"']+)["']/i);
 
         if (iconMatch && iconMatch[1]) {
-          foundLogo = resolveRelativeUrl(iconMatch[1], fullUrl);
+          const candidateUrl = resolveRelativeUrl(iconMatch[1], fullUrl);
+          try {
+            const res = await fetch(candidateUrl, {
+              headers: IMAGE_FETCH_HEADERS,
+              signal: AbortSignal.timeout(3000),
+            });
+            if (res.ok) {
+              foundLogo = candidateUrl;
+              logoBuffer = Buffer.from(await res.arrayBuffer());
+              isSvgLogo = candidateUrl.toLowerCase().includes(".svg");
+            }
+          } catch {}
         }
       }
 
@@ -595,34 +678,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback if no on-page logo or HTML fetch was bypassed: Brandfetch Logo CDN
+    // Fallback if no on-page logo or HTML fetch was bypassed: Probe Brandfetch directly
     if (!foundLogo && domain) {
-      foundLogo = getBrandfetchLogoUrl(domain, brandfetchClientId);
+      const bfResult = await fetchBrandfetchLogo(domain, brandfetchClientId);
+      if (bfResult) {
+        foundLogo = bfResult.url;
+        logoBuffer = bfResult.buffer;
+        isSvgLogo = false;
+      }
     }
 
-    // Ultimate Fallback: Google Favicon API
-    if (!foundLogo) {
+    // Ultimate Fallback: Google Favicon API ONLY if site actually exists/responded with HTML
+    if (!foundLogo && html && html.length > 0) {
       foundLogo = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
     }
 
     // 4. Download Logo & Extract Colors via Sharp
     let logoColors: string[] = [];
-    let downloaded = false;
 
-    const imageHeaders: Record<string, string> = {
-      "User-Agent": USER_AGENT,
-      Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-      "Sec-Fetch-Dest": "image",
-      "Sec-Fetch-Mode": "no-cors",
-      "Sec-Fetch-Site": "cross-site",
-      Referer: "https://www.stanomer.online/",
-    };
-
-    if (foundLogo) {
+    if (logoBuffer && logoBuffer.length > 0) {
+      try {
+        logoColors = await extractLogoColors(logoBuffer, isSvgLogo);
+      } catch (logoErr: any) {
+        console.warn("Logo color analysis note:", logoErr.message);
+      }
+    } else if (foundLogo) {
       try {
         const logoRes = await fetch(foundLogo, {
-          headers: imageHeaders,
-          signal: AbortSignal.timeout(4000),
+          headers: IMAGE_FETCH_HEADERS,
+          signal: AbortSignal.timeout(3500),
         });
         if (logoRes.ok) {
           const buffer = Buffer.from(await logoRes.arrayBuffer());
@@ -630,29 +714,9 @@ export async function POST(req: NextRequest) {
             foundLogo.toLowerCase().includes(".svg") ||
             buffer.toString("utf-8", 0, 100).includes("<svg");
           logoColors = await extractLogoColors(buffer, isSvg);
-          downloaded = true;
         }
       } catch (logoErr: any) {
         console.warn("Logo download or analysis note:", logoErr.message);
-      }
-    }
-
-    // If initial logo candidate failed to download, try Brandfetch fallback
-    const bfFallbackUrl = getBrandfetchLogoUrl(domain, brandfetchClientId);
-    if (!downloaded && domain && foundLogo !== bfFallbackUrl) {
-      try {
-        const bfRes = await fetch(bfFallbackUrl, {
-          headers: imageHeaders,
-          signal: AbortSignal.timeout(4000),
-        });
-        if (bfRes.ok) {
-          const buffer = Buffer.from(await bfRes.arrayBuffer());
-          logoColors = await extractLogoColors(buffer, false);
-          foundLogo = bfFallbackUrl;
-          downloaded = true;
-        }
-      } catch (bfErr: any) {
-        console.warn("Brandfetch fallback download note:", bfErr.message);
       }
     }
 
@@ -664,28 +728,40 @@ export async function POST(req: NextRequest) {
     const colorScheme = buildSemanticPalette(categories, logoColors);
 
     // Wrap logo with weserv for guaranteed CORS headers in Flutter Web
-    const proxiedLogo = toCorsSafeUrl(foundLogo);
+    const proxiedLogo = foundLogo ? toCorsSafeUrl(foundLogo) : null;
 
     // 7. Update Dev Supabase if agencyId provided
     if (agencyId) {
       try {
         const supabase = createClient(DEV_SUPABASE_URL, DEV_SUPABASE_KEY);
 
-        // Try RPC first (SECURITY DEFINER)
-        const { error: rpcErr } = await supabase.rpc("update_agency_demo_theme", {
-          p_agency_id: agencyId,
-          p_logo_url: proxiedLogo,
-          p_website_url: fullUrl,
-          p_color_scheme: colorScheme,
-        });
+        if (proxiedLogo) {
+          // Try RPC first (SECURITY DEFINER)
+          const { error: rpcErr } = await supabase.rpc("update_agency_demo_theme", {
+            p_agency_id: agencyId,
+            p_logo_url: proxiedLogo,
+            p_website_url: fullUrl,
+            p_color_scheme: colorScheme,
+          });
 
-        if (rpcErr) {
-          console.warn("RPC update_agency_demo_theme note:", rpcErr.message);
-          // Fallback to direct update
+          if (rpcErr) {
+            console.warn("RPC update_agency_demo_theme note:", rpcErr.message);
+            // Fallback to direct update
+            await supabase
+              .from("profiles")
+              .update({
+                logo_url: proxiedLogo,
+                website_url: fullUrl,
+                color_scheme: colorScheme,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", agencyId);
+          }
+        } else {
+          // No valid new logo found, only update website_url and color_scheme
           await supabase
             .from("profiles")
             .update({
-              logo_url: proxiedLogo,
               website_url: fullUrl,
               color_scheme: colorScheme,
               updated_at: new Date().toISOString(),
