@@ -558,6 +558,7 @@ class _AgencyDemoSandboxBannerState
   Widget build(BuildContext context) {
     if (!widget.isDemo) return const SizedBox.shrink();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final locale = ref.watch(localeProvider);
     final isSR = locale.languageCode == 'sr';
     final isCyrl = locale.scriptCode == 'Cyrl';
@@ -565,230 +566,276 @@ class _AgencyDemoSandboxBannerState
     final isRU = locale.languageCode == 'ru';
 
     final badgeText = isSR
-        ? (isCyrl ? 'АГЕНЦИЈСКИ SANDBOX' : 'AGENCIJSKI SANDBOX')
+        ? (isCyrl ? 'SANDBOX' : 'SANDBOX')
         : isEN
-        ? 'AGENCY SANDBOX'
+        ? 'SANDBOX'
         : isRU
-        ? 'ПЕСОЧНИЦА АГЕНТСТВА'
-        : 'ACENTE SANDBOX';
+        ? 'SANDBOX'
+        : 'SANDBOX';
 
-    final statusTitle = widget.hasProperties
+    final subLabel = widget.hasProperties
         ? (isSR
-            ? (isCyrl ? '3-Дневно Тест Окружење је Активно' : '3-Dnevno Test Okruženje je Aktivno')
+            ? (isCyrl ? '3-дневно тест окружење' : '3-dnevno test okruženje')
             : isEN
-            ? '3-Day Sandbox Environment Active'
+            ? '3-day test sandbox'
             : isRU
-            ? '3-дневный тестовый период активен'
-            : '3 Günlük Test Ortamı Aktif')
+            ? '3-дневная песочница'
+            : '3 günlük test ortamı')
         : (isSR
-            ? (isCyrl ? 'Очекује се пример портфолија' : 'Očekuje se primer portfolija')
+            ? (isCyrl ? 'Очекује се портфолио' : 'Očekuje se portfolio')
             : isEN
-            ? 'Awaiting Sample Portfolio'
+            ? 'Portfolio awaiting'
             : isRU
-            ? 'Ожидание тестового портфолио'
-            : 'Örnek Portföy Bekleniyor');
+            ? 'Ожидание портфолио'
+            : 'Portföy bekleniyor');
 
-    final resetBtnLabel = isSR
-        ? (isCyrl ? 'Ресетуј' : 'Resetuj')
-        : isEN
-        ? 'Reset'
-        : isRU
-        ? 'Сбросить'
-        : 'Sıfırla';
-
-    final descriptionText = widget.hasProperties
-        ? (isSR
-            ? (isCyrl
-                ? 'Испорбајте панел са вашим брендом. Можете преузети лого са вашег сајта или ресетовати портфолио и поново га креирати.'
-                : 'Isprobajte panel sa vašim brendom. Možete preuzeti logo sa vašeg sajta ili resetovati portfolio i ponovo ga kreirati.')
-            : isEN
-            ? 'Experience your cockpit with your brand. Fetch your logo from your website or reset and regenerate sample portfolio anytime.'
-            : isRU
-            ? 'Опробуйте панель с вашим брендом. Вы можете загрузить логотип со своего сайта или сбросить и заново создать портфолио.'
-            : 'Panelinizi kendi markanızla deneyimleyin. Web sitenizden logonuzu alabilir veya portföyü sıfırlayıp yeniden üretebilirsiniz.')
-        : (isSR
-            ? (isCyrl
-                ? 'Још увек немате пример портфолија (или је 3-дневни период истекао). Једним кликом можете одмах креирати 10 реалистичних тест некретнина.'
-                : 'Još uvek nemate primer portfolija (ili je 3-dnevni period istekao). Jednim klikom možete odmah kreirati 10 realističnih test nekretnina.')
-            : isEN
-            ? 'No sample portfolio yet (or 3-day trial expired). Generate 10 realistic test properties with tenants and contracts in one click.'
-            : isRU
-            ? 'У вас пока нет тестового портфолио (или истек 3-дневный срок). Создайте 10 реалистичных объектов в один клик.'
-            : 'Henüz örnek portföyünüz bulunmuyor (veya 3 günlük deneme süresi doldu). Tek tıkla 10 evlik gerçekçi test verisini hemen üretebilirsiniz.');
-
-    final themeBtnLabel = _isLoadingTheme
+    final themeLabel = _isLoadingTheme
         ? (isSR ? (isCyrl ? 'Преузимање...' : 'Preuzimanje...') : isEN ? 'Fetching...' : isRU ? 'Загрузка...' : 'Alınıyor...')
-        : (isSR ? (isCyrl ? 'Преузми Тему' : 'Preuzmi Temu') : isEN ? 'Fetch Brand Theme' : isRU ? 'Загрузить тему' : 'Temayı Al');
+        : (isSR ? (isCyrl ? 'Тема' : 'Tema') : isEN ? 'Theme' : isRU ? 'Тема' : 'Temayı Al');
 
-    final portfolioBtnLabel = _isLoadingPortfolio
-        ? (isSR ? (isCyrl ? 'Креирање...' : 'Kreiranje...') : isEN ? 'Generating...' : isRU ? 'Создание...' : 'Üretiliyor...')
-        : (widget.hasProperties
-            ? (isSR ? (isCyrl ? 'Поново Креирај' : 'Ponovo Generiši') : isEN ? 'Regenerate Portfolio' : isRU ? 'Сгенерировать заново' : 'Portföyü Yeniden Üret')
-            : (isSR ? (isCyrl ? 'Генериши Пример Портфолија' : 'Generiši Primer Portfolija') : isEN ? 'Generate Sample Portfolio' : isRU ? 'Создать тестовое портфолио' : 'Örnek Portföy Üret'));
+    final sampleDataLabel = _isLoadingPortfolio
+        ? (isSR ? (isCyrl ? 'Радим...' : 'Radim...') : isEN ? 'Processing...' : isRU ? 'Создание...' : 'İşleniyor...')
+        : (isSR ? (isCyrl ? 'Тест Подаци' : 'Test Podaci') : isEN ? 'Sample Data' : isRU ? 'Тест данные' : 'Test Verisi');
 
-    final demoCtaBtnLabel = isSR
-        ? (isCyrl ? 'Затражите Демо' : 'Zatražite Demo')
+    final regenerateLabel = isSR
+        ? (isCyrl ? 'Поново креирај (10 некретнина)' : 'Ponovo kreiraj (10 nekretnina)')
         : isEN
-        ? 'Request Full Demo'
+        ? 'Regenerate Portfolio (10 Properties)'
         : isRU
-        ? 'Запросить демо'
-        : 'Demo İste';
+        ? 'Сгенерировать заново (10 объектов)'
+        : 'Portföyü Yeniden Üret (10 Mülk)';
+
+    final resetLabel = isSR
+        ? (isCyrl ? 'Очисти портфолио (Ресетуј)' : 'Očisti portfolio (Resetuj)')
+        : isEN
+        ? 'Clear Portfolio (Reset)'
+        : isRU
+        ? 'Очистить портфолио (Сброс)'
+        : 'Portföyü Sıfırla (Temizle)';
+
+    final goLiveLabel = isSR
+        ? (isCyrl ? 'Пређите на Про' : 'Pređite na Pro')
+        : isEN
+        ? 'Go Live'
+        : isRU
+        ? 'Перейти на Pro'
+        : 'Canlıya Geç';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF2563EB).withValues(alpha: 0.08),
-            const Color(0xFF4F46E5).withValues(alpha: 0.04),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          width: 1.2,
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.25)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 620;
+
+          final leftInfo = Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(LucideIcons.sparkles, color: Colors.amber, size: 14),
+                    const Icon(LucideIcons.sparkles, color: Color(0xFF2563EB), size: 12),
                     const SizedBox(width: 4),
                     Text(
                       badgeText,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF2563EB),
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.6,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
+              Flexible(
                 child: Text(
-                  statusTitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                  '${widget.companyName.isNotEmpty ? widget.companyName : "Stanomer Agency"} • $subLabel',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (widget.hasProperties)
-                TextButton.icon(
-                  onPressed: _isLoadingPortfolio ? null : _clearPortfolio,
-                  icon: const Icon(LucideIcons.rotateCcw, size: 13, color: Color(0xFF64748B)),
-                  label: Text(
-                    resetBtnLabel,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                  ),
-                ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            descriptionText,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF475569), height: 1.4),
-          ),
-          const SizedBox(height: 12),
+          );
 
-          // Actions Row
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
+          final rightActions = Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Button 1: Temayı Al
-              OutlinedButton.icon(
+              // 1. Theme Button
+              TextButton.icon(
                 onPressed: _isLoadingTheme ? null : _fetchThemeAndLogo,
                 icon: _isLoadingTheme
                     ? const SizedBox(
-                        width: 14,
-                        height: 14,
+                        width: 12,
+                        height: 12,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(LucideIcons.palette, size: 15, color: Color(0xFF2563EB)),
+                    : const Icon(LucideIcons.palette, size: 14),
                 label: Text(
-                  themeBtnLabel,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF2563EB),
-                  ),
+                  themeLabel,
+                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
                 ),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFF93C5FD)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                style: TextButton.styleFrom(
+                  foregroundColor: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
+              const SizedBox(width: 4),
 
-              // Button 2: Örnek Portföy Üret
-              FilledButton.icon(
-                onPressed: _isLoadingPortfolio ? null : _generateSamplePortfolio,
-                icon: _isLoadingPortfolio
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+              // 2. Sample Data Dropdown Menu
+              PopupMenuButton<String>(
+                onSelected: (val) {
+                  if (val == 'regenerate') _generateSamplePortfolio();
+                  if (val == 'reset') _clearPortfolio();
+                },
+                tooltip: sampleDataLabel,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                itemBuilder: (ctx) => [
+                  PopupMenuItem(
+                    value: 'regenerate',
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.refreshCw, size: 14, color: Color(0xFF2563EB)),
+                        const SizedBox(width: 8),
+                        Text(
+                          regenerateLabel,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
                         ),
-                      )
-                    : const Icon(LucideIcons.zap, size: 15, color: Colors.amber),
-                label: Text(
-                  portfolioBtnLabel,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'reset',
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.trash2, size: 14, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Text(
+                          resetLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.03),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _isLoadingPortfolio
+                          ? const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(
+                              LucideIcons.database,
+                              size: 13,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                            ),
+                      const SizedBox(width: 5),
+                      Text(
+                        sampleDataLabel,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Icon(
+                        LucideIcons.chevronDown,
+                        size: 12,
+                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      ),
+                    ],
                   ),
                 ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  elevation: 2,
-                ),
               ),
+              const SizedBox(width: 8),
 
-              // Button 3: Demo İste (Request Demo) CTA
+              // 3. Go Live CTA
               FilledButton.icon(
                 onPressed: _onRequestDemo,
-                icon: const Icon(LucideIcons.sparkles, size: 15, color: Colors.amberAccent),
+                icon: const Icon(LucideIcons.sparkles, size: 12, color: Colors.amber),
                 label: Text(
-                  demoCtaBtnLabel,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
+                  goLiveLabel,
+                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  elevation: 2,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
             ],
-          ),
-        ],
+          );
+
+          if (isCompact) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                leftInfo,
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: rightActions,
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: leftInfo),
+              rightActions,
+            ],
+          );
+        },
       ),
     );
   }
 }
+
