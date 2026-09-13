@@ -12,6 +12,7 @@ import {
   X,
   ArrowRight,
 } from "lucide-react";
+import { sendDemoVerification } from "../lib/agencyDemoClientService";
 
 interface AgencyDemoModalProps {
   isOpen: boolean;
@@ -83,25 +84,13 @@ export function AgencyDemoModal({
             : `https://${website.trim()}`)
         : null;
 
-      const res = await fetch("/api/send-demo-verification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase().trim(),
-          agencyName: agencyName.trim(),
-          website: formattedWebsite,
-          lang: lang || "TR",
-          honeypot: honeypot.trim(),
-        }),
+      await sendDemoVerification({
+        email: email.toLowerCase().trim(),
+        agencyName: agencyName.trim(),
+        website: formattedWebsite,
+        lang: lang || "TR",
+        honeypot: honeypot.trim(),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "İstek işlenirken bir hata oluştu.");
-      }
 
       setSubmitted(true);
     } catch (err: any) {

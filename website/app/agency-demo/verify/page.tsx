@@ -139,14 +139,24 @@ function VerificationContent() {
                 .then((rows) => {
                   const siteUrl = rows?.[0]?.website_url;
                   if (siteUrl && typeof siteUrl === "string" && siteUrl.trim()) {
-                    fetch("/api/scrape-agency-theme", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        url: siteUrl.trim(),
-                        agency_id: data.user_id,
-                      }),
-                    }).catch(() => {});
+                    try {
+                      let cleanUrl = siteUrl.trim();
+                      if (!/^https?:\/\//i.test(cleanUrl)) cleanUrl = "https://" + cleanUrl;
+                      const domain = new URL(cleanUrl).hostname;
+                      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                      fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${data.user_id}`, {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                          apikey: supabaseKey,
+                          Authorization: `Bearer ${supabaseKey}`,
+                        },
+                        body: JSON.stringify({
+                          logo_url: faviconUrl,
+                          updated_at: new Date().toISOString(),
+                        }),
+                      }).catch(() => {});
+                    } catch (_) {}
                   }
                 })
                 .catch(() => {});
