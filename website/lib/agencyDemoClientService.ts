@@ -5,10 +5,8 @@
  * from the client browser. Compatible with static hosting and serverless deployments.
  */
 
-const DEV_SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://thvbpifahvasyzmngpzp.supabase.co";
+const DEV_SUPABASE_URL = "https://thvbpifahvasyzmngpzp.supabase.co";
 const DEV_SUPABASE_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
 
 const BREVO_API_KEY =
@@ -245,6 +243,49 @@ export async function sendDemoVerification(params: SendDemoVerificationParams): 
   } catch (brevoErr: any) {
     console.error("[sendDemoVerification] Brevo fetch exception:", brevoErr);
     throw new Error(brevoErr.message || "E-posta servis sağlayıcısına ulaşılamadı.");
+  }
+
+  // 6. Send Admin Notification to atilbilge@gmail.com
+  try {
+    await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "Stanomer Notification",
+          email: BREVO_SENDER_EMAIL,
+        },
+        to: [
+          {
+            email: "atilbilge@gmail.com",
+            name: "Atil Bilge",
+          },
+        ],
+        subject: `🚀 Yeni Acente Magic Link Talebi: ${cleanAgencyName} (${cleanEmail})`,
+        htmlContent: `
+          <div style="font-family: sans-serif; max-width: 500px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #2563eb; margin-top: 0;">🎉 Yeni Acente Demo Talebi (Magic Link)</h2>
+            <p>Web sitesinden yeni bir acente demo talebi alındı ve kullanıcıya tek tıkla giriş sağlayan <strong>magic link</strong> e-postası gönderildi.</p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr><td style="padding: 8px 0; color: #64748b;"><strong>Acente Adı:</strong></td><td>${cleanAgencyName}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;"><strong>E-posta:</strong></td><td><a href="mailto:${cleanEmail}">${cleanEmail}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;"><strong>Web Sitesi:</strong></td><td>${formattedWebsite || "-"}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;"><strong>Dil:</strong></td><td>${selectedLang}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;"><strong>Tarih:</strong></td><td>${new Date().toLocaleString("tr-TR")}</td></tr>
+            </table>
+            <div style="margin-top: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #475569;">
+              Magic Link (Doğrudan Giriş): <a href="${verifyUrl}" style="color: #2563eb;">${verifyUrl}</a>
+            </div>
+          </div>
+        `,
+      }),
+    });
+  } catch (adminErr) {
+    console.warn("[sendDemoVerification] Admin notification email failed (non-critical):", adminErr);
   }
 
   return {

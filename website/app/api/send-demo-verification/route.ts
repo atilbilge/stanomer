@@ -133,7 +133,6 @@ export async function POST(request: Request) {
     if (!token) {
       const devSupabaseUrl = "https://thvbpifahvasyzmngpzp.supabase.co";
       const devSupabaseKey =
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
 
       const formattedWebsite = website && typeof website === "string" && website.trim()
