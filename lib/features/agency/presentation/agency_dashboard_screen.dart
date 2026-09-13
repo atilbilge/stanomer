@@ -23,7 +23,6 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/expandable_agency_logo.dart';
-import '../../../core/widgets/powered_by_stanomer_footer.dart';
 import '../../../core/widgets/desktop_navigation_shell.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../property/domain/property.dart';
@@ -38,6 +37,7 @@ import '../../maintenance/domain/maintenance_request.dart';
 import '../../maintenance/domain/maintenance_charge.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 import '../../maintenance/presentation/widgets/agency_property_picker_sheet.dart';
+import 'widgets/agency_demo_sandbox_banner.dart';
 
 // ---------------------------------------------------------------------------
 // Actionable Insights Types & Helpers
@@ -149,12 +149,6 @@ String _getWebSafeImageUrl(String rawUrl) {
   if (url.contains('supabase.co') ||
       url.contains('localhost') ||
       url.contains('127.0.0.1') ||
-      url.contains('gstatic.com') ||
-      url.contains('googleusercontent.com') ||
-      url.contains('google.com') ||
-      url.contains('googleapis.com') ||
-      url.contains('unsplash.com') ||
-      url.contains('cloudinary.com') ||
       url.contains('weserv.nl')) {
     return url;
   }
@@ -192,10 +186,12 @@ final agencyAllPaymentsProvider =
     (List<List<RentPayment>> allPaymentsList) {
       final List<Map<String, dynamic>> result = [];
       final propertiesMap = {for (var p in properties) p.id: p};
+      final seenPaymentIds = <String>{};
 
       for (int i = 0; i < properties.length; i++) {
         final propMap = properties[i].toJson();
         for (final payment in allPaymentsList[i]) {
+          if (!seenPaymentIds.add(payment.id)) continue;
           final json = payment.toJson();
           json['property'] = propMap;
           json['property_id'] = properties[i].id;
@@ -204,7 +200,9 @@ final agencyAllPaymentsProvider =
       }
 
       // Add maintenance financial settlements awaiting agency approval (pending_agency_approval / pending_review / pending_opposite_approval with cost > 0) or paid
+      final seenMaintenanceIds = <String>{};
       for (final m in maintenanceList) {
+        if (!seenMaintenanceIds.add(m.id)) continue;
         final cost = (m.costAmount ?? 0.0);
         final hasValidCost = cost > 0;
         if (!hasValidCost) continue;
@@ -594,6 +592,24 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (profileData?['is_demo'] == true) ...[
+                    AgencyDemoSandboxBanner(
+                      agencyId: ref.watch(currentUserProvider)?.id ?? '',
+                      companyName: companyName,
+                      websiteUrl: profileData?['website_url'] as String?,
+                      isDemo: true,
+                      hasProperties: (propertiesAsync.value ?? []).isNotEmpty,
+                      onRefreshNeeded: () {
+                        ref.invalidate(agencyPropertiesProvider);
+                        ref.invalidate(agencyContractsMapProvider);
+                        ref.invalidate(agencyAllPaymentsProvider);
+                        ref.invalidate(agencyPendingPaymentsProvider);
+                        ref.invalidate(agencyMaintenanceRequestsProvider);
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _WelcomeBanner(
                     companyName: companyName,
                     email: ref.watch(currentUserProvider)?.email ?? '',
@@ -630,7 +646,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 80), // Padding for FAB & BottomNav
+                  SizedBox(height: isDesktop ? 24 : 80), // Padding for FAB & BottomNav
                 ],
               ),
             ),
@@ -1030,7 +1046,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
     final effectiveViewMode = _viewMode ?? (isMobile ? 'grid' : 'table');
 
     return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: isMobile ? const AlwaysScrollableScrollPhysics() : const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1446,7 +1462,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                           debtPropertyIds: debtPropertyIds,
                           colors: widget.colors,
                         )
-                      else
+                      else ...[
                         ...groupProps.map((property) => Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: _PropertyCard(
@@ -1459,15 +1475,38 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                                 ),
                               ),
                             )),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  LucideIcons.sparkles,
+                                  size: 10,
+                                  color: const Color(0xFF94A3B8).withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'powered by stanomer.online',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   );
                 }).toList(),
               );
             },
           ),
-          const SizedBox(height: 20),
-          PoweredByStanomerFooter(textColor: widget.colors.textPrimary),
-          const SizedBox(height: 80),
+          SizedBox(height: isMobile ? 80 : 12),
         ],
       ),
     );
@@ -2275,7 +2314,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
       if (_selectedTypes.isNotEmpty) {
         final isMaintenance = payment['is_maintenance'] == true;
         final rawTitle = (payment['title'] as String? ?? 'Kira').toLowerCase();
-        final isRent = rawTitle == 'kira' || rawTitle.contains('rent');
+        final isRent = rawTitle == 'kira' || rawTitle.contains('rent') || rawTitle.contains('zakupnina') || rawTitle.contains('kirija');
         final isMaint = isMaintenance || rawTitle.contains('bakım') || rawTitle.contains('maintenance');
         final isBill = !isRent && !isMaint;
 
@@ -2341,13 +2380,22 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     final pendingCount = filteredPendingPayments.length;
     final pendingTotals = calcTotals(filteredPendingPayments);
 
+    // Helper: check if item is a rent payment
+    bool isRent(Map<String, dynamic> item) {
+      final title = (item['title'] as String? ?? '').trim().toLowerCase();
+      return title == 'kira' || title == 'rent' || title.contains('kira') || title.contains('zakupnina') || title.contains('kirija');
+    }
+
+    // Helper: check if item is a maintenance expense
+    bool isMaintenance(Map<String, dynamic> item) =>
+        item['is_maintenance'] == true;
+
     // 2. Girilmeyen Faturalar (Unentered / Awaiting Bills where amount == 0 for owner or included expense)
     final unenteredBillsList = filteredAllPayments.where((item) {
       final status = item['status'] as String? ?? 'pending';
       if (status == 'paid' || status == 'declared' || status == 'disputed') return false;
       final receiverType = item['receiver_type'] as String? ?? 'owner';
-      final title = item['title'] as String? ?? 'Kira';
-      final isOwnerExpense = (receiverType == 'owner' || receiverType == 'included') && title != 'Kira';
+      final isOwnerExpense = (receiverType == 'owner' || receiverType == 'included') && !isRent(item);
       if (!isOwnerExpense) return false;
 
       final amt = (item['amount'] as num?)?.toDouble() ?? 0.0;
@@ -2375,16 +2423,6 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
     }).toList();
     final overdueCount = overdueList.length;
     final overdueTotals = calcTotals(overdueList);
-
-    // Helper: check if item is a rent payment (title == 'Kira')
-    bool isRent(Map<String, dynamic> item) {
-      final title = item['title'] as String? ?? '';
-      return title == 'Kira';
-    }
-
-    // Helper: check if item is a maintenance expense
-    bool isMaintenance(Map<String, dynamic> item) =>
-        item['is_maintenance'] == true;
 
     // 4a. Kiracıdan tahsil edilen kira tutarı
     final rentCollectedList = filteredAllPayments.where((item) {
@@ -3413,9 +3451,7 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
             }),
           ],
 
-          const SizedBox(height: 24),
-          PoweredByStanomerFooter(textColor: widget.colors.textPrimary),
-          const SizedBox(height: 80),
+          SizedBox(height: isMobile ? 80 : 24),
         ],
       ),
     );
@@ -5993,9 +6029,10 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
             data: (rawRequests) {
               // Ensure only requests belonging to the user's properties are included
               final userPropertyIds = properties.map((p) => p.id).toSet();
+              final seenReqIds = <String>{};
               final allRequests = properties.isNotEmpty
-                  ? rawRequests.where((r) => userPropertyIds.contains(r.propertyId)).toList()
-                  : rawRequests;
+                  ? rawRequests.where((r) => userPropertyIds.contains(r.propertyId) && seenReqIds.add(r.id)).toList()
+                  : rawRequests.where((r) => seenReqIds.add(r.id)).toList();
 
               // 1. KPI Calculation
               final urgentCount = allRequests.where((r) => r.priority == MaintenancePriority.urgent || r.priority == MaintenancePriority.high).length;
@@ -6480,7 +6517,7 @@ class _AgencyMaintenanceTabState extends ConsumerState<AgencyMaintenanceTab> {
               colors: widget.colors,
             ),
           ),
-          const SizedBox(height: 80),
+          SizedBox(height: isMobile ? 80 : 24),
         ],
       ),
     );
@@ -8956,9 +8993,14 @@ class _AgencyCockpitSectionState extends State<_AgencyCockpitSection> {
       }
       return false;
     }).toList();
+    bool isRentTitle(String? t) {
+      final s = (t ?? '').trim().toLowerCase();
+      return s == 'kira' || s == 'rent' || s.contains('kira') || s.contains('zakupnina') || s.contains('kirija');
+    }
+
     final overdueTotals = _calculateCurrencyTotals(overdueList);
-    final overdueRents = overdueList.where((p) => (p['title'] as String? ?? 'Kira') == 'Kira').toList();
-    final overdueBills = overdueList.where((p) => (p['title'] as String? ?? 'Kira') != 'Kira').toList();
+    final overdueRents = overdueList.where((p) => isRentTitle(p['title'] as String?)).toList();
+    final overdueBills = overdueList.where((p) => !isRentTitle(p['title'] as String?)).toList();
     final overdueRentCount = overdueRents.length;
     final overdueBillCount = overdueBills.length;
     final overdueRentTotals = _calculateCurrencyTotals(overdueRents);
@@ -8976,19 +9018,19 @@ class _AgencyCockpitSectionState extends State<_AgencyCockpitSection> {
       return diff >= 0 && diff <= 7;
     }).toList();
     final upcomingCount = upcomingList.length;
-    final upcomingRents = upcomingList.where((p) => (p['title'] as String? ?? 'Kira') == 'Kira').length;
-    final upcomingBills = upcomingList.where((p) => (p['title'] as String? ?? 'Kira') != 'Kira').length;
+    final upcomingRents = upcomingList.where((p) => isRentTitle(p['title'] as String?)).length;
+    final upcomingBills = upcomingList.where((p) => !isRentTitle(p['title'] as String?)).length;
     final isUpcomingEmpty = upcomingCount == 0;
 
     final declaredRentsCount = widget.pendingPayments.where((p) =>
         (p['status'] as String?) == 'declared' &&
         (p['is_maintenance'] != true) &&
-        ((p['title'] as String? ?? 'Kira') == 'Kira' || (p['title'] as String? ?? '').toLowerCase().contains('rent'))).length;
+        isRentTitle(p['title'] as String?)).length;
 
     final declaredBillsCount = widget.pendingPayments.where((p) =>
         (p['status'] as String?) == 'declared' &&
         (p['is_maintenance'] != true) &&
-        ((p['title'] as String? ?? 'Kira') != 'Kira' && !(p['title'] as String? ?? '').toLowerCase().contains('rent'))).length;
+        !isRentTitle(p['title'] as String?)).length;
 
     final declaredMaintenanceCount = widget.pendingPayments.where((p) =>
         (p['status'] as String?) == 'declared' &&
@@ -9782,7 +9824,7 @@ class _PropertyTableView extends StatelessWidget {
         if (!isDesktop) {
           // Mobile / Small Screen: Compact List View
           return Container(
-            margin: const EdgeInsets.only(bottom: 14),
+            margin: const EdgeInsets.only(bottom: 4),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -9797,19 +9839,65 @@ class _PropertyTableView extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: properties.length,
-                separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (ctx, i) {
-                  final property = properties[i];
-                  return _PropertyCompactRow(
-                    property: property,
-                    hasPendingDebt: debtPropertyIds.contains(property.id),
-                    colors: colors,
-                  );
-                },
+              child: Column(
+                children: [
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    itemCount: properties.length,
+                    separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                    itemBuilder: (ctx, i) {
+                      final property = properties[i];
+                      return _PropertyCompactRow(
+                        property: property,
+                        hasPendingDebt: debtPropertyIds.contains(property.id),
+                        colors: colors,
+                      );
+                    },
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${properties.length} ${loc.tabPortfolio}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              LucideIcons.sparkles,
+                              size: 10,
+                              color: const Color(0xFF94A3B8).withValues(alpha: 0.8),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'powered by stanomer.online',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -9826,7 +9914,7 @@ class _PropertyTableView extends StatelessWidget {
         final colStatus = usableWidth * 0.12;
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
@@ -9931,6 +10019,7 @@ class _PropertyTableView extends StatelessWidget {
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
                       itemCount: properties.length,
                       separatorBuilder: (ctx, i) => const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
                       itemBuilder: (ctx, i) {
@@ -9947,6 +10036,50 @@ class _PropertyTableView extends StatelessWidget {
                           colors: colors,
                         );
                       },
+                    ),
+
+                    // Table Footer Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF8FAFC),
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${properties.length} ${properties.length == 1 ? (loc.localeName == "tr" ? "mülk" : "property") : (loc.localeName == "tr" ? "mülk listeleniyor" : "properties")}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.sparkles,
+                                size: 11,
+                                color: const Color(0xFF94A3B8).withValues(alpha: 0.8),
+                              ),
+                              const SizedBox(width: 5),
+                              const Text(
+                                'powered by stanomer.online',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF94A3B8),
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

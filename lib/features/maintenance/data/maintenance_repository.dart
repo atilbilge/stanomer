@@ -53,7 +53,13 @@ class MaintenanceRepository {
           .stream(primaryKey: ['id'])
           .order('created_at', ascending: false)
           .cast<dynamic>()
-          .map((data) => (data as List).map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>)).toList()),
+          .map((data) {
+            final seen = <String>{};
+            return (data as List)
+                .map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>))
+                .where((m) => seen.add(m.id))
+                .toList();
+          }),
       debugName: 'getAllMaintenanceRequestsStream',
     );
   }
@@ -66,7 +72,13 @@ class MaintenanceRepository {
           .eq('property_id', propertyId)
           .order('created_at', ascending: false)
           .cast<dynamic>()
-          .map((data) => (data as List).map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>)).toList()),
+          .map((data) {
+            final seen = <String>{};
+            return (data as List)
+                .map((json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>))
+                .where((m) => seen.add(m.id))
+                .toList();
+          }),
       debugName: 'getMaintenanceRequestsStream($propertyId)',
     );
   }
@@ -827,7 +839,13 @@ class MaintenanceRepository {
           .eq('maintenance_request_id', requestId)
           .order('created_at', ascending: true)
           .cast<dynamic>()
-          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+          .map((data) {
+            final seen = <String>{};
+            return (data as List)
+                .map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>))
+                .where((c) => seen.add(c.id))
+                .toList();
+          }),
       debugName: 'getMaintenanceChargesStream($requestId)',
     );
   }
@@ -840,7 +858,13 @@ class MaintenanceRepository {
           .eq('property_id', propertyId)
           .order('created_at', ascending: false)
           .cast<dynamic>()
-          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+          .map((data) {
+            final seen = <String>{};
+            return (data as List)
+                .map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>))
+                .where((c) => seen.add(c.id))
+                .toList();
+          }),
       debugName: 'getPropertyMaintenanceChargesStream($propertyId)',
     );
   }
@@ -852,7 +876,13 @@ class MaintenanceRepository {
           .stream(primaryKey: ['id'])
           .order('created_at', ascending: false)
           .cast<dynamic>()
-          .map((data) => (data as List).map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>)).toList()),
+          .map((data) {
+            final seen = <String>{};
+            return (data as List)
+                .map((json) => MaintenanceCharge.fromJson(json as Map<String, dynamic>))
+                .where((c) => seen.add(c.id))
+                .toList();
+          }),
       debugName: 'getAllMaintenanceChargesStream',
     );
   }
