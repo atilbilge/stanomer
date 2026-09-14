@@ -130,13 +130,6 @@ if [ -d "build/web_dev" ]; then
   cp -rf build/web_dev/* public/dev-app/
 fi
 
-# Ensure Yandex Metrika index templates are in place
-if [ -f "web/index_prod.html" ]; then
-  cp -f web/index_prod.html public/app/index.html
-fi
-if [ -f "web/index_dev.html" ]; then
-  cp -f web/index_dev.html public/dev-app/index.html
-fi
 
 # Pre-generate physical SPA routes for zero-failure deep linking and page refresh
 SPA_ROUTES="agency-dashboard demo-login login signup dashboard profile notifications add-property property-detail invite-tenant expenses support terms privacy"

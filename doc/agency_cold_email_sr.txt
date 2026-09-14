@@ -1,0 +1,39 @@
+Pozdrav za {{agency_name}} tim,
+
+Ugovor o zakupu je potpisan — kako za {{agency_name}} obično izgleda proces nakon izdavanja?
+
+Umesto beskrajnih WhatsApp i Viber poruka o potvrdama uplate kirije, izgubljenim računima za komunalije i prijavama kvarova, nudimo dva praktična modela prilagođena vašem poslovanju:
+
+1. UPRAVLJAJTE SAMI SVOJIM PORTFOLIOM (Puna kontrola kod vas)
+Digitalni agencijski panel sa logotipom i bojama vašeg brenda (White-Label).
+- Direktno odobravajte uplate kirije i račune za komunalije
+- Upravljajte prijavama kvarova i održavanjem sa jednog mesta
+- Potpuno eliminišite haos u porukama sa klijentima
+Detalji panela: https://www.stanomer.online/agencies#section-whitelabel
+
+ILI
+
+2. UPUTITE KLIJENTE NA NAS (Nula operativnog tereta)
+Kada predate ključeve, ne morate gubiti vreme na operacije nakon izdavanja.
+- Uputite vlasnika i zakupca jednim stalnim QR kodom vaše agencije
+- Potpuno se oslobodite praćenja kirije i svakodnevnih pitanja
+- Vaša agencija dobija istaknuto mesto u našim vodičima i partnerskoj mreži
+Detalji modela: https://www.stanomer.online/agencies#section-referral
+
+---
+
+Koji pristup više odgovara agenciji {{agency_name}}?
+
+Možete jednostavno odgovoriti na ovaj imejl sa "1" ili "2", a rado ću vam u kratkom 5-minutnom razgovoru pokazati kako sistem funkcioniše u praksi.
+
+Srdačan pozdrav,
+
+Atıl Bilge
+Osnivač, Stanomer
+https://www.stanomer.online/agencies
+Beograd & Novi Sad
+
+---
+Ovaj imejl je upućen agenciji {{agency_name}} u informativne svrhe.
+Ukoliko ne želite da primate ovakva obaveštenja, možete se odjaviti ovde:
+https://www.stanomer.online/unsubscribe?email={{Email}}&lang=sr
