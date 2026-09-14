@@ -80,6 +80,16 @@ mkdir -p website/public/dev-app
 cp -rf build/web_prod/* website/public/app/
 cp -rf build/web_dev/* website/public/dev-app/
 
+for web_app_dir in "website/public/app" "website/public/dev-app"; do
+  if [ -f "$web_app_dir/index.html" ]; then
+    for route in agency-dashboard demo-login login signup dashboard profile notifications add-property property-detail invite-tenant expenses support terms privacy; do
+      mkdir -p "$web_app_dir/$route"
+      cp -f "$web_app_dir/index.html" "$web_app_dir/$route/index.html"
+      cp -f "$web_app_dir/index.html" "$web_app_dir/$route.html"
+    done
+  fi
+done
+
 # 6. Build Next.js Website & API Routes
 echo "Step 6: Building Next.js Website..."
 cd website
@@ -108,6 +118,18 @@ fi
 if [ -d "build/web_dev" ]; then
   cp -rf build/web_dev/* public/dev-app/
 fi
+
+# Pre-generate physical SPA routes for zero-failure deep linking and page refresh
+SPA_ROUTES="agency-dashboard demo-login login signup dashboard profile notifications add-property property-detail invite-tenant expenses support terms privacy"
+for app_dir in "public/app" "public/dev-app"; do
+  if [ -f "$app_dir/index.html" ]; then
+    for route in $SPA_ROUTES; do
+      mkdir -p "$app_dir/$route"
+      cp -f "$app_dir/index.html" "$app_dir/$route/index.html"
+      cp -f "$app_dir/index.html" "$app_dir/$route.html"
+    done
+  fi
+done
 
 # Copy Next.js static assets and CSS/JS chunks
 if [ -d "website/.next/static" ]; then
