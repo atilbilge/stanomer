@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../property/domain/property.dart';
 import '../../domain/agency_color_scheme.dart';
+import '../utils/web_report_helper.dart';
 
 class AgencyFinanceReportSheet extends StatelessWidget {
   final List<Map<String, dynamic>> items;
@@ -346,6 +347,38 @@ class AgencyFinanceReportSheet extends StatelessWidget {
       font-size: 11px;
       color: #94a3b8;
     }
+    .action-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+    }
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+    .btn-print {
+      background-color: $hexPrimary;
+      color: #ffffff;
+    }
+    .btn-close {
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
     @media print {
       body {
         padding: 15mm 15mm;
@@ -357,6 +390,16 @@ class AgencyFinanceReportSheet extends StatelessWidget {
   </style>
 </head>
 <body>
+  <div class="no-print action-bar">
+    <button onclick="window.print()" class="btn-action btn-print">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      <span>${i18n.printPdfButton}</span>
+    </button>
+    <button onclick="window.close()" class="btn-action btn-close">
+      <span>${i18n.closeButton}</span>
+    </button>
+  </div>
+
   <div class="header">
     <div>
       <h1 class="agency-title">$displayAgency</h1>
@@ -407,11 +450,16 @@ class AgencyFinanceReportSheet extends StatelessWidget {
   </div>
 
   <script>
-    window.onload = function() {
+    function triggerPrint() {
       setTimeout(function() {
         window.print();
-      }, 250);
-    };
+      }, 350);
+    }
+    if (document.readyState === 'complete') {
+      triggerPrint();
+    } else {
+      window.addEventListener('load', triggerPrint);
+    }
   </script>
 </body>
 </html>''';
@@ -420,22 +468,31 @@ class AgencyFinanceReportSheet extends StatelessWidget {
   Future<void> _handlePrintOrPdf(BuildContext context) async {
     final i18n = _getI18n(context);
     final htmlContent = _generateHtmlReport(context);
-    final uri = Uri.dataFromString(
-      htmlContent,
-      mimeType: 'text/html',
-      encoding: utf8,
-    );
+    final displayAgency = (agencyName != null && agencyName!.isNotEmpty)
+        ? agencyName!
+        : 'Stanomer';
+    final htmlTitle = i18n.htmlReportTitle(displayAgency, periodTitle);
 
-    try {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(i18n.errorOpeningReport(e)),
-            backgroundColor: const Color(0xFFE11D48),
-          ),
-        );
+    if (kIsWeb) {
+      await openHtmlPrintView(htmlContent, htmlTitle);
+    } else {
+      final uri = Uri.dataFromString(
+        htmlContent,
+        mimeType: 'text/html',
+        encoding: utf8,
+      );
+
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(i18n.errorOpeningReport(e)),
+              backgroundColor: const Color(0xFFE11D48),
+            ),
+          );
+        }
       }
     }
   }
@@ -974,4 +1031,8 @@ class _ReportI18n {
           : (isRu
               ? 'Нет транзакций за выбранный период.'
               : 'No transactions recorded for the selected period.'));
+
+  String get closeButton => isTr
+      ? 'Kapat'
+      : (isSr ? 'Zatvori' : (isRu ? 'Закрыть' : 'Close'));
 }
