@@ -62,6 +62,9 @@ echo "Step 4: Building PRODUCTION Flutter Web (--base-href /app/)..."
 flutter clean
 rm -rf build/
 cp .env.prod .env
+if [ -f "web/index_prod.html" ]; then
+  cp -f web/index_prod.html web/index.html
+fi
 flutter build web --release -t lib/main_prod.dart --base-href /app/ --dart-define=ENVIRONMENT=prod --dart-define=SUPABASE_URL=$PROD_URL --dart-define=SUPABASE_ANON_KEY=$PROD_KEY --dart-define-from-file=.env.prod
 mkdir -p build/web_prod
 cp -r build/web/* build/web_prod/
@@ -70,9 +73,17 @@ cp -r build/web/* build/web_prod/
 echo "Step 5: Building DEV Flutter Web (--base-href /dev-app/)..."
 rm -rf build/web
 cp .env.dev .env
+if [ -f "web/index_dev.html" ]; then
+  cp -f web/index_dev.html web/index.html
+fi
 flutter build web --release -t lib/main_dev.dart --base-href /dev-app/ --dart-define=ENVIRONMENT=dev --dart-define=SUPABASE_URL=$DEV_URL --dart-define=SUPABASE_ANON_KEY=$DEV_KEY --dart-define-from-file=.env.dev
 mkdir -p build/web_dev
 cp -r build/web/* build/web_dev/
+
+# Restore production index.html as base
+if [ -f "web/index_prod.html" ]; then
+  cp -f web/index_prod.html web/index.html
+fi
 
 # Copy Flutter web builds into website/public/ for Next.js serving
 mkdir -p website/public/app
