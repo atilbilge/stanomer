@@ -43,28 +43,8 @@ class _AgencyDemoSandboxBannerState
     extends ConsumerState<AgencyDemoSandboxBanner> {
   bool _isLoadingPortfolio = false;
   bool _isLoadingTheme = false;
-  bool _storedAdminEditSite = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkAdminEditSite();
-  }
-
-  Future<void> _checkAdminEditSite() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (_canEditWebsiteFromUrl) {
-        await prefs.setBool('admin_edit_site', true);
-        if (mounted) setState(() => _storedAdminEditSite = true);
-      } else {
-        final val = prefs.getBool('admin_edit_site') ?? false;
-        if (val && mounted) setState(() => _storedAdminEditSite = true);
-      }
-    } catch (_) {}
-  }
-
-  bool get _canEditWebsiteFromUrl {
+  bool get _canEditWebsite {
     if (!kIsWeb) return false;
     try {
       final queryParams = Uri.base.queryParameters;
@@ -82,8 +62,6 @@ class _AgencyDemoSandboxBannerState
     } catch (_) {}
     return false;
   }
-
-  bool get _canEditWebsite => _canEditWebsiteFromUrl || _storedAdminEditSite;
 
   bool get _isSR => ref.read(localeProvider).languageCode == 'sr';
   bool get _isCyrl => ref.read(localeProvider).scriptCode == 'Cyrl';
