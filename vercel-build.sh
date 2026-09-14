@@ -177,4 +177,9 @@ if [ -d "website/public" ]; then
   done
 fi
 
+# Ensure vercel.json is also present in public/ for static routing
+if [ -f "vercel.json" ]; then
+  cp -f vercel.json public/vercel.json
+fi
+
 echo "--- VERCEL DUAL BUILD COMPLETE! (/app = PROD | /dev-app = DEV) ---"
