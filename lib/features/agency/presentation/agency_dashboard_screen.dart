@@ -40,6 +40,7 @@ import '../../maintenance/domain/maintenance_charge.dart';
 import '../../maintenance/data/maintenance_repository.dart';
 import '../../maintenance/presentation/widgets/agency_property_picker_sheet.dart';
 import 'widgets/agency_demo_sandbox_banner.dart';
+import 'widgets/agency_finance_report_sheet.dart';
 
 // ---------------------------------------------------------------------------
 // Actionable Insights Types & Helpers
@@ -2775,6 +2776,61 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
         (_groupBy != 'none' ? 1 : 0) +
         (_sortBy != 'newest' ? 1 : 0);
 
+    final isSr = loc.localeName.startsWith('sr');
+    final isTr = loc.localeName == 'tr';
+    final isRu = loc.localeName == 'ru';
+
+    final String effectivePeriodTitle;
+    if (_financeSubTab == 0) {
+      effectivePeriodTitle = loc.periodAllTime;
+    } else if (_selectedPeriodPreset == 'this_month') {
+      effectivePeriodTitle = isSr ? 'Ovaj mesec' : (isTr ? 'Bu Ay' : (isRu ? 'Этот месяц' : 'This Month'));
+    } else if (_selectedPeriodPreset == 'last_month') {
+      effectivePeriodTitle = isSr ? 'Prošli mesec' : (isTr ? 'Geçen Ay' : (isRu ? 'Прошлый месяц' : 'Last Month'));
+    } else if (_selectedPeriodPreset == 'this_year') {
+      effectivePeriodTitle = isSr ? 'Ova godina' : (isTr ? 'Bu Yıl' : (isRu ? 'Этот год' : 'This Year'));
+    } else if (_selectedPeriodPreset == 'last_year') {
+      effectivePeriodTitle = isSr ? 'Prošla godina' : (isTr ? 'Geçen Yıl' : (isRu ? 'Прошлый год' : 'Last Year'));
+    } else if (_selectedPeriodPreset == 'all_time') {
+      effectivePeriodTitle = isSr ? 'Sve vreme' : (isTr ? 'Tüm Zamanlar' : (isRu ? 'Все время' : 'All Time'));
+    } else if (_periodStartDate != null && _periodEndDate != null) {
+      effectivePeriodTitle = '${DateFormat('dd.MM.yyyy').format(_periodStartDate!)} - ${DateFormat('dd.MM.yyyy').format(_periodEndDate!)}';
+    } else {
+      effectivePeriodTitle = isSr ? 'Izabrani period' : (isTr ? 'Seçili Dönem' : (isRu ? 'Выбранный период' : 'Selected Period'));
+    }
+
+    final String effectiveSegmentTitle;
+    if (_selectedSegment == 0) {
+      effectiveSegmentTitle = loc.financePendingApprovals;
+    } else if (_selectedSegment == 1) {
+      effectiveSegmentTitle = loc.unenteredBillsTitle;
+    } else if (_selectedSegment == 2) {
+      effectiveSegmentTitle = loc.financeOverduePayments;
+    } else if (_selectedSegment == 3) {
+      effectiveSegmentTitle = loc.financeRentCollected;
+    } else if (_selectedSegment == 4) {
+      effectiveSegmentTitle = loc.financeBillsCollected;
+    } else if (_selectedSegment == 5) {
+      effectiveSegmentTitle = loc.financeBillsToInstitutions;
+    } else if (_selectedSegment == 6) {
+      effectiveSegmentTitle = loc.financeMaintenancePaid;
+    } else if (_selectedSegment == 7) {
+      effectiveSegmentTitle = loc.financeMaintenanceOwedToAgency;
+    } else if (_selectedSegment == 8) {
+      effectiveSegmentTitle = isTr ? 'Ödenmemiş Bakım' : (isSr ? 'Neplaćeni kvarovi' : (isRu ? 'Неоплаченный ремонт' : 'Unpaid Maintenance'));
+    } else if (_selectedSegment == 9) {
+      effectiveSegmentTitle = isTr ? 'Ödenmemiş Kurum Faturaları' : (isSr ? 'Neplaćeni računi ustanovama' : (isRu ? 'Неоплаченные счета' : 'Unpaid Institution Bills'));
+    } else if (_selectedSegment == 10) {
+      effectiveSegmentTitle = isTr ? 'Kiracıya Mahsup' : (isSr ? 'Prebijanje sa zakupcem' : (isRu ? 'Взаимозачет' : 'Tenant Offsets'));
+    } else {
+      effectiveSegmentTitle = isSr ? 'Sve transakcije' : (isTr ? 'Tüm İşlemler' : (isRu ? 'Все транзакции' : 'All Transactions'));
+    }
+
+    final profileAsync = ref.watch(profileFutureProvider);
+    final agencyCompanyName = (profileAsync.value?['company_name'] as String?)?.isNotEmpty == true
+        ? profileAsync.value!['company_name'] as String
+        : (profileAsync.value?['full_name'] as String?);
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
@@ -3405,32 +3461,95 @@ class _AgencyFinanceTabState extends ConsumerState<AgencyFinanceTab> {
                 ),
               ),
 
-              // View Mode Switcher (Table vs Grid)
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildViewModeToggle(
-                      icon: LucideIcons.table,
-                      isSelected: effectiveViewMode == 'table',
-                      tooltip: loc.viewModeTable,
-                      onTap: () => setState(() => _viewMode = 'table'),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Export / Share Report Button
+                  InkWell(
+                    onTap: filtered.isEmpty
+                        ? null
+                        : () {
+                            AgencyFinanceReportSheet.show(
+                              context,
+                              items: filtered,
+                              propertiesMap: propertiesMap,
+                              colors: widget.colors,
+                              periodTitle: effectivePeriodTitle,
+                              segmentTitle: effectiveSegmentTitle,
+                              agencyName: agencyCompanyName,
+                            );
+                          },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: filtered.isEmpty
+                            ? const Color(0xFFF1F5F9)
+                            : widget.colors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: filtered.isEmpty
+                              ? const Color(0xFFE2E8F0)
+                              : widget.colors.primary.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.fileSpreadsheet,
+                            size: 13,
+                            color: filtered.isEmpty
+                                ? const Color(0xFF94A3B8)
+                                : widget.colors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isSr
+                                ? 'Izveštaj / Podeli'
+                                : (isTr ? 'Rapor İndir / Paylaş' : (isRu ? 'Отчет / Поделиться' : 'Export / Share Report')),
+                            style: TextStyle(
+                              color: filtered.isEmpty
+                                  ? const Color(0xFF94A3B8)
+                                  : widget.colors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 2),
-                    _buildViewModeToggle(
-                      icon: LucideIcons.layoutGrid,
-                      isSelected: effectiveViewMode == 'grid',
-                      tooltip: loc.viewModeGrid,
-                      onTap: () => setState(() => _viewMode = 'grid'),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // View Mode Switcher (Table vs Grid)
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildViewModeToggle(
+                          icon: LucideIcons.table,
+                          isSelected: effectiveViewMode == 'table',
+                          tooltip: loc.viewModeTable,
+                          onTap: () => setState(() => _viewMode = 'table'),
+                        ),
+                        const SizedBox(width: 2),
+                        _buildViewModeToggle(
+                          icon: LucideIcons.layoutGrid,
+                          isSelected: effectiveViewMode == 'grid',
+                          tooltip: loc.viewModeGrid,
+                          onTap: () => setState(() => _viewMode = 'grid'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
