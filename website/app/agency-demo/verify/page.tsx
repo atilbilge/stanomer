@@ -12,6 +12,7 @@ function VerificationContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const rawUrlLang = searchParams.get("lang") || searchParams.get("locale");
+  const editSite = searchParams.get("edit_site");
 
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -163,7 +164,10 @@ function VerificationContent() {
           }
 
           // 3. Target URL for the Flutter Dev App with token and language
-          const appUrl = `/dev-app?demo_token=${encodeURIComponent(token)}&lang=${encodeURIComponent(flutterLocale)}`;
+          let appUrl = `/dev-app?demo_token=${encodeURIComponent(token)}&lang=${encodeURIComponent(flutterLocale)}`;
+          if (editSite) {
+            appUrl += `&edit_site=${encodeURIComponent(editSite)}`;
+          }
           setTargetUrl(appUrl);
 
           // 4. Auto-redirect to the dev app so user doesn't have to do anything

@@ -43,6 +43,47 @@ class _AgencyDemoSandboxBannerState
     extends ConsumerState<AgencyDemoSandboxBanner> {
   bool _isLoadingPortfolio = false;
   bool _isLoadingTheme = false;
+  bool _storedAdminEditSite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdminEditSite();
+  }
+
+  Future<void> _checkAdminEditSite() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_canEditWebsiteFromUrl) {
+        await prefs.setBool('admin_edit_site', true);
+        if (mounted) setState(() => _storedAdminEditSite = true);
+      } else {
+        final val = prefs.getBool('admin_edit_site') ?? false;
+        if (val && mounted) setState(() => _storedAdminEditSite = true);
+      }
+    } catch (_) {}
+  }
+
+  bool get _canEditWebsiteFromUrl {
+    if (!kIsWeb) return false;
+    try {
+      final queryParams = Uri.base.queryParameters;
+      if (queryParams['edit_site'] == 'true' ||
+          queryParams['edit_site'] == '1' ||
+          queryParams['admin'] == 'true') {
+        return true;
+      }
+      final fragment = Uri.base.fragment;
+      if (fragment.contains('edit_site=true') ||
+          fragment.contains('edit_site=1') ||
+          fragment.contains('admin=true')) {
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  bool get _canEditWebsite => _canEditWebsiteFromUrl || _storedAdminEditSite;
 
   bool get _isSR => ref.read(localeProvider).languageCode == 'sr';
   bool get _isCyrl => ref.read(localeProvider).scriptCode == 'Cyrl';
@@ -241,8 +282,12 @@ class _AgencyDemoSandboxBannerState
     final isEN = _isEN;
     final isRU = _isRU;
 
-    // Always open input dialog prefilled with current website URL so user can update it anytime from the screen
-    final controller = TextEditingController(text: domain ?? '');
+    // Only open dialog if admin mode is active (edit_site=true) or if domain is missing
+    final bool shouldOpenDialog =
+        _canEditWebsite || (domain == null || domain.trim().isEmpty);
+
+    if (shouldOpenDialog) {
+      final controller = TextEditingController(text: domain ?? '');
 
       final inputTitle = isSR
           ? (isCyrl ? 'Унесите Ваш Веб-Сајт' : 'Unesite Vaš Veb-Sajt')
@@ -277,6 +322,8 @@ class _AgencyDemoSandboxBannerState
           : isRU
           ? 'Применить тему'
           : 'Temayı Uygula';
+
+      if (!mounted) return;
 
       final entered = await showDialog<String>(
         context: context,
@@ -316,6 +363,19 @@ class _AgencyDemoSandboxBannerState
 
       if (entered == null || entered.isEmpty) return;
       domain = entered;
+    }
+
+    if (domain.trim().isEmpty) {
+      if (mounted) {
+        final noSiteMsg = isSR
+            ? (isCyrl ? 'Веб-сајт није конфигурисан.' : 'Veb-sajt nije konfigurisan.')
+            : isEN
+            ? 'Website is not configured.'
+            : 'Web sitesi tanımlanmamış.';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(noSiteMsg)));
+      }
+      return;
+    }
 
     setState(() => _isLoadingTheme = true);
 
@@ -745,7 +805,17 @@ class _AgencyDemoSandboxBannerState
                         ),
                         const SizedBox(width: 8),
                         InkWell(
-                          onTap: _fetchThemeAndLogo,
+                          onTap: _canEditWebsite
+                              ? _fetchThemeAndLogo
+                              : () async {
+                                  final raw = widget.websiteUrl;
+                                  if (raw != null && raw.isNotEmpty) {
+                                    final url = raw.startsWith('http') ? raw : 'https://$raw';
+                                    try {
+                                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                                    } catch (_) {}
+                                  }
+                                },
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -771,19 +841,21 @@ class _AgencyDemoSandboxBannerState
                                       ? widget.websiteUrl!
                                           .replaceAll(RegExp(r'^https?:\/\/'), '')
                                           .replaceAll(RegExp(r'\/.*$'), '')
-                                      : (isSR ? 'Постави сајт' : 'Siteyi Güncelle'),
+                                      : (isSR ? 'Veb-sajt' : 'Web Sitesi'),
                                   style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
                                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                   ),
                                 ),
-                                const SizedBox(width: 3),
-                                Icon(
-                                  LucideIcons.pencil,
-                                  size: 10,
-                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                                ),
+                                if (_canEditWebsite) ...[
+                                  const SizedBox(width: 3),
+                                  Icon(
+                                    LucideIcons.pencil,
+                                    size: 10,
+                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
