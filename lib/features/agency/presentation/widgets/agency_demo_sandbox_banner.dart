@@ -363,9 +363,14 @@ class _AgencyDemoSandboxBannerState
           .replaceAll(RegExp(r'\/.*$'), '')
           .trim();
 
-      // Default fallback (Google favicon proxied via weserv to guarantee CORS)
+      // Normalize domain with www if apex domain to guarantee zero-failure fallback
+      final domainWithWww = cleanDomain.contains('.') && !cleanDomain.startsWith('www.')
+          ? 'www.$cleanDomain'
+          : cleanDomain;
+
+      // Default safe fallback (Google favicon with www and weserv proxy)
       String logoUrl =
-          'https://images.weserv.nl/?url=www.google.com/s2/favicons?domain=$cleanDomain%26sz=128';
+          'https://images.weserv.nl/?url=www.google.com/s2/favicons?domain=$domainWithWww%26sz=128';
 
       // Smart harmonious palette for real estate agencies
       Map<String, dynamic> colorScheme = {
@@ -377,23 +382,26 @@ class _AgencyDemoSandboxBannerState
         'border': '#E2E8F0',
       };
 
-      // Try calling our scraper API to fetch real logo and theme colors
+      // Try calling our scraper API to fetch real logo (Brandfetch / Site Logo) and theme colors
       try {
-        final endpoint = kIsWeb
-            ? '/api/scrape-agency-theme'
-            : 'https://stanomer.com/api/scrape-agency-theme';
+        final isLocalWeb = kIsWeb && (Uri.base.host.contains('localhost') || Uri.base.host.contains('127.0.0.1'));
+        final endpoint = isLocalWeb || !kIsWeb
+            ? 'https://stanomer.online/api/scrape-agency-theme'
+            : '/api/scrape-agency-theme';
+
         final response = await http.post(
           Uri.parse(endpoint),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
-            'url': domain,
+            'url': domainWithWww,
             'agency_id': widget.agencyId,
           }),
-        );
+        ).timeout(const Duration(seconds: 8));
+
         if (response.statusCode == 200) {
           final resData = jsonDecode(response.body);
           if (resData['success'] == true) {
-            if (resData['logo_url'] != null) {
+            if (resData['logo_url'] != null && (resData['logo_url'] as String).trim().isNotEmpty) {
               logoUrl = resData['logo_url'] as String;
             }
             if (resData['color_scheme'] != null) {
@@ -408,7 +416,7 @@ class _AgencyDemoSandboxBannerState
       final supabase = Supabase.instance.client;
       await supabase.from('profiles').update({
         'logo_url': logoUrl,
-        'website_url': 'https://$cleanDomain',
+        'website_url': 'https://$domainWithWww',
         'color_scheme': colorScheme,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', widget.agencyId);
