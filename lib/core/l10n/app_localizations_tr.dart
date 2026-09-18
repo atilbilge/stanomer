@@ -3735,4 +3735,26 @@ class AppLocalizationsTr extends AppLocalizations {
   String landlordsListHeader(String count) {
     return 'Ev Sahipleri ($count)';
   }
+
+  @override
+  String get startWithoutInviteBtn => 'Davetsiz Hemen Başlat';
+
+  @override
+  String get startWithoutInviteConfirmTitle => 'Davetsiz Başlatılsın mı?';
+
+  @override
+  String get startWithoutInviteConfirmTenant =>
+      'Sözleşme fiziki olarak yapıldı kabul edilecek ve 12 aylık ödeme planı hemen oluşturulacaktır. Onaylıyor musunuz?';
+
+  @override
+  String get startWithoutInviteConfirmLandlord =>
+      'Ev sahibi fiziki olarak onayladı kabul edilecek ve yönetim doğrudan aktifleşecektir. Onaylıyor musunuz?';
+
+  @override
+  String get startWithoutInviteSuccess =>
+      'Sözleşme ve ödeme planı başarıyla başlatıldı.';
+
+  @override
+  String get landlordConfirmedOfflineSuccess =>
+      'Ev sahibi başarıyla onaylandı.';
 }

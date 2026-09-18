@@ -1641,5 +1641,11 @@
   "emailSendGenericError": "Произошла ошибка при отправке email: {error}",
   "tenantInviteEmailBtn": "Email приглашение для арендатора",
   "allOwnersInviteSentSuccess": "Письма-приглашения успешно отправлены для {successCount} / {totalCount} владельцев недвижимости.",
-  "landlordsListHeader": "Владельцы недвижимости ({count})"
+  "landlordsListHeader": "Владельцы недвижимости ({count})",
+  "startWithoutInviteBtn": "Начать сразу без приглашения",
+  "startWithoutInviteConfirmTitle": "Начать без приглашения?",
+  "startWithoutInviteConfirmTenant": "Договор будет считаться физически подписанным, а план выплат на 12 месяцев будет сформирован немедленно. Подтверждаете?",
+  "startWithoutInviteConfirmLandlord": "Будет считаться, что владелец физически подтвердил, и управление станет активным сразу. Подтверждаете?",
+  "startWithoutInviteSuccess": "Договор и план выплат успешно запущены.",
+  "landlordConfirmedOfflineSuccess": "Владелец успешно подтвержден."
 }

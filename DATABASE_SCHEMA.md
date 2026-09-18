@@ -640,7 +640,8 @@ BEGIN
   LIMIT 1;
 
   -- No active contract → nothing to do
-  IF v_contract_id IS NULL OR v_monthly_rent IS NULL OR v_tenant_id IS NULL THEN
+  -- Note: v_tenant_id can be NULL for offline / physical contracts managed by agencies
+  IF v_contract_id IS NULL OR v_monthly_rent IS NULL THEN
     RETURN;
   END IF;
 

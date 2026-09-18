@@ -1641,5 +1641,11 @@
   "emailSendGenericError": "Дошло је до грешке приликом слања имејла: {error}",
   "tenantInviteEmailBtn": "Имејл позивница за закупца",
   "allOwnersInviteSentSuccess": "Имејлови са позивом успешно послати за {successCount} / {totalCount} власника.",
-  "landlordsListHeader": "Власници некретнине ({count})"
+  "landlordsListHeader": "Власници некретнине ({count})",
+  "startWithoutInviteBtn": "Покрени одмах без позивнице",
+  "startWithoutInviteConfirmTitle": "Покренути без позивнице?",
+  "startWithoutInviteConfirmTenant": "Уговор ће се сматрати физички потписаним и план плаћања за 12 месеци биће одмах креиран. Да ли потврђујете?",
+  "startWithoutInviteConfirmLandlord": "Сматраће се да је власник физички потврдио и управљање ће одмах постати активно. Да ли потврђујете?",
+  "startWithoutInviteSuccess": "Уговор и план плаћања су успешно покренути.",
+  "landlordConfirmedOfflineSuccess": "Власник је успешно потврђен."
 }

@@ -1668,5 +1668,11 @@
   "emailSendGenericError": "Error occurred while sending email: {error}",
   "tenantInviteEmailBtn": "Tenant Invite Email",
   "allOwnersInviteSentSuccess": "Invitation emails successfully sent to {successCount} / {totalCount} property owners.",
-  "landlordsListHeader": "Property Owners ({count})"
+  "landlordsListHeader": "Property Owners ({count})",
+  "startWithoutInviteBtn": "Start Directly Without Invite",
+  "startWithoutInviteConfirmTitle": "Start Without Invite?",
+  "startWithoutInviteConfirmTenant": "The contract will be considered physically signed and the 12-month payment plan will be generated immediately. Do you confirm?",
+  "startWithoutInviteConfirmLandlord": "The landlord will be considered physically confirmed and management will become active directly. Do you confirm?",
+  "startWithoutInviteSuccess": "Contract and payment plan successfully started.",
+  "landlordConfirmedOfflineSuccess": "Landlord successfully confirmed."
 }

@@ -3731,6 +3731,27 @@ class AppLocalizationsSr extends AppLocalizations {
   String landlordsListHeader(String count) {
     return 'Vlasnici nekretnine ($count)';
   }
+
+  @override
+  String get startWithoutInviteBtn => 'Pokreni odmah bez pozivnice';
+
+  @override
+  String get startWithoutInviteConfirmTitle => 'Pokrenuti bez pozivnice?';
+
+  @override
+  String get startWithoutInviteConfirmTenant =>
+      'Ugovor će se smatrati fizički potpisanim i plan plaćanja za 12 meseci biće odmah kreiran. Da li potvrđujete?';
+
+  @override
+  String get startWithoutInviteConfirmLandlord =>
+      'Smatraće se da je vlasnik fizički potvrdio i upravljanje će odmah postati aktivno. Da li potvrđujete?';
+
+  @override
+  String get startWithoutInviteSuccess =>
+      'Ugovor i plan plaćanja su uspešno pokrenuti.';
+
+  @override
+  String get landlordConfirmedOfflineSuccess => 'Vlasnik je uspešno potvrđen.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -7462,4 +7483,25 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String landlordsListHeader(String count) {
     return 'Власници некретнине ($count)';
   }
+
+  @override
+  String get startWithoutInviteBtn => 'Покрени одмах без позивнице';
+
+  @override
+  String get startWithoutInviteConfirmTitle => 'Покренути без позивнице?';
+
+  @override
+  String get startWithoutInviteConfirmTenant =>
+      'Уговор ће се сматрати физички потписаним и план плаћања за 12 месеци биће одмах креиран. Да ли потврђујете?';
+
+  @override
+  String get startWithoutInviteConfirmLandlord =>
+      'Сматраће се да је власник физички потврдио и управљање ће одмах постати активно. Да ли потврђујете?';
+
+  @override
+  String get startWithoutInviteSuccess =>
+      'Уговор и план плаћања су успешно покренути.';
+
+  @override
+  String get landlordConfirmedOfflineSuccess => 'Власник је успешно потврђен.';
 }

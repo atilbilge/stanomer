@@ -187,6 +187,7 @@ ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS inviter_id UUID REFERENC
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS target_role TEXT DEFAULT 'tenant';
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS public.rent_payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

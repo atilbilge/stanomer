@@ -488,6 +488,7 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
   bool _isContractActive = false;
   DateTime? _lastEmailSentAt;
   bool _isSendingEmail = false;
+  bool _isActivatingOffline = false;
   bool _showPlainTextView = false;
   String _selectedLanguage = 'tr';
   bool _localeInitialized = false;
@@ -1212,12 +1213,111 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
     );
   }
 
+  Future<void> _startWithoutInvite() async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.startWithoutInviteConfirmTitle),
+        content: Text(loc.startWithoutInviteConfirmTenant),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StanomerColors.successPrimary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(loc.startWithoutInviteBtn),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final repo = ref.read(propertyRepositoryProvider);
+    String? contractId = widget.contractId;
+    final propertyId = widget.propertyId;
+
+    if ((contractId == null || contractId.isEmpty) && widget.token.isNotEmpty) {
+      try {
+        final c = await repo.getContractByToken(widget.token);
+        contractId = c.id;
+      } catch (_) {}
+    }
+
+    if (contractId == null || propertyId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sözleşme ID veya Mülk ID bulunamadı.')),
+      );
+      return;
+    }
+
+    setState(() => _isActivatingOffline = true);
+
+    try {
+      final success = await repo.activateContractDirectly(
+        contractId: contractId,
+        propertyId: propertyId,
+      );
+
+      if (success) {
+        ref.invalidate(propertyContractsProvider(propertyId));
+        ref.invalidate(rentPaymentsProvider(propertyId));
+        ref.invalidate(activeContractProvider(propertyId));
+        ref.invalidate(propertyProvider(propertyId));
+        ref.invalidate(agencyPropertiesProvider);
+
+        widget.onInviteSent?.call();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.startWithoutInviteSuccess),
+              backgroundColor: StanomerColors.successPrimary,
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sözleşme başlatılırken bir hata oluştu.'),
+              backgroundColor: StanomerColors.alertPrimary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata: $e'),
+            backgroundColor: StanomerColors.alertPrimary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isActivatingOffline = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final maxHeight = MediaQuery.of(context).size.height * 0.90;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
+    final userRole = ref.watch(userRoleProvider);
+    final isAgency = userRole == 'agency';
     final emailDetails = _buildEmailDetails();
 
     return Container(
@@ -1650,6 +1750,30 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
+              if (isAgency && (widget.contractId != null || widget.token.isNotEmpty) && widget.propertyId != null) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _isActivatingOffline || _isSendingEmail ? null : _startWithoutInvite,
+                  icon: _isActivatingOffline
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: StanomerColors.successPrimary),
+                        )
+                      : const Icon(LucideIcons.zap, size: 18, color: StanomerColors.successPrimary),
+                  label: Text(
+                    _isActivatingOffline ? loc.sendingState : loc.startWithoutInviteBtn,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: StanomerColors.successPrimary),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: StanomerColors.successPrimary, width: 1.5),
+                    backgroundColor: StanomerColors.successSurface.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),

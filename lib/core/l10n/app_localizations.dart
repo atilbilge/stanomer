@@ -6699,6 +6699,42 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Vlasnici nekretnine ({count})'**
   String landlordsListHeader(String count);
+
+  /// No description provided for @startWithoutInviteBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pokreni odmah bez pozivnice'**
+  String get startWithoutInviteBtn;
+
+  /// No description provided for @startWithoutInviteConfirmTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pokrenuti bez pozivnice?'**
+  String get startWithoutInviteConfirmTitle;
+
+  /// No description provided for @startWithoutInviteConfirmTenant.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor će se smatrati fizički potpisanim i plan plaćanja za 12 meseci biće odmah kreiran. Da li potvrđujete?'**
+  String get startWithoutInviteConfirmTenant;
+
+  /// No description provided for @startWithoutInviteConfirmLandlord.
+  ///
+  /// In sr, this message translates to:
+  /// **'Smatraće se da je vlasnik fizički potvrdio i upravljanje će odmah postati aktivno. Da li potvrđujete?'**
+  String get startWithoutInviteConfirmLandlord;
+
+  /// No description provided for @startWithoutInviteSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor i plan plaćanja su uspešno pokrenuti.'**
+  String get startWithoutInviteSuccess;
+
+  /// No description provided for @landlordConfirmedOfflineSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vlasnik je uspešno potvrđen.'**
+  String get landlordConfirmedOfflineSuccess;
 }
 
 class _AppLocalizationsDelegate

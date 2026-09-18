@@ -3732,4 +3732,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String landlordsListHeader(String count) {
     return 'Property Owners ($count)';
   }
+
+  @override
+  String get startWithoutInviteBtn => 'Start Directly Without Invite';
+
+  @override
+  String get startWithoutInviteConfirmTitle => 'Start Without Invite?';
+
+  @override
+  String get startWithoutInviteConfirmTenant =>
+      'The contract will be considered physically signed and the 12-month payment plan will be generated immediately. Do you confirm?';
+
+  @override
+  String get startWithoutInviteConfirmLandlord =>
+      'The landlord will be considered physically confirmed and management will become active directly. Do you confirm?';
+
+  @override
+  String get startWithoutInviteSuccess =>
+      'Contract and payment plan successfully started.';
+
+  @override
+  String get landlordConfirmedOfflineSuccess =>
+      'Landlord successfully confirmed.';
 }

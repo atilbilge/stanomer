@@ -799,6 +799,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
   DateTime? _lastEmailSentAt;
   bool _isSendingEmail = false;
   bool _isSendingAll = false;
+  bool _isConfirmingOffline = false;
   bool _showPlainTextView = false;
   String _selectedLanguage = 'tr';
   bool _localeInitialized = false;
@@ -1875,11 +1876,114 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
     }
   }
 
+  Future<void> _confirmLandlordOffline() async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.startWithoutInviteConfirmTitle),
+        content: Text(loc.startWithoutInviteConfirmLandlord),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StanomerColors.successPrimary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(loc.startWithoutInviteBtn),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final propertyId = widget.propertyId;
+    if (propertyId == null || propertyId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mülk ID bulunamadı.')),
+      );
+      return;
+    }
+
+    final email = (_currentOwner.email ?? '').trim().toLowerCase();
+    final repo = ref.read(propertyRepositoryProvider);
+    String tokenToUse = _ownerTokenMap[email] ?? widget.token;
+
+    setState(() => _isConfirmingOffline = true);
+
+    try {
+      if (tokenToUse.isEmpty) {
+        tokenToUse = await repo.getLandlordOwnershipInviteToken(propertyId) ?? '';
+      }
+
+      final success = await repo.confirmLandlordDirectly(
+        propertyId: propertyId,
+        token: tokenToUse,
+      );
+
+      if (success) {
+        setState(() {
+          if (email.isNotEmpty) {
+            _ownerConfirmedMap[email] = true;
+          }
+          if (_owners.length <= 1) {
+            _isAccepted = true;
+          }
+          _isPrimaryConfirmed = true;
+        });
+
+        ref.invalidate(propertyProvider(propertyId));
+        ref.invalidate(agencyPropertiesProvider);
+
+        await _fetchOwnersAndLogs();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.landlordConfirmedOfflineSuccess),
+              backgroundColor: StanomerColors.successPrimary,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ev sahibi onaylanırken bir hata oluştu.'),
+              backgroundColor: StanomerColors.alertPrimary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata: $e'),
+            backgroundColor: StanomerColors.alertPrimary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isConfirmingOffline = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final maxHeight = MediaQuery.of(context).size.height * 0.90;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final userRole = ref.watch(userRoleProvider);
+    final isAgency = userRole == 'agency';
 
     if (_isAccepted) {
       return Container(
@@ -2562,6 +2666,30 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                   ),
                 );
               }(),
+              if (isAgency && _getStatusForOwner(_currentOwner) != LandlordInviteStatus.confirmed && widget.propertyId != null) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _isConfirmingOffline || _isSendingEmail || _isSendingAll ? null : _confirmLandlordOffline,
+                  icon: _isConfirmingOffline
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: StanomerColors.successPrimary),
+                        )
+                      : const Icon(LucideIcons.zap, size: 18, color: StanomerColors.successPrimary),
+                  label: Text(
+                    _isConfirmingOffline ? loc.sendingState : loc.startWithoutInviteBtn,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: StanomerColors.successPrimary),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: StanomerColors.successPrimary, width: 1.5),
+                    backgroundColor: StanomerColors.successSurface.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
               if (_owners.length > 1) ...[
                 const SizedBox(height: 10),
                 () {

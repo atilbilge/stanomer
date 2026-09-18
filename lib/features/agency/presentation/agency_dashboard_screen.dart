@@ -295,6 +295,12 @@ final agencyContractsMapProvider = StreamProvider.autoDispose<Map<String, Contra
   );
 });
 
+final propertyLandlordInvitesProvider =
+    StreamProvider.family.autoDispose<List<Map<String, dynamic>>, String>((ref, propertyId) {
+  final repo = ref.watch(propertyRepositoryProvider);
+  return repo.getLandlordInvitationsStreamForProperty(propertyId);
+});
+
 // ---------------------------------------------------------------------------
 // Main Screen
 // ---------------------------------------------------------------------------
@@ -10281,6 +10287,80 @@ class _PropertyTableView extends StatelessWidget {
   }
 }
 
+class PortfolioDirectStatusHelper {
+  static ({String name, bool isDirect, bool isClaimed, bool isPending}) resolveLandlordDisplay({
+    required Property property,
+    required List<Map<String, dynamic>> landlordInvites,
+    required AppLocalizations loc,
+  }) {
+    final isClaimed = property.landlordId != null && property.landlordId!.isNotEmpty;
+    final rawName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
+
+    final hasPendingInvite = landlordInvites.any((inv) =>
+        inv['target_role'] == 'landlord' && inv['status'] == 'pending');
+    final hasAcceptedInvite = landlordInvites.any((inv) =>
+        inv['target_role'] == 'landlord' && inv['status'] == 'accepted');
+
+    final bool isDirect = !isClaimed &&
+        (hasAcceptedInvite ||
+            (landlordInvites.isEmpty &&
+                property.landlordName != null &&
+                property.landlordName!.trim().isNotEmpty));
+
+    final String displayName;
+    if (isClaimed) {
+      displayName = rawName;
+    } else if (hasPendingInvite && !hasAcceptedInvite) {
+      displayName = '$rawName (${loc.invitePending})';
+    } else if (isDirect) {
+      displayName = '$rawName (direct)';
+    } else {
+      displayName = '$rawName (${loc.invitePending})';
+    }
+
+    return (
+      name: displayName,
+      isDirect: isDirect,
+      isClaimed: isClaimed,
+      isPending: hasPendingInvite && !hasAcceptedInvite,
+    );
+  }
+
+  static ({String name, bool isDirect, bool hasActiveTenant}) resolveTenantDisplay({
+    required Property property,
+    required Contract? contract,
+    required String? tenantProfileName,
+    required AppLocalizations loc,
+  }) {
+    final hasDigitalTenant = (property.tenantId != null && property.tenantId!.isNotEmpty) ||
+        (contract?.tenantId != null && contract!.tenantId!.isNotEmpty);
+    final hasActiveContract = contract != null && contract.status == ContractStatus.active;
+    final hasTenantName = property.tenantName != null && property.tenantName!.trim().isNotEmpty;
+    final hasActiveTenant = hasDigitalTenant || hasActiveContract || hasTenantName;
+
+    final rawName = (property.tenantName != null && property.tenantName!.trim().isNotEmpty)
+        ? property.tenantName!
+        : (tenantProfileName != null && tenantProfileName.trim().isNotEmpty)
+            ? tenantProfileName
+            : (contract?.tenantName != null && contract!.tenantName!.trim().isNotEmpty)
+                ? contract.tenantName!
+                : (contract?.inviteeEmail != null && contract!.inviteeEmail.trim().isNotEmpty)
+                    ? contract.inviteeEmail
+                    : (hasActiveTenant ? loc.roleTenant : loc.vacant);
+
+    final bool isDirect = hasActiveTenant && !hasDigitalTenant;
+    final String displayName = isDirect && rawName != loc.vacant && rawName != loc.vacantLabel
+        ? '$rawName (direct)'
+        : rawName;
+
+    return (
+      name: displayName,
+      isDirect: isDirect,
+      hasActiveTenant: hasActiveTenant,
+    );
+  }
+}
+
 class _PropertyTableRow extends ConsumerStatefulWidget {
   final Property property;
   final bool hasPendingDebt;
@@ -10316,22 +10396,28 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
     final loc = AppLocalizations.of(context)!;
     final property = widget.property;
     final hasPendingDebt = widget.hasPendingDebt;
-    final hasActiveTenant = property.tenantId != null;
-    final isClaimed = property.landlordId != null;
-    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
-
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final contract = activeContractAsync.value;
     final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
     final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
 
-    final tenantName = (property.tenantName != null && property.tenantName!.trim().isNotEmpty)
-        ? property.tenantName!
-        : (tenantProfileName != null && tenantProfileName.trim().isNotEmpty)
-            ? tenantProfileName
-            : (contract?.inviteeEmail != null && contract!.inviteeEmail.trim().isNotEmpty)
-                ? contract.inviteeEmail
-                : (hasActiveTenant ? loc.roleTenant : loc.vacant);
+    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
+    final landlordInvites = landlordInvitesAsync.value ?? [];
+
+    final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
+      property: property,
+      landlordInvites: landlordInvites,
+      loc: loc,
+    );
+
+    final tenantInfo = PortfolioDirectStatusHelper.resolveTenantDisplay(
+      property: property,
+      contract: contract,
+      tenantProfileName: tenantProfileName,
+      loc: loc,
+    );
+
+    final hasActiveTenant = tenantInfo.hasActiveTenant;
     final cityName = property.city?.trim() ?? '';
 
     final iconBg = hasPendingDebt
@@ -10435,18 +10521,28 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
                   child: Row(
                     children: [
                       Icon(
-                        isClaimed ? LucideIcons.userCheck : LucideIcons.clock,
+                        (landlordInfo.isClaimed || landlordInfo.isDirect)
+                            ? LucideIcons.userCheck
+                            : LucideIcons.clock,
                         size: 13,
-                        color: isClaimed ? const Color(0xFF2563EB) : const Color(0xFFD97706),
+                        color: landlordInfo.isClaimed
+                            ? const Color(0xFF2563EB)
+                            : (landlordInfo.isDirect
+                                ? const Color(0xFF0D9488)
+                                : const Color(0xFFD97706)),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          isClaimed ? landlordName : '$landlordName (${loc.invitePending})',
+                          landlordInfo.name,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isClaimed ? const Color(0xFF334155) : const Color(0xFFB45309),
+                            color: landlordInfo.isClaimed
+                                ? const Color(0xFF334155)
+                                : (landlordInfo.isDirect
+                                    ? const Color(0xFF0F766E)
+                                    : const Color(0xFFB45309)),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -10462,15 +10558,23 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
                   child: hasActiveTenant
                       ? Row(
                           children: [
-                            const Icon(LucideIcons.user, size: 13, color: Color(0xFF10B981)),
+                            Icon(
+                              tenantInfo.isDirect ? LucideIcons.userCheck : LucideIcons.user,
+                              size: 13,
+                              color: tenantInfo.isDirect
+                                  ? const Color(0xFF0D9488)
+                                  : const Color(0xFF10B981),
+                            ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                tenantName,
-                                style: const TextStyle(
+                                tenantInfo.name,
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0F172A),
+                                  color: tenantInfo.isDirect
+                                      ? const Color(0xFF0F766E)
+                                      : const Color(0xFF0F172A),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -10701,9 +10805,28 @@ class _PropertyCompactRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final hasActiveTenant = property.tenantId != null;
-    final isClaimed = property.landlordId != null;
-    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
+    final activeContractAsync = ref.watch(activeContractProvider(property.id));
+    final contract = activeContractAsync.value;
+    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
+    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
+
+    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
+    final landlordInvites = landlordInvitesAsync.value ?? [];
+
+    final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
+      property: property,
+      landlordInvites: landlordInvites,
+      loc: loc,
+    );
+
+    final tenantInfo = PortfolioDirectStatusHelper.resolveTenantDisplay(
+      property: property,
+      contract: contract,
+      tenantProfileName: tenantProfileName,
+      loc: loc,
+    );
+
+    final hasActiveTenant = tenantInfo.hasActiveTenant;
     final cityName = property.city?.trim() ?? '';
 
     final iconBg = hasPendingDebt
@@ -10779,10 +10902,12 @@ class _PropertyCompactRow extends ConsumerWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            isClaimed ? landlordName : loc.invitePending,
+                            landlordInfo.name,
                             style: TextStyle(
                               fontSize: 11.5,
-                              color: isClaimed ? const Color(0xFF64748B) : const Color(0xFFB45309),
+                              color: (landlordInfo.isClaimed || landlordInfo.isDirect)
+                                  ? const Color(0xFF64748B)
+                                  : const Color(0xFFB45309),
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -10794,7 +10919,7 @@ class _PropertyCompactRow extends ConsumerWidget {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            hasActiveTenant ? (property.tenantName ?? loc.roleTenant) : loc.vacantLabel,
+                            hasActiveTenant ? tenantInfo.name : loc.vacantLabel,
                             style: TextStyle(
                               fontSize: 11.5,
                               color: hasActiveTenant ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
@@ -10859,22 +10984,28 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
     final property = widget.property;
     final hasPendingDebt = widget.hasPendingDebt;
     final colors = widget.colors;
-    final hasActiveTenant = property.tenantId != null;
-    final isClaimed = property.landlordId != null;
-    final landlordName = property.landlordName ?? property.landlordEmail ?? loc.landlord;
-
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final contract = activeContractAsync.value;
     final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
     final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
 
-    final tenantName = (property.tenantName != null && property.tenantName!.trim().isNotEmpty)
-        ? property.tenantName
-        : (tenantProfileName != null && tenantProfileName.trim().isNotEmpty)
-            ? tenantProfileName
-            : (contract?.inviteeEmail != null && contract!.inviteeEmail.trim().isNotEmpty)
-                ? contract.inviteeEmail
-                : (hasActiveTenant ? loc.roleTenant : loc.vacant);
+    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
+    final landlordInvites = landlordInvitesAsync.value ?? [];
+
+    final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
+      property: property,
+      landlordInvites: landlordInvites,
+      loc: loc,
+    );
+
+    final tenantInfo = PortfolioDirectStatusHelper.resolveTenantDisplay(
+      property: property,
+      contract: contract,
+      tenantProfileName: tenantProfileName,
+      loc: loc,
+    );
+
+    final hasActiveTenant = tenantInfo.hasActiveTenant;
     final cityName = property.city?.trim() ?? '';
 
     final iconBg = hasPendingDebt
@@ -11126,13 +11257,19 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                                 width: 26,
                                 height: 26,
                                 decoration: BoxDecoration(
-                                  color: isClaimed ? const Color(0xFFEFF6FF) : const Color(0xFFFFFBEB),
+                                  color: (landlordInfo.isClaimed || landlordInfo.isDirect)
+                                      ? const Color(0xFFEFF6FF)
+                                      : const Color(0xFFFFFBEB),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
-                                  isClaimed ? LucideIcons.userCheck : LucideIcons.clock,
+                                  (landlordInfo.isClaimed || landlordInfo.isDirect)
+                                      ? LucideIcons.userCheck
+                                      : LucideIcons.clock,
                                   size: 13,
-                                  color: isClaimed ? const Color(0xFF2563EB) : const Color(0xFFD97706),
+                                  color: (landlordInfo.isClaimed || landlordInfo.isDirect)
+                                      ? const Color(0xFF2563EB)
+                                      : const Color(0xFFD97706),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -11151,11 +11288,13 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                                     ),
                                     const SizedBox(height: 1),
                                     Text(
-                                      isClaimed ? landlordName : '$landlordName (${loc.invitePending})',
+                                      landlordInfo.name,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: isClaimed ? const Color(0xFF0F172A) : const Color(0xFFB45309),
+                                        color: (landlordInfo.isClaimed || landlordInfo.isDirect)
+                                            ? const Color(0xFF0F172A)
+                                            : const Color(0xFFB45309),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -11180,7 +11319,9 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
-                                  hasActiveTenant ? LucideIcons.user : LucideIcons.userX,
+                                  hasActiveTenant
+                                      ? (tenantInfo.isDirect ? LucideIcons.userCheck : LucideIcons.user)
+                                      : LucideIcons.userX,
                                   size: 13,
                                   color: hasActiveTenant ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
                                 ),
@@ -11201,11 +11342,15 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                                     ),
                                     const SizedBox(height: 1),
                                     Text(
-                                      hasActiveTenant ? (tenantName ?? loc.roleTenant) : loc.vacantLabel,
+                                      hasActiveTenant ? tenantInfo.name : loc.vacantLabel,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: hasActiveTenant ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                        color: hasActiveTenant
+                                            ? (tenantInfo.isDirect
+                                                ? const Color(0xFF0F766E)
+                                                : const Color(0xFF0F172A))
+                                            : const Color(0xFF94A3B8),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

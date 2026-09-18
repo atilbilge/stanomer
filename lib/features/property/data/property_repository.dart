@@ -774,7 +774,7 @@ class PropertyRepository {
     try {
       final res = await _client
           .from('invitations')
-          .select('id, token, invitee_email, status, target_role, created_at, updated_at')
+          .select('id, token, invitee_email, status, target_role, created_at')
           .eq('property_id', propertyId)
           .eq('target_role', 'landlord')
           .order('created_at', ascending: false);
@@ -788,10 +788,13 @@ class PropertyRepository {
 
   /// Streams all landlord invitations for a property
   Stream<List<Map<String, dynamic>>> getLandlordInvitationsStreamForProperty(String propertyId) {
-    return _client
-        .from('invitations')
-        .stream(primaryKey: ['id'])
-        .eq('property_id', propertyId);
+    return resilientStream(
+      () => _client
+          .from('invitations')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId),
+      debugName: 'getLandlordInvitationsStreamForProperty($propertyId)',
+    );
   }
 
   /// Fetches or creates a landlord ownership invitation token for an agency-managed property
@@ -876,6 +879,56 @@ class PropertyRepository {
       landlordName: newLandlordName,
       landlordPhone: newLandlordPhone,
     );
+  }
+
+  /// Direct offline confirmation for landlord ownership by agency (bypassing email accept)
+  Future<bool> confirmLandlordDirectly({
+    required String propertyId,
+    required String token,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    try {
+      // 1. First try calling the RPC confirm_landlord_offline (SECURITY DEFINER, bypasses RLS)
+      try {
+        final Map<String, dynamic> params = {'p_property_id': propertyId};
+        if (token.isNotEmpty) {
+          params['p_token'] = token;
+        }
+        final res = await _client.rpc('confirm_landlord_offline', params: params);
+        if (res is Map && res['success'] == true) {
+          return true;
+        } else if (res is Map && res['message'] != null) {
+          debugPrint('confirm_landlord_offline RPC returned error: ${res['message']}');
+        }
+      } catch (rpcError) {
+        debugPrint('confirm_landlord_offline RPC call failed, trying direct update: $rpcError');
+      }
+
+      // 2. Direct update fallback
+      if (token.isNotEmpty) {
+        await _client.from('invitations').update({
+          'status': 'accepted',
+        }).eq('token', token);
+      } else {
+        await _client.from('invitations').update({
+          'status': 'accepted',
+        }).eq('property_id', propertyId).eq('target_role', 'landlord').eq('status', 'pending');
+      }
+
+      try {
+        await _logActivity(propertyId, 'landlord_confirmed_offline', {
+          'token': token,
+          'confirmed_by': user.id,
+        });
+      } catch (_) {}
+
+      return true;
+    } catch (e) {
+      debugPrint('Error confirming landlord directly: $e');
+      rethrow;
+    }
   }
 
   Future<List<PropertyOwner>> getPropertyOwners(String propertyId) async {
@@ -1457,6 +1510,72 @@ class PropertyRepository {
     }
 
     return contract;
+  }
+
+  /// Direct offline activation for contract by agency (bypassing tenant digital accept)
+  Future<bool> activateContractDirectly({
+    required String contractId,
+    required String propertyId,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    try {
+      // 1. Try calling activate_contract_offline RPC (SECURITY DEFINER)
+      try {
+        final res = await _client.rpc('activate_contract_offline', params: {
+          'p_contract_id': contractId,
+          'p_property_id': propertyId,
+        });
+        if (res is Map && res['success'] == true) {
+          return true;
+        } else if (res is Map && res['message'] != null) {
+          debugPrint('activate_contract_offline RPC message: ${res['message']}');
+        }
+      } catch (rpcErr) {
+        debugPrint('activate_contract_offline RPC failed, trying direct update: $rpcErr');
+      }
+
+      // 2. Direct update fallback
+      final contractData = await _client
+          .from('contracts')
+          .select('tenant_name')
+          .eq('id', contractId)
+          .maybeSingle();
+
+      final tenantName = contractData?['tenant_name'] as String?;
+
+      // Update contract to active
+      await _client.from('contracts').update({
+        'status': 'active',
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', contractId);
+
+      // Update property tenant_name if present
+      if (tenantName != null && tenantName.trim().isNotEmpty) {
+        try {
+          await _client.from('properties').update({
+            'tenant_name': tenantName.trim(),
+          }).eq('id', propertyId);
+        } catch (_) {}
+      }
+
+      // Generate rent payments immediately
+      await generateRentPayments(propertyId);
+
+      // Activity log
+      try {
+        await _logActivity(propertyId, 'contract_activated_offline', {
+          'contract_id': contractId,
+          'activated_by': user.id,
+        });
+      } catch (_) {}
+
+      return true;
+    } catch (e) {
+      debugPrint('Error activating contract directly: $e');
+      rethrow;
+    }
   }
 
   Future<String> createInvitation({

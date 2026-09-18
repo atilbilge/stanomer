@@ -1668,5 +1668,11 @@
   "emailSendGenericError": "Mail gönderimi sırasında hata oluştu: {error}",
   "tenantInviteEmailBtn": "Kiracı Davet Maili",
   "allOwnersInviteSentSuccess": "{successCount} / {totalCount} ev sahibine davet mailleri başarıyla gönderildi.",
-  "landlordsListHeader": "Ev Sahipleri ({count})"
+  "landlordsListHeader": "Ev Sahipleri ({count})",
+  "startWithoutInviteBtn": "Davetsiz Hemen Başlat",
+  "startWithoutInviteConfirmTitle": "Davetsiz Başlatılsın mı?",
+  "startWithoutInviteConfirmTenant": "Sözleşme fiziki olarak yapıldı kabul edilecek ve 12 aylık ödeme planı hemen oluşturulacaktır. Onaylıyor musunuz?",
+  "startWithoutInviteConfirmLandlord": "Ev sahibi fiziki olarak onayladı kabul edilecek ve yönetim doğrudan aktifleşecektir. Onaylıyor musunuz?",
+  "startWithoutInviteSuccess": "Sözleşme ve ödeme planı başarıyla başlatıldı.",
+  "landlordConfirmedOfflineSuccess": "Ev sahibi başarıyla onaylandı."
 }
