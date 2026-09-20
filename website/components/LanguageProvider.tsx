@@ -14,7 +14,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>("TR");
+  const [lang, setLang] = useState<Language>("SR_LAT");
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -48,8 +48,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLang("RU");
       } else if (navLang.startsWith("en")) {
         setLang("EN");
-      } else {
+      } else if (navLang.startsWith("tr")) {
         setLang("TR");
+      } else {
+        setLang("SR_LAT");
       }
     } catch (e) {
       console.error("LanguageProvider initialization error:", e);
@@ -70,6 +72,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const langDict = translations[lang];
     if (langDict && langDict[key] !== undefined) {
       return langDict[key];
+    }
+    // Fallback to SR_LAT dictionary
+    // @ts-ignore
+    const srDict = translations["SR_LAT"];
+    if (srDict && srDict[key] !== undefined) {
+      return srDict[key];
     }
     // Fallback to TR dictionary
     // @ts-ignore

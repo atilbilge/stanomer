@@ -3,8 +3,8 @@ import { Navbar } from "../components/Navbar";
 import { HomeContent } from "./HomeContent";
 
 export const metadata: Metadata = {
-  title: "Stanomer | Mülk Yönetiminde Yeni Nesil Şeffaflık",
-  description: "Ev sahipleri ve kiracılar için dijital köprü. Kontrat, ödeme ve arıza takibini tek uygulamada yönetin.",
+  title: "Stanomer | Nova generacija transparentnosti u upravljanju nekretninama",
+  description: "Digitalni most za stanodavce i stanare. Upravljajte ugovorima, plaćanjima i održavanjem u jednoj aplikaciji.",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.ico",
