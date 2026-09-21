@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'web_language_switcher.dart';
-import 'app_logo.dart';
+import 'floating_contact_widget.dart';
 
 /// A wrapper that constrains the app content on wide desktop/web screens
-/// so it sits centered in a sleek, modern mobile/tablet shell instead of stretching 100%.
+/// and presents floating utility overlays like the WhatsApp & Viber contact button on Web.
 class WebResponsiveWrapper extends StatelessWidget {
   final Widget child;
 
@@ -11,7 +11,23 @@ class WebResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Return full-width responsive child directly so desktop layouts expand naturally
-    return child;
+    if (!kIsWeb) {
+      return child;
+    }
+
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobileWeb = screenWidth < 768;
+
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          right: isMobileWeb ? 16 : 24,
+          bottom: isMobileWeb ? 80 : 24,
+          child: const FloatingContactWidget(),
+        ),
+      ],
+    );
   }
 }
+

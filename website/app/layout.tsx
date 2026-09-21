@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { LanguageProvider } from "../components/LanguageProvider";
+import { FloatingContactWidget } from "../components/FloatingContactWidget";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className={`${outfit.variable} font-sans antialiased`} suppressHydrationWarning>
         <LanguageProvider>
           {children}
+          <FloatingContactWidget />
         </LanguageProvider>
         <Analytics />
 
