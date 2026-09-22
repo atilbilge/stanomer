@@ -1888,6 +1888,62 @@ class PropertyRepository {
     }
   }
 
+  /// Directly updates contract terms without requiring a proposal workflow (used by agency).
+  Future<void> directUpdateContract(
+    String contractId,
+    Map<String, dynamic> changes, {
+    required String propertyId,
+  }) async {
+    final updateData = <String, dynamic>{
+      'proposed_changes': null,
+      'proposed_by': null,
+      'status': 'active',
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    if (changes.containsKey('monthly_rent')) updateData['monthly_rent'] = changes['monthly_rent'];
+    if (changes.containsKey('currency')) updateData['currency'] = changes['currency'];
+    if (changes.containsKey('deposit_amount')) updateData['deposit_amount'] = changes['deposit_amount'];
+    if (changes.containsKey('deposit_currency')) updateData['deposit_currency'] = changes['deposit_currency'];
+    if (changes.containsKey('due_day')) updateData['due_day'] = changes['due_day'];
+    if (changes.containsKey('start_date')) updateData['start_date'] = changes['start_date'];
+    if (changes.containsKey('end_date')) updateData['end_date'] = changes['end_date'];
+    if (changes.containsKey('tax_type')) updateData['tax_type'] = changes['tax_type'];
+    if (changes.containsKey('expenses_config')) updateData['expenses_config'] = changes['expenses_config'];
+
+    await _client.from('contracts').update(updateData).eq('id', contractId);
+
+    // Regenerate rent payments with updated contract terms
+    await generateRentPayments(propertyId);
+
+    // Notify participants
+    try {
+      final contractData = await _client.from('contracts').select().eq('id', contractId).single();
+      final user = _client.auth.currentUser;
+      final tenantId = contractData['tenant_id'] as String?;
+      final landlordId = contractData['landlord_id'] as String?;
+
+      if (tenantId != null && tenantId != user?.id) {
+        await _createNotification(
+          userId: tenantId,
+          title: 'Contract Updated',
+          body: 'Agency has updated the contract terms.',
+          type: 'contract',
+          relatedId: propertyId,
+        );
+      }
+      if (landlordId != null && landlordId != user?.id) {
+        await _createNotification(
+          userId: landlordId,
+          title: 'Contract Updated',
+          body: 'Agency has updated the contract terms for your property.',
+          type: 'contract',
+          relatedId: propertyId,
+        );
+      }
+    } catch (_) {}
+  }
+
   /// Propose early contract termination. Stores in proposed_changes; sets status termination_requested.
   Future<void> requestContractTermination(String contractId, DateTime terminationDate) async {
     await _client.rpc('propose_contract_termination', params: {

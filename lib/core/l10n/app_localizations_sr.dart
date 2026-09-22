@@ -667,6 +667,18 @@ class AppLocalizationsSr extends AppLocalizations {
   String get expenseTax => 'Porez';
 
   @override
+  String get addCustomExpense => 'Dodaj vrstu računa';
+
+  @override
+  String get expenseTypeName => 'Naziv troška';
+
+  @override
+  String get expenseNameAlreadyExists => 'Trošak sa ovim nazivom već postoji.';
+
+  @override
+  String get expenseNameHint => 'npr. Garaža, Gas, Čišćenje...';
+
+  @override
   String get tenantPaysTo => 'Plaća se:';
 
   @override
@@ -4415,6 +4427,18 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get expenseTax => 'Порез';
+
+  @override
+  String get addCustomExpense => 'Додај врсту рачуна';
+
+  @override
+  String get expenseTypeName => 'Назив трошка';
+
+  @override
+  String get expenseNameAlreadyExists => 'Трошак са овим називом већ постоји.';
+
+  @override
+  String get expenseNameHint => 'нпр. Гаража, Гас, Чишћење...';
 
   @override
   String get tenantPaysTo => 'Плаћа се:';

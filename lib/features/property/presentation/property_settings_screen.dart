@@ -324,6 +324,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
   Widget _buildContractPanel(AppLocalizations loc, User? user, Color roleColor, bool showAgencyDetails) {
     final activeContractAsync = ref.watch(activeContractProvider(widget.property.id));
     final userRole = ref.watch(userRoleProvider);
+    final isAgency = widget.property.agencyId == user?.id || userRole == 'agency';
     final isManager = widget.property.landlordId == user?.id ||
         widget.property.agencyId == user?.id ||
         userRole == 'agency';
@@ -729,41 +730,50 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             // Belgeler
             _buildAdditionalDocumentsSection(loc, contract, roleColor),
             const SizedBox(height: 24),
-            // Proposal info
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.alertTriangle, size: 16, color: Colors.amber),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      loc.proposeChangesInfo(targetRole),
-                      style: const TextStyle(fontSize: 12, color: Colors.amber),
+            // Proposal info (Sadece ev sahibi/kiracı müzakeresi için gösterilir, acente doğrudan günceller)
+            if (!isAgency) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.alertTriangle, size: 16, color: Colors.amber),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        loc.proposeChangesInfo(targetRole),
+                        style: const TextStyle(fontSize: 12, color: Colors.amber),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             Builder(
               builder: (context) {
                 final hasFinance = _hasFinancialChanges(contract);
+                final buttonText = isAgency
+                    ? loc.saveChanges
+                    : (hasFinance ? loc.proposeChanges : loc.save);
+                final buttonIcon = isAgency
+                    ? LucideIcons.check
+                    : (hasFinance ? LucideIcons.send : LucideIcons.check);
+
                 return ElevatedButton.icon(
-                  icon: const Icon(LucideIcons.send, size: 18),
+                  icon: Icon(buttonIcon, size: 18),
                   onPressed: (_isContractLoading || !_hasContractChanges(contract, showAgencyDetails)) ? null : () async {
-                    if (hasFinance) {
-                      if (_contractExpenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
-                        );
-                        return;
-                      }
+                    if (_contractExpenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(loc.selectPaymentReceiverWarning), backgroundColor: StanomerColors.alertPrimary),
+                      );
+                      return;
+                    }
+                    if (!isAgency && hasFinance) {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -792,7 +802,15 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                           'tax_type': TaxType.included.name,
                           'expenses_config': _contractExpenses.map((e) => e.toJson()).toList(),
                         };
-                        await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
+                        if (isAgency) {
+                          await ref.read(propertyRepositoryProvider).directUpdateContract(
+                            contract.id,
+                            changes,
+                            propertyId: widget.property.id,
+                          );
+                        } else {
+                          await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
+                        }
                       }
                       if (showAgencyDetails) {
                         await ref.read(propertyRepositoryProvider).updateContractTenantDetails(
@@ -807,8 +825,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                       }
                       ref.invalidate(activeContractProvider(widget.property.id));
                       ref.invalidate(contractProposalProvider(contract.id));
+                      ref.invalidate(rentPaymentsProvider(widget.property.id));
                       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(hasFinance ? loc.revisionSent : loc.propertyUpdatedSuccess)),
+                        SnackBar(content: Text((!isAgency && hasFinance) ? loc.revisionSent : loc.propertyUpdatedSuccess)),
                       );
                     } catch (e) {
                       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
@@ -824,7 +843,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                   ),
                   label: _isContractLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(hasFinance ? loc.proposeChanges : loc.save),
+                      : Text(buttonText),
                 );
               },
             ),
@@ -1427,12 +1446,30 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                     subtitle: isIncluded 
                       ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
                       : null,
-                    trailing: Switch.adaptive(
-                      value: isIncluded,
-                      activeColor: roleColor,
-                      onChanged: ((val) => setState(() {
-                        _contractExpenses[index] = expense.copyWith(receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected);
-                      })),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (!ExpenseUtils.isStandardExpense(expense.name))
+                          IconButton(
+                            icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                            tooltip: loc.delete,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            onPressed: () {
+                              setState(() {
+                                _contractExpenses.removeAt(index);
+                              });
+                            },
+                          ),
+                        Switch.adaptive(
+                          value: isIncluded,
+                          activeColor: roleColor,
+                          onChanged: ((val) => setState(() {
+                            _contractExpenses[index] = expense.copyWith(receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected);
+                          })),
+                        ),
+                      ],
                     ),
                   ),
                   if (!isIncluded)
@@ -1474,11 +1511,18 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                                   },
                                   selectedColor: const Color(0xFFEFF6FF),
                                   labelStyle: TextStyle(
-                                    color: expense.paymentMethod != 'cash' ? const Color(0xFF1D4ED8) : StanomerColors.textSecondary,
-                                    fontWeight: expense.paymentMethod != 'cash' ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 11,
+                                    fontWeight: expense.paymentMethod != 'cash' ? FontWeight.w600 : FontWeight.normal,
+                                    color: expense.paymentMethod != 'cash' ? StanomerColors.brandPrimary : StanomerColors.textSecondary,
                                   ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide(
+                                      color: expense.paymentMethod != 'cash' ? StanomerColors.brandPrimary : StanomerColors.borderDefault,
+                                    ),
+                                  ),
+                                  showCheckmark: false,
                                   visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
@@ -1490,13 +1534,20 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                                       _contractExpenses[index] = expense.copyWith(paymentMethod: 'cash');
                                     });
                                   },
-                                  selectedColor: const Color(0xFFFEF3C7),
+                                  selectedColor: const Color(0xFFEFF6FF),
                                   labelStyle: TextStyle(
-                                    color: expense.paymentMethod == 'cash' ? const Color(0xFFB45309) : StanomerColors.textSecondary,
-                                    fontWeight: expense.paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 11,
+                                    fontWeight: expense.paymentMethod == 'cash' ? FontWeight.w600 : FontWeight.normal,
+                                    color: expense.paymentMethod == 'cash' ? StanomerColors.brandPrimary : StanomerColors.textSecondary,
                                   ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide(
+                                      color: expense.paymentMethod == 'cash' ? StanomerColors.brandPrimary : StanomerColors.borderDefault,
+                                    ),
+                                  ),
+                                  showCheckmark: false,
                                   visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ],
                             ),
@@ -1511,9 +1562,26 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
             }).toList(),
           ),
         ),
+      ),
+      const SizedBox(height: 8),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => _showAddCustomExpenseDialog(
+            loc: loc,
+            targetList: _contractExpenses,
+            onAdded: (item) => setState(() => _contractExpenses.add(item)),
+          ),
+          icon: const Icon(LucideIcons.plus, size: 16),
+          label: Text(loc.addCustomExpense),
+          style: TextButton.styleFrom(
+            foregroundColor: roleColor,
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
   }
 
   Widget _buildPropertyPanel(AppLocalizations loc, Color roleColor, bool showAgencyDetails) {
@@ -1718,16 +1786,34 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                     subtitle: isIncluded 
                       ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
                       : null,
-                    trailing: Switch.adaptive(
-                      value: isIncluded,
-                      activeColor: roleColor,
-                      onChanged: (val) {
-                        setState(() {
-                          _expenses[index] = expense.copyWith(
-                            receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
-                          );
-                        });
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (!ExpenseUtils.isStandardExpense(expense.name))
+                          IconButton(
+                            icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                            tooltip: loc.delete,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            onPressed: () {
+                              setState(() {
+                                _expenses.removeAt(index);
+                              });
+                            },
+                          ),
+                        Switch.adaptive(
+                          value: isIncluded,
+                          activeColor: roleColor,
+                          onChanged: (val) {
+                            setState(() {
+                              _expenses[index] = expense.copyWith(
+                                receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
+                              );
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   if (!isIncluded)
@@ -1807,7 +1893,122 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
           ),
         ),
         ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _showAddCustomExpenseDialog(
+              loc: loc,
+              targetList: _expenses,
+              onAdded: (item) => setState(() => _expenses.add(item)),
+            ),
+            icon: const Icon(LucideIcons.plus, size: 16),
+            label: Text(loc.addCustomExpense),
+            style: TextButton.styleFrom(
+              foregroundColor: roleColor,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showAddCustomExpenseDialog({
+    required AppLocalizations loc,
+    required List<ExpenseItem> targetList,
+    required void Function(ExpenseItem) onAdded,
+  }) {
+    final nameController = TextEditingController();
+    PaymentReceiver selectedReceiver = PaymentReceiver.included;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(loc.addCustomExpense, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      maxLength: 30,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: loc.expenseTypeName,
+                        hintText: loc.expenseNameHint,
+                        errorText: errorText,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onChanged: (_) {
+                        if (errorText != null) {
+                          setDialogState(() => errorText = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      loc.tenantPaysTo,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: StanomerColors.textTertiary),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentResponsibilitySelector(
+                      value: selectedReceiver,
+                      onChanged: (newReceiver) {
+                        setDialogState(() {
+                          selectedReceiver = newReceiver;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(loc.cancel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    final rawName = nameController.text.trim();
+                    if (rawName.isEmpty) {
+                      setDialogState(() {
+                        errorText = loc.fieldRequired;
+                      });
+                      return;
+                    }
+                    if (targetList.any((e) => e.name.trim().toLowerCase() == rawName.toLowerCase())) {
+                      setDialogState(() {
+                        errorText = loc.expenseNameAlreadyExists;
+                      });
+                      return;
+                    }
+
+                    onAdded(ExpenseItem(
+                      name: rawName,
+                      receiver: selectedReceiver,
+                    ));
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(loc.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

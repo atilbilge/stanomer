@@ -666,6 +666,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get expenseTax => 'Vergi';
 
   @override
+  String get addCustomExpense => 'Yeni Fatura Tipi Ekle';
+
+  @override
+  String get expenseTypeName => 'Fatura / Masraf Adı';
+
+  @override
+  String get expenseNameAlreadyExists =>
+      'Bu isimde bir fatura tipi zaten mevcut.';
+
+  @override
+  String get expenseNameHint => 'Örn: Garaj, Doğalgaz, Temizlik...';
+
+  @override
   String get tenantPaysTo => 'Ödeme kime yapılacak?';
 
   @override

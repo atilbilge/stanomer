@@ -1327,6 +1327,30 @@ abstract class AppLocalizations {
   /// **'Porez'**
   String get expenseTax;
 
+  /// No description provided for @addCustomExpense.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaj vrstu računa'**
+  String get addCustomExpense;
+
+  /// No description provided for @expenseTypeName.
+  ///
+  /// In sr, this message translates to:
+  /// **'Naziv troška'**
+  String get expenseTypeName;
+
+  /// No description provided for @expenseNameAlreadyExists.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak sa ovim nazivom već postoji.'**
+  String get expenseNameAlreadyExists;
+
+  /// No description provided for @expenseNameHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'npr. Garaža, Gas, Čišćenje...'**
+  String get expenseNameHint;
+
   /// No description provided for @tenantPaysTo.
   ///
   /// In sr, this message translates to:

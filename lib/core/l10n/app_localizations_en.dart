@@ -665,6 +665,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseTax => 'Tax';
 
   @override
+  String get addCustomExpense => 'Add Custom Expense';
+
+  @override
+  String get expenseTypeName => 'Expense Name';
+
+  @override
+  String get expenseNameAlreadyExists =>
+      'An expense with this name already exists.';
+
+  @override
+  String get expenseNameHint => 'e.g. Garage, Gas, Cleaning...';
+
+  @override
   String get tenantPaysTo => 'Tenant pays to:';
 
   @override

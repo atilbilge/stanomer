@@ -47,4 +47,28 @@ class ExpenseUtils {
         return '';
     }
   }
+
+  static const List<String> defaultExpenses = [
+    'Infostan',
+    'Struja (Electricity)',
+    'Internet/TV',
+    'Održavanje zgrade (Maintenance)',
+  ];
+
+  static bool isStandardExpense(String name) {
+    final n = name.trim().toLowerCase();
+    return n == 'infostan' ||
+        n == 'struja (electricity)' ||
+        n == 'struja' ||
+        n == 'electricity' ||
+        n == 'internet/tv' ||
+        n == 'internet' ||
+        n == 'održavanje zgrade (maintenance)' ||
+        n == 'održavanje zgrade' ||
+        n == 'održavanje' ||
+        n == 'maintenance' ||
+        n == 'porez (tax)' ||
+        n == 'porez' ||
+        n == 'tax';
+  }
 }

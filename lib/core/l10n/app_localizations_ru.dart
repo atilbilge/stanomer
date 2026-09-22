@@ -674,6 +674,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get expenseTax => 'Налог';
 
   @override
+  String get addCustomExpense => 'Добавить категорию счета';
+
+  @override
+  String get expenseTypeName => 'Название расхода';
+
+  @override
+  String get expenseNameAlreadyExists =>
+      'Расход с таким названием уже существует.';
+
+  @override
+  String get expenseNameHint => 'напр. Гараж, Газ, Уборка...';
+
+  @override
   String get tenantPaysTo => 'Кому платит арендатор:';
 
   @override

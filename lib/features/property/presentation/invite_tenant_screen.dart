@@ -851,16 +851,19 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
   }
 
   Widget _buildExpensesSection(AppLocalizations loc, Color roleColor, bool showAgencyTenantDetails) {
-    return Material(
-      color: StanomerColors.bgCard,
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        decoration: BoxDecoration(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Material(
+          color: StanomerColors.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: StanomerColors.borderDefault),
-        ),
-      child: Column(
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: StanomerColors.borderDefault),
+            ),
+            child: Column(
         children: _expenses.map((expense) {
           final index = _expenses.indexOf(expense);
           final isIncluded = expense.receiver == PaymentReceiver.included;
@@ -892,16 +895,34 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                   ? Text(loc.includedInRent, 
                       style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
                   : null,
-                trailing: Switch.adaptive(
-                  value: isIncluded,
-                  activeColor: roleColor,
-                  onChanged: _isLeaseLocked ? null : (val) {
-                    setState(() {
-                      _expenses[index] = expense.copyWith(
-                        receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
-                      );
-                    });
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_isLeaseLocked && !ExpenseUtils.isStandardExpense(expense.name))
+                      IconButton(
+                        icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                        tooltip: loc.delete,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () {
+                          setState(() {
+                            _expenses.removeAt(index);
+                          });
+                        },
+                      ),
+                    Switch.adaptive(
+                      value: isIncluded,
+                      activeColor: roleColor,
+                      onChanged: _isLeaseLocked ? null : (val) {
+                        setState(() {
+                          _expenses[index] = expense.copyWith(
+                            receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
+                          );
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
               if (!isIncluded)
@@ -978,8 +999,121 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
             ],
           );
         }).toList().cast<Widget>(),
+            ),
+          ),
         ),
-      ),
+        if (!_isLeaseLocked) ...[
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _showAddCustomExpenseDialog(loc, roleColor),
+            icon: const Icon(LucideIcons.plus, size: 16),
+            label: Text(loc.addCustomExpense),
+            style: TextButton.styleFrom(
+              foregroundColor: roleColor,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+  }
+
+  void _showAddCustomExpenseDialog(AppLocalizations loc, Color roleColor) {
+    final nameController = TextEditingController();
+    PaymentReceiver selectedReceiver = PaymentReceiver.included;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(loc.addCustomExpense, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      maxLength: 30,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: loc.expenseTypeName,
+                        hintText: loc.expenseNameHint,
+                        errorText: errorText,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onChanged: (_) {
+                        if (errorText != null) {
+                          setDialogState(() => errorText = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      loc.tenantPaysTo,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: StanomerColors.textTertiary),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentResponsibilitySelector(
+                      value: selectedReceiver,
+                      onChanged: (newReceiver) {
+                        setDialogState(() {
+                          selectedReceiver = newReceiver;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(loc.cancel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: roleColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    final rawName = nameController.text.trim();
+                    if (rawName.isEmpty) {
+                      setDialogState(() {
+                        errorText = loc.fieldRequired;
+                      });
+                      return;
+                    }
+                    if (_expenses.any((e) => e.name.trim().toLowerCase() == rawName.toLowerCase())) {
+                      setDialogState(() {
+                        errorText = loc.expenseNameAlreadyExists;
+                      });
+                      return;
+                    }
+
+                    setState(() {
+                      _expenses.add(ExpenseItem(
+                        name: rawName,
+                        receiver: selectedReceiver,
+                      ));
+                    });
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(loc.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

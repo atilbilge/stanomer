@@ -9108,9 +9108,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               final t = title.toLowerCase();
               if (t == 'kira' || t == 'rent') return LucideIcons.home;
               if (t.contains('internet') || t.contains('tv')) return LucideIcons.wifi;
-              if (t.contains('elektr') || t.contains('electr')) return LucideIcons.zap;
-              if (t.contains('su') || t.contains('water')) return LucideIcons.droplets;
-              if (t.contains('info') || t.contains('aidat') || t.contains('maintenance')) return LucideIcons.building;
+              if (t.contains('elektr') || t.contains('electr') || t.contains('struja')) return LucideIcons.zap;
+              if (t.contains('su') || t.contains('water') || t.contains('voda')) return LucideIcons.droplets;
+              if (t.contains('info') || t.contains('aidat') || t.contains('maintenance') || t.contains('održavanje')) return LucideIcons.building;
+              if (t.contains('gara') || t.contains('park')) return LucideIcons.car;
+              if (t.contains('gas') || t.contains('gaz') || t.contains('grejan') || t.contains('ısı') || t.contains('heat')) return LucideIcons.flame;
+              if (t.contains('temiz') || t.contains('clean') || t.contains('čišć')) return LucideIcons.sparkles;
+              if (t.contains('güven') || t.contains('secur') || t.contains('obezb')) return LucideIcons.shieldCheck;
               return LucideIcons.receipt;
             }
 
@@ -9118,9 +9122,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               final t = title.toLowerCase();
               if (t == 'kira' || t == 'rent') return StanomerColors.brandPrimary;
               if (t.contains('internet') || t.contains('tv')) return Colors.indigo;
-              if (t.contains('elektr') || t.contains('electr')) return Colors.amber.shade700;
-              if (t.contains('su') || t.contains('water')) return Colors.blue;
-              if (t.contains('info') || t.contains('aidat') || t.contains('maintenance')) return Colors.brown.shade400;
+              if (t.contains('elektr') || t.contains('electr') || t.contains('struja')) return Colors.amber.shade700;
+              if (t.contains('su') || t.contains('water') || t.contains('voda')) return Colors.blue;
+              if (t.contains('info') || t.contains('aidat') || t.contains('maintenance') || t.contains('održavanje')) return Colors.brown.shade400;
+              if (t.contains('gara') || t.contains('park')) return Colors.teal;
+              if (t.contains('gas') || t.contains('gaz') || t.contains('grejan') || t.contains('ısı') || t.contains('heat')) return Colors.deepOrange;
+              if (t.contains('temiz') || t.contains('clean') || t.contains('čišć')) return Colors.cyan.shade700;
+              if (t.contains('güven') || t.contains('secur') || t.contains('obezb')) return Colors.blueGrey;
               return StanomerColors.textSecondary;
             }
 
@@ -9870,6 +9878,9 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
 
   Widget _buildContractPanel(AppLocalizations loc, bool isLandlord) {
     final activeContractAsync = ref.watch(activeContractProvider(widget.property.id));
+    final user = ref.watch(currentUserProvider);
+    final userRole = ref.watch(userRoleProvider);
+    final isAgency = widget.property.agencyId == user?.id || userRole == 'agency';
     return activeContractAsync.when(
       data: (contract) {
         if (contract == null) {
@@ -10055,30 +10066,32 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
             // Masraflar
             _buildContractExpensesSection(loc),
             const SizedBox(height: 24),
-            // Proposal info
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.alertTriangle, size: 16, color: Colors.amber),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      loc.proposeChangesInfo(isLandlord ? loc.tenant : loc.landlord),
-                      style: const TextStyle(fontSize: 12, color: Colors.amber),
+            // Proposal info (Sadece ev sahibi/kiracı müzakeresi için gösterilir, acente doğrudan günceller)
+            if (!isAgency) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.alertTriangle, size: 16, color: Colors.amber),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        loc.proposeChangesInfo(isLandlord ? loc.tenant : loc.landlord),
+                        style: const TextStyle(fontSize: 12, color: Colors.amber),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             ElevatedButton.icon(
-              icon: const Icon(LucideIcons.send, size: 18),
+              icon: Icon(isAgency ? LucideIcons.check : LucideIcons.send, size: 18),
               onPressed: _isContractLoading ? null : () async {
                 if (_contractExpenses.any((e) => e.receiver == PaymentReceiver.unselected)) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -10086,18 +10099,20 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
                   );
                   return;
                 }
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text(loc.proposeChanges),
-                    content: Text(loc.proposeChangesInfo(isLandlord ? loc.tenant : loc.landlord)),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
-                      ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.send)),
-                    ],
-                  ),
-                );
-                if (confirmed != true) return;
+                if (!isAgency) {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(loc.proposeChanges),
+                      content: Text(loc.proposeChangesInfo(isLandlord ? loc.tenant : loc.landlord)),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+                        ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.send)),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true) return;
+                }
                 setState(() => _isContractLoading = true);
                 try {
                   final changes = <String, dynamic>{
@@ -10112,11 +10127,20 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
                     'tax_type': TaxType.included.name,
                     'expenses_config': _contractExpenses.map((e) => e.toJson()).toList(),
                   };
-                  await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
+                  if (isAgency) {
+                    await ref.read(propertyRepositoryProvider).directUpdateContract(
+                      contract.id,
+                      changes,
+                      propertyId: widget.property.id,
+                    );
+                  } else {
+                    await ref.read(propertyRepositoryProvider).proposeContractChanges(contract.id, changes);
+                  }
                   ref.invalidate(activeContractProvider(widget.property.id));
                   ref.invalidate(contractProposalProvider(contract.id));
+                  ref.invalidate(rentPaymentsProvider(widget.property.id));
                   if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.revisionSent)),
+                    SnackBar(content: Text(isAgency ? loc.propertyUpdatedSuccess : loc.revisionSent)),
                   );
                 } catch (e) {
                   if (mounted) ScaffoldMessenger.of(context).showSnackBar(
@@ -10126,10 +10150,12 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
                   if (mounted) setState(() => _isContractLoading = false);
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isAgency ? StanomerColors.brandPrimary : Colors.orange.shade700,
+              ),
               label: _isContractLoading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(loc.proposeChanges),
+                  : Text(isAgency ? loc.saveChanges : loc.proposeChanges),
             ),
             const SizedBox(height: 48),
           ],
@@ -10390,16 +10416,34 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
                       subtitle: isIncluded 
                         ? Text(loc.included, style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
                         : null,
-                      trailing: Switch.adaptive(
-                        value: isIncluded,
-                        activeColor: StanomerColors.brandPrimary,
-                        onChanged: (val) {
-                          setState(() {
-                            _expenses[index] = expense.copyWith(
-                              receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
-                            );
-                          });
-                        },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!ExpenseUtils.isStandardExpense(expense.name))
+                            IconButton(
+                              icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                              tooltip: loc.delete,
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              onPressed: () {
+                                setState(() {
+                                  _expenses.removeAt(index);
+                                });
+                              },
+                            ),
+                          Switch.adaptive(
+                            value: isIncluded,
+                            activeColor: StanomerColors.brandPrimary,
+                            onChanged: (val) {
+                              setState(() {
+                                _expenses[index] = expense.copyWith(
+                                  receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
+                                );
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
                     if (!isIncluded)
@@ -10432,7 +10476,116 @@ class _SettingsTabState extends ConsumerState<_SettingsTab> {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _showAddCustomExpenseDialog(loc),
+            icon: const Icon(LucideIcons.plus, size: 16),
+            label: Text(loc.addCustomExpense),
+            style: TextButton.styleFrom(
+              foregroundColor: StanomerColors.brandPrimary,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showAddCustomExpenseDialog(AppLocalizations loc) {
+    final nameController = TextEditingController();
+    PaymentReceiver selectedReceiver = PaymentReceiver.included;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(loc.addCustomExpense, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      maxLength: 30,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: loc.expenseTypeName,
+                        hintText: loc.expenseNameHint,
+                        errorText: errorText,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onChanged: (_) {
+                        if (errorText != null) {
+                          setDialogState(() => errorText = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      loc.tenantPaysTo,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: StanomerColors.textTertiary),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentResponsibilitySelector(
+                      value: selectedReceiver,
+                      onChanged: (newReceiver) {
+                        setDialogState(() {
+                          selectedReceiver = newReceiver;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(loc.cancel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    final rawName = nameController.text.trim();
+                    if (rawName.isEmpty) {
+                      setDialogState(() {
+                        errorText = loc.fieldRequired;
+                      });
+                      return;
+                    }
+                    if (_expenses.any((e) => e.name.trim().toLowerCase() == rawName.toLowerCase())) {
+                      setDialogState(() {
+                        errorText = loc.expenseNameAlreadyExists;
+                      });
+                      return;
+                    }
+
+                    setState(() {
+                      _expenses.add(ExpenseItem(
+                        name: rawName,
+                        receiver: selectedReceiver,
+                      ));
+                    });
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(loc.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

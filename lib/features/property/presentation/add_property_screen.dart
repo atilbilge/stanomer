@@ -993,16 +993,34 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       ? Text(loc.includedInRent, 
                           style: const TextStyle(color: StanomerColors.successPrimary, fontSize: 11))
                       : null,
-                    trailing: Switch.adaptive(
-                      value: isIncluded,
-                      activeColor: StanomerColors.brandPrimary,
-                      onChanged: (val) {
-                        setState(() {
-                          _expenses[index] = expense.copyWith(
-                            receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
-                          );
-                        });
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (!ExpenseUtils.isStandardExpense(expense.name))
+                          IconButton(
+                            icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
+                            tooltip: loc.delete,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            onPressed: () {
+                              setState(() {
+                                _expenses.removeAt(index);
+                              });
+                            },
+                          ),
+                        Switch.adaptive(
+                          value: isIncluded,
+                          activeColor: StanomerColors.brandPrimary,
+                          onChanged: (val) {
+                            setState(() {
+                              _expenses[index] = expense.copyWith(
+                                receiver: val ? PaymentReceiver.included : PaymentReceiver.unselected,
+                              );
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   if (!isIncluded)
@@ -1034,7 +1052,116 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
             }).toList().cast<Widget>(),
           ),
         ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _showAddCustomExpenseDialog(loc),
+            icon: const Icon(LucideIcons.plus, size: 16),
+            label: Text(loc.addCustomExpense),
+            style: TextButton.styleFrom(
+              foregroundColor: StanomerColors.brandPrimary,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showAddCustomExpenseDialog(AppLocalizations loc) {
+    final nameController = TextEditingController();
+    PaymentReceiver selectedReceiver = PaymentReceiver.included;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(loc.addCustomExpense, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      maxLength: 30,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: loc.expenseTypeName,
+                        hintText: loc.expenseNameHint,
+                        errorText: errorText,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onChanged: (_) {
+                        if (errorText != null) {
+                          setDialogState(() => errorText = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      loc.tenantPaysTo,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: StanomerColors.textTertiary),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentResponsibilitySelector(
+                      value: selectedReceiver,
+                      onChanged: (newReceiver) {
+                        setDialogState(() {
+                          selectedReceiver = newReceiver;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(loc.cancel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: StanomerColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    final rawName = nameController.text.trim();
+                    if (rawName.isEmpty) {
+                      setDialogState(() {
+                        errorText = loc.fieldRequired;
+                      });
+                      return;
+                    }
+                    if (_expenses.any((e) => e.name.trim().toLowerCase() == rawName.toLowerCase())) {
+                      setDialogState(() {
+                        errorText = loc.expenseNameAlreadyExists;
+                      });
+                      return;
+                    }
+
+                    setState(() {
+                      _expenses.add(ExpenseItem(
+                        name: rawName,
+                        receiver: selectedReceiver,
+                      ));
+                    });
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(loc.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
