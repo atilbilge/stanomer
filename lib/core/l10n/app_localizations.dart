@@ -6759,6 +6759,78 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Vlasnik je uspešno potvrđen.'**
   String get landlordConfirmedOfflineSuccess;
+
+  /// No description provided for @addManualNoteBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaj belešku'**
+  String get addManualNoteBtn;
+
+  /// No description provided for @manualNoteSheetTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodaj ručnu belešku'**
+  String get manualNoteSheetTitle;
+
+  /// No description provided for @manualNoteHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite vašu belešku o nekretnini...'**
+  String get manualNoteHint;
+
+  /// No description provided for @manualNoteDateLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Datum'**
+  String get manualNoteDateLabel;
+
+  /// No description provided for @manualNoteTextLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Tekst beleške'**
+  String get manualNoteTextLabel;
+
+  /// No description provided for @manualNoteEmptyError.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo unesite tekst beleške'**
+  String get manualNoteEmptyError;
+
+  /// No description provided for @manualNoteSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Beleška je uspešno sačuvana'**
+  String get manualNoteSuccess;
+
+  /// No description provided for @auditFilterAll.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sve'**
+  String get auditFilterAll;
+
+  /// No description provided for @auditFilterSystem.
+  ///
+  /// In sr, this message translates to:
+  /// **'Sistem'**
+  String get auditFilterSystem;
+
+  /// No description provided for @auditFilterManual.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ručne beleške'**
+  String get auditFilterManual;
+
+  /// No description provided for @noManualNotesFound.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nema ručnih beleški.'**
+  String get noManualNotesFound;
+
+  /// No description provided for @manualNoteBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ručna beleška'**
+  String get manualNoteBadge;
 }
 
 class _AppLocalizationsDelegate

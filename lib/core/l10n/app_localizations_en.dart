@@ -3767,4 +3767,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get landlordConfirmedOfflineSuccess =>
       'Landlord successfully confirmed.';
+
+  @override
+  String get addManualNoteBtn => 'Add Note';
+
+  @override
+  String get manualNoteSheetTitle => 'Add Manual Note';
+
+  @override
+  String get manualNoteHint => 'Enter your note about the property...';
+
+  @override
+  String get manualNoteDateLabel => 'Date';
+
+  @override
+  String get manualNoteTextLabel => 'Note Text';
+
+  @override
+  String get manualNoteEmptyError => 'Please enter note text';
+
+  @override
+  String get manualNoteSuccess => 'Note saved successfully';
+
+  @override
+  String get auditFilterAll => 'All';
+
+  @override
+  String get auditFilterSystem => 'System';
+
+  @override
+  String get auditFilterManual => 'Manual Notes';
+
+  @override
+  String get noManualNotesFound => 'No manual notes found.';
+
+  @override
+  String get manualNoteBadge => 'Manual Note';
 }

@@ -3770,4 +3770,40 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get landlordConfirmedOfflineSuccess =>
       'Ev sahibi başarıyla onaylandı.';
+
+  @override
+  String get addManualNoteBtn => 'Not Ekle';
+
+  @override
+  String get manualNoteSheetTitle => 'Manuel Not Ekle';
+
+  @override
+  String get manualNoteHint => 'Mülk ile ilgili notunuzu yazın...';
+
+  @override
+  String get manualNoteDateLabel => 'Tarih';
+
+  @override
+  String get manualNoteTextLabel => 'Not Metni';
+
+  @override
+  String get manualNoteEmptyError => 'Lütfen bir not metni girin';
+
+  @override
+  String get manualNoteSuccess => 'Not başarıyla kaydedildi';
+
+  @override
+  String get auditFilterAll => 'Tümü';
+
+  @override
+  String get auditFilterSystem => 'Sistem';
+
+  @override
+  String get auditFilterManual => 'Manuel Notlar';
+
+  @override
+  String get noManualNotesFound => 'Henüz manuel not bulunmuyor.';
+
+  @override
+  String get manualNoteBadge => 'Manuel Not';
 }

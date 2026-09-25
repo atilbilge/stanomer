@@ -3786,4 +3786,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get landlordConfirmedOfflineSuccess => 'Владелец успешно подтвержден.';
+
+  @override
+  String get addManualNoteBtn => 'Добавить заметку';
+
+  @override
+  String get manualNoteSheetTitle => 'Добавить заметку';
+
+  @override
+  String get manualNoteHint => 'Введите заметку об объекте...';
+
+  @override
+  String get manualNoteDateLabel => 'Дата';
+
+  @override
+  String get manualNoteTextLabel => 'Текст заметки';
+
+  @override
+  String get manualNoteEmptyError => 'Пожалуйста, введите текст заметки';
+
+  @override
+  String get manualNoteSuccess => 'Заметка успешно сохранена';
+
+  @override
+  String get auditFilterAll => 'Все';
+
+  @override
+  String get auditFilterSystem => 'Система';
+
+  @override
+  String get auditFilterManual => 'Ручные заметки';
+
+  @override
+  String get noManualNotesFound => 'Ручных заметок не найдено.';
+
+  @override
+  String get manualNoteBadge => 'Ручная заметка';
 }

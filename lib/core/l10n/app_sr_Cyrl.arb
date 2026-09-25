@@ -1651,5 +1651,17 @@
   "startWithoutInviteConfirmTenant": "Уговор ће се сматрати физички потписаним и план плаћања за 12 месеци биће одмах креиран. Да ли потврђујете?",
   "startWithoutInviteConfirmLandlord": "Сматраће се да је власник физички потврдио и управљање ће одмах постати активно. Да ли потврђујете?",
   "startWithoutInviteSuccess": "Уговор и план плаћања су успешно покренути.",
-  "landlordConfirmedOfflineSuccess": "Власник је успешно потврђен."
+  "landlordConfirmedOfflineSuccess": "Власник је успешно потврђен.",
+  "addManualNoteBtn": "Додај белешку",
+  "manualNoteSheetTitle": "Додај ручну белешку",
+  "manualNoteHint": "Унесите вашу белешку о некретнини...",
+  "manualNoteDateLabel": "Датум",
+  "manualNoteTextLabel": "Текст белешке",
+  "manualNoteEmptyError": "Молимо унесите текст белешке",
+  "manualNoteSuccess": "Белешка је успешно сачувана",
+  "auditFilterAll": "Све",
+  "auditFilterSystem": "Систем",
+  "auditFilterManual": "Ручне белешке",
+  "noManualNotesFound": "Нема ручних белешки.",
+  "manualNoteBadge": "Ручна белешка"
 }

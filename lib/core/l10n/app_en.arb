@@ -1678,5 +1678,17 @@
   "startWithoutInviteConfirmTenant": "The contract will be considered physically signed and the 12-month payment plan will be generated immediately. Do you confirm?",
   "startWithoutInviteConfirmLandlord": "The landlord will be considered physically confirmed and management will become active directly. Do you confirm?",
   "startWithoutInviteSuccess": "Contract and payment plan successfully started.",
-  "landlordConfirmedOfflineSuccess": "Landlord successfully confirmed."
+  "landlordConfirmedOfflineSuccess": "Landlord successfully confirmed.",
+  "addManualNoteBtn": "Add Note",
+  "manualNoteSheetTitle": "Add Manual Note",
+  "manualNoteHint": "Enter your note about the property...",
+  "manualNoteDateLabel": "Date",
+  "manualNoteTextLabel": "Note Text",
+  "manualNoteEmptyError": "Please enter note text",
+  "manualNoteSuccess": "Note saved successfully",
+  "auditFilterAll": "All",
+  "auditFilterSystem": "System",
+  "auditFilterManual": "Manual Notes",
+  "noManualNotesFound": "No manual notes found.",
+  "manualNoteBadge": "Manual Note"
 }

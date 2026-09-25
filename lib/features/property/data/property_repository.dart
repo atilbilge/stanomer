@@ -2718,6 +2718,27 @@ class PropertyRepository {
     );
   }
 
+  Future<void> addManualActivityNote({
+    required String propertyId,
+    required String note,
+    required DateTime date,
+  }) async {
+    final user = _client.auth.currentUser;
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+    final logDate = isToday ? now : DateTime(date.year, date.month, date.day, now.hour, now.minute, now.second);
+
+    await _client.from('activity_logs').insert({
+      'property_id': propertyId,
+      'user_id': user?.id,
+      'type': 'manual_note',
+      'metadata': {
+        'note': note.trim(),
+      },
+      'created_at': logDate.toUtc().toIso8601String(),
+    });
+  }
+
   Future<void> _logActivity(String propertyId, String type, Map<String, dynamic> metadata) async {
     final user = _client.auth.currentUser;
     await _client.from('activity_logs').insert({

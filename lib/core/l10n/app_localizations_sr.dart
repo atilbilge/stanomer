@@ -3764,6 +3764,42 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get landlordConfirmedOfflineSuccess => 'Vlasnik je uspešno potvrđen.';
+
+  @override
+  String get addManualNoteBtn => 'Dodaj belešku';
+
+  @override
+  String get manualNoteSheetTitle => 'Dodaj ručnu belešku';
+
+  @override
+  String get manualNoteHint => 'Unesite vašu belešku o nekretnini...';
+
+  @override
+  String get manualNoteDateLabel => 'Datum';
+
+  @override
+  String get manualNoteTextLabel => 'Tekst beleške';
+
+  @override
+  String get manualNoteEmptyError => 'Molimo unesite tekst beleške';
+
+  @override
+  String get manualNoteSuccess => 'Beleška je uspešno sačuvana';
+
+  @override
+  String get auditFilterAll => 'Sve';
+
+  @override
+  String get auditFilterSystem => 'Sistem';
+
+  @override
+  String get auditFilterManual => 'Ručne beleške';
+
+  @override
+  String get noManualNotesFound => 'Nema ručnih beleški.';
+
+  @override
+  String get manualNoteBadge => 'Ručna beleška';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -7528,4 +7564,40 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get landlordConfirmedOfflineSuccess => 'Власник је успешно потврђен.';
+
+  @override
+  String get addManualNoteBtn => 'Додај белешку';
+
+  @override
+  String get manualNoteSheetTitle => 'Додај ручну белешку';
+
+  @override
+  String get manualNoteHint => 'Унесите вашу белешку о некретнини...';
+
+  @override
+  String get manualNoteDateLabel => 'Датум';
+
+  @override
+  String get manualNoteTextLabel => 'Текст белешке';
+
+  @override
+  String get manualNoteEmptyError => 'Молимо унесите текст белешке';
+
+  @override
+  String get manualNoteSuccess => 'Белешка је успешно сачувана';
+
+  @override
+  String get auditFilterAll => 'Све';
+
+  @override
+  String get auditFilterSystem => 'Систем';
+
+  @override
+  String get auditFilterManual => 'Ручне белешке';
+
+  @override
+  String get noManualNotesFound => 'Нема ручних белешки.';
+
+  @override
+  String get manualNoteBadge => 'Ручна белешка';
 }

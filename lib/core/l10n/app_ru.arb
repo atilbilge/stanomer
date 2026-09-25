@@ -1651,5 +1651,17 @@
   "startWithoutInviteConfirmTenant": "Договор будет считаться физически подписанным, а план выплат на 12 месяцев будет сформирован немедленно. Подтверждаете?",
   "startWithoutInviteConfirmLandlord": "Будет считаться, что владелец физически подтвердил, и управление станет активным сразу. Подтверждаете?",
   "startWithoutInviteSuccess": "Договор и план выплат успешно запущены.",
-  "landlordConfirmedOfflineSuccess": "Владелец успешно подтвержден."
+  "landlordConfirmedOfflineSuccess": "Владелец успешно подтвержден.",
+  "addManualNoteBtn": "Добавить заметку",
+  "manualNoteSheetTitle": "Добавить заметку",
+  "manualNoteHint": "Введите заметку об объекте...",
+  "manualNoteDateLabel": "Дата",
+  "manualNoteTextLabel": "Текст заметки",
+  "manualNoteEmptyError": "Пожалуйста, введите текст заметки",
+  "manualNoteSuccess": "Заметка успешно сохранена",
+  "auditFilterAll": "Все",
+  "auditFilterSystem": "Система",
+  "auditFilterManual": "Ручные заметки",
+  "noManualNotesFound": "Ручных заметок не найдено.",
+  "manualNoteBadge": "Ручная заметка"
 }

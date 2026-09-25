@@ -1678,5 +1678,17 @@
   "startWithoutInviteConfirmTenant": "Sözleşme fiziki olarak yapıldı kabul edilecek ve 12 aylık ödeme planı hemen oluşturulacaktır. Onaylıyor musunuz?",
   "startWithoutInviteConfirmLandlord": "Ev sahibi fiziki olarak onayladı kabul edilecek ve yönetim doğrudan aktifleşecektir. Onaylıyor musunuz?",
   "startWithoutInviteSuccess": "Sözleşme ve ödeme planı başarıyla başlatıldı.",
-  "landlordConfirmedOfflineSuccess": "Ev sahibi başarıyla onaylandı."
+  "landlordConfirmedOfflineSuccess": "Ev sahibi başarıyla onaylandı.",
+  "addManualNoteBtn": "Not Ekle",
+  "manualNoteSheetTitle": "Manuel Not Ekle",
+  "manualNoteHint": "Mülk ile ilgili notunuzu yazın...",
+  "manualNoteDateLabel": "Tarih",
+  "manualNoteTextLabel": "Not Metni",
+  "manualNoteEmptyError": "Lütfen bir not metni girin",
+  "manualNoteSuccess": "Not başarıyla kaydedildi",
+  "auditFilterAll": "Tümü",
+  "auditFilterSystem": "Sistem",
+  "auditFilterManual": "Manuel Notlar",
+  "noManualNotesFound": "Henüz manuel not bulunmuyor.",
+  "manualNoteBadge": "Manuel Not"
 }

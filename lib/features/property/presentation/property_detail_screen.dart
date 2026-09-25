@@ -605,112 +605,609 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
   }
 }
 
-class _ActivityTab extends ConsumerWidget {
+class _ActivityTab extends ConsumerStatefulWidget {
   final Property property;
   final bool isSidebar;
   const _ActivityTab({required this.property, this.isSidebar = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ActivityTab> createState() => _ActivityTabState();
+}
+
+class _ActivityTabState extends ConsumerState<_ActivityTab> {
+  int _selectedFilter = 0; // 0: All, 1: System, 2: Manual
+
+  void _showAddNoteSheet(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final activitiesAsync = ref.watch(activityLogsProvider(property.id));
+    final roleColor = ref.read(propertyAgencyColorSchemeProvider(widget.property)).primary;
+    DateTime selectedDate = DateTime.now();
+    final noteController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final formattedDate = DateFormat('dd MMMM yyyy', loc.localeName).format(selectedDate);
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(LucideIcons.stickyNote, size: 20, color: roleColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              loc.manualNoteSheetTitle,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: StanomerColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.x, size: 20),
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      loc.manualNoteDateLabel,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: StanomerColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100),
+                          builder: (ctx, child) {
+                            return Theme(
+                              data: Theme.of(ctx).copyWith(
+                                colorScheme: Theme.of(ctx).colorScheme.copyWith(primary: roleColor),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          setSheetState(() {
+                            selectedDate = picked;
+                          });
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.calendar, size: 16, color: roleColor),
+                            const SizedBox(width: 10),
+                            Text(
+                              formattedDate,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: StanomerColors.textPrimary,
+                              ),
+                            ),
+                            const Spacer(),
+                            const Icon(LucideIcons.chevronDown, size: 16, color: StanomerColors.textTertiary),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      loc.manualNoteTextLabel,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: StanomerColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: noteController,
+                      maxLines: 4,
+                      minLines: 3,
+                      autofocus: true,
+                      style: const TextStyle(fontSize: 14, color: StanomerColors.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: loc.manualNoteHint,
+                        hintStyle: const TextStyle(fontSize: 13, color: StanomerColors.textTertiary),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.all(12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: roleColor, width: 1.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 46,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: roleColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                final text = noteController.text.trim();
+                                if (text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(loc.manualNoteEmptyError),
+                                      backgroundColor: StanomerColors.alertPrimary,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                setSheetState(() => isSubmitting = true);
+                                try {
+                                  await ref.read(propertyRepositoryProvider).addManualActivityNote(
+                                        propertyId: widget.property.id,
+                                        note: text,
+                                        date: selectedDate,
+                                      );
+                                  if (sheetContext.mounted) {
+                                    Navigator.of(sheetContext).pop();
+                                  }
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(loc.manualNoteSuccess),
+                                        backgroundColor: StanomerColors.successPrimary,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (sheetContext.mounted) {
+                                    setSheetState(() => isSubmitting = false);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Hata: $e'),
+                                        backgroundColor: StanomerColors.alertPrimary,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : Text(
+                                loc.save,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterChip(int index, String label, int count, Color activeColor) {
+    final isSelected = _selectedFilter == index;
+    return InkWell(
+      onTap: () {
+        if (_selectedFilter != index) {
+          setState(() => _selectedFilter = index);
+        }
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.12) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? activeColor : const Color(0xFFCBD5E1),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? activeColor : StanomerColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : StanomerColors.textTertiary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getActorName(ActivityLog log, AppLocalizations loc, String? agencyName) {
+    final isLandlordActor = log.userId == widget.property.landlordId;
+    final isTenantActor = log.userId == widget.property.tenantId;
+    final isAgencyActor = (widget.property.agencyId != null && log.userId == widget.property.agencyId) ||
+        (!isLandlordActor && !isTenantActor && log.userId != null);
+
+    final landlordName = widget.property.landlordName ?? loc.landlord;
+    final tenantName = widget.property.tenantName ?? loc.tenant;
+    final resolvedAgencyName = agencyName ?? loc.agencyRole;
+    return isAgencyActor
+        ? resolvedAgencyName
+        : isLandlordActor
+            ? landlordName
+            : isTenantActor
+                ? tenantName
+                : loc.systemActor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final activitiesAsync = ref.watch(activityLogsProvider(widget.property.id));
     final brandingState = ref.watch(agencyBrandingProvider);
     final agencyName = brandingState.appTitle.isNotEmpty && brandingState.appTitle != 'Stanomer'
         ? brandingState.appTitle
         : null;
+    final roleColor = ref.watch(propertyAgencyColorSchemeProvider(widget.property)).primary;
 
     return activitiesAsync.when(
       data: (activities) {
-        if (activities.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(LucideIcons.history, size: 44, color: StanomerColors.textTertiary),
-                  const SizedBox(height: 14),
-                  Text(
-                    loc.noActivityLogs,
-                    style: const TextStyle(color: StanomerColors.textSecondary, fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
         // Sort reverse chronological: newest first
         final sortedActivities = List<ActivityLog>.from(activities)
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-        return ListView.separated(
-          padding: EdgeInsets.all(isSidebar ? 16 : 24),
-          itemCount: sortedActivities.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final log = sortedActivities[index];
-            final date = DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(log.createdAt.toLocal());
-            final desc = formatActivityLogDescription(
-              log: log,
-              property: property,
-              loc: loc,
-              agencyName: agencyName,
-            );
+        final allCount = sortedActivities.length;
+        final systemCount = sortedActivities.where((l) => l.type != 'manual_note').length;
+        final manualCount = sortedActivities.where((l) => l.type == 'manual_note').length;
 
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+        final filteredActivities = sortedActivities.where((l) {
+          if (_selectedFilter == 1) return l.type != 'manual_note';
+          if (_selectedFilter == 2) return l.type == 'manual_note';
+          return true;
+        }).toList();
+
+        return Column(
+          children: [
+            // Action & Filter Bar
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.isSidebar ? 12 : 20,
+                vertical: 8,
+              ),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 2),
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(LucideIcons.history, size: 14, color: StanomerColors.brandPrimary),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          desc,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: StanomerColors.textPrimary,
-                            height: 1.3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(LucideIcons.clock, size: 11, color: StanomerColors.textTertiary),
-                            const SizedBox(width: 4),
-                            Text(
-                              date,
-                              style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip(0, loc.auditFilterAll, allCount, roleColor),
+                          const SizedBox(width: 6),
+                          _buildFilterChip(1, loc.auditFilterSystem, systemCount, roleColor),
+                          const SizedBox(width: 6),
+                          _buildFilterChip(2, loc.auditFilterManual, manualCount, roleColor),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => _showAddNoteSheet(context),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: roleColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(LucideIcons.plus, size: 14, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            loc.addManualNoteBtn,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
-            );
-          },
+            ),
+
+            // Content List
+            Expanded(
+              child: filteredActivities.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _selectedFilter == 2
+                                  ? LucideIcons.stickyNote
+                                  : LucideIcons.history,
+                              size: 44,
+                              color: StanomerColors.textTertiary,
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              _selectedFilter == 2
+                                  ? loc.noManualNotesFound
+                                  : loc.noActivityLogs,
+                              style: const TextStyle(
+                                color: StanomerColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (_selectedFilter == 2) ...[
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: () => _showAddNoteSheet(context),
+                                icon: const Icon(LucideIcons.plus, size: 14),
+                                label: Text(loc.addManualNoteBtn),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: roleColor,
+                                  side: BorderSide(color: roleColor),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: EdgeInsets.all(widget.isSidebar ? 14 : 20),
+                      itemCount: filteredActivities.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final log = filteredActivities[index];
+                        final isManual = log.type == 'manual_note';
+                        final date = DateFormat('dd MMM yyyy, HH:mm', loc.localeName).format(log.createdAt.toLocal());
+                        final desc = formatActivityLogDescription(
+                          log: log,
+                          property: widget.property,
+                          loc: loc,
+                          agencyName: agencyName,
+                        );
+                        final actorName = _getActorName(log, loc, agencyName);
+
+                        if (isManual) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFDF8),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 2),
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF3C7),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(LucideIcons.stickyNote, size: 14, color: Color(0xFFD97706)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFEF3C7),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              loc.manualNoteBadge,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFFB45309),
+                                              ),
+                                            ),
+                                          ),
+                                          if (actorName != loc.systemActor) ...[
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              actorName,
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: StanomerColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        desc,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: StanomerColors.textPrimary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(LucideIcons.clock, size: 11, color: StanomerColors.textTertiary),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            date,
+                                            style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 2),
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: StanomerColors.brandPrimary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(LucideIcons.history, size: 14, color: StanomerColors.brandPrimary),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      desc,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: StanomerColors.textPrimary,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(LucideIcons.clock, size: 11, color: StanomerColors.textTertiary),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          date,
+                                          style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -11055,6 +11552,9 @@ String formatActivityLogDescription({
       return loc.auditMaintenanceChargeSettled(actorName);
     case 'maintenance_deleted':
       return loc.auditMaintenanceDeleted(actorName);
+    case 'manual_note':
+      final note = log.metadata['note']?.toString() ?? '';
+      return note.isNotEmpty ? note : loc.manualNoteBadge;
     default:
       return log.type;
   }
