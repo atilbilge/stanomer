@@ -1220,6 +1220,15 @@ BEGIN
   SELECT * INTO v_active_contract
   FROM contracts
   WHERE property_id = p_property_id AND status = 'active'
+    AND (start_date IS NULL OR start_date <= CURRENT_DATE)
+  ORDER BY 
+    CASE 
+      WHEN start_date <= CURRENT_DATE AND (end_date IS NULL OR end_date >= CURRENT_DATE) THEN 1
+      WHEN start_date <= CURRENT_DATE THEN 2
+      ELSE 3
+    END,
+    start_date DESC NULLS LAST,
+    updated_at DESC
   LIMIT 1;
 
   IF NOT FOUND THEN

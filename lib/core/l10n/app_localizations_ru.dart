@@ -3822,4 +3822,61 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get manualNoteBadge => 'Ручная заметка';
+
+  @override
+  String get renew => 'Продлить';
+
+  @override
+  String get renewContract => 'Продлить договор';
+
+  @override
+  String get renewalPeriod => 'Новый период договора';
+
+  @override
+  String get rentIncreaseRate => 'Ставка повышения (%)';
+
+  @override
+  String get newRentAmount => 'Новая арендная плата';
+
+  @override
+  String get agencyRenewalNotice =>
+      'Как агентство, этот договор считается подтвержденным и вступит в силу в начале нового периода.';
+
+  @override
+  String get landlordRenewalNotice =>
+      'Новый договор будет отправлен арендатору на цифровое согласование.';
+
+  @override
+  String get sendRenewalProposal => 'Отправить предложение о продлении';
+
+  @override
+  String get confirmRenewal => 'Продлить договор';
+
+  @override
+  String get upcomingContract => 'Договор на следующий период';
+
+  @override
+  String get renewalProposalWaitingApproval => 'Ожидает одобрения арендатора';
+
+  @override
+  String get tenantRenewalPrompt =>
+      'Арендодатель предложил продление договора аренды на следующий период.';
+
+  @override
+  String get contractRenewedSuccess => 'Договор успешно продлен.';
+
+  @override
+  String get renewalProposalSentSuccess =>
+      'Предложение о продлении отправлено арендатору.';
+
+  @override
+  String get upcomingContractReadyNotice =>
+      'Договор на новый период подтвержден и вступит в силу с даты начала.';
+
+  @override
+  String get contractRenewalAccepted => 'Договор на новый период утвержден.';
+
+  @override
+  String get contractRenewalDeclined =>
+      'Предложение о новом договоре отклонено.';
 }

@@ -3806,4 +3806,61 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get manualNoteBadge => 'Manuel Not';
+
+  @override
+  String get renew => 'Yenile';
+
+  @override
+  String get renewContract => 'Sözleşmeyi Yenile';
+
+  @override
+  String get renewalPeriod => 'Yeni Sözleşme Dönemi';
+
+  @override
+  String get rentIncreaseRate => 'Artış Oranı (%)';
+
+  @override
+  String get newRentAmount => 'Yeni Kira Bedeli';
+
+  @override
+  String get agencyRenewalNotice =>
+      'Acente olarak yenilediğiniz sözleşme doğrudan onaylanmış sayılır ve yeni dönem başında yürürlüğe girer.';
+
+  @override
+  String get landlordRenewalNotice =>
+      'Oluşturulan yeni sözleşme kiracınızın dijital onayına sunulacaktır.';
+
+  @override
+  String get sendRenewalProposal => 'Yenileme Teklifi Gönder';
+
+  @override
+  String get confirmRenewal => 'Sözleşmeyi Yenile';
+
+  @override
+  String get upcomingContract => 'Gelecek Dönem Sözleşmesi';
+
+  @override
+  String get renewalProposalWaitingApproval => 'Kiracı Onayı Bekleniyor';
+
+  @override
+  String get tenantRenewalPrompt =>
+      'Ev sahibiniz yeni dönem için kira sözleşmesi teklifinde bulundu.';
+
+  @override
+  String get contractRenewedSuccess => 'Sözleşme başarıyla yenilendi.';
+
+  @override
+  String get renewalProposalSentSuccess =>
+      'Yenileme teklifi kiracıya iletildi.';
+
+  @override
+  String get upcomingContractReadyNotice =>
+      'Yeni dönem sözleşmeniz onaylanmıştır ve başlangıç tarihinde yürürlüğe girecektir.';
+
+  @override
+  String get contractRenewalAccepted => 'Yeni dönem sözleşmesi onaylandı.';
+
+  @override
+  String get contractRenewalDeclined =>
+      'Yeni dönem sözleşme teklifi reddedildi.';
 }

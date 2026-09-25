@@ -1663,5 +1663,22 @@
   "auditFilterSystem": "Систем",
   "auditFilterManual": "Ручне белешке",
   "noManualNotesFound": "Нема ручних белешки.",
-  "manualNoteBadge": "Ручна белешка"
+  "manualNoteBadge": "Ручна белешка",
+  "renew": "Обнови",
+  "renewContract": "Обнови уговор",
+  "renewalPeriod": "Нови период уговора",
+  "rentIncreaseRate": "Стопа повећања (%)",
+  "newRentAmount": "Нови износ закупнине",
+  "agencyRenewalNotice": "Као агенција, обновљени уговор се директно потврђује и ступа на снагу на почетку новог периода.",
+  "landlordRenewalNotice": "Нови креирани уговор биће послат на дигитално одобрење закупцу.",
+  "sendRenewalProposal": "Пошаљи предлог обнове",
+  "confirmRenewal": "Обнови уговор",
+  "upcomingContract": "Уговор за наредни период",
+  "renewalProposalWaitingApproval": "Чека одобрење закупца",
+  "tenantRenewalPrompt": "Ваш станодавац је предложио обнову уговора о закупу за наредни период.",
+  "contractRenewedSuccess": "Уговор је успешно обновљен.",
+  "renewalProposalSentSuccess": "Предлог обнове је послат закупцу.",
+  "upcomingContractReadyNotice": "Уговор за нови период је потврђен и ступа на снагу на дан почетка.",
+  "contractRenewalAccepted": "Уговор за нови период је одобрен.",
+  "contractRenewalDeclined": "Предлог уговора за нови период је одбијен."
 }

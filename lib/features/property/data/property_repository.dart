@@ -137,6 +137,11 @@ final activeContractProvider = StreamProvider.autoDispose.family<Contract?, Stri
   return repo.getActiveContractStream(propertyId);
 });
 
+final upcomingContractProvider = StreamProvider.autoDispose.family<Contract?, String>((ref, propertyId) {
+  final repo = ref.watch(propertyRepositoryProvider);
+  return repo.getUpcomingContractStream(propertyId);
+});
+
 /// Real-time stream of proposed_changes for a contract.
 final contractProposalProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, contractId) {
   final repo = ref.watch(propertyRepositoryProvider);
@@ -1780,6 +1785,156 @@ class PropertyRepository {
     }
   }
 
+  Future<Contract> renewContract({
+    required Contract currentContract,
+    required DateTime newStartDate,
+    required DateTime newEndDate,
+    required double newMonthlyRent,
+    double? newDepositAmount,
+    required bool isAgency,
+    List<ExpenseItem>? expensesConfig,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    final token = DateTime.now().millisecondsSinceEpoch.toString();
+    final initialStatus = isAgency ? 'active' : 'pending';
+
+    final Map<String, dynamic> insertPayload = {
+      'property_id': currentContract.propertyId,
+      'landlord_id': currentContract.landlordId,
+      'tenant_id': currentContract.tenantId,
+      'agency_id': currentContract.agencyId ?? (isAgency ? user.id : null),
+      'inviter_name': currentContract.inviterName,
+      'invitee_email': currentContract.inviteeEmail,
+      'monthly_rent': newMonthlyRent,
+      'deposit_amount': newDepositAmount ?? currentContract.depositAmount,
+      'currency': currentContract.currency,
+      'deposit_currency': currentContract.depositCurrency,
+      'due_day': currentContract.dueDay,
+      'start_date': newStartDate.toIso8601String(),
+      'end_date': newEndDate.toIso8601String(),
+      'tax_type': currentContract.taxType.name,
+      'expenses_config': (expensesConfig ?? currentContract.expensesConfig).map((e) => e.toJson()).toList(),
+      'contract_url': currentContract.contractUrl,
+      'token': token,
+      'status': initialStatus,
+      'tenant_name': currentContract.tenantName,
+      'tenant_id_number': currentContract.tenantIdNumber,
+      'tenant_phone': currentContract.tenantPhone,
+      'tenant_notes': currentContract.tenantNotes,
+      'tenant_id_document_url': currentContract.tenantIdDocumentUrl,
+      'tenant_secondary_contacts': currentContract.tenantSecondaryContacts.map((c) => c.toJson()).toList(),
+    };
+
+    final data = await _client.from('contracts').insert(insertPayload).select().single();
+    final renewedContract = Contract.fromJson(data);
+
+    // Activity log
+    final logType = isAgency ? 'contract_renewed_by_agency' : 'contract_renewal_proposed_by_landlord';
+    try {
+      await _logActivity(currentContract.propertyId, logType, {
+        'contract_id': renewedContract.id,
+        'previous_contract_id': currentContract.id,
+        'new_start_date': newStartDate.toIso8601String(),
+        'new_end_date': newEndDate.toIso8601String(),
+        'new_monthly_rent': newMonthlyRent,
+        'is_agency': isAgency,
+      });
+    } catch (e) {
+      debugPrint('Silent log activity failure: $e');
+    }
+
+    // Notification to tenant
+    try {
+      final property = await _client
+          .from('properties')
+          .select('name, address, title')
+          .eq('id', currentContract.propertyId)
+          .maybeSingle();
+      final propName = property?['name'] ?? property?['title'] ?? property?['address'] ?? 'Mülk';
+
+      if (currentContract.tenantId != null) {
+        if (isAgency) {
+          await _createNotification(
+            userId: currentContract.tenantId!,
+            title: 'Kira Sözleşmeniz Yenilendi',
+            body: '$propName için yeni dönem sözleşmeniz acente tarafından oluşturuldu.',
+            type: 'contract',
+            relatedId: currentContract.propertyId,
+          );
+        } else {
+          await _createNotification(
+            userId: currentContract.tenantId!,
+            title: 'Yeni Dönem Sözleşme Teklifi',
+            body: '$propName için ev sahibiniz yeni dönem sözleşmesi teklif etti. Lütfen onaylayın.',
+            type: 'contract',
+            relatedId: currentContract.propertyId,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Silent notification failure: $e');
+    }
+
+    return renewedContract;
+  }
+
+  Future<void> acceptRenewedContract(String contractId, String propertyId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    await _client.from('contracts').update({
+      'status': 'active',
+      'tenant_id': user.id,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', contractId);
+
+    try {
+      await _logActivity(propertyId, 'contract_renewal_accepted', {
+        'contract_id': contractId,
+        'accepted_by': user.id,
+      });
+    } catch (_) {}
+
+    try {
+      await _notifyPropertyManagers(
+        propertyId: propertyId,
+        title: 'Yeni Dönem Sözleşmesi Onaylandı',
+        body: 'Kiracı yeni dönem kira sözleşmesini onayladı.',
+        type: 'contract',
+        relatedId: propertyId,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> declineRenewedContract(String contractId, String propertyId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    await _client.from('contracts').update({
+      'status': 'declined',
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', contractId);
+
+    try {
+      await _logActivity(propertyId, 'contract_renewal_declined', {
+        'contract_id': contractId,
+        'declined_by': user.id,
+      });
+    } catch (_) {}
+
+    try {
+      await _notifyPropertyManagers(
+        propertyId: propertyId,
+        title: 'Yeni Dönem Sözleşme Teklifi Reddedildi',
+        body: 'Kiracı yeni dönem kira teklifini reddetti.',
+        type: 'contract',
+        relatedId: propertyId,
+      );
+    } catch (_) {}
+  }
+
   Future<List<Contract>> getContractsForProperty(String propertyId) async {
     final response = await _client
         .from('contracts')
@@ -1790,8 +1945,9 @@ class PropertyRepository {
     return (response as List).map((json) => Contract.fromJson(json as Map<String, dynamic>)).toList();
   }
 
-  /// Real-time stream of the active (or revision_requested) contract for a property.
-  /// Uses Supabase realtime so all connected clients receive push updates.
+  /// Real-time stream of the currently effective contract for a property.
+  /// If multiple contracts exist (e.g. current + renewed future contract),
+  /// this resolves to the contract whose date covers today.
   Stream<Contract?> getActiveContractStream(String propertyId) {
     return resilientStream(
       () => _client
@@ -1801,19 +1957,98 @@ class PropertyRepository {
           .cast<dynamic>()
           .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
           .map((rows) {
-            final relevant = rows.where((r) {
-              final status = r['status'] as String?;
-              return status == 'active' || status == 'revision_requested' || status == 'termination_requested' || status == 'inactive' || status == 'pending' || status == 'negotiating';
+            final contracts = rows
+                .map((json) => Contract.fromJson(json))
+                .where((c) => c.status != ContractStatus.declined)
+                .toList();
+            if (contracts.isEmpty) return null;
+
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+
+            // 1. Check contracts that cover today (startDate <= today && (endDate == null || endDate >= today))
+            final currentCoverage = contracts.where((c) {
+              final startsInPastOrToday = c.startDate == null || 
+                  !DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day).isAfter(today);
+              final endsInFutureOrToday = c.endDate == null || 
+                  !DateTime(c.endDate!.year, c.endDate!.month, c.endDate!.day).isBefore(today);
+              return startsInPastOrToday && endsInFutureOrToday &&
+                  (c.status == ContractStatus.active || 
+                   c.status == ContractStatus.revisionRequested || 
+                   c.status == ContractStatus.terminationRequested ||
+                   c.status == ContractStatus.inactive);
             }).toList();
-            if (relevant.isEmpty) return null;
-            relevant.sort((a, b) {
-              final aTime = a['updated_at'] as String? ?? '';
-              final bTime = b['updated_at'] as String? ?? '';
+
+            if (currentCoverage.isNotEmpty) {
+              currentCoverage.sort((a, b) {
+                if (a.startDate != null && b.startDate != null) {
+                  final cmp = b.startDate!.compareTo(a.startDate!);
+                  if (cmp != 0) return cmp;
+                }
+                final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+                final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
+                return bTime.compareTo(aTime);
+              });
+              return currentCoverage.first;
+            }
+
+            // 2. If no contract covers today, prefer contracts that started in the past or today
+            final pastOrCurrent = contracts.where((c) {
+              return c.startDate == null || 
+                  !DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day).isAfter(today);
+            }).toList();
+
+            if (pastOrCurrent.isNotEmpty) {
+              pastOrCurrent.sort((a, b) {
+                final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+                final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
+                return bTime.compareTo(aTime);
+              });
+              return pastOrCurrent.first;
+            }
+
+            // 3. Fallback: only future contracts exist
+            contracts.sort((a, b) {
+              final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+              final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
               return bTime.compareTo(aTime);
             });
-            return Contract.fromJson(relevant.first as Map<String, dynamic>);
+            return contracts.first;
           }),
       debugName: 'getActiveContractStream($propertyId)',
+    );
+  }
+
+  /// Real-time stream of upcoming/renewed contracts starting in the future.
+  Stream<Contract?> getUpcomingContractStream(String propertyId) {
+    return resilientStream(
+      () => _client
+          .from('contracts')
+          .stream(primaryKey: ['id'])
+          .eq('property_id', propertyId)
+          .cast<dynamic>()
+          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+          .map((rows) {
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+            final upcoming = rows
+                .map((json) => Contract.fromJson(json))
+                .where((c) {
+                  if (c.status == ContractStatus.declined || c.status == ContractStatus.expired) {
+                    return false;
+                  }
+                  if (c.startDate == null) return false;
+                  final start = DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day);
+                  return start.isAfter(today);
+                })
+                .toList();
+
+            if (upcoming.isEmpty) return null;
+            // Sort by earliest upcoming start date
+            upcoming.sort((a, b) => a.startDate!.compareTo(b.startDate!));
+            return upcoming.first;
+          }),
+      debugName: 'getUpcomingContractStream($propertyId)',
     );
   }
 
@@ -1824,11 +2059,26 @@ class PropertyRepository {
         .select()
         .eq('property_id', propertyId)
         .filter('status', 'in', '(active,revision_requested,termination_requested,inactive,pending,negotiating)')
-        .order('updated_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
-    if (response == null) return null;
-    return Contract.fromJson(response);
+        .order('updated_at', ascending: false);
+    final list = (response as List).map((json) => Contract.fromJson(json as Map<String, dynamic>)).toList();
+    if (list.isEmpty) return null;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final currentCoverage = list.where((c) {
+      final startsInPastOrToday = c.startDate == null || 
+          !DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day).isAfter(today);
+      final endsInFutureOrToday = c.endDate == null || 
+          !DateTime(c.endDate!.year, c.endDate!.month, c.endDate!.day).isBefore(today);
+      return startsInPastOrToday && endsInFutureOrToday &&
+          (c.status == ContractStatus.active || 
+           c.status == ContractStatus.revisionRequested || 
+           c.status == ContractStatus.terminationRequested ||
+           c.status == ContractStatus.inactive);
+    }).toList();
+
+    if (currentCoverage.isNotEmpty) return currentCoverage.first;
+    return list.first;
   }
 
   /// Real-time stream of proposed_changes for a specific contract.

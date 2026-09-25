@@ -1579,6 +1579,30 @@ class _OverviewTab extends ConsumerWidget {
     );
   }
 
+  void _showRenewContractSheet(
+    BuildContext context, 
+    WidgetRef ref, 
+    Contract currentContract, 
+    Property liveProperty, {
+    required bool isAgency,
+    required Color roleColor,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => ResilientBottomSheetWrapper(
+        child: _RenewContractSheet(
+          currentContract: currentContract,
+          property: liveProperty,
+          isAgency: isAgency,
+          roleColor: roleColor,
+        ),
+      ),
+    );
+  }
+
   void _showContractDetailsSheet(BuildContext context, WidgetRef ref, Contract contract, String resolvedLandlordName, String resolvedTenantName, bool isTenant, bool isLandlord) {
     final loc = AppLocalizations.of(context)!;
     final roleColor = ref.read(propertyAgencyColorSchemeProvider(property)).primary;
@@ -1833,6 +1857,7 @@ class _OverviewTab extends ConsumerWidget {
     final propertyAsync = ref.watch(propertyProvider(property.id));
     final activeContractAsync = ref.watch(activeContractProvider(property.id));
     final contractsAsync = ref.watch(propertyContractsProvider(property.id));
+    final upcomingContractAsync = ref.watch(upcomingContractProvider(property.id));
     
     return propertyAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -1906,6 +1931,9 @@ class _OverviewTab extends ConsumerWidget {
             final resolvedLandlordEmail = landlordProfileAsync.value?['email'] ?? '';
             final resolvedTenantEmail = tenantProfileAsync.value?['email'] ?? activeContract?.inviteeEmail ?? '';
 
+            final upcomingContract = upcomingContractAsync.value;
+            final hasUpcoming = upcomingContract != null && (activeContract == null || upcomingContract.id != activeContract.id);
+
             return ListView(
               padding: EdgeInsets.all(isSidebar ? 16 : 24),
               children: [
@@ -1964,8 +1992,32 @@ class _OverviewTab extends ConsumerWidget {
                       ),
                     ),
                   ),
+                ],
 
-                  // ── Contract Info Card ─────────────────────────────────
+                // ── Gelecek Dönem Sözleşmesi Kartı ─────────────────────
+                if (hasUpcoming && upcomingContract != null) ...[
+                  const SizedBox(height: 16),
+                  _UpcomingContractCard(
+                    upcomingContract: upcomingContract,
+                    property: liveProperty,
+                    isTenant: effectiveIsTenant,
+                    isLandlord: effectiveIsLandlord,
+                    isAgencyManager: isAgencyManager,
+                    roleColor: roleColor,
+                    onViewDetails: () => _showContractDetailsSheet(
+                      context, 
+                      ref, 
+                      upcomingContract, 
+                      resolvedLandlordName, 
+                      resolvedTenantName, 
+                      effectiveIsTenant, 
+                      effectiveIsLandlord,
+                    ),
+                  ),
+                ],
+
+                // ── Contract Info Card ─────────────────────────────────
+                if (activeContract != null) ...[
                   const SizedBox(height: 16),
                   Card(
                     clipBehavior: Clip.antiAlias,
@@ -1985,11 +2037,49 @@ class _OverviewTab extends ConsumerWidget {
                           _InfoRow(icon: LucideIcons.user, label: loc.tenant, value: resolvedTenantName, iconColor: roleColor),
                           
                         const Divider(height: 1, indent: 20, endIndent: 20),
-                        _InfoRow(icon: LucideIcons.calendar, label: activeContract.status == ContractStatus.inactive ? loc.terminationDate : loc.term,
+                        _InfoRow(
+                          icon: LucideIcons.calendar, 
+                          label: activeContract.status == ContractStatus.inactive ? loc.terminationDate : loc.term,
                           value: activeContract.status == ContractStatus.inactive 
                             ? (activeContract.endDate != null ? DateFormat('dd/MM/yyyy').format(activeContract.endDate!) : '-')
                             : '${activeContract.startDate != null ? DateFormat('dd/MM/yy').format(activeContract.startDate!) : '?'} – ${activeContract.endDate != null ? DateFormat('dd/MM/yy').format(activeContract.endDate!) : '?'}',
                           iconColor: roleColor,
+                          trailingAction: (effectiveIsLandlord || isAgencyManager) && activeContract.status != ContractStatus.inactive && !hasUpcoming
+                            ? InkWell(
+                                onTap: () => _showRenewContractSheet(
+                                  context, 
+                                  ref, 
+                                  activeContract, 
+                                  liveProperty, 
+                                  isAgency: isAgencyManager,
+                                  roleColor: roleColor,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: roleColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: roleColor.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(LucideIcons.refreshCw, size: 12, color: roleColor),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        loc.renew, 
+                                        style: TextStyle(
+                                          fontSize: 12, 
+                                          fontWeight: FontWeight.bold, 
+                                          color: roleColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : null,
                         ),
                           
                         const Divider(height: 1, indent: 20, endIndent: 20),
@@ -2819,6 +2909,7 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
   final Color? iconColor;
+  final Widget? trailingAction;
 
   const _InfoRow({
     required this.icon,
@@ -2826,6 +2917,7 @@ class _InfoRow extends StatelessWidget {
     required this.value,
     this.onTap,
     this.iconColor,
+    this.trailingAction,
   });
 
   @override
@@ -2841,6 +2933,10 @@ class _InfoRow extends StatelessWidget {
             Text(label, style: const TextStyle(fontSize: 14, color: StanomerColors.textSecondary)),
             const Spacer(),
             Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: StanomerColors.textPrimary)),
+            if (trailingAction != null) ...[
+              const SizedBox(width: 8),
+              trailingAction!,
+            ],
             if (onTap != null) ...[
               const SizedBox(width: 8),
               const Icon(LucideIcons.chevronRight, size: 14, color: StanomerColors.textTertiary),
@@ -2915,9 +3011,589 @@ class _NavRow extends StatelessWidget {
   }
 }
 
+class _UpcomingContractCard extends ConsumerWidget {
+  final Contract upcomingContract;
+  final Property property;
+  final bool isTenant;
+  final bool isLandlord;
+  final bool isAgencyManager;
+  final Color roleColor;
+  final VoidCallback onViewDetails;
 
+  const _UpcomingContractCard({
+    required this.upcomingContract,
+    required this.property,
+    required this.isTenant,
+    required this.isLandlord,
+    required this.isAgencyManager,
+    required this.roleColor,
+    required this.onViewDetails,
+  });
 
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
+    final isPending = upcomingContract.status == ContractStatus.pending;
+    final accentColor = isPending ? Colors.orange : StanomerColors.successPrimary;
 
+    final startStr = upcomingContract.startDate != null ? DateFormat('dd/MM/yyyy').format(upcomingContract.startDate!) : '-';
+    final endStr = upcomingContract.endDate != null ? DateFormat('dd/MM/yyyy').format(upcomingContract.endDate!) : '-';
+    final rentStr = CurrencyUtils.formatAmount(upcomingContract.monthlyRent, upcomingContract.currency);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1.5),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(isPending ? LucideIcons.fileClock : LucideIcons.calendarCheck, size: 20, color: accentColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  loc.upcomingContract,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: accentColor),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  isPending ? loc.renewalProposalWaitingApproval : loc.statusActive,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: accentColor),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            isPending
+                ? (isTenant ? loc.tenantRenewalPrompt : loc.landlordRenewalNotice)
+                : loc.upcomingContractReadyNotice,
+            style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: StanomerColors.borderDefault),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(LucideIcons.calendar, size: 14, color: StanomerColors.textTertiary),
+                    const SizedBox(width: 6),
+                    Text('$startStr – $endStr', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: StanomerColors.textPrimary)),
+                  ],
+                ),
+                Text(rentStr, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: roleColor)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (isPending && isTenant) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      try {
+                        await ref.read(propertyRepositoryProvider).acceptRenewedContract(upcomingContract.id, property.id);
+                        ref.invalidate(upcomingContractProvider(property.id));
+                        ref.invalidate(activeContractProvider(property.id));
+                        ref.invalidate(propertyContractsProvider(property.id));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.contractRenewalAccepted)));
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                        }
+                      }
+                    },
+                    icon: const Icon(LucideIcons.check, size: 16),
+                    label: Text(loc.confirm),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: StanomerColors.successPrimary,
+                      foregroundColor: Colors.white,
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(loc.decline),
+                          content: Text(loc.tenantRenewalPrompt),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: FilledButton.styleFrom(backgroundColor: StanomerColors.alertPrimary),
+                              child: Text(loc.decline),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm != true) return;
+                      try {
+                        await ref.read(propertyRepositoryProvider).declineRenewedContract(upcomingContract.id, property.id);
+                        ref.invalidate(upcomingContractProvider(property.id));
+                        ref.invalidate(activeContractProvider(property.id));
+                        ref.invalidate(propertyContractsProvider(property.id));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.contractRenewalDeclined)));
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                        }
+                      }
+                    },
+                    icon: const Icon(LucideIcons.x, size: 16),
+                    label: Text(loc.decline),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: StanomerColors.alertPrimary,
+                      side: const BorderSide(color: StanomerColors.alertPrimary),
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: onViewDetails,
+                  child: Text(loc.contractDetails),
+                ),
+              ],
+            ),
+          ] else ...[
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onViewDetails,
+                icon: const Icon(LucideIcons.externalLink, size: 14),
+                label: Text(loc.contractDetails),
+                style: TextButton.styleFrom(
+                  foregroundColor: accentColor,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RenewContractSheet extends ConsumerStatefulWidget {
+  final Contract currentContract;
+  final Property property;
+  final bool isAgency;
+  final Color roleColor;
+
+  const _RenewContractSheet({
+    required this.currentContract,
+    required this.property,
+    required this.isAgency,
+    required this.roleColor,
+  });
+
+  @override
+  ConsumerState<_RenewContractSheet> createState() => _RenewContractSheetState();
+}
+
+class _RenewContractSheetState extends ConsumerState<_RenewContractSheet> {
+  late DateTime _startDate;
+  late DateTime _endDate;
+  late TextEditingController _rentController;
+  late TextEditingController _rateController;
+  bool _isUpdating = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.currentContract.endDate != null) {
+      _startDate = widget.currentContract.endDate!.add(const Duration(days: 1));
+    } else {
+      final now = DateTime.now();
+      _startDate = DateTime(now.year, now.month, now.day + 1);
+    }
+    _endDate = DateTime(_startDate.year + 1, _startDate.month, _startDate.day).subtract(const Duration(days: 1));
+
+    final baseRent = widget.currentContract.monthlyRent;
+    _rentController = TextEditingController(
+      text: baseRent.toStringAsFixed(baseRent.truncateToDouble() == baseRent ? 0 : 2),
+    );
+    _rateController = TextEditingController(text: '0');
+
+    _rateController.addListener(_onRateChanged);
+    _rentController.addListener(_onRentChanged);
+  }
+
+  void _onRateChanged() {
+    if (_isUpdating) return;
+    _isUpdating = true;
+    final rate = double.tryParse(_rateController.text.replaceAll(',', '.')) ?? 0.0;
+    final baseRent = widget.currentContract.monthlyRent;
+    final newRent = (baseRent * (1 + (rate / 100))).roundToDouble();
+    _rentController.text = newRent.toStringAsFixed(newRent.truncateToDouble() == newRent ? 0 : 2);
+    _isUpdating = false;
+  }
+
+  void _onRentChanged() {
+    if (_isUpdating) return;
+    _isUpdating = true;
+    final newRent = double.tryParse(_rentController.text.replaceAll(',', '.')) ?? widget.currentContract.monthlyRent;
+    final baseRent = widget.currentContract.monthlyRent;
+    if (baseRent > 0) {
+      final rate = ((newRent - baseRent) / baseRent) * 100;
+      _rateController.text = rate.toStringAsFixed(rate.truncateToDouble() == rate ? 0 : 1);
+    }
+    _isUpdating = false;
+  }
+
+  @override
+  void dispose() {
+    _rateController.removeListener(_onRateChanged);
+    _rentController.removeListener(_onRentChanged);
+    _rateController.dispose();
+    _rentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2040),
+    );
+    if (picked != null) {
+      setState(() {
+        _startDate = picked;
+        if (!_endDate.isAfter(_startDate)) {
+          _endDate = DateTime(_startDate.year + 1, _startDate.month, _startDate.day).subtract(const Duration(days: 1));
+        }
+      });
+    }
+  }
+
+  Future<void> _pickEndDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate.isAfter(_startDate) ? _endDate : _startDate.add(const Duration(days: 30)),
+      firstDate: _startDate.add(const Duration(days: 1)),
+      lastDate: DateTime(2040),
+    );
+    if (picked != null) {
+      setState(() {
+        _endDate = picked;
+      });
+    }
+  }
+
+  Future<void> _submit() async {
+    final loc = AppLocalizations.of(context)!;
+    final newRent = double.tryParse(_rentController.text.replaceAll(',', '.')) ?? 0.0;
+    if (newRent <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.invalidNumber)));
+      return;
+    }
+    if (!_endDate.isAfter(_startDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.datesMandatory)));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(propertyRepositoryProvider).renewContract(
+        currentContract: widget.currentContract,
+        newStartDate: _startDate,
+        newEndDate: _endDate,
+        newMonthlyRent: newRent,
+        isAgency: widget.isAgency,
+      );
+
+      ref.invalidate(activeContractProvider(widget.property.id));
+      ref.invalidate(upcomingContractProvider(widget.property.id));
+      ref.invalidate(propertyContractsProvider(widget.property.id));
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(widget.isAgency ? loc.contractRenewedSuccess : loc.renewalProposalSentSuccess)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final currency = widget.currentContract.currency;
+    final currentRentStr = CurrencyUtils.formatAmount(widget.currentContract.monthlyRent, currency);
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.82,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: widget.roleColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(LucideIcons.refreshCw, size: 20, color: widget.roleColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loc.renewContract,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+                    ),
+                    Text(
+                      widget.property.name.isNotEmpty
+                          ? widget.property.name
+                          : widget.property.address,
+                      style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Notice banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: widget.isAgency ? widget.roleColor.withValues(alpha: 0.08) : Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: widget.isAgency ? widget.roleColor.withValues(alpha: 0.25) : Colors.amber.shade300,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  widget.isAgency ? LucideIcons.shieldCheck : LucideIcons.info,
+                  size: 18,
+                  color: widget.isAgency ? widget.roleColor : Colors.amber.shade800,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.isAgency ? loc.agencyRenewalNotice : loc.landlordRenewalNotice,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: widget.isAgency ? widget.roleColor : Colors.amber.shade900,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Dates Section
+          Text(
+            loc.renewalPeriod,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: _pickStartDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: StanomerColors.borderDefault),
+                      borderRadius: BorderRadius.circular(12),
+                      color: StanomerColors.bgPage,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(loc.startDate, style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.calendar, size: 14, color: StanomerColors.textTertiary),
+                            const SizedBox(width: 6),
+                            Text(
+                              DateFormat('dd/MM/yyyy').format(_startDate),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: StanomerColors.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: InkWell(
+                  onTap: _pickEndDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: StanomerColors.borderDefault),
+                      borderRadius: BorderRadius.circular(12),
+                      color: StanomerColors.bgPage,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(loc.endDate, style: const TextStyle(fontSize: 11, color: StanomerColors.textSecondary)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.calendar, size: 14, color: StanomerColors.textTertiary),
+                            const SizedBox(width: 6),
+                            Text(
+                              DateFormat('dd/MM/yyyy').format(_endDate),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: StanomerColors.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Rent Section
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: StanomerColors.bgPage,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(loc.monthlyRent, style: const TextStyle(fontSize: 12, color: StanomerColors.textSecondary)),
+                Text(currentRentStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: TextField(
+                  controller: _rateController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: loc.rentIncreaseRate,
+                    suffixText: '%',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 5,
+                child: TextField(
+                  controller: _rentController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: loc.newRentAmount,
+                    suffixText: currency,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          // Action button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: FilledButton(
+              onPressed: _isLoading ? null : _submit,
+              style: FilledButton.styleFrom(
+                backgroundColor: widget.roleColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(
+                      widget.isAgency ? loc.confirmRenewal : loc.sendRenewalProposal,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _ContractTile extends ConsumerWidget {
   final Contract contract;

@@ -3800,6 +3800,62 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get manualNoteBadge => 'Ručna beleška';
+
+  @override
+  String get renew => 'Obnovi';
+
+  @override
+  String get renewContract => 'Obnovi ugovor';
+
+  @override
+  String get renewalPeriod => 'Novi period ugovora';
+
+  @override
+  String get rentIncreaseRate => 'Stopa povećanja (%)';
+
+  @override
+  String get newRentAmount => 'Novi iznos zakupnine';
+
+  @override
+  String get agencyRenewalNotice =>
+      'Kao agencija, obnovljeni ugovor se direktno potvrđuje i stupa na snagu na početku novog perioda.';
+
+  @override
+  String get landlordRenewalNotice =>
+      'Novi kreirani ugovor biće poslat na digitalno odobrenje zakupcu.';
+
+  @override
+  String get sendRenewalProposal => 'Pošalji predlog obnove';
+
+  @override
+  String get confirmRenewal => 'Obnovi ugovor';
+
+  @override
+  String get upcomingContract => 'Ugovor za naredni period';
+
+  @override
+  String get renewalProposalWaitingApproval => 'Čeka odobrenje zakupca';
+
+  @override
+  String get tenantRenewalPrompt =>
+      'Vaš stanodavac je predložio obnovu ugovora o zakupu za naredni period.';
+
+  @override
+  String get contractRenewedSuccess => 'Ugovor je uspešno obnovljen.';
+
+  @override
+  String get renewalProposalSentSuccess => 'Predlog obnove je poslat zakupcu.';
+
+  @override
+  String get upcomingContractReadyNotice =>
+      'Ugovor za novi period je potvrđen i stupa na snagu na dan početka.';
+
+  @override
+  String get contractRenewalAccepted => 'Ugovor za novi period je odobren.';
+
+  @override
+  String get contractRenewalDeclined =>
+      'Predlog ugovora za novi period je odbijen.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -7600,4 +7656,60 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get manualNoteBadge => 'Ручна белешка';
+
+  @override
+  String get renew => 'Обнови';
+
+  @override
+  String get renewContract => 'Обнови уговор';
+
+  @override
+  String get renewalPeriod => 'Нови период уговора';
+
+  @override
+  String get rentIncreaseRate => 'Стопа повећања (%)';
+
+  @override
+  String get newRentAmount => 'Нови износ закупнине';
+
+  @override
+  String get agencyRenewalNotice =>
+      'Као агенција, обновљени уговор се директно потврђује и ступа на снагу на почетку новог периода.';
+
+  @override
+  String get landlordRenewalNotice =>
+      'Нови креирани уговор биће послат на дигитално одобрење закупцу.';
+
+  @override
+  String get sendRenewalProposal => 'Пошаљи предлог обнове';
+
+  @override
+  String get confirmRenewal => 'Обнови уговор';
+
+  @override
+  String get upcomingContract => 'Уговор за наредни период';
+
+  @override
+  String get renewalProposalWaitingApproval => 'Чека одобрење закупца';
+
+  @override
+  String get tenantRenewalPrompt =>
+      'Ваш станодавац је предложио обнову уговора о закупу за наредни период.';
+
+  @override
+  String get contractRenewedSuccess => 'Уговор је успешно обновљен.';
+
+  @override
+  String get renewalProposalSentSuccess => 'Предлог обнове је послат закупцу.';
+
+  @override
+  String get upcomingContractReadyNotice =>
+      'Уговор за нови период је потврђен и ступа на снагу на дан почетка.';
+
+  @override
+  String get contractRenewalAccepted => 'Уговор за нови период је одобрен.';
+
+  @override
+  String get contractRenewalDeclined =>
+      'Предлог уговора за нови период је одбијен.';
 }

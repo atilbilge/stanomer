@@ -1690,5 +1690,22 @@
   "auditFilterSystem": "System",
   "auditFilterManual": "Manual Notes",
   "noManualNotesFound": "No manual notes found.",
-  "manualNoteBadge": "Manual Note"
+  "manualNoteBadge": "Manual Note",
+  "renew": "Renew",
+  "renewContract": "Renew Contract",
+  "renewalPeriod": "New Contract Period",
+  "rentIncreaseRate": "Increase Rate (%)",
+  "newRentAmount": "New Rent Amount",
+  "agencyRenewalNotice": "As an agency, this renewal is directly confirmed and will take effect at the start of the new period.",
+  "landlordRenewalNotice": "The newly created contract will be sent for your tenant's digital approval.",
+  "sendRenewalProposal": "Send Renewal Proposal",
+  "confirmRenewal": "Renew Contract",
+  "upcomingContract": "Upcoming Period Contract",
+  "renewalProposalWaitingApproval": "Awaiting Tenant Approval",
+  "tenantRenewalPrompt": "Your landlord has proposed a contract renewal for the upcoming period.",
+  "contractRenewedSuccess": "Contract renewed successfully.",
+  "renewalProposalSentSuccess": "Renewal proposal sent to tenant.",
+  "upcomingContractReadyNotice": "The contract for the new period is confirmed and will take effect on its start date.",
+  "contractRenewalAccepted": "New period contract approved.",
+  "contractRenewalDeclined": "New period contract proposal declined."
 }

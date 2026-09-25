@@ -1663,5 +1663,22 @@
   "auditFilterSystem": "Система",
   "auditFilterManual": "Ручные заметки",
   "noManualNotesFound": "Ручных заметок не найдено.",
-  "manualNoteBadge": "Ручная заметка"
+  "manualNoteBadge": "Ручная заметка",
+  "renew": "Продлить",
+  "renewContract": "Продлить договор",
+  "renewalPeriod": "Новый период договора",
+  "rentIncreaseRate": "Ставка повышения (%)",
+  "newRentAmount": "Новая арендная плата",
+  "agencyRenewalNotice": "Как агентство, этот договор считается подтвержденным и вступит в силу в начале нового периода.",
+  "landlordRenewalNotice": "Новый договор будет отправлен арендатору на цифровое согласование.",
+  "sendRenewalProposal": "Отправить предложение о продлении",
+  "confirmRenewal": "Продлить договор",
+  "upcomingContract": "Договор на следующий период",
+  "renewalProposalWaitingApproval": "Ожидает одобрения арендатора",
+  "tenantRenewalPrompt": "Арендодатель предложил продление договора аренды на следующий период.",
+  "contractRenewedSuccess": "Договор успешно продлен.",
+  "renewalProposalSentSuccess": "Предложение о продлении отправлено арендатору.",
+  "upcomingContractReadyNotice": "Договор на новый период подтвержден и вступит в силу с даты начала.",
+  "contractRenewalAccepted": "Договор на новый период утвержден.",
+  "contractRenewalDeclined": "Предложение о новом договоре отклонено."
 }

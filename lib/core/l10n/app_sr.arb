@@ -2048,5 +2048,22 @@
   "auditFilterSystem": "Sistem",
   "auditFilterManual": "Ručne beleške",
   "noManualNotesFound": "Nema ručnih beleški.",
-  "manualNoteBadge": "Ručna beleška"
+  "manualNoteBadge": "Ručna beleška",
+  "renew": "Obnovi",
+  "renewContract": "Obnovi ugovor",
+  "renewalPeriod": "Novi period ugovora",
+  "rentIncreaseRate": "Stopa povećanja (%)",
+  "newRentAmount": "Novi iznos zakupnine",
+  "agencyRenewalNotice": "Kao agencija, obnovljeni ugovor se direktno potvrđuje i stupa na snagu na početku novog perioda.",
+  "landlordRenewalNotice": "Novi kreirani ugovor biće poslat na digitalno odobrenje zakupcu.",
+  "sendRenewalProposal": "Pošalji predlog obnove",
+  "confirmRenewal": "Obnovi ugovor",
+  "upcomingContract": "Ugovor za naredni period",
+  "renewalProposalWaitingApproval": "Čeka odobrenje zakupca",
+  "tenantRenewalPrompt": "Vaš stanodavac je predložio obnovu ugovora o zakupu za naredni period.",
+  "contractRenewedSuccess": "Ugovor je uspešno obnovljen.",
+  "renewalProposalSentSuccess": "Predlog obnove je poslat zakupcu.",
+  "upcomingContractReadyNotice": "Ugovor za novi period je potvrđen i stupa na snagu na dan početka.",
+  "contractRenewalAccepted": "Ugovor za novi period je odobren.",
+  "contractRenewalDeclined": "Predlog ugovora za novi period je odbijen."
 }

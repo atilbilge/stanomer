@@ -3803,4 +3803,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manualNoteBadge => 'Manual Note';
+
+  @override
+  String get renew => 'Renew';
+
+  @override
+  String get renewContract => 'Renew Contract';
+
+  @override
+  String get renewalPeriod => 'New Contract Period';
+
+  @override
+  String get rentIncreaseRate => 'Increase Rate (%)';
+
+  @override
+  String get newRentAmount => 'New Rent Amount';
+
+  @override
+  String get agencyRenewalNotice =>
+      'As an agency, this renewal is directly confirmed and will take effect at the start of the new period.';
+
+  @override
+  String get landlordRenewalNotice =>
+      'The newly created contract will be sent for your tenant\'s digital approval.';
+
+  @override
+  String get sendRenewalProposal => 'Send Renewal Proposal';
+
+  @override
+  String get confirmRenewal => 'Renew Contract';
+
+  @override
+  String get upcomingContract => 'Upcoming Period Contract';
+
+  @override
+  String get renewalProposalWaitingApproval => 'Awaiting Tenant Approval';
+
+  @override
+  String get tenantRenewalPrompt =>
+      'Your landlord has proposed a contract renewal for the upcoming period.';
+
+  @override
+  String get contractRenewedSuccess => 'Contract renewed successfully.';
+
+  @override
+  String get renewalProposalSentSuccess => 'Renewal proposal sent to tenant.';
+
+  @override
+  String get upcomingContractReadyNotice =>
+      'The contract for the new period is confirmed and will take effect on its start date.';
+
+  @override
+  String get contractRenewalAccepted => 'New period contract approved.';
+
+  @override
+  String get contractRenewalDeclined =>
+      'New period contract proposal declined.';
 }

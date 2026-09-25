@@ -1690,5 +1690,22 @@
   "auditFilterSystem": "Sistem",
   "auditFilterManual": "Manuel Notlar",
   "noManualNotesFound": "Henüz manuel not bulunmuyor.",
-  "manualNoteBadge": "Manuel Not"
+  "manualNoteBadge": "Manuel Not",
+  "renew": "Yenile",
+  "renewContract": "Sözleşmeyi Yenile",
+  "renewalPeriod": "Yeni Sözleşme Dönemi",
+  "rentIncreaseRate": "Artış Oranı (%)",
+  "newRentAmount": "Yeni Kira Bedeli",
+  "agencyRenewalNotice": "Acente olarak yenilediğiniz sözleşme doğrudan onaylanmış sayılır ve yeni dönem başında yürürlüğe girer.",
+  "landlordRenewalNotice": "Oluşturulan yeni sözleşme kiracınızın dijital onayına sunulacaktır.",
+  "sendRenewalProposal": "Yenileme Teklifi Gönder",
+  "confirmRenewal": "Sözleşmeyi Yenile",
+  "upcomingContract": "Gelecek Dönem Sözleşmesi",
+  "renewalProposalWaitingApproval": "Kiracı Onayı Bekleniyor",
+  "tenantRenewalPrompt": "Ev sahibiniz yeni dönem için kira sözleşmesi teklifinde bulundu.",
+  "contractRenewedSuccess": "Sözleşme başarıyla yenilendi.",
+  "renewalProposalSentSuccess": "Yenileme teklifi kiracıya iletildi.",
+  "upcomingContractReadyNotice": "Yeni dönem sözleşmeniz onaylanmıştır ve başlangıç tarihinde yürürlüğe girecektir.",
+  "contractRenewalAccepted": "Yeni dönem sözleşmesi onaylandı.",
+  "contractRenewalDeclined": "Yeni dönem sözleşme teklifi reddedildi."
 }

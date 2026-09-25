@@ -6831,6 +6831,108 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Ručna beleška'**
   String get manualNoteBadge;
+
+  /// No description provided for @renew.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obnovi'**
+  String get renew;
+
+  /// No description provided for @renewContract.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obnovi ugovor'**
+  String get renewContract;
+
+  /// No description provided for @renewalPeriod.
+  ///
+  /// In sr, this message translates to:
+  /// **'Novi period ugovora'**
+  String get renewalPeriod;
+
+  /// No description provided for @rentIncreaseRate.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stopa povećanja (%)'**
+  String get rentIncreaseRate;
+
+  /// No description provided for @newRentAmount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Novi iznos zakupnine'**
+  String get newRentAmount;
+
+  /// No description provided for @agencyRenewalNotice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kao agencija, obnovljeni ugovor se direktno potvrđuje i stupa na snagu na početku novog perioda.'**
+  String get agencyRenewalNotice;
+
+  /// No description provided for @landlordRenewalNotice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Novi kreirani ugovor biće poslat na digitalno odobrenje zakupcu.'**
+  String get landlordRenewalNotice;
+
+  /// No description provided for @sendRenewalProposal.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pošalji predlog obnove'**
+  String get sendRenewalProposal;
+
+  /// No description provided for @confirmRenewal.
+  ///
+  /// In sr, this message translates to:
+  /// **'Obnovi ugovor'**
+  String get confirmRenewal;
+
+  /// No description provided for @upcomingContract.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor za naredni period'**
+  String get upcomingContract;
+
+  /// No description provided for @renewalProposalWaitingApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje zakupca'**
+  String get renewalProposalWaitingApproval;
+
+  /// No description provided for @tenantRenewalPrompt.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vaš stanodavac je predložio obnovu ugovora o zakupu za naredni period.'**
+  String get tenantRenewalPrompt;
+
+  /// No description provided for @contractRenewedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor je uspešno obnovljen.'**
+  String get contractRenewedSuccess;
+
+  /// No description provided for @renewalProposalSentSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Predlog obnove je poslat zakupcu.'**
+  String get renewalProposalSentSuccess;
+
+  /// No description provided for @upcomingContractReadyNotice.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor za novi period je potvrđen i stupa na snagu na dan početka.'**
+  String get upcomingContractReadyNotice;
+
+  /// No description provided for @contractRenewalAccepted.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ugovor za novi period je odobren.'**
+  String get contractRenewalAccepted;
+
+  /// No description provided for @contractRenewalDeclined.
+  ///
+  /// In sr, this message translates to:
+  /// **'Predlog ugovora za novi period je odbijen.'**
+  String get contractRenewalDeclined;
 }
 
 class _AppLocalizationsDelegate
