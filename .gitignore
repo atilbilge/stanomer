@@ -58,4 +58,6 @@ website/out/
 website/public/app/
 website/public/dev-app/
 graphify-out/
+brag-output/
+.agents/skills/
 .freebuff/

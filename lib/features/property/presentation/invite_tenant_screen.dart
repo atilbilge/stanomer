@@ -491,7 +491,7 @@ class _InviteTenantScreenState extends ConsumerState<InviteTenantScreen> {
                           }
                           return null;
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) {
+                        if (!RegExp(r'^[\w\.\-+]+@([\w\-]+\.)+[a-zA-Z]{2,}$').hasMatch(text)) {
                           return loc.invalidEmail;
                         }
                         final currentUserEmail = ref.read(currentUserProvider)?.email;

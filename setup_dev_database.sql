@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT now(),
     created_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone_number TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS company_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS color_scheme JSONB DEFAULT '{}'::jsonb;
@@ -619,6 +621,10 @@ BEGIN
     SELECT full_name, phone_number INTO v_user_name, v_user_phone
     FROM public.profiles
     WHERE id = auth.uid();
+
+    IF v_user_phone IS NULL OR v_user_phone = '' THEN
+        v_user_phone := COALESCE(auth.jwt()->>'phone', '');
+    END IF;
 
     SELECT * INTO v_invitation
     FROM public.invitations

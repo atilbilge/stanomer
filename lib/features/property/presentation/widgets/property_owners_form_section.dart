@@ -579,7 +579,7 @@ class PropertyOwnersFormSectionState extends ConsumerState<PropertyOwnersFormSec
                       return loc.fieldRequired;
                     }
                     if (val != null && val.trim().isNotEmpty) {
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                      if (!RegExp(r'^[\w\.\-+]+@([\w\-]+\.)+[a-zA-Z]{2,}$').hasMatch(val.trim())) {
                         return loc.invalidEmail;
                       }
                     }
