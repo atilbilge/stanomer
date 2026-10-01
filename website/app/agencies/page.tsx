@@ -6,6 +6,7 @@ import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
 import { AgencyAppWalkthroughStack } from "../../components/AgencyAppWalkthroughStack";
 import { AgencyDemoModal } from "../../components/AgencyDemoModal";
+import { AgencyPricingSection } from "../../components/AgencyPricingSection";
 import {
   Palette,
   ShieldCheck,
@@ -19,6 +20,7 @@ import {
   Eye,
   BarChart3,
   ChevronDown,
+  Calculator,
 } from "lucide-react";
 
 export default function AgenciesPage() {
@@ -189,6 +191,21 @@ export default function AgenciesPage() {
                     : "Simulate for Your Agency"}
                 </span>
               </button>
+              <a
+                href="#pricing"
+                className="inline-flex justify-center items-center gap-2 px-5 py-4 rounded-xl text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-blue-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              >
+                <Calculator className="w-5 h-5 text-blue-600" />
+                <span>
+                  {lang === "TR"
+                    ? "Fiyatlandırma"
+                    : lang === "SR_LAT" || lang === "SR_CYR"
+                    ? "Cenovnik"
+                    : lang === "RU"
+                    ? "Тарифы"
+                    : "Pricing"}
+                </span>
+              </a>
             </div>
           </div>
 
@@ -349,6 +366,11 @@ export default function AgenciesPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 3.5 — PRICING (WHITE-LABEL TIERS)
+      ═══════════════════════════════════════════ */}
+      <AgencyPricingSection onOpenSimulation={() => setIsDemoModalOpen(true)} />
 
       {/* ═══════════════════════════════════════════
           SECTION 4 — REFERRAL (OPTION 2)
