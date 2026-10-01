@@ -1,10 +1,15 @@
 const nextConfig = {
-  // Disable image optimization for static export / custom hosting
   images: {
     unoptimized: true,
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/track/open/:id",
+        destination: "/api/track/open/:id",
+      },
+    ];
   },
 };
 
 export default nextConfig;
-
-
