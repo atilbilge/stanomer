@@ -13,7 +13,7 @@ const GIF_BYTES = new Uint8Array([
   1, 0, 1, 0, 0, 2, 1, 68, 0, 59
 ]);
 
-export default async function handler(req: Request): Promise<Response> {
+export async function handler(req: Request): Promise<Response> {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
@@ -69,33 +69,38 @@ export default async function handler(req: Request): Promise<Response> {
 
       const nowStr = new Date().toLocaleString("tr-TR", { timeZone: "Europe/Belgrade" });
 
-      await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          "content-type": "application/json",
-          "api-key": apiKey,
-        },
-        body: JSON.stringify({
-          sender: { name: "Stanomer Takip", email: senderEmail },
-          to: [{ email: "atilbilge@gmail.com", name: "Atıl Bilge" }],
-          subject: "✉️ E-posta Açıldı: Acente #" + agencyId + (campaignId ? " (Kampanya #" + campaignId + ")" : ""),
-          htmlContent:
-            "<div style="font-family: Arial, sans-serif; max-width: 500px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">" +
-            "<h3 style="color: #10b981; margin-top: 0;">✉️ E-posta Açılma Bildirimi</h3>" +
-            "<p>Bir acente gönderdiğiniz e-postayı görüntüledi.</p>" +
-            "<table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px;">" +
-            "<tr><td style="padding: 6px 0; color: #64748b;"><strong>Acente ID:</strong></td><td><strong>#" + agencyId + "</strong></td></tr>" +
-            (campaignId ? "<tr><td style="padding: 6px 0; color: #64748b;"><strong>Kampanya ID:</strong></td><td>#" + campaignId + "</td></tr>" : "") +
-            "<tr><td style="padding: 6px 0; color: #64748b;"><strong>İstemci IP:</strong></td><td><code>" + ip + "</code></td></tr>" +
-            "<tr><td style="padding: 6px 0; color: #64748b;"><strong>Cihaz / İstemci:</strong></td><td><small>" + userAgent + "</small></td></tr>" +
-            "<tr><td style="padding: 6px 0; color: #64748b;"><strong>Tarih:</strong></td><td>" + nowStr + " (Belgrad)</td></tr>" +
-            "</table>" +
-            "</div>",
-        }),
-      }).catch((err) => {
-        console.warn("Brevo tracking notification error:", err);
-      });
+      const emailHtml = [
+        "<div style=\"font-family: Arial, sans-serif; max-width: 500px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;\">",
+        "<h3 style=\"color: #10b981; margin-top: 0;\">✉️ E-posta Açılma Bildirimi</h3>",
+        "<p>Bir acente gönderdiğiniz e-postayı görüntüledi.</p>",
+        "<table style=\"width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px;\">",
+        "<tr><td style=\"padding: 6px 0; color: #64748b;\"><strong>Acente ID:</strong></td><td><strong>#" + agencyId + "</strong></td></tr>",
+        (campaignId ? "<tr><td style=\"padding: 6px 0; color: #64748b;\"><strong>Kampanya ID:</strong></td><td>#" + campaignId + "</td></tr>" : ""),
+        "<tr><td style=\"padding: 6px 0; color: #64748b;\"><strong>İstemci IP:</strong></td><td><code>" + ip + "</code></td></tr>",
+        "<tr><td style=\"padding: 6px 0; color: #64748b;\"><strong>Cihaz / İstemci:</strong></td><td><small>" + userAgent + "</small></td></tr>",
+        "<tr><td style=\"padding: 6px 0; color: #64748b;\"><strong>Tarih:</strong></td><td>" + nowStr + " (Belgrad)</td></tr>",
+        "</table>",
+        "</div>"
+      ].join("");
+
+      if (apiKey) {
+        await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            "api-key": apiKey,
+          },
+          body: JSON.stringify({
+            sender: { name: "Stanomer Takip", email: senderEmail },
+            to: [{ email: "atilbilge@gmail.com", name: "Atıl Bilge" }],
+            subject: "✉️ E-posta Açıldı: Acente #" + agencyId + (campaignId ? " (Kampanya #" + campaignId + ")" : ""),
+            htmlContent: emailHtml,
+          }),
+        }).catch((err) => {
+          console.warn("Brevo tracking notification error:", err);
+        });
+      }
     }
   } catch (err) {
     console.error("Track handler error:", err);
@@ -106,3 +111,6 @@ export default async function handler(req: Request): Promise<Response> {
     headers: corsHeaders,
   });
 }
+
+export { handler as GET, handler as HEAD, handler as OPTIONS };
+export default handler;

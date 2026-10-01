@@ -1,5 +1,5 @@
-// website/app/api/track/open/[id]/route.ts
-import handler from "../../../../../../api/track";
+// website/app/api/track/route.ts
+import handler from "../../../../api/track";
 
 export const config = {
   runtime: "edge",
