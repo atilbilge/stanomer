@@ -56,6 +56,7 @@ interface TranslationBundle {
   m3: string;
   m4: string;
   m5: string;
+  rates: [string, string, string, string, string];
   s1: string;
   s2: string;
   s3: string;
@@ -108,10 +109,11 @@ const T: Record<string, TranslationBundle> = {
     m3: "Months 13 to 24",
     m4: "Months 25 to 36",
     m5: "Month 37 onward",
+    rates: ["100%", "40%", "20%", "10%", "0%"],
     s1: "Free pilot",
-    s2: "40% off",
-    s3: "20% off with feedback",
-    s4: "10% off with feedback",
+    s2: "Discount",
+    s3: "With feedback",
+    s4: "With feedback",
     s5: "Standard price",
     r4: "76 and above",
     rows: ["1 to 10", "11 to 30", "31 to 75", "76 and above"],
@@ -158,10 +160,11 @@ const T: Record<string, TranslationBundle> = {
     m3: "13. do 24. meseca",
     m4: "25. do 36. meseca",
     m5: "Od 37. meseca",
+    rates: ["100%", "40%", "20%", "10%", "0%"],
     s1: "Besplatan probni mesec",
-    s2: "40% popusta",
-    s3: "20% popusta uz povratne informacije",
-    s4: "10% popusta uz povratne informacije",
+    s2: "Popust",
+    s3: "Uz povratne informacije",
+    s4: "Uz povratne informacije",
     s5: "Standardna cena",
     r4: "76 i više",
     rows: ["1 do 10", "11 do 30", "31 do 75", "76 i više"],
@@ -208,10 +211,11 @@ const T: Record<string, TranslationBundle> = {
     m3: "13. до 24. месеца",
     m4: "25. до 36. месеца",
     m5: "Од 37. месеца",
+    rates: ["100%", "40%", "20%", "10%", "0%"],
     s1: "Бесплатан пробни месец",
-    s2: "40% попуста",
-    s3: "20% попуста уз повратне информације",
-    s4: "10% попуста уз повратне информације",
+    s2: "Попуст",
+    s3: "Уз повратне информације",
+    s4: "Уз повратне информације",
     s5: "Стандардна цена",
     r4: "76 и више",
     rows: ["1 до 10", "11 до 30", "31 до 75", "76 и више"],
@@ -258,10 +262,11 @@ const T: Record<string, TranslationBundle> = {
     m3: "13 - 24. Aylar",
     m4: "25 - 36. Aylar",
     m5: "37. Ay ve sonrası",
+    rates: ["%100", "%40", "%20", "%10", "%0"],
     s1: "Ücretsiz pilot",
-    s2: "%40 indirim",
-    s3: "Geri bildirimle %20 indirim",
-    s4: "Geri bildirimle %10 indirim",
+    s2: "İndirim",
+    s3: "Geri bildirimle",
+    s4: "Geri bildirimle",
     s5: "Standart fiyat",
     r4: "76 ve üzeri",
     rows: ["1 - 10", "11 - 30", "31 - 75", "76 ve üzeri"],
@@ -308,11 +313,12 @@ const T: Record<string, TranslationBundle> = {
     m3: "13 – 24 месяцы",
     m4: "25 – 36 месяцы",
     m5: "С 37-го месяца",
+    rates: ["100%", "40%", "20%", "10%", "0%"],
     s1: "Бесплатный пилот",
-    s2: "Скидка 40%",
-    s3: "Скидка 20% с отзывами",
-    s4: "Скидка 10% с отзывами",
-    s5: "Стандартная цена",
+    s2: "Скидка",
+    s3: "С обратной связью",
+    s4: "С обратной связью",
+    s5: "Стандартный тариф",
     r4: "76 и более",
     rows: ["1 до 10", "11 до 30", "31 до 75", "76 и более"],
     lg: "объектов",
@@ -411,7 +417,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
         </div>
 
         {/* Interactive Calculator Card */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-9 shadow-xl shadow-slate-200/50 space-y-6">
+        <div id="pricing-calculator" className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-9 shadow-xl shadow-slate-200/50 space-y-6 scroll-mt-28">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
             <label htmlFor="property-range-input" className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
               <span>{texts.count}</span>
@@ -497,18 +503,45 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             </div>
 
             {isFoundingActive && (
-              <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200">
-                <span className="block text-xs sm:text-sm font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  {texts.fnd}
-                </span>
+              <a
+                href="#founding-partners"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("founding-partners");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                    window.history.pushState(null, "", "#founding-partners");
+                  }
+                }}
+                className="group/fnd p-4 rounded-2xl bg-emerald-50/80 border-2 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-100/40 hover:shadow-lg transition-all cursor-pointer block text-left"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs sm:text-sm font-bold text-emerald-800 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 group-hover/fnd:scale-110 transition-transform" />
+                    {texts.fnd}
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full group-hover/fnd:bg-emerald-600 group-hover/fnd:text-white transition-colors flex items-center gap-1">
+                    <span>
+                      {tKey === "tr"
+                        ? "Detaylar"
+                        : tKey === "sr_lat"
+                        ? "Detalji"
+                        : tKey === "sr_cyr"
+                        ? "Детаљи"
+                        : tKey === "ru"
+                        ? "Подробнее"
+                        : "Details"}
+                    </span>
+                    <ArrowRight className="w-3 h-3 group-hover/fnd:translate-x-0.5 transition-transform" />
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-mono text-3xl sm:text-4xl font-extrabold text-emerald-700">
                     €{money(totalFnd)}
                   </span>
                   <span className="text-xs text-emerald-700 font-semibold">{texts.pm}</span>
                 </div>
-              </div>
+              </a>
             )}
           </div>
         </div>
@@ -543,19 +576,53 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
 
         {/* Founding Partners Section */}
         {isFoundingActive && (
-          <div className="bg-gradient-to-br from-emerald-500/10 via-white to-blue-500/10 border-2 border-emerald-300/80 rounded-3xl p-6 sm:p-9 shadow-lg space-y-8">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold tracking-wide">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>31.12.2026</span>
+          <div
+            id="founding-partners"
+            className="scroll-mt-28 bg-gradient-to-br from-emerald-500/10 via-white to-blue-500/10 border-2 border-emerald-300/80 rounded-3xl p-6 sm:p-9 shadow-lg space-y-8"
+          >
+            {/* Anchor aliases */}
+            <span id="founding-feedback-partners" className="sr-only" />
+
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold tracking-wide">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>31.12.2026</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {texts.h2f}
+                </h3>
+                <p className="text-slate-600 text-sm sm:text-base">{texts.fintro}</p>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                {texts.h2f}
-              </h3>
-              <p className="text-slate-600 text-sm sm:text-base">{texts.fintro}</p>
+
+              <a
+                href="#pricing-calculator"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("pricing-calculator") || document.getElementById("pricing");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                    window.history.pushState(null, "", "#pricing-calculator");
+                  }
+                }}
+                className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto flex-shrink-0"
+              >
+                <Calculator className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span>
+                  {tKey === "tr"
+                    ? "Fiyat Hesabına Git ↑"
+                    : tKey === "sr_lat"
+                    ? "Idi na kalkulator cena ↑"
+                    : tKey === "sr_cyr"
+                    ? "Иди на калкулатор цена ↑"
+                    : tKey === "ru"
+                    ? "Перейти к калькулятору тарифа ↑"
+                    : "Go to Price Calculator ↑"}
+                </span>
+              </a>
             </div>
 
-            {/* 5-Step Lifecycle Progression */}
+            {/* 5-Step Lifecycle Progression (Discount Rates Only) */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[texts.m1, texts.m2, texts.m3, texts.m4, texts.m5].map((monthLabel, i) => {
                 const subLabels = [texts.s1, texts.s2, texts.s3, texts.s4, texts.s5];
@@ -581,7 +648,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                         isPromo ? "text-white" : "text-slate-900"
                       }`}
                     >
-                      €{money(stepsValues[i])}
+                      {texts.rates[i]}
                     </span>
                     <span
                       className={`block text-xs font-medium mt-1 leading-snug ${
@@ -654,6 +721,35 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             <div className="space-y-2 text-xs sm:text-sm text-slate-500 leading-relaxed">
               <p>{texts.rem}</p>
               <p>{texts.conf}</p>
+            </div>
+
+            {/* Bottom Back Link to Calculator */}
+            <div className="pt-2 border-t border-emerald-200/60 flex justify-start">
+              <a
+                href="#pricing-calculator"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("pricing-calculator") || document.getElementById("pricing");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                    window.history.pushState(null, "", "#pricing-calculator");
+                  }
+                }}
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900 underline underline-offset-4 decoration-emerald-300 hover:decoration-emerald-600 transition-colors cursor-pointer"
+              >
+                <Calculator className="w-4 h-4 text-emerald-600" />
+                <span>
+                  {tKey === "tr"
+                    ? "Yukarı çıkıp portföyünüze göre fiyatı hesaplayın ↑"
+                    : tKey === "sr_lat"
+                    ? "Izračunajte cenu za Vaš portfelj iznad ↑"
+                    : tKey === "sr_cyr"
+                    ? "Израчунајте цену за Ваш портфељ изнад ↑"
+                    : tKey === "ru"
+                    ? "Рассчитать стоимость для вашего портфеля выше ↑"
+                    : "Calculate pricing for your portfolio above ↑"}
+                </span>
+              </a>
             </div>
           </div>
         )}

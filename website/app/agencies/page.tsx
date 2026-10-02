@@ -37,6 +37,21 @@ export default function AgenciesPage() {
     return () => window.removeEventListener("click", handleWindowClick);
   }, [isHeroPillOpen]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        const timer = setTimeout(() => {
+          const el = document.getElementById(hash);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
   const comparisonRows = [
     {
       label: t("agencies_cmp_row1_label"),
@@ -160,21 +175,15 @@ export default function AgenciesPage() {
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
               {t("agencies_hero_subtitle")}
             </p>
-            <div className="pt-4 flex flex-col sm:flex-row gap-4 sm:items-center">
-              <Link
-                href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-              >
-                <span>{t("agencies_cta_demo")}</span>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
+            <div className="pt-4 flex flex-col sm:flex-row gap-3.5 sm:items-center">
+              {/* Main CTA: Simulate for Your Agency */}
               <button
                 type="button"
                 onClick={() => setIsDemoModalOpen(true)}
-                className="group inline-flex justify-center items-center gap-2.5 px-6 py-4 rounded-xl text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-slate-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                className="group h-14 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
               >
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-[10px] font-bold tracking-wide">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-white text-[10px] font-bold tracking-wide">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
                   <span>
                     {lang === "TR"
                       ? "SİMÜLASYON"
@@ -190,10 +199,30 @@ export default function AgenciesPage() {
                     ? "Simulirajte za Vašu Agenciju"
                     : "Simulate for Your Agency"}
                 </span>
+                <ArrowRight className="w-5 h-5 text-blue-200 group-hover:translate-x-0.5 transition-transform" />
               </button>
+
+              {/* Secondary CTA: Request Demo Now */}
+              <Link
+                href="/agency-demo"
+                className="h-14 px-6 rounded-xl text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-slate-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
+              >
+                <Building2 className="w-5 h-5 text-blue-600" />
+                <span>{t("agencies_cta_demo")}</span>
+              </Link>
+
+              {/* Pricing Anchor Link */}
               <a
                 href="#pricing"
-                className="inline-flex justify-center items-center gap-2 px-5 py-4 rounded-xl text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-blue-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("pricing");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                    window.history.pushState(null, "", "#pricing");
+                  }
+                }}
+                className="h-14 px-5 rounded-xl text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-blue-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2 box-border"
               >
                 <Calculator className="w-5 h-5 text-blue-600" />
                 <span>
@@ -607,7 +636,7 @@ export default function AgenciesPage() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-xs font-medium text-slate-600">
-            <a href="/agency-stats" className="hover:text-violet-600 transition-colors font-bold text-violet-600">Zaten Partnerimiz misiniz? Referanslarınızı Görüntüleyin →</a>
+            <a href="/agency-stats" className="hover:text-violet-600 transition-colors font-bold text-violet-600">{t("footer_already_partner")}</a>
             <a href="/guide" className="hover:text-blue-600 transition-colors font-bold text-blue-600">{t("footer_guide")}</a>
             <a href="/privacy" className="hover:text-blue-600 transition-colors">{t("footer_privacy")}</a>
             <a href="/terms" className="hover:text-blue-600 transition-colors">{t("footer_terms")}</a>
