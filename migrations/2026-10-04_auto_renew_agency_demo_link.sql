@@ -10,9 +10,16 @@
 --    - Acentenin mülk kaydı (properties) bulunmuyorsa generate_agency_demo_data()
 --      çalıştırılarak 10 dairelik örnek portföy yeniden oluşturulur.
 --    - Mülk kayıtları zaten mevcutsa dokunulmaz, veri korunur.
--- 3. Geriye `was_expired: true/false` ve bilgilendirici mesaj döndürülür.
+-- 3. FIX: auth.users tablosundaki UNIQUE(phone) kısıtlaması (users_phone_key)
+--    nedeniyle phone kolonu boş dize ('') yerine NULL olmalıdır. Aksi halde
+--    ikinci acente oluşturulurken duplicate key hatası alınır.
 -- ==============================================================================
 
+-- 1. auth.users'daki boş string ('') telefon kayıtlarını NULL yaparak unique index çakışmasını gider:
+UPDATE auth.users SET phone = NULL WHERE phone = '';
+UPDATE auth.users SET phone_change = NULL WHERE phone_change = '';
+
+-- 2. verify_agency_demo_token fonksiyonunu güncelle:
 CREATE OR REPLACE FUNCTION public.verify_agency_demo_token(p_token UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -64,7 +71,7 @@ BEGIN
             lower(v_request.email), extensions.crypt(v_temp_password, extensions.gen_salt('bf')),
             now(),
             '', '', '', '',
-            '', '', '', '', '',
+            '', '', NULL, NULL, '',
             '{"provider":"email","providers":["email"]}'::jsonb,
             jsonb_build_object('full_name', v_request.agency_name, 'company_name', v_request.agency_name),
             false, false, false, now(), now()
@@ -79,8 +86,8 @@ BEGIN
             email_change = COALESCE(email_change, ''),
             email_change_token_current = COALESCE(email_change_token_current, ''),
             reauthentication_token = COALESCE(reauthentication_token, ''),
-            phone = COALESCE(phone, ''),
-            phone_change = COALESCE(phone_change, ''),
+            phone = CASE WHEN phone = '' THEN NULL ELSE phone END,
+            phone_change = CASE WHEN phone_change = '' THEN NULL ELSE phone_change END,
             phone_change_token = COALESCE(phone_change_token, ''),
             instance_id = COALESCE(instance_id, v_instance_id),
             aud = 'authenticated',
