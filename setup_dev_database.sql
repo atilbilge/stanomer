@@ -1782,7 +1782,7 @@ BEGIN
             lower(v_request.email), extensions.crypt(v_temp_password, extensions.gen_salt('bf')),
             now(),
             '', '', '', '',
-            '', '', NULL, NULL, '',
+            '', '', NULL, '', '',
             '{"provider":"email","providers":["email"]}'::jsonb,
             jsonb_build_object('full_name', v_request.agency_name, 'company_name', v_request.agency_name),
             false, false, false, now(), now()
@@ -1798,7 +1798,7 @@ BEGIN
             email_change_token_current = COALESCE(email_change_token_current, ''),
             reauthentication_token = COALESCE(reauthentication_token, ''),
             phone = CASE WHEN phone = '' THEN NULL ELSE phone END,
-            phone_change = CASE WHEN phone_change = '' THEN NULL ELSE phone_change END,
+            phone_change = COALESCE(NULLIF(phone_change, ''), ''),
             phone_change_token = COALESCE(phone_change_token, ''),
             instance_id = COALESCE(instance_id, v_instance_id),
             aud = 'authenticated',
@@ -1807,6 +1807,13 @@ BEGIN
             updated_at = now()
         WHERE id = v_user_id;
     END IF;
+
+    -- Kullanıcının GoTrue şema uyumluluğunu kesin garantiye al
+    UPDATE auth.users
+    SET phone = CASE WHEN phone = '' THEN NULL ELSE phone END,
+        phone_change = COALESCE(phone_change, ''),
+        phone_change_token = COALESCE(phone_change_token, '')
+    WHERE id = v_user_id;
 
     INSERT INTO auth.identities (
         id, provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at

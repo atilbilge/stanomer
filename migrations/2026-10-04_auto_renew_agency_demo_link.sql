@@ -10,14 +10,22 @@
 --    - Acentenin mülk kaydı (properties) bulunmuyorsa generate_agency_demo_data()
 --      çalıştırılarak 10 dairelik örnek portföy yeniden oluşturulur.
 --    - Mülk kayıtları zaten mevcutsa dokunulmaz, veri korunur.
--- 3. FIX: auth.users tablosundaki UNIQUE(phone) kısıtlaması (users_phone_key)
---    nedeniyle phone kolonu boş dize ('') yerine NULL olmalıdır. Aksi halde
---    ikinci acente oluşturulurken duplicate key hatası alınır.
+-- 3. FIX - GoTrue / Supabase Auth Uyumluluğu:
+--    - phone kolonu: UNIQUE(phone) kısıtlaması nedeniyle NULL olmalıdır (boş string '' değil).
+--    - phone_change ve token kolonları: GoTrue Go runtime motorunun "Scan error converting NULL to string"
+--      hatasını ("Database error querying schema") önlemek için kesinlikle boş dize ('') olmalıdır.
 -- ==============================================================================
 
--- 1. auth.users'daki boş string ('') telefon kayıtlarını NULL yaparak unique index çakışmasını gider:
+-- 1. auth.users tablosundaki uyumsuzlukları tek seferde onar:
 UPDATE auth.users SET phone = NULL WHERE phone = '';
-UPDATE auth.users SET phone_change = NULL WHERE phone_change = '';
+UPDATE auth.users SET phone_change = '' WHERE phone_change IS NULL;
+UPDATE auth.users SET phone_change_token = '' WHERE phone_change_token IS NULL;
+UPDATE auth.users SET confirmation_token = '' WHERE confirmation_token IS NULL;
+UPDATE auth.users SET recovery_token = '' WHERE recovery_token IS NULL;
+UPDATE auth.users SET email_change_token_new = '' WHERE email_change_token_new IS NULL;
+UPDATE auth.users SET email_change = '' WHERE email_change IS NULL;
+UPDATE auth.users SET email_change_token_current = '' WHERE email_change_token_current IS NULL;
+UPDATE auth.users SET reauthentication_token = '' WHERE reauthentication_token IS NULL;
 
 -- 2. verify_agency_demo_token fonksiyonunu güncelle:
 CREATE OR REPLACE FUNCTION public.verify_agency_demo_token(p_token UUID)
@@ -71,7 +79,7 @@ BEGIN
             lower(v_request.email), extensions.crypt(v_temp_password, extensions.gen_salt('bf')),
             now(),
             '', '', '', '',
-            '', '', NULL, NULL, '',
+            '', '', NULL, '', '',
             '{"provider":"email","providers":["email"]}'::jsonb,
             jsonb_build_object('full_name', v_request.agency_name, 'company_name', v_request.agency_name),
             false, false, false, now(), now()
@@ -87,7 +95,7 @@ BEGIN
             email_change_token_current = COALESCE(email_change_token_current, ''),
             reauthentication_token = COALESCE(reauthentication_token, ''),
             phone = CASE WHEN phone = '' THEN NULL ELSE phone END,
-            phone_change = CASE WHEN phone_change = '' THEN NULL ELSE phone_change END,
+            phone_change = COALESCE(NULLIF(phone_change, ''), ''),
             phone_change_token = COALESCE(phone_change_token, ''),
             instance_id = COALESCE(instance_id, v_instance_id),
             aud = 'authenticated',
@@ -96,6 +104,13 @@ BEGIN
             updated_at = now()
         WHERE id = v_user_id;
     END IF;
+
+    -- Kullanıcının GoTrue şema uyumluluğunu kesin garantiye al
+    UPDATE auth.users
+    SET phone = CASE WHEN phone = '' THEN NULL ELSE phone END,
+        phone_change = COALESCE(phone_change, ''),
+        phone_change_token = COALESCE(phone_change_token, '')
+    WHERE id = v_user_id;
 
     INSERT INTO auth.identities (
         id, provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at
