@@ -229,9 +229,12 @@ class DesktopNavigationShell extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
+                    color: agencyColors.isDarkHeader ? agencyColors.headerBg : Colors.white,
                     border: Border(
                       bottom: BorderSide(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: agencyColors.isDarkHeader
+                            ? agencyColors.headerBorder.withValues(alpha: 0.3)
+                            : Colors.black.withValues(alpha: 0.05),
                       ),
                     ),
                   ),
@@ -308,10 +311,12 @@ class DesktopNavigationShell extends ConsumerWidget {
                   height: 70,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: agencyColors.headerBg,
                     border: Border(
                       bottom: BorderSide(
-                        color: Colors.black.withValues(alpha: 0.06),
+                        color: agencyColors.isDarkHeader
+                            ? agencyColors.headerBorder.withValues(alpha: 0.3)
+                            : Colors.black.withValues(alpha: 0.06),
                       ),
                     ),
                   ),
@@ -320,10 +325,10 @@ class DesktopNavigationShell extends ConsumerWidget {
                       // Company / App Name Header
                       Text(
                         displayTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 18,
-                          color: Color(0xFF0F172A),
+                          color: agencyColors.headerText,
                           letterSpacing: -0.3,
                         ),
                       ),
@@ -333,16 +338,22 @@ class DesktopNavigationShell extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: primaryColor.withValues(alpha: 0.10),
+                            color: agencyColors.isDarkHeader
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : primaryColor.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: primaryColor.withValues(alpha: 0.20)),
+                            border: Border.all(
+                              color: agencyColors.isDarkHeader
+                                  ? Colors.white.withValues(alpha: 0.20)
+                                  : primaryColor.withValues(alpha: 0.20),
+                            ),
                           ),
                           child: Text(
                             role == 'landlord' ? loc.landlord : loc.tenant,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: primaryColor,
+                              color: agencyColors.isDarkHeader ? Colors.white : primaryColor,
                             ),
                           ),
                         ),
@@ -350,13 +361,25 @@ class DesktopNavigationShell extends ConsumerWidget {
                       const Spacer(),
                       // Action Icons
                       IconButton(
-                        icon: const Icon(LucideIcons.bell, size: 20, color: Color(0xFF64748B)),
+                        icon: Icon(
+                          LucideIcons.bell,
+                          size: 20,
+                          color: agencyColors.isDarkHeader
+                              ? Colors.white.withValues(alpha: 0.85)
+                              : const Color(0xFF64748B),
+                        ),
                         onPressed: () => context.push('/notifications'),
                         tooltip: 'Bildirimler',
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(LucideIcons.settings, size: 20, color: Color(0xFF64748B)),
+                        icon: Icon(
+                          LucideIcons.settings,
+                          size: 20,
+                          color: agencyColors.isDarkHeader
+                              ? Colors.white.withValues(alpha: 0.85)
+                              : const Color(0xFF64748B),
+                        ),
                         onPressed: () => context.push('/profile'),
                         tooltip: loc.settingsHeader,
                       ),

@@ -45,6 +45,9 @@ class AgencyColorScheme {
   final Color bgWhite;
   final Color textPrimary;
   final Color border;
+  final Color headerBg;
+  final Color headerText;
+  final Color headerBorder;
 
   const AgencyColorScheme({
     required this.primary,
@@ -53,7 +56,15 @@ class AgencyColorScheme {
     required this.bgWhite,
     required this.textPrimary,
     required this.border,
-  });
+    Color? headerBg,
+    Color? headerText,
+    Color? headerBorder,
+  })  : headerBg = headerBg ?? bgWhite,
+        headerText = headerText ?? textPrimary,
+        headerBorder = headerBorder ?? border;
+
+  /// Returns true if the header background is dark (requires light text/icons).
+  bool get isDarkHeader => headerBg.computeLuminance() < 0.45;
 
   const AgencyColorScheme.landlordScheme()
       : primary = const Color(0xFF1A5EB8),
@@ -61,7 +72,10 @@ class AgencyColorScheme {
         brandGold = const Color(0xFFD4AF37),
         bgWhite = const Color(0xFFFFFFFF),
         textPrimary = const Color(0xFF1A1A1A),
-        border = const Color(0xFFD9E4F5);
+        border = const Color(0xFFD9E4F5),
+        headerBg = const Color(0xFFFFFFFF),
+        headerText = const Color(0xFF1A1A1A),
+        headerBorder = const Color(0xFFD9E4F5);
 
   const AgencyColorScheme.tenantScheme()
       : primary = const Color(0xFF2DB87A),
@@ -69,7 +83,10 @@ class AgencyColorScheme {
         brandGold = const Color(0xFFD4AF37),
         bgWhite = const Color(0xFFFFFFFF),
         textPrimary = const Color(0xFF1A1A1A),
-        border = const Color(0xFFD0F0E3);
+        border = const Color(0xFFD0F0E3),
+        headerBg = const Color(0xFFFFFFFF),
+        headerText = const Color(0xFF1A1A1A),
+        headerBorder = const Color(0xFFD0F0E3);
 
   const AgencyColorScheme.agencyScheme()
       : primary = const Color(0xFF4A3AFF),
@@ -77,7 +94,10 @@ class AgencyColorScheme {
         brandGold = const Color(0xFFE5C158),
         bgWhite = const Color(0xFFFFFFFF),
         textPrimary = const Color(0xFF1A1A1A),
-        border = const Color(0xFFE0DAFF);
+        border = const Color(0xFFE0DAFF),
+        headerBg = const Color(0xFFFFFFFF),
+        headerText = const Color(0xFF1A1A1A),
+        headerBorder = const Color(0xFFE0DAFF);
 
   const AgencyColorScheme.defaultScheme()
       : primary = const Color(0xFF1A5EB8),
@@ -85,10 +105,13 @@ class AgencyColorScheme {
         brandGold = const Color(0xFFD4AF37),
         bgWhite = const Color(0xFFFFFFFF),
         textPrimary = const Color(0xFF1A1A1A),
-        border = const Color(0xFFD9E4F5);
+        border = const Color(0xFFD9E4F5),
+        headerBg = const Color(0xFFFFFFFF),
+        headerText = const Color(0xFF1A1A1A),
+        headerBorder = const Color(0xFFD9E4F5);
 
   /// Factory constructor to parse JSON data from `profiles.color_scheme`.
-  /// Supports `primary`, `color-primary`, `--color-primary`, etc.
+  /// Supports `primary`, `color-primary`, `--color-primary`, `header_bg`, etc.
   factory AgencyColorScheme.fromJson(dynamic rawJson) {
     Map<String, dynamic>? json;
     if (rawJson is Map<String, dynamic>) {
@@ -112,6 +135,9 @@ class AgencyColorScheme {
         bgWhite: StanomerColors.bgCard,
         textPrimary: StanomerColors.textPrimary,
         border: StanomerColors.borderDefault,
+        headerBg: StanomerColors.bgCard,
+        headerText: StanomerColors.textPrimary,
+        headerBorder: StanomerColors.borderDefault,
       );
     }
 
@@ -121,14 +147,47 @@ class AgencyColorScheme {
     final bgWhiteHex = _getValue(json, ['bg_white', 'bg-white', 'color-bg-white', '--color-bg-white']);
     final textPrimaryHex = _getValue(json, ['text_primary', 'text-primary', 'color-text-primary', '--color-text-primary']);
     final borderHex = _getValue(json, ['border', 'color-border', '--color-border']);
+    final headerBgHex = _getValue(json, ['header_bg', 'header-bg', 'color-header-bg', '--color-header-bg']);
+    final headerTextHex = _getValue(json, ['header_text', 'header-text', 'color-header-text', '--color-header-text']);
+    final headerBorderHex = _getValue(json, ['header_border', 'header-border', 'color-header-border', '--color-header-border']);
+    final isDarkHeaderExplicit = json['is_dark_header'] == true || json['is_dark_theme'] == true;
+
+    final parsedBgWhite = _parseColorHex(bgWhiteHex) ?? StanomerColors.bgCard;
+    final parsedTextPrimary = _parseColorHex(textPrimaryHex) ?? StanomerColors.textPrimary;
+    final parsedBorder = _parseColorHex(borderHex) ?? StanomerColors.borderDefault;
+
+    Color parsedHeaderBg;
+    if (headerBgHex != null) {
+      parsedHeaderBg = _parseColorHex(headerBgHex) ??
+          (isDarkHeaderExplicit ? const Color(0xFF0F172A) : parsedBgWhite);
+    } else if (isDarkHeaderExplicit) {
+      parsedHeaderBg = const Color(0xFF0F172A);
+    } else {
+      parsedHeaderBg = parsedBgWhite;
+    }
+
+    final isDark = parsedHeaderBg.computeLuminance() < 0.45;
+
+    Color parsedHeaderText;
+    if (headerTextHex != null) {
+      parsedHeaderText = _parseColorHex(headerTextHex) ?? (isDark ? Colors.white : parsedTextPrimary);
+    } else {
+      parsedHeaderText = isDark ? Colors.white : parsedTextPrimary;
+    }
+
+    final parsedHeaderBorder = _parseColorHex(headerBorderHex) ??
+        (isDark ? const Color(0xFF1E293B) : parsedBorder);
 
     return AgencyColorScheme(
       primary: _parseColorHex(primaryHex) ?? StanomerColors.brandPrimary,
       accent: _parseColorHex(accentHex) ?? const Color(0xFFDC7A3B),
       brandGold: _parseColorHex(brandGoldHex) ?? const Color(0xFFC6A665),
-      bgWhite: _parseColorHex(bgWhiteHex) ?? StanomerColors.bgCard,
-      textPrimary: _parseColorHex(textPrimaryHex) ?? StanomerColors.textPrimary,
-      border: _parseColorHex(borderHex) ?? StanomerColors.borderDefault,
+      bgWhite: parsedBgWhite,
+      textPrimary: parsedTextPrimary,
+      border: parsedBorder,
+      headerBg: parsedHeaderBg,
+      headerText: parsedHeaderText,
+      headerBorder: parsedHeaderBorder,
     );
   }
 

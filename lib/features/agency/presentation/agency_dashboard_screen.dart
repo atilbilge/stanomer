@@ -490,9 +490,11 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
       appBar: isDesktop
           ? null
           : AppBar(
-              backgroundColor: colors.bgWhite,
+              backgroundColor: colors.headerBg,
+              systemOverlayStyle: colors.isDarkHeader ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
               elevation: 0,
               scrolledUnderElevation: 0,
+              iconTheme: IconThemeData(color: colors.headerText),
               title: Row(
                 children: [
                   ExpandableAgencyLogo(
@@ -510,7 +512,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 16,
-                          color: colors.textPrimary,
+                          color: colors.headerText,
                         ),
                         maxLines: 1,
                       ),
@@ -522,7 +524,7 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                 const NotificationBadge(),
                 const SizedBox(width: 4),
                 IconButton(
-                  icon: Icon(LucideIcons.settings, size: 20, color: colors.textPrimary.withValues(alpha: 0.7)),
+                  icon: Icon(LucideIcons.settings, size: 20, color: colors.headerText.withValues(alpha: 0.75)),
                   tooltip: loc.settingsHeader,
                   onPressed: () => context.push('/profile'),
                 ),

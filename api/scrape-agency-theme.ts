@@ -46,9 +46,39 @@ function normalizeUrl(input: string): { fullUrl: string; domain: string; cleanDo
   };
 }
 
+function extractCleanImageUrl(href: string): string {
+  if (!href) return "";
+  let clean = href.replace(/&amp;/g, "&").trim();
+  // Unwrap modern image optimizers (_next/image, _vercel/image, etc.)
+  if (
+    clean.includes("/_next/image") ||
+    clean.includes("/_vercel/image") ||
+    clean.includes("/_nuxt/image") ||
+    clean.includes("url=%2F") ||
+    clean.includes("url=/")
+  ) {
+    try {
+      const match = clean.match(/[?&]url=([^&]+)/);
+      if (match && match[1]) {
+        const decoded = decodeURIComponent(match[1]);
+        if (
+          decoded &&
+          (decoded.startsWith("/") ||
+            decoded.startsWith("http://") ||
+            decoded.startsWith("https://"))
+        ) {
+          clean = decoded;
+        }
+      }
+    } catch (_) {}
+  }
+  return clean;
+}
+
 function resolveRelativeUrl(href: string, baseUrl: string): string {
   if (!href) return "";
-  const trimmed = href.trim();
+  const cleaned = extractCleanImageUrl(href);
+  const trimmed = cleaned.trim();
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     return trimmed;
   }
@@ -68,11 +98,12 @@ function resolveRelativeUrl(href: string, baseUrl: string): string {
 
 function toCorsSafeUrl(rawUrl: string): string {
   if (!rawUrl) return "";
+  const cleanedUrl = extractCleanImageUrl(rawUrl);
   // Brandfetch CDN already supports CORS natively
-  if (rawUrl.includes("brandfetch.io") || rawUrl.includes("weserv.nl") || rawUrl.includes("supabase.co")) {
-    return rawUrl;
+  if (cleanedUrl.includes("brandfetch.io") || cleanedUrl.includes("weserv.nl") || cleanedUrl.includes("supabase.co")) {
+    return cleanedUrl;
   }
-  const clean = rawUrl.replace(/^https?:\/\//i, "");
+  const clean = cleanedUrl.replace(/^https?:\/\//i, "");
   return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}`;
 }
 
@@ -147,6 +178,25 @@ function isLightSurface(hex: string): boolean {
   const [r, g, b] = hexToRgb(hex);
   const [, s, v] = rgbToHsv(r, g, b);
   return s <= 0.08 && v >= 0.92;
+}
+
+function isDarkSurface(hex: string): boolean {
+  const [r, g, b] = hexToRgb(hex);
+  const [, s, v] = rgbToHsv(r, g, b);
+  // Any surface with brightness <= 0.28 is definitely dark (e.g. #001F3F, #1A1A1A, #0F172A)
+  if (v <= 0.28) return true;
+  // If brightness is <= 0.36 and low/moderate saturation, it's a dark charcoal/slate surface
+  if (v <= 0.36 && s <= 0.50) return true;
+  return false;
+}
+
+function extractColorFromCssValue(val: string): string | null {
+  if (!val) return null;
+  const hex = val.match(/#(?:[0-9a-fA-F]{3}){1,2}\b/);
+  if (hex) return normalizeHex(hex[0]);
+  const rgb = val.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgb) return rgbToHex(parseInt(rgb[1]), parseInt(rgb[2]), parseInt(rgb[3]));
+  return null;
 }
 
 function isDarkText(hex: string): boolean {
@@ -280,9 +330,128 @@ function categorizeCssColors(allCssAndHtml: string) {
   return categories;
 }
 
+function detectDarkTheme(
+  html: string,
+  allCssAndHtml: string,
+  categories: ReturnType<typeof categorizeCssColors>,
+  foundLogo?: string | null
+): {
+  isDarkTheme: boolean;
+  isDarkHeader: boolean;
+  headerBg?: string;
+  headerText?: string;
+  headerBorder?: string;
+} {
+  // 1. Explicit dark mode attributes / tags strictly on <html> or <body> tags
+  const htmlTag = html.match(/<html[^>]*>/i)?.[0] || "";
+  const bodyTag = html.match(/<body[^>]*>/i)?.[0] || "";
+  const hasDarkAttribute =
+    /(?:class|data-theme|data-mode|data-bs-theme|theme)=["'][^"']*\bdark\b[^"']*["']/i.test(htmlTag) ||
+    /(?:class|data-theme|data-mode|data-bs-theme|theme)=["'][^"']*\bdark\b[^"']*["']/i.test(bodyTag);
+  const hasScriptDarkTheme =
+    /(?:defaultTheme|colorScheme|theme)["\\]*\s*:\s*["\\]*dark/i.test(html);
+  const hasColorSchemeDark = /(?:^|\s)color-scheme\s*:\s*dark/i.test(allCssAndHtml);
+  const isLogoDesignedForDark =
+    /(?:logo|brand)[-_]?(?:white|light)/i.test(foundLogo || "");
+
+  // 2. Search for explicit header/nav background color
+  let headerDarkCandidate: string | null = null;
+  const inlineHeader = html.match(/<(?:header|nav)[^>]*style=["'][^"']*background(?:-color)?\s*:\s*([^;"']+)/i);
+  if (inlineHeader) {
+    const c = extractColorFromCssValue(inlineHeader[1]);
+    if (c && isDarkSurface(c)) headerDarkCandidate = c;
+  }
+
+  if (!headerDarkCandidate) {
+    const headerRe = /(?:^|[\s;}])(?:header|nav|\.header|\.navbar|\.nav-bar|\.main-header|\.site-header|#header|#nav)\s*\{[^}]*background(?:-color)?\s*:\s*([^;{}]+)/gi;
+    for (const m of allCssAndHtml.matchAll(headerRe)) {
+      const c = extractColorFromCssValue(m[1]);
+      if (c && isDarkSurface(c)) {
+        headerDarkCandidate = c;
+        break;
+      }
+    }
+  }
+
+  // 3. Search for root body/html background (strict: body/html selectors only, not body.dark-theme)
+  let bodyDarkCandidate: string | null = null;
+  const inlineBody = html.match(/<body[^>]*style=["'][^"']*background(?:-color)?\s*:\s*([^;"']+)/i);
+  if (inlineBody) {
+    const c = extractColorFromCssValue(inlineBody[1]);
+    if (c && isDarkSurface(c)) bodyDarkCandidate = c;
+  }
+
+  if (!bodyDarkCandidate) {
+    const bodyRe = /(?:^|[\s;}])(?:body|html)(?:\s*,\s*(?:body|html))*\s*\{[^}]*background(?:-color)?\s*:\s*([^;{}]+)/gi;
+    for (const m of allCssAndHtml.matchAll(bodyRe)) {
+      const c = extractColorFromCssValue(m[1]);
+      if (c && isDarkSurface(c)) {
+        bodyDarkCandidate = c;
+        break;
+      }
+    }
+  }
+
+  // CSS variables like --background: #03060d
+  let cssVarDarkCandidate: string | null = null;
+  const cssVarBg = allCssAndHtml.match(/(?:--background|--bg|--surface)\s*:\s*([^;{}]+)/i);
+  if (cssVarBg) {
+    const c = extractColorFromCssValue(cssVarBg[1]);
+    if (c && isDarkSurface(c)) cssVarDarkCandidate = c;
+  }
+
+  // 4. Count dark vs light backgrounds in CSS
+  let darkBgCount = 0;
+  let lightBgCount = 0;
+  let dominantDarkBg: string | null = null;
+  let maxDarkWeight = 0;
+
+  for (const [hex, count] of categories.background.entries()) {
+    if (isDarkSurface(hex)) {
+      darkBgCount += count;
+      if (count > maxDarkWeight) {
+        maxDarkWeight = count;
+        dominantDarkBg = hex;
+      }
+    } else if (isLightSurface(hex)) {
+      lightBgCount += count;
+    }
+  }
+
+  const isDarkOverall =
+    hasDarkAttribute ||
+    hasScriptDarkTheme ||
+    hasColorSchemeDark ||
+    isLogoDesignedForDark ||
+    !!bodyDarkCandidate ||
+    !!cssVarDarkCandidate ||
+    (darkBgCount > lightBgCount * 2 && darkBgCount >= 10);
+
+  const isDarkHeader = !!headerDarkCandidate || isDarkOverall;
+
+  if (isDarkHeader) {
+    const chosenDarkBg = headerDarkCandidate || bodyDarkCandidate || cssVarDarkCandidate || dominantDarkBg || "#0B0F19";
+    return {
+      isDarkTheme: isDarkOverall,
+      isDarkHeader: true,
+      headerBg: chosenDarkBg,
+      headerText: "#FFFFFF",
+      headerBorder: "#1E293B",
+    };
+  }
+
+  return {
+    isDarkTheme: false,
+    isDarkHeader: false,
+  };
+}
+
 function buildSemanticPalette(
   categories: ReturnType<typeof categorizeCssColors>,
-  extractedBrandColors: string[]
+  extractedBrandColors: string[],
+  allCssAndHtml: string = "",
+  html: string = "",
+  foundLogo: string | null = null
 ) {
   const lightBgs = [...categories.background.entries()]
     .filter(([h]) => isLightSurface(h))
@@ -321,6 +490,18 @@ function buildSemanticPalette(
     accentColor = "#D97706";
   }
 
+  const darkDetection = detectDarkTheme(html, allCssAndHtml, categories, foundLogo);
+
+  const headerBg = darkDetection.isDarkHeader
+    ? (darkDetection.headerBg || "#0F172A")
+    : bgHex;
+  const headerText = darkDetection.isDarkHeader
+    ? (darkDetection.headerText || "#FFFFFF")
+    : textPrimary;
+  const headerBorder = darkDetection.isDarkHeader
+    ? (darkDetection.headerBorder || "#1E293B")
+    : borderHex;
+
   return {
     primary: primaryColor,
     accent: accentColor,
@@ -328,6 +509,11 @@ function buildSemanticPalette(
     bg_white: bgHex,
     text_primary: textPrimary,
     border: borderHex,
+    header_bg: headerBg,
+    header_text: headerText,
+    header_border: headerBorder,
+    is_dark_header: darkDetection.isDarkHeader,
+    is_dark_theme: darkDetection.isDarkTheme,
   };
 }
 
@@ -593,7 +779,7 @@ export async function handler(req: Request) {
       }
     }
 
-    const colorScheme = buildSemanticPalette(categories, svgColors);
+    const colorScheme = buildSemanticPalette(categories, svgColors, allCss, html, foundLogo);
 
     // 5. If agency_id provided, update Dev Supabase profiles
     if (agencyId) {
@@ -625,6 +811,7 @@ export async function handler(req: Request) {
         logo_source: logoSource,
         website_url: `https://${domainWithWww}`,
         color_scheme: colorScheme,
+        is_dark_header: colorScheme.is_dark_header,
         detected_logo_colors: [
           colorScheme.primary,
           colorScheme.accent,

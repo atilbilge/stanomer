@@ -380,25 +380,47 @@ class _AgencyDemoSandboxBannerState
         'bg_white': '#FFFFFF',
         'text_primary': '#0F172A',
         'border': '#E2E8F0',
+        'header_bg': '#FFFFFF',
+        'header_text': '#0F172A',
+        'header_border': '#E2E8F0',
+        'is_dark_header': false,
       };
 
       // Try calling our scraper API to fetch real logo (Brandfetch / Site Logo) and theme colors
       try {
         final isLocalWeb = kIsWeb && (Uri.base.host.contains('localhost') || Uri.base.host.contains('127.0.0.1'));
-        final endpoint = isLocalWeb || !kIsWeb
-            ? 'https://stanomer.online/api/scrape-agency-theme'
-            : '/api/scrape-agency-theme';
+        final candidateEndpoints = isLocalWeb
+            ? [
+                'http://localhost:3000/api/scrape-agency-theme',
+                'https://www.stanomer.online/api/scrape-agency-theme',
+              ]
+            : [
+                '/api/scrape-agency-theme',
+                'https://www.stanomer.online/api/scrape-agency-theme',
+              ];
 
-        final response = await http.post(
-          Uri.parse(endpoint),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'url': domainWithWww,
-            'agency_id': widget.agencyId,
-          }),
-        ).timeout(const Duration(seconds: 8));
+        http.Response? response;
+        for (final ep in candidateEndpoints) {
+          try {
+            final res = await http.post(
+              Uri.parse(ep),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'url': domainWithWww,
+                'agency_id': widget.agencyId,
+              }),
+            ).timeout(const Duration(seconds: 8));
 
-        if (response.statusCode == 200) {
+            if (res.statusCode == 200) {
+              response = res;
+              break;
+            }
+          } catch (_) {
+            // Try next candidate
+          }
+        }
+
+        if (response != null && response.statusCode == 200) {
           final resData = jsonDecode(response.body);
           if (resData['success'] == true) {
             if (resData['logo_url'] != null && (resData['logo_url'] as String).trim().isNotEmpty) {

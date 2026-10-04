@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -259,6 +260,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       appBar: isDesktop
           ? null
           : AppBar(
+        backgroundColor: brandingState.hasAgencyBranding ? agencyColors.headerBg : null,
+        systemOverlayStyle: (brandingState.hasAgencyBranding && agencyColors.isDarkHeader)
+            ? SystemUiOverlayStyle.light
+            : null,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(
+          color: brandingState.hasAgencyBranding ? agencyColors.headerText : null,
+        ),
         title: Row(
           children: [
             // Show agency logo if available, else default Stanomer logo
@@ -285,7 +295,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   appBarTitle,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: brandingState.hasAgencyBranding ? agencyColors.headerText : null,
+                  ),
                   maxLines: 1,
                 ),
               ),
