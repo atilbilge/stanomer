@@ -1252,6 +1252,12 @@ END;
 $$;
 ```
 
+### 4.14.1 `verify_agency_demo_token(p_token UUID)`
+**Açıklama**: E-posta doğrulama token'ını kontrol ederek acente kullanıcısını yetkilendirir ve oturum açmasını sağlar.
+- **Otomatik Süre Yenileme**: Eğer bağlantı süresi dolmuşsa (`token_expires_at < now()`) hata fırlatmak yerine token ve profil süresini (`demo_expires_at`) **3 gün daha uzatır** (`now() + interval '3 days'`).
+- **Koşullu Portföy Üretimi ("Data yoksa tekrar üret, varsa dokunma")**: Acenteye ait mülk kaydı (`properties`) yoksa `generate_agency_demo_data()` tetiklenerek 10 dairelik örnek portföy hazırlanır; mevcut mülkler varsa dokunulmaz.
+- Geriye `was_expired: boolean` ve acente giriş parametrelerini döner.
+
 ---
 
 ### 4.15 `generate_agency_demo_data(p_agency_id UUID)`

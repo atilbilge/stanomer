@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Navbar } from "../../../components/Navbar";
 import { useLanguage } from "../../../components/LanguageProvider";
 import { Sparkles, ArrowRight, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AgencyDemoModal } from "../../../components/AgencyDemoModal";
 
 function VerificationContent() {
   const { lang, t, setLang } = useLanguage();
@@ -16,9 +17,11 @@ function VerificationContent() {
 
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [wasExpired, setWasExpired] = useState(false);
   const [agencyName, setAgencyName] = useState<string | null>(null);
   const [targetUrl, setTargetUrl] = useState<string>("/dev-app/");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   // Synchronize language from URL if present
   useEffect(() => {
@@ -88,6 +91,9 @@ function VerificationContent() {
         if (res.ok && data?.success) {
           setSuccess(true);
           setAgencyName(data.agency_name || null);
+          if (data.was_expired) {
+            setWasExpired(true);
+          }
 
           // 2. Perform browser authentication with Supabase
           if (data.email && data.temp_password) {
@@ -252,6 +258,18 @@ function VerificationContent() {
                   <h3 className="text-2xl font-black text-slate-900">
                     {isTR ? "Giriş Yapıldı! Panelinize Aktarılıyorsunuz..." : isSR ? "Prijavljeni ste! Panel se otvara..." : "Connected! Opening Your Panel..."}
                   </h3>
+                  {wasExpired && (
+                    <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200 shadow-sm animate-in fade-in duration-300">
+                      <span>✨</span>
+                      <span>
+                        {isTR
+                          ? "Demo erişim süreniz 3 gün daha uzatıldı ve portföyünüz hazırlandı."
+                          : isSR
+                          ? "Vaš pristup demou je produžen za još 3 dana i portfolio je pripremljen."
+                          : "Your demo access has been renewed for 3 days and your portfolio is ready."}
+                      </span>
+                    </div>
+                  )}
                   <p className="text-slate-600 text-xs sm:text-sm mt-2 leading-relaxed max-w-md mx-auto">
                     {isTR
                       ? "Acenteniz için 3 günlük sandbox ortamınız başarıyla açıldı. Birkaç saniye içinde doğrudan kokpitinize yönlendirileceksiniz."
@@ -308,13 +326,14 @@ function VerificationContent() {
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
-                  <Link
-                    href="/agencies"
-                    className="inline-flex justify-center items-center gap-2 px-7 py-3.5 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-500/25 transition"
+                  <button
+                    type="button"
+                    onClick={() => setIsDemoModalOpen(true)}
+                    className="inline-flex justify-center items-center gap-2 px-7 py-3.5 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-500/25 transition cursor-pointer"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    <span>{isTR ? "Yeniden Test Portföyü Oluştur" : isSR ? "Kreirajte Novi Test Portfolio" : "Recreate Sample Portfolio"}</span>
-                  </Link>
+                    <span>{isTR ? "Yeni Demo Talebi Gönder" : isSR ? "Zatražite Novi Demo" : "Request New Demo Access"}</span>
+                  </button>
                   <Link
                     href="/"
                     className="inline-flex justify-center items-center px-5 py-3.5 border border-slate-200 text-sm font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition"
@@ -327,6 +346,12 @@ function VerificationContent() {
           </div>
         </div>
       </div>
+
+      <AgencyDemoModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+        defaultAgencyName={agencyName || ""}
+      />
     </div>
   );
 }

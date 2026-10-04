@@ -38,6 +38,19 @@ export default function AgenciesPage() {
   }, [isHeroPillOpen]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (
+        params.get("open_demo") === "true" ||
+        params.get("demo") === "1" ||
+        params.get("demo") === "true"
+      ) {
+        setIsDemoModalOpen(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
       const hash = window.location.hash.replace("#", "");
       if (hash) {

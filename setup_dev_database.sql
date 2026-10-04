@@ -1741,6 +1741,7 @@ DECLARE
     v_user_id UUID;
     v_temp_password TEXT := 'Stanomer2026!';
     v_instance_id UUID;
+    v_was_expired BOOLEAN := FALSE;
 BEGIN
     SELECT * INTO v_request
     FROM public.agency_demo_requests
@@ -1750,13 +1751,15 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'Geçersiz veya bulunamayan doğrulama kodu.');
     END IF;
 
-    IF v_request.token_expires_at < now() THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Doğrulama bağlantısının süresi dolmuş.');
+    -- Süresi dolmuşsa tespit et ve linki 3 gün daha ötele (hata fırlatmak yerine yenile)
+    IF v_request.token_expires_at IS NOT NULL AND v_request.token_expires_at < now() THEN
+        v_was_expired := TRUE;
     END IF;
 
     UPDATE public.agency_demo_requests
     SET is_email_verified = TRUE,
         status = 'active_demo',
+        token_expires_at = (now() + interval '3 days'),
         updated_at = now()
     WHERE id = v_request.id;
 
@@ -1834,14 +1837,18 @@ BEGIN
         demo_expires_at = (now() + interval '3 days'),
         updated_at = now();
 
-    -- Auto-generate demo portfolio if agency has 0 properties
+    -- Data yoksa tekrar üret, varsa dokunma:
     IF NOT EXISTS (SELECT 1 FROM public.properties WHERE agency_id = v_user_id) THEN
         PERFORM public.generate_agency_demo_data(v_user_id);
     END IF;
 
     RETURN jsonb_build_object(
         'success', true,
-        'message', 'Hesabınız başarıyla aktifleştirildi.',
+        'message', CASE 
+            WHEN v_was_expired THEN 'Demo süreniz 3 gün daha uzatıldı ve portföyünüz hazırlandı.' 
+            ELSE 'Hesabınız başarıyla aktifleştirildi.' 
+        END,
+        'was_expired', v_was_expired,
         'user_id', v_user_id,
         'email', lower(v_request.email),
         'agency_name', v_request.agency_name,
