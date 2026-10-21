@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/profile_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -52,6 +53,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isGoingToSignup = state.matchedLocation == '/signup';
       final isGoingToInvite = state.matchedLocation == '/invite';
       final isGoingToDemoLogin = state.matchedLocation == '/demo-login';
+      final isGoingToResetPassword = state.matchedLocation == '/reset-password';
 
       // Deep link / query parameter check: automatic routing to demo login
       final demoToken = state.uri.queryParameters['demo_token'] ?? (state.matchedLocation == '/' ? state.uri.queryParameters['token'] : null);
@@ -62,7 +64,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (user == null) {
-        if (!isGoingToLogin && !isGoingToSignup && !isGoingToInvite && !isGoingToDemoLogin) return '/login';
+        if (!isGoingToLogin && !isGoingToSignup && !isGoingToInvite && !isGoingToDemoLogin && !isGoingToResetPassword) return '/login';
       } else {
         // Agency users go to their own dashboard
         if (role == 'agency') {
@@ -95,6 +97,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => ResetPasswordScreen(
+          email: state.uri.queryParameters['email'],
+          token: state.uri.queryParameters['token'] ?? state.uri.queryParameters['code'],
+        ),
       ),
       GoRoute(
         path: '/dashboard',

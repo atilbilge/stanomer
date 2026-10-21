@@ -79,6 +79,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
 
   // New contract tenant controllers for agency
   late TextEditingController _contractTenantNameController;
+  late TextEditingController _contractTenantEmailController;
   late TextEditingController _contractTenantIdController;
   late TextEditingController _contractTenantPhoneController;
   late TextEditingController _contractTenantNotesController;
@@ -120,6 +121,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     _contractCurrency = 'EUR';
     _contractDepositCurrency = 'EUR';
     _contractTenantNameController = TextEditingController();
+    _contractTenantEmailController = TextEditingController();
     _contractTenantIdController = TextEditingController();
     _contractTenantPhoneController = TextEditingController();
     _contractTenantNotesController = TextEditingController();
@@ -168,6 +170,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
     _contractDepositController.dispose();
     _contractDueDayController.dispose();
     _contractTenantNameController.dispose();
+    _contractTenantEmailController.dispose();
     _contractTenantIdController.dispose();
     _contractTenantPhoneController.dispose();
     _contractTenantNotesController.dispose();
@@ -361,6 +364,7 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
           _contractEndDate = contract.endDate;
 
           _contractTenantNameController.text = contract.tenantName ?? '';
+          _contractTenantEmailController.text = contract.inviteeEmail;
           _contractTenantIdController.text = contract.tenantIdNumber ?? '';
           _contractTenantPhoneController.text = contract.tenantPhone ?? '';
           _contractTenantNotesController.text = contract.tenantNotes ?? '';
@@ -460,21 +464,20 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
               ),
               const SizedBox(height: 16),
               TextFormField(
-                key: ValueKey('tenant_email_${contract.id}_${contract.inviteeEmail}'),
-                initialValue: contract.inviteeEmail.isNotEmpty
-                    ? contract.inviteeEmail
-                    : loc.unassigned,
-                readOnly: true,
+                key: ValueKey('tenant_email_${contract.id}'),
+                controller: _contractTenantEmailController,
+                readOnly: contract.tenantId != null,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: loc.tenantEmail,
                   prefixIcon: const Icon(LucideIcons.mail, size: 20),
-                  suffixIcon: const Icon(LucideIcons.lock, size: 16, color: StanomerColors.textTertiary),
-                  filled: true,
+                  suffixIcon: contract.tenantId != null
+                      ? const Icon(LucideIcons.lock, size: 16, color: StanomerColors.textTertiary)
+                      : null,
+                  filled: contract.tenantId != null,
                   fillColor: StanomerColors.bgPage,
                 ),
-                style: TextStyle(
-                  color: contract.inviteeEmail.isNotEmpty ? StanomerColors.textPrimary : StanomerColors.textTertiary,
-                ),
+                onChanged: contract.tenantId != null ? null : (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
               Row(
@@ -816,6 +819,9 @@ class _PropertySettingsScreenState extends ConsumerState<PropertySettingsScreen>
                         await ref.read(propertyRepositoryProvider).updateContractTenantDetails(
                           contract.id,
                           tenantName: _contractTenantNameController.text.trim().isEmpty ? null : _contractTenantNameController.text.trim(),
+                          inviteeEmail: contract.tenantId == null && _contractTenantEmailController.text.trim().isNotEmpty
+                              ? _contractTenantEmailController.text.trim()
+                              : null,
                           tenantIdNumber: _contractTenantIdController.text.trim().isEmpty ? null : _contractTenantIdController.text.trim(),
                           tenantPhone: _contractTenantPhoneController.text.trim().isEmpty ? null : _contractTenantPhoneController.text.trim(),
                           tenantNotes: _contractTenantNotesController.text.trim().isEmpty ? null : _contractTenantNotesController.text.trim(),

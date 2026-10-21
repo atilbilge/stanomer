@@ -1411,6 +1411,18 @@ abstract class AppLocalizations {
   /// **'E-mail stanara'**
   String get tenantEmail;
 
+  /// No description provided for @landlordEmail.
+  ///
+  /// In sr, this message translates to:
+  /// **'E-mail vlasnika'**
+  String get landlordEmail;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In sr, this message translates to:
+  /// **'Molimo unesite važeću e-mail adresu.'**
+  String get enterValidEmail;
+
   /// No description provided for @existingContractTermsInfo.
   ///
   /// In sr, this message translates to:
@@ -6933,6 +6945,84 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Predlog ugovora za novi period je odbijen.'**
   String get contractRenewalDeclined;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Resetovanje lozinke'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite vašu email adresu. Poslaćemo vam 6-cifreni verifikacioni kod.'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @resetCodeSent.
+  ///
+  /// In sr, this message translates to:
+  /// **'Verifikacioni kod je poslat na vašu email adresu.'**
+  String get resetCodeSent;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Verifikacioni kod'**
+  String get verificationCode;
+
+  /// No description provided for @enterVerificationCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite 6-cifreni kod'**
+  String get enterVerificationCode;
+
+  /// No description provided for @userNotFoundWithEmail.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nije pronađen nalog sa ovom email adresom.'**
+  String get userNotFoundWithEmail;
+
+  /// No description provided for @phoneUserNoEmail.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ovaj nalog je registrovan brojem telefona. Molimo prijavite se putem telefona.'**
+  String get phoneUserNoEmail;
+
+  /// No description provided for @invalidOrExpiredCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Kod je nevažeći ili je istekao.'**
+  String get invalidOrExpiredCode;
+
+  /// No description provided for @passwordResetSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vaša lozinka je uspešno resetovana. Sada se možete prijaviti.'**
+  String get passwordResetSuccess;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pošalji kod ponovo'**
+  String get resendCode;
+
+  /// No description provided for @resetPasswordButton.
+  ///
+  /// In sr, this message translates to:
+  /// **'Resetuj lozinku'**
+  String get resetPasswordButton;
+
+  /// No description provided for @sendResetCode.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pošalji verifikacioni kod'**
+  String get sendResetCode;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In sr, this message translates to:
+  /// **'Lozinka mora imati najmanje 6 karaktera.'**
+  String get passwordTooShort;
 }
 
 class _AppLocalizationsDelegate

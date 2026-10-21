@@ -295,6 +295,8 @@
   "dashboard": "Преглед стања",
   "parties": "СТРАНЕ",
   "tenantEmail": "Е-маил адреса станара",
+  "landlordEmail": "Е-маил власника",
+  "enterValidEmail": "Молимо унесите важећу е-маил адресу.",
   "existingContractTermsInfo": "Досадашњи услови уговора важиће и за овог станара.",
   "rentAndPayment": "КИРИЈА И ПЛАЋАЊЕ",
   "datesAndContract": "ДАТУМИ И УГОВОР",
@@ -1680,5 +1682,19 @@
   "renewalProposalSentSuccess": "Предлог обнове је послат закупцу.",
   "upcomingContractReadyNotice": "Уговор за нови период је потврђен и ступа на снагу на дан почетка.",
   "contractRenewalAccepted": "Уговор за нови период је одобрен.",
-  "contractRenewalDeclined": "Предлог уговора за нови период је одбијен."
+  "contractRenewalDeclined": "Предлог уговора за нови период је одбијен.",
+  "forgotPasswordTitle": "Ресетовање лозинке",
+  "forgotPasswordSubtitle": "Унесите вашу е-пошту. Послаћемо вам 6-цифрени верификациони код.",
+  "resetCodeSent": "Верификациони код је послат на вашу е-пошту.",
+  "verificationCode": "Верификациони код",
+  "enterVerificationCode": "Унесите 6-цифрени код",
+  "userNotFoundWithEmail": "Није пронађен налог са овом е-поштом.",
+  "phoneUserNoEmail": "Овај налог је регистрован бројем телефона. Молимо пријавите се путем телефона.",
+  "invalidOrExpiredCode": "Код је неважећи или је истекао.",
+  "passwordResetSuccess": "Ваша лозинка је успешно ресетована. Сада се можете пријавити.",
+  "resendCode": "Пошаљи код поново",
+  "resetPasswordButton": "Ресетуј лозинку",
+  "sendResetCode": "Пошаљи верификациони код",
+  "passwordTooShort": "Лозинка мора имати најмање 6 карактера."
 }
+

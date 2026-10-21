@@ -226,6 +226,38 @@ class AuthRepository {
     await _client.auth.resetPasswordForEmail(email);
   }
 
+  /// Requests a password reset token & 6-digit verification code from database
+  Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    final response = await _client.rpc(
+      'request_password_reset',
+      params: {'p_email': email.trim().toLowerCase()},
+    );
+    if (response is Map) {
+      return Map<String, dynamic>.from(response);
+    }
+    return {'success': false, 'error': 'unexpected_response'};
+  }
+
+  /// Verifies 6-digit code or token and updates encrypted_password in auth.users
+  Future<Map<String, dynamic>> verifyAndResetPassword({
+    required String email,
+    required String codeOrToken,
+    required String newPassword,
+  }) async {
+    final response = await _client.rpc(
+      'verify_and_reset_password',
+      params: {
+        'p_email': email.trim().toLowerCase(),
+        'p_token_or_code': codeOrToken.trim(),
+        'p_new_password': newPassword,
+      },
+    );
+    if (response is Map) {
+      return Map<String, dynamic>.from(response);
+    }
+    return {'success': false, 'error': 'unexpected_response'};
+  }
+
   Future<void> deleteAccount() async {
     await _client.rpc('delete_own_account');
     await signOut();

@@ -1648,6 +1648,46 @@ class _OverviewTab extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _ContractDetailRow(icon: LucideIcons.user, label: isTenant ? loc.landlord : loc.tenant, value: isTenant ? resolvedLandlordName : resolvedTenantName),
+              _ContractDetailRow(
+                icon: LucideIcons.mail,
+                label: isTenant ? loc.landlordEmail : loc.tenantEmail,
+                value: (isTenant ? (contract.inviterName ?? '') : contract.inviteeEmail).isNotEmpty
+                    ? (isTenant ? (contract.inviterName ?? '') : contract.inviteeEmail)
+                    : loc.noEmailProvided,
+              ),
+              if (!isTenant && contract.tenantId == null) ...[
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      TenantInviteShareSheet.show(
+                        context,
+                        propertyId: property.id,
+                        propertyName: property.name,
+                        propertyAddress: property.address,
+                        tenantName: contract.tenantName ?? '',
+                        tenantEmail: contract.inviteeEmail,
+                        token: contract.token,
+                        contractId: contract.id,
+                        monthlyRent: contract.monthlyRent,
+                        currency: contract.currency,
+                        depositAmount: contract.depositAmount,
+                        startDate: contract.startDate,
+                      );
+                    },
+                    icon: const Icon(LucideIcons.mail, size: 16),
+                    label: Text(loc.tenantInviteEmailBtn),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: roleColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               if (showAgencyTenantDetails && contract.tenantIdNumber != null && contract.tenantIdNumber!.isNotEmpty)
                 _ContractDetailRow(icon: LucideIcons.idCard, label: loc.localeName == 'tr' ? 'Kimlik / Pasaport' : 'ID / Passport', value: contract.tenantIdNumber!),
               if (contract.tenantPhone != null && contract.tenantPhone!.isNotEmpty)
@@ -2034,7 +2074,56 @@ class _OverviewTab extends ConsumerWidget {
                         if (effectiveIsTenant)
                           _InfoRow(icon: LucideIcons.user, label: loc.landlord, value: resolvedLandlordName, iconColor: roleColor),
                         if (effectiveIsLandlord)
-                          _InfoRow(icon: LucideIcons.user, label: loc.tenant, value: resolvedTenantName, iconColor: roleColor),
+                          _InfoRow(
+                            icon: LucideIcons.user, 
+                            label: loc.tenant, 
+                            value: resolvedTenantName, 
+                            iconColor: roleColor,
+                            trailingAction: (effectiveIsLandlord && activeContract.tenantId == null)
+                                ? InkWell(
+                                    onTap: () {
+                                      TenantInviteShareSheet.show(
+                                        context,
+                                        propertyId: liveProperty.id,
+                                        propertyName: liveProperty.name,
+                                        propertyAddress: liveProperty.address,
+                                        tenantName: activeContract.tenantName ?? '',
+                                        tenantEmail: activeContract.inviteeEmail,
+                                        token: activeContract.token,
+                                        contractId: activeContract.id,
+                                        monthlyRent: activeContract.monthlyRent,
+                                        currency: activeContract.currency,
+                                        depositAmount: activeContract.depositAmount,
+                                        startDate: activeContract.startDate,
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: roleColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: roleColor.withValues(alpha: 0.3)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(LucideIcons.mail, size: 12, color: roleColor),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            loc.tenantInviteEmailBtn,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: roleColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                          ),
                           
                         const Divider(height: 1, indent: 20, endIndent: 20),
                         _InfoRow(
@@ -3780,8 +3869,8 @@ class _ContractTile extends ConsumerWidget {
                   },
                   tooltip: loc.editContract,
                 ),
-              // Paylaş / Mail butonu (sadece ev sahibi, sadece pending)
-              if (isLandlord && isPending) ...[
+              // Paylaş / Mail butonu (sadece ev sahibi, pending veya kiracısı henüz eşleşmemiş sözleşmeler)
+              if (isLandlord && (isPending || contract.tenantId == null)) ...[
                 if (isAgencyManaged)
                   IconButton(
                     visualDensity: VisualDensity.compact,

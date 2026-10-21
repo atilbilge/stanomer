@@ -709,6 +709,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get tenantEmail => 'Kiracının E-postası';
 
   @override
+  String get landlordEmail => 'Ev Sahibinin E-postası';
+
+  @override
+  String get enterValidEmail => 'Lütfen geçerli bir e-posta adresi girin.';
+
+  @override
   String get existingContractTermsInfo =>
       'Mevcut sözleşme şartları (kira bedeli, tarihler ve masraf dağılımı) bu kiracı için de geçerli olacaktır.';
 
@@ -3863,4 +3869,47 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get contractRenewalDeclined =>
       'Yeni dönem sözleşme teklifi reddedildi.';
+
+  @override
+  String get forgotPasswordTitle => 'Şifre Sıfırlama';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Hesabınıza bağlı e-posta adresinizi girin. Size 6 haneli bir doğrulama kodu göndereceğiz.';
+
+  @override
+  String get resetCodeSent => 'Doğrulama kodu e-posta adresinize gönderildi.';
+
+  @override
+  String get verificationCode => 'Doğrulama Kodu';
+
+  @override
+  String get enterVerificationCode => '6 haneli kodu girin';
+
+  @override
+  String get userNotFoundWithEmail =>
+      'Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.';
+
+  @override
+  String get phoneUserNoEmail =>
+      'Bu hesap sadece telefon numarası ile kayıt edilmiştir. Lütfen telefon ile giriş yapın.';
+
+  @override
+  String get invalidOrExpiredCode => 'Kod geçersiz veya süresi dolmuş.';
+
+  @override
+  String get passwordResetSuccess =>
+      'Şifreniz başarıyla sıfırlandı. Yeni şifrenizle giriş yapabilirsiniz.';
+
+  @override
+  String get resendCode => 'Kodu Tekrar Gönder';
+
+  @override
+  String get resetPasswordButton => 'Şifreyi Güncelle';
+
+  @override
+  String get sendResetCode => 'Doğrulama Kodu Gönder';
+
+  @override
+  String get passwordTooShort => 'Şifre en az 6 karakter olmalıdır.';
 }

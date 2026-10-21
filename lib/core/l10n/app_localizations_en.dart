@@ -708,6 +708,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tenantEmail => 'Tenant Email';
 
   @override
+  String get landlordEmail => 'Landlord Email';
+
+  @override
+  String get enterValidEmail => 'Please enter a valid email address.';
+
+  @override
   String get existingContractTermsInfo =>
       'Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.';
 
@@ -3859,4 +3865,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contractRenewalDeclined =>
       'New period contract proposal declined.';
+
+  @override
+  String get forgotPasswordTitle => 'Reset Password';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Enter your registered email address. We will send you a 6-digit verification code.';
+
+  @override
+  String get resetCodeSent => 'Verification code has been sent to your email.';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get enterVerificationCode => 'Enter 6-digit code';
+
+  @override
+  String get userNotFoundWithEmail =>
+      'No account found with this email address.';
+
+  @override
+  String get phoneUserNoEmail =>
+      'This account was registered with a phone number. Please log in using your phone.';
+
+  @override
+  String get invalidOrExpiredCode => 'The code is invalid or has expired.';
+
+  @override
+  String get passwordResetSuccess =>
+      'Your password has been reset successfully. You can now log in.';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String get resetPasswordButton => 'Reset Password';
+
+  @override
+  String get sendResetCode => 'Send Verification Code';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters.';
 }

@@ -717,6 +717,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tenantEmail => 'Email арендатора';
 
   @override
+  String get landlordEmail => 'Email арендодателя';
+
+  @override
+  String get enterValidEmail =>
+      'Пожалуйста, введите действительный адрес электронной почты.';
+
+  @override
   String get existingContractTermsInfo =>
       'Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).';
 
@@ -3879,4 +3886,49 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get contractRenewalDeclined =>
       'Предложение о новом договоре отклонено.';
+
+  @override
+  String get forgotPasswordTitle => 'Сброс пароля';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Введите ваш адрес электронной почты. Мы отправим вам 6-значный проверочный код.';
+
+  @override
+  String get resetCodeSent =>
+      'Проверочный код отправлен на ваш адрес электронной почты.';
+
+  @override
+  String get verificationCode => 'Проверочный код';
+
+  @override
+  String get enterVerificationCode => 'Введите 6-значный код';
+
+  @override
+  String get userNotFoundWithEmail =>
+      'Аккаунт с таким адресом электронной почты не найден.';
+
+  @override
+  String get phoneUserNoEmail =>
+      'Этот аккаунт зарегистрирован по номеру телефона. Пожалуйста, войдите по телефону.';
+
+  @override
+  String get invalidOrExpiredCode =>
+      'Код недействителен или срок его действия истек.';
+
+  @override
+  String get passwordResetSuccess =>
+      'Ваш пароль успешно изменен. Теперь вы можете войти.';
+
+  @override
+  String get resendCode => 'Отправить код повторно';
+
+  @override
+  String get resetPasswordButton => 'Сбросить пароль';
+
+  @override
+  String get sendResetCode => 'Отправить проверочный код';
+
+  @override
+  String get passwordTooShort => 'Пароль должен содержать не менее 6 символов.';
 }

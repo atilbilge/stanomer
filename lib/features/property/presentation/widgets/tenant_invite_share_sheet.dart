@@ -493,9 +493,17 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
   String _selectedLanguage = 'tr';
   bool _localeInitialized = false;
 
+  late TextEditingController _emailController;
+  late String _currentEmail;
+  bool _isEditingEmail = false;
+  bool _isSavingEmail = false;
+
   @override
   void initState() {
     super.initState();
+    _currentEmail = widget.tenantEmail.trim();
+    _emailController = TextEditingController(text: _currentEmail);
+    _isEditingEmail = _currentEmail.isEmpty;
     _fetchLogsAndContractStatus();
     _listenForContractStatus();
   }
@@ -516,6 +524,7 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
   @override
   void dispose() {
     _subscription?.cancel();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -624,7 +633,7 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
         : (user?.email ?? '');
 
     final tenantName = widget.tenantName.trim();
-    final tenantEmail = widget.tenantEmail.trim();
+    final tenantEmail = _currentEmail.trim();
 
     final email = TenantInviteShareSheet.buildTenantInviteEmail(
       agencyName: agencyName,
@@ -651,8 +660,78 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
     );
   }
 
+  Future<bool> _saveTenantEmail(String email) async {
+    final cleanEmail = email.trim().toLowerCase();
+    final loc = AppLocalizations.of(context)!;
+    if (cleanEmail.isEmpty || !cleanEmail.contains('@') || !cleanEmail.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.enterValidEmail),
+          backgroundColor: StanomerColors.alertPrimary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return false;
+    }
+
+    setState(() => _isSavingEmail = true);
+    try {
+      final repo = ref.read(propertyRepositoryProvider);
+      if (widget.contractId != null && widget.contractId!.isNotEmpty) {
+        await repo.updateContractTenantEmail(
+          contractId: widget.contractId!,
+          inviteeEmail: cleanEmail,
+          propertyId: widget.propertyId,
+        );
+      } else if (widget.token.isNotEmpty) {
+        final client = Supabase.instance.client;
+        await client.from('contracts').update({
+          'invitee_email': cleanEmail,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }).eq('token', widget.token);
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentEmail = cleanEmail;
+          _emailController.text = cleanEmail;
+          _isEditingEmail = false;
+          _isSavingEmail = false;
+        });
+        if (widget.propertyId != null) {
+          ref.invalidate(activeContractProvider(widget.propertyId!));
+          ref.invalidate(propertyContractsProvider(widget.propertyId!));
+          ref.invalidate(propertyProvider(widget.propertyId!));
+        }
+        ref.invalidate(agencyPropertiesProvider);
+        ref.invalidate(propertiesStreamProvider);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error saving tenant email: $e');
+      if (mounted) {
+        setState(() => _isSavingEmail = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${loc.error}: $e'),
+            backgroundColor: StanomerColors.alertPrimary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
   Future<void> _sendInviteEmail() async {
     final loc = AppLocalizations.of(context)!;
+
+    final enteredEmail = _emailController.text.trim().toLowerCase();
+    if (_isEditingEmail || _currentEmail.isEmpty || _currentEmail != enteredEmail) {
+      final saved = await _saveTenantEmail(enteredEmail);
+      if (!saved) return;
+    }
+
     final details = _buildEmailDetails();
     final email = details.tenantEmail;
 
@@ -1386,102 +1465,226 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: StanomerColors.borderDefault),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(LucideIcons.user, color: primaryColor, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            emailDetails.tenantName,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
                           ),
-                          Text(
-                            emailDetails.tenantEmail,
-                            style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                          child: Icon(LucideIcons.user, color: primaryColor, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                emailDetails.tenantName.isNotEmpty ? emailDetails.tenantName : loc.tenant,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              if (!_isEditingEmail && _currentEmail.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        _currentEmail,
+                                        style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    InkWell(
+                                      onTap: () => setState(() => _isEditingEmail = true),
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Icon(LucideIcons.edit2, size: 12, color: primaryColor),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else if (!_isEditingEmail && _currentEmail.isEmpty) ...[
+                                InkWell(
+                                  onTap: () => setState(() => _isEditingEmail = true),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        loc.noEmailSpecified,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.orange.shade800,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Icon(LucideIcons.plusCircle, size: 12, color: Colors.orange.shade800),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (_lastEmailSentAt != null) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(LucideIcons.send, size: 10, color: Color(0xFF15803D)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      loc.lastSentAt(DateFormat("dd/MM/yyyy HH:mm").format(_lastEmailSentAt!)),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF15803D),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
                           ),
-                          if (_lastEmailSentAt != null) ...[
-                            const SizedBox(height: 4),
-                            Row(
+                        ),
+                        if (_isContractActive)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF86EFAC)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(LucideIcons.send, size: 10, color: Color(0xFF15803D)),
+                                const Icon(LucideIcons.checkCheck, size: 12, color: Color(0xFF16A34A)),
                                 const SizedBox(width: 4),
                                 Text(
-                                  loc.lastSentAt(DateFormat("dd/MM/yyyy HH:mm").format(_lastEmailSentAt!)),
+                                  loc.statusApproved,
                                   style: const TextStyle(
-                                    fontSize: 11,
                                     color: Color(0xFF15803D),
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ],
-                      ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _lastEmailSentAt != null ? const Color(0xFFFEF3C7) : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _lastEmailSentAt != null ? const Color(0xFFFDE68A) : Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _lastEmailSentAt != null ? LucideIcons.clock : LucideIcons.mail,
+                                  size: 12,
+                                  color: _lastEmailSentAt != null ? const Color(0xFFB45309) : Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _lastEmailSentAt != null ? loc.invitePending : loc.statusNotSent,
+                                  style: TextStyle(
+                                    color: _lastEmailSentAt != null ? const Color(0xFFB45309) : Colors.grey.shade700,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
-                    if (_isContractActive)
+                    if (_isEditingEmail || _currentEmail.isEmpty) ...[
+                      const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDCFCE7),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF86EFAC)),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(LucideIcons.checkCheck, size: 12, color: Color(0xFF16A34A)),
-                            const SizedBox(width: 4),
-                            Text(
-                              loc.statusApproved,
-                              style: const TextStyle(
-                                color: Color(0xFF15803D),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Icon(LucideIcons.mail, size: 14, color: primaryColor),
+                                const SizedBox(width: 6),
+                                Text(
+                                  loc.tenantEmail,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primaryColor),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _lastEmailSentAt != null ? const Color(0xFFFEF3C7) : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: _lastEmailSentAt != null ? const Color(0xFFFDE68A) : Colors.grey.shade300),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _lastEmailSentAt != null ? LucideIcons.clock : LucideIcons.mail,
-                              size: 12,
-                              color: _lastEmailSentAt != null ? const Color(0xFFB45309) : Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _lastEmailSentAt != null ? loc.invitePending : loc.statusNotSent,
-                              style: TextStyle(
-                                color: _lastEmailSentAt != null ? const Color(0xFFB45309) : Colors.grey.shade700,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      hintText: 'ornek@email.com',
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _currentEmail = val.trim();
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  onPressed: _isSavingEmail
+                                      ? null
+                                      : () => _saveTenantEmail(_emailController.text),
+                                  icon: _isSavingEmail
+                                      ? const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                        )
+                                      : const Icon(LucideIcons.check, size: 14),
+                                  label: Text(loc.save, style: const TextStyle(fontSize: 12)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: primaryColor,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                                if (widget.tenantEmail.trim().isNotEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    visualDensity: VisualDensity.compact,
+                                    icon: const Icon(LucideIcons.x, size: 16),
+                                    tooltip: loc.cancel,
+                                    onPressed: () {
+                                      setState(() {
+                                        _currentEmail = widget.tenantEmail.trim();
+                                        _emailController.text = _currentEmail;
+                                        _isEditingEmail = false;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),

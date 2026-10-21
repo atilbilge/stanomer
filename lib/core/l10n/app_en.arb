@@ -295,6 +295,8 @@
   "dashboard": "Dashboard",
   "parties": "PARTIES",
   "tenantEmail": "Tenant Email",
+  "landlordEmail": "Landlord Email",
+  "enterValidEmail": "Please enter a valid email address.",
   "existingContractTermsInfo": "Existing agreed contract terms (rent, dates, and expenses) will apply to this tenant as well.",
   "rentAndPayment": "RENT & PAYMENT",
   "datesAndContract": "DATES & CONTRACT",
@@ -1707,5 +1709,19 @@
   "renewalProposalSentSuccess": "Renewal proposal sent to tenant.",
   "upcomingContractReadyNotice": "The contract for the new period is confirmed and will take effect on its start date.",
   "contractRenewalAccepted": "New period contract approved.",
-  "contractRenewalDeclined": "New period contract proposal declined."
+  "contractRenewalDeclined": "New period contract proposal declined.",
+  "forgotPasswordTitle": "Reset Password",
+  "forgotPasswordSubtitle": "Enter your registered email address. We will send you a 6-digit verification code.",
+  "resetCodeSent": "Verification code has been sent to your email.",
+  "verificationCode": "Verification Code",
+  "enterVerificationCode": "Enter 6-digit code",
+  "userNotFoundWithEmail": "No account found with this email address.",
+  "phoneUserNoEmail": "This account was registered with a phone number. Please log in using your phone.",
+  "invalidOrExpiredCode": "The code is invalid or has expired.",
+  "passwordResetSuccess": "Your password has been reset successfully. You can now log in.",
+  "resendCode": "Resend Code",
+  "resetPasswordButton": "Reset Password",
+  "sendResetCode": "Send Verification Code",
+  "passwordTooShort": "Password must be at least 6 characters."
 }
+

@@ -1718,6 +1718,7 @@ class PropertyRepository {
 
   Future<void> updateContractTenantDetails(String contractId, {
     String? tenantName,
+    String? inviteeEmail,
     String? tenantIdNumber,
     String? tenantPhone,
     String? tenantNotes,
@@ -1725,7 +1726,8 @@ class PropertyRepository {
     List<TenantSecondaryContact>? tenantSecondaryContacts,
   }) async {
     final payload = <String, dynamic>{
-      'tenant_name': tenantName,
+      if (tenantName != null) 'tenant_name': tenantName,
+      if (inviteeEmail != null) 'invitee_email': inviteeEmail.trim().toLowerCase(),
       'tenant_id_number': tenantIdNumber,
       'tenant_phone': tenantPhone,
       'tenant_notes': tenantNotes,
@@ -1735,6 +1737,35 @@ class PropertyRepository {
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
     await _client.from('contracts').update(payload).eq('id', contractId);
+  }
+
+  /// Updates or assigns an invitee email to an existing contract and generates a token if empty
+  Future<String> updateContractTenantEmail({
+    required String contractId,
+    required String inviteeEmail,
+    String? propertyId,
+  }) async {
+    final cleanEmail = inviteeEmail.trim().toLowerCase();
+
+    // Verify or ensure token exists
+    final contractData = await _client
+        .from('contracts')
+        .select('token')
+        .eq('id', contractId)
+        .maybeSingle();
+
+    String token = (contractData?['token'] as String?) ?? '';
+    if (token.isEmpty) {
+      token = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+
+    await _client.from('contracts').update({
+      'invitee_email': cleanEmail,
+      'token': token,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', contractId);
+
+    return token;
   }
 
   Future<void> acceptContract(String? token) async {

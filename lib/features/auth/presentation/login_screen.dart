@@ -15,6 +15,8 @@ import 'widgets/apple_sign_in_button.dart';
 import '../data/auth_repository.dart';
 import '../../../core/utils/utm_tracker.dart';
 import '../../../core/config/env_config.dart';
+import '../../../core/services/email_service.dart';
+import '../../../core/providers/locale_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -141,70 +143,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _showForgotPasswordDialog() async {
     final loc = AppLocalizations.of(context)!;
-    final emailController = TextEditingController(text: _emailController.text.trim());
-
-    final String? email = await showDialog<String>(
+    final result = await showDialog<Map<String, String>>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(loc.forgotPassword),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                loc.loginToAccount,
-                style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: loc.email,
-                  prefixIcon: const Icon(LucideIcons.mail, size: 18),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(loc.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, emailController.text.trim()),
-              child: Text(loc.sendReminder),
-            ),
-          ],
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => _ForgotPasswordDialog(
+        initialEmail: _emailController.text.trim(),
+      ),
     );
 
-    if (email != null && email.isNotEmpty) {
-      try {
-        await ref.read(authRepositoryProvider).resetPassword(email);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(loc.reminderMessageCopied),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: StanomerColors.alertPrimary,
-            ),
-          );
-        }
-      }
+    if (result != null && mounted) {
+      final email = result['email'];
+      final newPassword = result['newPassword'];
+      if (email != null && email.isNotEmpty) _emailController.text = email;
+      if (newPassword != null && newPassword.isNotEmpty) _passwordController.text = newPassword;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(LucideIcons.circleCheck, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(child: Text(loc.passwordResetSuccess)),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -659,8 +629,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               Text(
                 loc.dontHaveAccount.contains('?')
-                    ? loc.dontHaveAccount.split('?').first + '? '
-                    : loc.dontHaveAccount + ' ',
+                    ? '${loc.dontHaveAccount.split('?').first}? '
+                    : '${loc.dontHaveAccount} ',
                 style: const TextStyle(
                   color: StanomerColors.textSecondary,
                   fontSize: 13,
@@ -687,3 +657,326 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+
+class _ForgotPasswordDialog extends ConsumerStatefulWidget {
+  final String initialEmail;
+
+  const _ForgotPasswordDialog({required this.initialEmail});
+
+  @override
+  ConsumerState<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
+  late final TextEditingController _emailController;
+  final _codeController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+
+  int _step = 1; // 1: Email, 2: Code & New Password
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _codeController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleRequestCode() async {
+    final loc = AppLocalizations.of(context)!;
+    final email = _emailController.text.trim().toLowerCase();
+
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _errorMessage = loc.invalidEmail);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final res = await ref.read(authRepositoryProvider).requestPasswordReset(email);
+
+      if (!mounted) return;
+
+      if (res['success'] == true) {
+        // Send email in current active screen locale
+        final locale = ref.read(localeProvider);
+        final localeCode = locale.languageCode;
+        final resetCode = res['code']?.toString() ?? '';
+        final resetToken = res['token']?.toString() ?? '';
+        final userName = res['user_name']?.toString() ?? '';
+
+        await EmailService.sendPasswordResetEmail(
+          toEmail: email,
+          toName: userName,
+          resetCode: resetCode,
+          resetToken: resetToken,
+          localeCode: localeCode,
+        );
+
+        if (!mounted) return;
+        setState(() {
+          _step = 2;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+      } else {
+        final err = res['error']?.toString();
+        String msg = err ?? 'Error';
+        if (err == 'user_not_found') {
+          msg = loc.userNotFoundWithEmail;
+        } else if (err == 'phone_user_no_email') {
+          msg = loc.phoneUserNoEmail;
+        } else if (err == 'invalid_email') {
+          msg = loc.invalidEmail;
+        }
+        setState(() {
+          _errorMessage = msg;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleVerifyAndReset() async {
+    final loc = AppLocalizations.of(context)!;
+    final email = _emailController.text.trim().toLowerCase();
+    final code = _codeController.text.trim();
+    final newPassword = _newPasswordController.text;
+
+    if (code.length < 6) {
+      setState(() => _errorMessage = loc.enterVerificationCode);
+      return;
+    }
+    if (newPassword.length < 6) {
+      setState(() => _errorMessage = loc.passwordTooShort);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final res = await ref.read(authRepositoryProvider).verifyAndResetPassword(
+        email: email,
+        codeOrToken: code,
+        newPassword: newPassword,
+      );
+
+      if (!mounted) return;
+
+      if (res['success'] == true) {
+        Navigator.pop(context, {
+          'email': email,
+          'newPassword': newPassword,
+        });
+      } else {
+        final err = res['error']?.toString();
+        String msg = err ?? 'Error';
+        if (err == 'invalid_or_expired_code') {
+          msg = loc.invalidOrExpiredCode;
+        } else if (err == 'password_too_short') {
+          msg = loc.passwordTooShort;
+        }
+        setState(() {
+          _errorMessage = msg;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: StanomerColors.brandPrimary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              _step == 1 ? LucideIcons.keyRound : LucideIcons.mailCheck,
+              size: 20,
+              color: StanomerColors.brandPrimary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _step == 1 ? loc.forgotPasswordTitle : loc.verificationCode,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _step == 1 ? loc.forgotPasswordSubtitle : loc.resetCodeSent,
+              style: const TextStyle(fontSize: 13, color: StanomerColors.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 16),
+            if (_errorMessage != null) ...[
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: StanomerColors.alertPrimary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: StanomerColors.alertPrimary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.alertCircle, size: 16, color: StanomerColors.alertPrimary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(fontSize: 12, color: StanomerColors.alertPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+            if (_step == 1) ...[
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: loc.email,
+                  prefixIcon: const Icon(LucideIcons.mail, size: 18),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onSubmitted: (_) => _handleRequestCode(),
+              ),
+            ] else ...[
+              TextField(
+                controller: _codeController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                autofocus: true,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 6,
+                ),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  labelText: loc.verificationCode,
+                  hintText: '123456',
+                  counterText: '',
+                  prefixIcon: const Icon(LucideIcons.shieldCheck, size: 18),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _newPasswordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: loc.newPassword,
+                  prefixIcon: const Icon(LucideIcons.lock, size: 18),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                      size: 18,
+                    ),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onSubmitted: (_) => _handleVerifyAndReset(),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      actions: [
+        if (_step == 1) ...[
+          TextButton(
+            onPressed: _isLoading ? null : () => Navigator.pop(context),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _handleRequestCode,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StanomerColors.brandPrimary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text(loc.sendResetCode),
+          ),
+        ] else ...[
+          TextButton(
+            onPressed: _isLoading ? null : _handleRequestCode,
+            child: Text(loc.resendCode),
+          ),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _handleVerifyAndReset,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StanomerColors.brandPrimary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text(loc.resetPasswordButton),
+          ),
+        ],
+      ],
+    );
+  }
+}
+

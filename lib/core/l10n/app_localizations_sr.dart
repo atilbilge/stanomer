@@ -709,6 +709,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get tenantEmail => 'E-mail stanara';
 
   @override
+  String get landlordEmail => 'E-mail vlasnika';
+
+  @override
+  String get enterValidEmail => 'Molimo unesite važeću e-mail adresu.';
+
+  @override
   String get existingContractTermsInfo =>
       'Dogovoreni uslovi ugovora važiće i za ovog stanara.';
 
@@ -3856,6 +3862,50 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get contractRenewalDeclined =>
       'Predlog ugovora za novi period je odbijen.';
+
+  @override
+  String get forgotPasswordTitle => 'Resetovanje lozinke';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Unesite vašu email adresu. Poslaćemo vam 6-cifreni verifikacioni kod.';
+
+  @override
+  String get resetCodeSent =>
+      'Verifikacioni kod je poslat na vašu email adresu.';
+
+  @override
+  String get verificationCode => 'Verifikacioni kod';
+
+  @override
+  String get enterVerificationCode => 'Unesite 6-cifreni kod';
+
+  @override
+  String get userNotFoundWithEmail =>
+      'Nije pronađen nalog sa ovom email adresom.';
+
+  @override
+  String get phoneUserNoEmail =>
+      'Ovaj nalog je registrovan brojem telefona. Molimo prijavite se putem telefona.';
+
+  @override
+  String get invalidOrExpiredCode => 'Kod je nevažeći ili je istekao.';
+
+  @override
+  String get passwordResetSuccess =>
+      'Vaša lozinka je uspešno resetovana. Sada se možete prijaviti.';
+
+  @override
+  String get resendCode => 'Pošalji kod ponovo';
+
+  @override
+  String get resetPasswordButton => 'Resetuj lozinku';
+
+  @override
+  String get sendResetCode => 'Pošalji verifikacioni kod';
+
+  @override
+  String get passwordTooShort => 'Lozinka mora imati najmanje 6 karaktera.';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -4561,6 +4611,12 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get tenantEmail => 'Е-маил адреса станара';
+
+  @override
+  String get landlordEmail => 'Е-маил власника';
+
+  @override
+  String get enterValidEmail => 'Молимо унесите важећу е-маил адресу.';
 
   @override
   String get existingContractTermsInfo =>
@@ -7712,4 +7768,46 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   @override
   String get contractRenewalDeclined =>
       'Предлог уговора за нови период је одбијен.';
+
+  @override
+  String get forgotPasswordTitle => 'Ресетовање лозинке';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Унесите вашу е-пошту. Послаћемо вам 6-цифрени верификациони код.';
+
+  @override
+  String get resetCodeSent => 'Верификациони код је послат на вашу е-пошту.';
+
+  @override
+  String get verificationCode => 'Верификациони код';
+
+  @override
+  String get enterVerificationCode => 'Унесите 6-цифрени код';
+
+  @override
+  String get userNotFoundWithEmail => 'Није пронађен налог са овом е-поштом.';
+
+  @override
+  String get phoneUserNoEmail =>
+      'Овај налог је регистрован бројем телефона. Молимо пријавите се путем телефона.';
+
+  @override
+  String get invalidOrExpiredCode => 'Код је неважећи или је истекао.';
+
+  @override
+  String get passwordResetSuccess =>
+      'Ваша лозинка је успешно ресетована. Сада се можете пријавити.';
+
+  @override
+  String get resendCode => 'Пошаљи код поново';
+
+  @override
+  String get resetPasswordButton => 'Ресетуј лозинку';
+
+  @override
+  String get sendResetCode => 'Пошаљи верификациони код';
+
+  @override
+  String get passwordTooShort => 'Лозинка мора имати најмање 6 карактера.';
 }

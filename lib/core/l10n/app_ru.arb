@@ -295,6 +295,8 @@
   "dashboard": "Мое жилье",
   "parties": "СТОРОНЫ",
   "tenantEmail": "Email арендатора",
+  "landlordEmail": "Email арендодателя",
+  "enterValidEmail": "Пожалуйста, введите действительный адрес электронной почты.",
   "existingContractTermsInfo": "Для этого жильца будут действовать согласованные условия договора (аренда, даты, распределение расходов).",
   "rentAndPayment": "АРЕНДА И ОПЛАТА",
   "datesAndContract": "ДАТЫ И ДОГОВОР",
@@ -1680,5 +1682,19 @@
   "renewalProposalSentSuccess": "Предложение о продлении отправлено арендатору.",
   "upcomingContractReadyNotice": "Договор на новый период подтвержден и вступит в силу с даты начала.",
   "contractRenewalAccepted": "Договор на новый период утвержден.",
-  "contractRenewalDeclined": "Предложение о новом договоре отклонено."
+  "contractRenewalDeclined": "Предложение о новом договоре отклонено.",
+  "forgotPasswordTitle": "Сброс пароля",
+  "forgotPasswordSubtitle": "Введите ваш адрес электронной почты. Мы отправим вам 6-значный проверочный код.",
+  "resetCodeSent": "Проверочный код отправлен на ваш адрес электронной почты.",
+  "verificationCode": "Проверочный код",
+  "enterVerificationCode": "Введите 6-значный код",
+  "userNotFoundWithEmail": "Аккаунт с таким адресом электронной почты не найден.",
+  "phoneUserNoEmail": "Этот аккаунт зарегистрирован по номеру телефона. Пожалуйста, войдите по телефону.",
+  "invalidOrExpiredCode": "Код недействителен или срок его действия истек.",
+  "passwordResetSuccess": "Ваш пароль успешно изменен. Теперь вы можете войти.",
+  "resendCode": "Отправить код повторно",
+  "resetPasswordButton": "Сбросить пароль",
+  "sendResetCode": "Отправить проверочный код",
+  "passwordTooShort": "Пароль должен содержать не менее 6 символов."
 }
+

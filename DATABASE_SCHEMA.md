@@ -576,6 +576,26 @@ Bir mülkün birden fazla mülk sahibini (şahıs veya tüzel kişi / şirket), 
 
 ---
 
+### 2.19 `password_reset_tokens`
+Kullanıcıların şifrelerini unuttuklarında e-posta adreslerine gönderilen çok dilli, tek kullanımlık 6 haneli doğrulama kodlarını ve güvenli sıfırlama token'larını saklar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Kayıt benzersiz kimliği |
+| `email` | `TEXT` | **NO** | - | - | Şifre sıfırlama talep eden e-posta adresi |
+| `token` | `TEXT` | **NO** | - | `UNIQUE` | E-posta bağlantısı için UUID sıfırlama token'ı |
+| `code` | `TEXT` | **NO** | - | - | Ekrana girilebilecek 6 haneli doğrulama kodu |
+| `attempts` | `INTEGER` | **NO** | `0` | - | Hatalı kod deneme sayısı (5 denemede bloke edilir) |
+| `expires_at` | `TIMESTAMPTZ` | **NO** | `now() + 1 hour` | - | Kod ve token son geçerlilik zamanı (1 saat) |
+| `used_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Sıfırlama tamamlandığında doldurulan zaman damgası |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+
+#### RLS Politikaları (`public.password_reset_tokens`)
+* **`"No direct public access to password reset tokens"`**: `FOR ALL TO authenticated USING (false)` (Yalnızca `SECURITY DEFINER` RPC fonksiyonları üzerinden erişilebilir).
+
+---
+
 ## 3. Görünümler (Views)
 
 ### 3.1 `properties_with_names`
@@ -1282,6 +1302,40 @@ $$;
 
 ### 4.19 GoTrue Uyumluluğu & Token / Kimlik Yönetimi
 **Açıklama**: Supabase Auth (GoTrue Go runtime) motorunun `Scan error on column ... converting NULL to string is unsupported` (500 Database error querying schema) hatasını önlemek için `verify_agency_demo_token` ve ilgili fonksiyonlarda `confirmation_token`, `recovery_token`, `email_change` kolonları `NULL` yerine boş dize (`''`) olarak yazılır ve `auth.identities` kaydı otomatik oluşturulur.
+
+---
+
+### 4.20 `request_password_reset(p_email TEXT)`
+**Kullanım Amacı**: Şifre sıfırlama talebinde bulunan e-postanın kayıtlı ve e-posta tabanlı olup olmadığını doğrular, 6 haneli tek kullanımlık doğrulama kodu ve UUID token üretir.
+```sql
+CREATE OR REPLACE FUNCTION public.request_password_reset(p_email TEXT)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, extensions
+AS $$
+...
+$$;
+```
+
+---
+
+### 4.21 `verify_and_reset_password(p_email TEXT, p_token_or_code TEXT, p_new_password TEXT)`
+**Kullanım Amacı**: Kullanıcının girdiği 6 haneli kodu veya bağlantıdaki UUID token'ı doğrular. Süresi dolmamışsa ve hatalı deneme limiti (5) aşılmamışsa, kullanıcının şifresini bcrypt (`extensions.crypt`) ile günceller ve token'ı kullanıldı (`used_at`) olarak işaretler.
+```sql
+CREATE OR REPLACE FUNCTION public.verify_and_reset_password(
+    p_email TEXT,
+    p_token_or_code TEXT,
+    p_new_password TEXT
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, extensions
+AS $$
+...
+$$;
+```
 
 ---
 

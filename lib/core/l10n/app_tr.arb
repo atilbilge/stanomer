@@ -295,6 +295,8 @@
   "dashboard": "Panel",
   "parties": "TARAFLAR",
   "tenantEmail": "Kiracının E-postası",
+  "landlordEmail": "Ev Sahibinin E-postası",
+  "enterValidEmail": "Lütfen geçerli bir e-posta adresi girin.",
   "existingContractTermsInfo": "Mevcut sözleşme şartları (kira bedeli, tarihler ve masraf dağılımı) bu kiracı için de geçerli olacaktır.",
   "rentAndPayment": "KİRA VE ÖDEME",
   "datesAndContract": "TARİHLER VE KONTRAT",
@@ -1707,5 +1709,19 @@
   "renewalProposalSentSuccess": "Yenileme teklifi kiracıya iletildi.",
   "upcomingContractReadyNotice": "Yeni dönem sözleşmeniz onaylanmıştır ve başlangıç tarihinde yürürlüğe girecektir.",
   "contractRenewalAccepted": "Yeni dönem sözleşmesi onaylandı.",
-  "contractRenewalDeclined": "Yeni dönem sözleşme teklifi reddedildi."
+  "contractRenewalDeclined": "Yeni dönem sözleşme teklifi reddedildi.",
+  "forgotPasswordTitle": "Şifre Sıfırlama",
+  "forgotPasswordSubtitle": "Hesabınıza bağlı e-posta adresinizi girin. Size 6 haneli bir doğrulama kodu göndereceğiz.",
+  "resetCodeSent": "Doğrulama kodu e-posta adresinize gönderildi.",
+  "verificationCode": "Doğrulama Kodu",
+  "enterVerificationCode": "6 haneli kodu girin",
+  "userNotFoundWithEmail": "Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.",
+  "phoneUserNoEmail": "Bu hesap sadece telefon numarası ile kayıt edilmiştir. Lütfen telefon ile giriş yapın.",
+  "invalidOrExpiredCode": "Kod geçersiz veya süresi dolmuş.",
+  "passwordResetSuccess": "Şifreniz başarıyla sıfırlandı. Yeni şifrenizle giriş yapabilirsiniz.",
+  "resendCode": "Kodu Tekrar Gönder",
+  "resetPasswordButton": "Şifreyi Güncelle",
+  "sendResetCode": "Doğrulama Kodu Gönder",
+  "passwordTooShort": "Şifre en az 6 karakter olmalıdır."
 }
+
