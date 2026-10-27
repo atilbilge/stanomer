@@ -23,7 +23,7 @@ from pypdf import PdfReader
 
 BASE_DIR = "/Users/atilbilgeorum/Downloads/PROPERTY MANAGEMENT"
 MASTER_EXCEL = os.path.join(BASE_DIR, "Ugovori o zakupu - Property Menagment.xlsx")
-TARGET_AGENCY_ID = "93f35053-5132-4f69-8731-df9f7b8cce28" # office@axiaexclusive.com
+TARGET_AGENCY_ID = "e4a8d708-acf2-4816-b59a-677c7656ce7c" # Profile ID
 STANOMER_NAMESPACE = uuid.UUID("7b203417-640b-47b2-a42e-335b1c93a890")
 
 # Serbian Month Translation
@@ -670,12 +670,13 @@ def escape_sql(val):
     val_str = str(val).replace("'", "''")
     return f"'{val_str}'"
 
-def generate_sql_migration(parsed_properties, output_path):
+def generate_sql_migration(parsed_properties, output_path, agency_id=None):
+    if not agency_id:
+        agency_id = TARGET_AGENCY_ID
     lines = []
     lines.append("-- ==============================================================================")
     lines.append("-- MIGRATION: 2026-10-21_import_2026_property_management_data.sql")
-    lines.append("-- HEDEF: YALNIZCA DEV Supabase (`thvbpifahvasyzmngpzp`)")
-    lines.append(f"-- ACENTE ID: {TARGET_AGENCY_ID} (office@axiaexclusive.com)")
+    lines.append(f"-- HEDEF PROFİL (AGENCY / LANDLORD ID): {agency_id}")
     lines.append("-- TANIM: 36 adet mülk, aktif kontratlar, kira ve fatura hareketlerinin aktarımı.")
     lines.append("-- IDEMPOTENT: Tüm kayıtlar deterministic UUID ile üretilmiş olup mükerrer oluşturmaz.")
     lines.append("-- ==============================================================================\n")
@@ -687,11 +688,11 @@ def generate_sql_migration(parsed_properties, output_path):
 
     # 0. CLEANUP PREVIOUS DATA FOR TARGET AGENCY
     lines.append("-- ------------------------------------------------------------------------------")
-    lines.append("-- 0. CLEANUP PREVIOUS DATA FOR AGENCY office@axiaexclusive.com")
+    lines.append(f"-- 0. CLEANUP PREVIOUS DATA FOR PROFILE {agency_id}")
     lines.append("-- ------------------------------------------------------------------------------")
     lines.append(f"""DO $$
 DECLARE
-    v_agency_id UUID := '{TARGET_AGENCY_ID}';
+    v_agency_id UUID := '{agency_id}';
 BEGIN
     -- 1. Delete maintenance records linked to properties of this agency
     DELETE FROM public.maintenance_charges 
@@ -865,7 +866,7 @@ $$;\n""")
     id, agency_id, landlord_id, landlord_name, name, title, address, city, currency,
     default_monthly_rent, default_deposit_amount, is_detailed, description, expenses_template, created_at, updated_at
 ) VALUES (
-    '{prop_id}', '{TARGET_AGENCY_ID}', '{TARGET_AGENCY_ID}', {owner_name}, {title}, {title}, {address}, 'Beograd', 'EUR',
+    '{prop_id}', '{agency_id}', '{agency_id}', {owner_name}, {title}, {title}, {address}, 'Beograd', 'EUR',
     {m_rent}, {dep_amt}, true, {desc}, {tmpl_json}::jsonb, now(), now()
 ) ON CONFLICT (id) DO UPDATE SET
     landlord_name = EXCLUDED.landlord_name,
@@ -913,7 +914,7 @@ $$;\n""")
     token, start_date, end_date, monthly_rent, deposit_amount, currency, deposit_currency,
     status, expenses_config, tenant_notes, due_day, created_at
 ) VALUES (
-    '{c_id}', '{prop_id}', '{TARGET_AGENCY_ID}', '{TARGET_AGENCY_ID}', {tenant_name}, {tenant_phone}, {tenant_email},
+    '{c_id}', '{prop_id}', '{agency_id}', '{agency_id}', {tenant_name}, {tenant_phone}, {tenant_email},
     {token_sql}, {s_date}, {e_date}, {m_rent}, {dep_amt}, 'EUR', 'EUR',
     'active', {cfg_json}::jsonb, {notes}, 1, now()
 ) ON CONFLICT (id) DO UPDATE SET
@@ -939,7 +940,7 @@ $$;\n""")
             lines.append(f"""INSERT INTO public.activity_logs (
     id, property_id, user_id, type, metadata, created_at
 ) VALUES (
-    '{log_id}', '{prop_id}', '{TARGET_AGENCY_ID}', 'manual_note',
+    '{log_id}', '{prop_id}', '{agency_id}', 'manual_note',
     jsonb_build_object('note', {note_escaped}), {created_at}
 ) ON CONFLICT (id) DO UPDATE SET
     metadata = EXCLUDED.metadata,
@@ -999,9 +1000,14 @@ $$;\n""")
     owner_note = EXCLUDED.owner_note;
 """)
 
-    # Extra safety: remove any rent payments before 2026 to ensure zero 2025 phantom debt
-    lines.append("\n-- Ensure absolutely no rent or utility bills exist before 2026-01-01")
-    lines.append("DELETE FROM public.rent_payments WHERE due_date < '2026-01-01';\n")
+    # Extra safety: remove any rent payments before 2026 for this agency's properties to ensure zero 2025 phantom debt
+    lines.append("\n-- Ensure absolutely no rent or utility bills exist before 2026-01-01 for this profile's properties")
+    lines.append(f"""DELETE FROM public.rent_payments 
+WHERE due_date < '2026-01-01' 
+  AND property_id IN (
+    SELECT id FROM public.properties 
+    WHERE agency_id = '{agency_id}' OR landlord_id = '{agency_id}'
+  );\n""")
 
     lines.append("\nCOMMIT;\n")
 
@@ -1010,6 +1016,14 @@ $$;\n""")
     print(f"[+] SQL migration successfully generated at: {output_path}")
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Stanomer Property Management 2026 Importer")
+    parser.add_argument("--agency-id", default=TARGET_AGENCY_ID, help="Target agency/landlord profile UUID")
+    parser.add_argument("--sql-output", default=None, help="Output SQL migration path")
+    args, _ = parser.parse_known_args()
+
+    target_id = args.agency_id
+
     master_dict = load_master_contracts()
     print(f"[*] Loaded {len(master_dict)} contract rows from master table: {MASTER_EXCEL}")
 
@@ -1030,7 +1044,7 @@ def main():
     md_file = os.path.join(os.path.dirname(__file__), "import_summary.md")
     with open(md_file, "w", encoding="utf-8") as f:
         f.write("# Stanomer 2026 Property Import Summary\n\n")
-        f.write(f"**Acente:** office@axiaexclusive.com (`{TARGET_AGENCY_ID}`)\n")
+        f.write(f"**Acente / Profil:** `{target_id}`\n")
         f.write(f"**Toplam Taranan Mülk:** {len(parsed_properties)}\n\n")
         f.write("| # | Mülk Adı | Ev Sahibi | Kiracı | Kontrat 2026 | Kira Kalemi | Fatura Kalemi | Not Sayısı |\n")
         f.write("|---|---|---|---|---|---|---|---|\n")
@@ -1043,8 +1057,8 @@ def main():
             notes_count = len(p["manual_notes"].splitlines()) if p["manual_notes"] else 0
             f.write(f"| {i} | {p['title']} | {owner} | {tenant} | {c_str} | {rents} | {bills} | {notes_count} |\n")
 
-    sql_path = "/Users/atilbilgeorum/projects/stanomer/migrations/2026-10-21_import_2026_property_management_data.sql"
-    generate_sql_migration(parsed_properties, sql_path)
+    sql_path = args.sql_output or "/Users/atilbilgeorum/projects/stanomer/migrations/2026-10-21_import_2026_property_management_data.sql"
+    generate_sql_migration(parsed_properties, sql_path, agency_id=target_id)
 
 if __name__ == "__main__":
     main()

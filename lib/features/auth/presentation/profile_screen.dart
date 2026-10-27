@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,8 +28,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
-  final _oldPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -38,6 +35,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.initState();
     final user = ref.read(authRepositoryProvider).currentUser;
     _nameController.text = user?.userMetadata?['full_name'] ?? '';
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  bool _isEmailUser(User? user) {
+    if (user == null || user.email == null || user.email!.isEmpty) return false;
+    final List<String> providers = [];
+    if (user.appMetadata['provider'] != null) {
+      providers.add(user.appMetadata['provider'].toString());
+    }
+    if (user.appMetadata['providers'] is List) {
+      providers.addAll((user.appMetadata['providers'] as List).map((e) => e.toString()));
+    }
+    final bool isAppleUser = providers.contains('apple');
+    final bool isGoogleUser = !isAppleUser && providers.contains('google');
+    return !isAppleUser && !isGoogleUser;
+  }
+
+  void _showChangePasswordSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _ChangePasswordSheet(),
+    );
   }
 
   Future<void> _updateProfile() async {
@@ -59,51 +85,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           content: Text(e.toString()),
           backgroundColor: StanomerColors.alertPrimary,
           duration: const Duration(seconds: 5),
-        ));
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _updatePassword() async {
-    final loc = AppLocalizations.of(context)!;
-    if (_oldPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.fieldRequired)));
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    try {
-      final repo = ref.read(authRepositoryProvider);
-      
-      // 1. Re-authenticate to verify old password
-      await repo.reauthenticate(_oldPasswordController.text);
-      
-      // 2. Update to new password
-      await repo.updatePassword(_newPasswordController.text);
-      
-      _oldPasswordController.clear();
-      _newPasswordController.clear();
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(loc.passwordChangedSuccess),
-          backgroundColor: StanomerColors.successPrimary,
-        ));
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.message),
-          backgroundColor: StanomerColors.alertPrimary,
-        ));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: StanomerColors.alertPrimary,
         ));
       }
     } finally {
@@ -331,6 +312,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _SectionHeader(title: loc.accountHeader.toUpperCase()), // Using custom key or loc
             const SizedBox(height: 12),
             _AccountGroup(
+              isEmailUser: _isEmailUser(user),
+              onChangePasswordTap: _showChangePasswordSheet,
               onLogoutTap: () => ref.read(authRepositoryProvider).signOut(),
               onDeleteTap: _showDeleteConfirmDialog,
               loc: loc,
@@ -766,11 +749,19 @@ class _SettingsGroup extends ConsumerWidget {
 }
 
 class _AccountGroup extends StatelessWidget {
+  final bool isEmailUser;
+  final VoidCallback onChangePasswordTap;
   final VoidCallback onLogoutTap;
   final VoidCallback onDeleteTap;
   final AppLocalizations loc;
 
-  const _AccountGroup({required this.onLogoutTap, required this.onDeleteTap, required this.loc});
+  const _AccountGroup({
+    required this.isEmailUser,
+    required this.onChangePasswordTap,
+    required this.onLogoutTap,
+    required this.onDeleteTap,
+    required this.loc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -782,6 +773,15 @@ class _AccountGroup extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (isEmailUser) ...[
+            _ListTile(
+              icon: LucideIcons.keyRound,
+              title: loc.updatePassword,
+              showChevron: true,
+              onTap: onChangePasswordTap,
+            ),
+            const Divider(height: 1, indent: 56),
+          ],
           _ListTile(
             icon: LucideIcons.logOut,
             title: loc.logout,
@@ -797,6 +797,338 @@ class _AccountGroup extends StatelessWidget {
             onTap: onDeleteTap,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChangePasswordSheet extends ConsumerStatefulWidget {
+  const _ChangePasswordSheet();
+
+  @override
+  ConsumerState<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
+}
+
+class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
+  final _oldPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  bool _obscureOld = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  String _getConfirmPasswordLabel(String lang) {
+    if (lang == 'tr') return 'Yeni Şifre Tekrarı';
+    if (lang == 'sr') return 'Potvrdite novu lozinku';
+    if (lang == 'ru') return 'Повторите новый пароль';
+    return 'Confirm New Password';
+  }
+
+  String _getMismatchError(String lang) {
+    if (lang == 'tr') return 'Yeni şifreler eşleşmiyor';
+    if (lang == 'sr') return 'Nove lozinke se ne podudaraju';
+    if (lang == 'ru') return 'Новые пароли не совпадают';
+    return 'Passwords do not match';
+  }
+
+  String _getWrongOldPasswordError(String lang) {
+    if (lang == 'tr') return 'Mevcut şifreniz hatalı';
+    if (lang == 'sr') return 'Trenutna lozinka nije ispravna';
+    if (lang == 'ru') return 'Текущий пароль неверен';
+    return 'Current password is incorrect';
+  }
+
+  String _getSamePasswordError(String lang) {
+    if (lang == 'tr') return 'Yeni şifre mevcut şifre ile aynı olamaz';
+    if (lang == 'sr') return 'Nova lozinka ne može biti ista kao trenutna';
+    if (lang == 'ru') return 'Новый пароль не должен совпадать с текущим';
+    return 'New password cannot be the same as current password';
+  }
+
+  String _getSubtitle(String lang) {
+    if (lang == 'tr') return 'Hesap güvenliğiniz için yeni bir şifre belirleyin.';
+    if (lang == 'sr') return 'Postavite novu sigurnu lozinku za svoj nalog.';
+    if (lang == 'ru') return 'Установите новый надежный пароль для вашей учетной записи.';
+    return 'Set a new secure password for your account.';
+  }
+
+  Future<void> _handleSubmit() async {
+    final loc = AppLocalizations.of(context)!;
+    final lang = ref.read(localeProvider).languageCode;
+    final oldPass = _oldPasswordController.text;
+    final newPass = _newPasswordController.text;
+    final confirmPass = _confirmPasswordController.text;
+
+    if (oldPass.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
+      setState(() => _errorMessage = loc.fieldRequired);
+      return;
+    }
+    if (newPass.length < 6) {
+      setState(() => _errorMessage = loc.passwordTooShort);
+      return;
+    }
+    if (newPass != confirmPass) {
+      setState(() => _errorMessage = _getMismatchError(lang));
+      return;
+    }
+    if (oldPass == newPass) {
+      setState(() => _errorMessage = _getSamePasswordError(lang));
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      // 1. Re-authenticate to verify old password
+      await repo.reauthenticate(oldPass);
+
+      // 2. Update to new password
+      await repo.updatePassword(newPass);
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(loc.passwordChangedSuccess),
+        backgroundColor: StanomerColors.successPrimary,
+      ));
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      final msg = e.message.toLowerCase();
+      if (msg.contains('invalid') || msg.contains('credential')) {
+        setState(() => _errorMessage = _getWrongOldPasswordError(lang));
+      } else {
+        setState(() => _errorMessage = e.message);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final lang = ref.watch(localeProvider).languageCode;
+    final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 540),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: StanomerColors.bgCard,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: bottomInset + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: StanomerColors.borderDefault,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          LucideIcons.keyRound,
+                          color: primaryColor,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.updatePassword,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: StanomerColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _getSubtitle(lang),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: StanomerColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(LucideIcons.x, color: StanomerColors.textTertiary, size: 20),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Error Message
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: StanomerColors.alertPrimary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: StanomerColors.alertPrimary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.alertCircle, color: StanomerColors.alertPrimary, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                color: StanomerColors.alertPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Current Password
+                  TextField(
+                    controller: _oldPasswordController,
+                    obscureText: _obscureOld,
+                    decoration: InputDecoration(
+                      labelText: loc.oldPassword,
+                      prefixIcon: const Icon(LucideIcons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureOld ? LucideIcons.eyeOff : LucideIcons.eye),
+                        onPressed: () => setState(() => _obscureOld = !_obscureOld),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // New Password
+                  TextField(
+                    controller: _newPasswordController,
+                    obscureText: _obscureNew,
+                    decoration: InputDecoration(
+                      labelText: loc.newPassword,
+                      prefixIcon: const Icon(LucideIcons.lockKeyhole),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureNew ? LucideIcons.eyeOff : LucideIcons.eye),
+                        onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Confirm New Password
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: _getConfirmPasswordLabel(lang),
+                      prefixIcon: const Icon(LucideIcons.shieldCheck),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureConfirm ? LucideIcons.eyeOff : LucideIcons.eye),
+                        onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleSubmit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              loc.updatePassword,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Cancel Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: TextButton(
+                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                      child: Text(
+                        loc.cancel,
+                        style: const TextStyle(color: StanomerColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

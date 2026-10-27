@@ -1,6 +1,6 @@
 # Stanomer 2026 Property Import Summary
 
-**Acente:** office@axiaexclusive.com (`93f35053-5132-4f69-8731-df9f7b8cce28`)
+**Acente / Profil:** `e4a8d708-acf2-4816-b59a-677c7656ce7c`
 **Toplam Taranan Mülk:** 36
 
 | # | Mülk Adı | Ev Sahibi | Kiracı | Kontrat 2026 | Kira Kalemi | Fatura Kalemi | Not Sayısı |
