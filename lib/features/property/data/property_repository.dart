@@ -808,7 +808,8 @@ class PropertyRepository {
     if (existingToken != null && existingToken.isNotEmpty) {
       return existingToken;
     }
-    if (property.landlordId != null && property.landlordId!.isNotEmpty) {
+    final hasLandlordEmail = property.landlordEmail != null && property.landlordEmail!.trim().isNotEmpty;
+    if (property.landlordId != null && property.landlordId!.isNotEmpty && hasLandlordEmail) {
       return 'CLAIMED';
     }
     return await createLandlordOwnershipInvite(
@@ -3018,6 +3019,27 @@ class PropertyRepository {
       },
       'created_at': logDate.toUtc().toIso8601String(),
     });
+  }
+
+  Future<void> updateManualActivityNote({
+    required String logId,
+    required String note,
+    required DateTime date,
+  }) async {
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+    final logDate = isToday ? now : DateTime(date.year, date.month, date.day, now.hour, now.minute, now.second);
+
+    await _client.from('activity_logs').update({
+      'metadata': {
+        'note': note.trim(),
+      },
+      'created_at': logDate.toUtc().toIso8601String(),
+    }).eq('id', logId);
+  }
+
+  Future<void> deleteManualActivityNote(String logId) async {
+    await _client.from('activity_logs').delete().eq('id', logId);
   }
 
   Future<void> _logActivity(String propertyId, String type, Map<String, dynamic> metadata) async {

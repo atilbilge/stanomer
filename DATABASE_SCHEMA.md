@@ -322,14 +322,16 @@ Mülkteki tüm finansal ve idari eylemlerin zaman çizelgesi kaydı.
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Günlük kaydı ID |
 | `property_id` | `UUID` | **NO** | - | **FK** `REFERENCES properties(id) ON DELETE CASCADE` | Mülk ID |
-| `type` | `TEXT` | **NO** | - | - | Olay türü |
-| `metadata` | `JSONB` | YES | `'{}'::jsonb` | - | Ek parametreler |
+| `user_id` | `UUID` | YES | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Eylemi yapan kullanıcı |
+| `type` | `TEXT` | **NO** | - | - | Olay türü (`manual_note`, `rent_paid`, vb.) |
+| `metadata` | `JSONB` | YES | `'{}'::jsonb` | - | Ek parametreler (not metni vb.) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Olay zamanı |
 
 #### RLS Politikaları (`public.activity_logs`)
-* **`landlord_select_activity_logs`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = activity_logs.property_id AND p.landlord_id = auth.uid()))`
-* **`tenant_select_activity_logs`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM properties p WHERE p.id = activity_logs.property_id AND p.tenant_id = auth.uid()))`
-* **`user_insert_activity_logs`**: `FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM properties p WHERE p.id = property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid())))`
+* **`activity_logs_select_policy`**: `FOR SELECT TO authenticated` — Standart logları ev sahibi, kiracı ve acente görüntüleyebilir. `manual_note` türündeki notları YALNIZCA mülkün acentesi veya oluşturan kullanıcı görüntüleyebilir.
+* **`activity_logs_insert_policy`**: `FOR INSERT TO authenticated` — Sistem olayları eklenirken `manual_note` türündeki kayıtları sadece acente veya oluşturan kullanıcı ekleyebilir.
+* **`activity_logs_update_policy`**: `FOR UPDATE TO authenticated` — Yalnızca `manual_note` türündeki kayıtlar ve yalnızca mülkün acentesi veya oluşturan kullanıcı tarafından güncellenebilir.
+* **`activity_logs_delete_policy`**: `FOR DELETE TO authenticated` — Yalnızca `manual_note` türündeki kayıtlar ve yalnızca mülkün acentesi veya oluşturan kullanıcı tarafından silinebilir.
 
 ---
 

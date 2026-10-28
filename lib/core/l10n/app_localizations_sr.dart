@@ -3117,7 +3117,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get roomTypeStudio => 'Garsonjera';
 
   @override
-  String get secondaryContacts => 'Dodatne kontakt osobe';
+  String get secondaryContacts => 'Dodatni kontakti';
 
   @override
   String get addSecondaryContact => 'Dodaj kontakt';
@@ -3906,6 +3906,194 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'Lozinka mora imati najmanje 6 karaktera.';
+
+  @override
+  String get editManualNoteSheetTitle => 'Uredi ručnu belešku';
+
+  @override
+  String get manualNoteUpdatedSuccess => 'Beleška je uspešno ažurirana';
+
+  @override
+  String get tenantIdPassportLabel => 'Lična karta / Pasoš';
+
+  @override
+  String get tenantPhoneLabel => 'Telefon zakupca';
+
+  @override
+  String get tenantNotesLabel => 'Beleške o zakupcu';
+
+  @override
+  String get viewTenantIdDocument =>
+      'Pogledaj identifikacioni dokument zakupca';
+
+  @override
+  String get propertyManagedByAgency => 'Nekretnina pod upravom agencije';
+
+  @override
+  String get paymentRecordedDebtClosed =>
+      'Uplata je uspešno evidentirana i dug je zatvoren.';
+
+  @override
+  String get receiptUploadedDebtClosed =>
+      'Priznanica je otpremljena i dug je zatvoren.';
+
+  @override
+  String get billNoteHint => 'Dodajte napomenu o računu...';
+
+  @override
+  String get uploadNewBill => 'Otpremi novi račun';
+
+  @override
+  String get resetAmountAndBill => 'Poništi / obriši iznos i račun';
+
+  @override
+  String get changeFile => 'Promeni fajl';
+
+  @override
+  String get includedInRentBadge => 'U sklopu kirije';
+
+  @override
+  String get noAmountEntered => 'Iznos nije unet';
+
+  @override
+  String get awaitingPaymentApproval => 'Čeka odobrenje uplate';
+
+  @override
+  String get awaitingAgencyApproval => 'Čeka odobrenje agencije';
+
+  @override
+  String get awaitingApprovalBadge => 'Čeka odobrenje';
+
+  @override
+  String get paymentDueBadge => 'Čeka uplatu';
+
+  @override
+  String get pendingBadge => 'Na čekanju';
+
+  @override
+  String get transactionHistory => 'Istorija transakcija';
+
+  @override
+  String get updateAmountOrBill => 'Ažuriraj iznos / račun';
+
+  @override
+  String confirmApproveLandlordPaymentMsg(String title) {
+    return 'Da li želite da odobrite prijavu uplate stanodavca za $title?';
+  }
+
+  @override
+  String get confirmRejectLandlordPaymentMsg =>
+      'Da li želite da odbijete ovu prijavu uplate? Stanodavac će biti obavešten.';
+
+  @override
+  String get paymentAwaitingAgencyApprovalInfo =>
+      'Vaša prijava uplate je poslata agenciji na odobrenje.';
+
+  @override
+  String get declarePaymentBtn => 'Prijavi uplatu';
+
+  @override
+  String get enterBillAmount => 'Unesite iznos računa';
+
+  @override
+  String get rejectPaymentSubmissionTitle => 'Odbij prijavu uplate';
+
+  @override
+  String rejectPaymentSubmissionDesc(String statusBadgeName) {
+    return 'Prijava uplate će biti odbijena i status će ostati \"$statusBadgeName\".';
+  }
+
+  @override
+  String get rejectExpenseDeclarationDesc =>
+      'Ova prijava troška će biti odbijena i neće uticati na kiriju ili finansije nekretnine.';
+
+  @override
+  String addTenantDebtToRentSub(String cost) {
+    return '$cost - Dodajte dug zakupca na kiriju ili ga naplatite';
+  }
+
+  @override
+  String get optionBankTransferAgencyDesc =>
+      'Priložite uplatnicu bankovnog transfera agenciji';
+
+  @override
+  String get optionCashPaymentAgencyDesc =>
+      'Prijavite da ste agenciji platili u gotovini';
+
+  @override
+  String get rentAndBillsHeader => 'KIRIJA I RAČUNI';
+
+  @override
+  String zeroPaidLabel(String currency) {
+    return '0 $currency (Plaćeno)';
+  }
+
+  @override
+  String get tenantMaintenanceCreditsHeader =>
+      'POTRAŽIVANJA ZAKUPCA ZA ODRŽAVANJE';
+
+  @override
+  String get tenantMaintenanceDebtsHeader =>
+      'DUGOVI ZAKUPCA ZA ODRŽAVANJE I ŠTETU';
+
+  @override
+  String zeroSettledLabel(String currency) {
+    return '0 $currency (Zatvoreno)';
+  }
+
+  @override
+  String get maintInfoAgencyPaidSubmitted =>
+      'Zakupac je podneo prijavu uplate. Čeka se pregled agencije radi odobrenja ili odbijanja.';
+
+  @override
+  String get maintInfoAgencyPaidTenantDamage =>
+      'Šteta nastala korišćenjem zakupca koju je agencija platila unapred. Biće dodata na kiriju ili naplaćena od zakupca.';
+
+  @override
+  String get maintInfoAgencyPaidPropertyFixture =>
+      'Trošak opreme nekretnine koji je agencija platila unapred. Biće odbijen od isplate kirije ili naplaćen od stanodavca.';
+
+  @override
+  String get maintInfoTenantPaidFixturePendingAgency =>
+      'Trošak stanodavca koji je zakupac platio unapred. Biće spreman za odbitak od kirije nakon odobrenja agencije.';
+
+  @override
+  String get maintInfoTenantPaidSelfPendingAgency =>
+      'Zakupac je platio sopstvenu štetu. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).';
+
+  @override
+  String get maintInfoLandlordPaidFixturePendingAgency =>
+      'Stanodavac je platio kao opremu nekretnine. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).';
+
+  @override
+  String get maintInfoLandlordPaidDamagePendingAgency =>
+      'Šteta zakupca koju je stanodavac platio unapred. Biće spremna za dodavanje na kiriju nakon odobrenja agencije.';
+
+  @override
+  String get maintInfoTenantPaidFixtureSettled =>
+      'Trošak stanodavca koji je zakupac platio unapred. Biće odbijen od kirije ili refundiran od strane stanodavca.';
+
+  @override
+  String get maintInfoLandlordPaidDamageSettled =>
+      'Šteta zakupca koju je stanodavac platio unapred. Biće dodata na kiriju ili naplaćena od zakupca.';
+
+  @override
+  String get subLabelAwaitingBill => 'Čeka se račun';
+
+  @override
+  String get subLabelRentPayments => 'Iznosi kirije';
+
+  @override
+  String get subLabelUtilitiesDues => 'Struja, voda, komunalije';
+
+  @override
+  String get subLabelRepairsSettlements => 'Popravke i prebijanja';
+
+  @override
+  String get subLabelOverduePayments => 'Zakasnela plaćanja';
+
+  @override
+  String get subLabelUpcomingRecords => 'Predstojeće obaveze';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -4810,7 +4998,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get documents => 'Документи';
 
   @override
-  String get mainContract => 'Glavni ugovor';
+  String get mainContract => 'Главни уговор';
 
   @override
   String get addDocument => 'Додај документ';
@@ -7024,7 +7212,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get roomTypeStudio => 'Гарсоњера';
 
   @override
-  String get secondaryContacts => 'Додатне контакт особе';
+  String get secondaryContacts => 'Додатни контакти';
 
   @override
   String get addSecondaryContact => 'Додај контакт';
@@ -7810,4 +7998,192 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get passwordTooShort => 'Лозинка мора имати најмање 6 карактера.';
+
+  @override
+  String get editManualNoteSheetTitle => 'Уреди ручну белешку';
+
+  @override
+  String get manualNoteUpdatedSuccess => 'Белешка је успешно ажурирана';
+
+  @override
+  String get tenantIdPassportLabel => 'Лична карта / Пасош';
+
+  @override
+  String get tenantPhoneLabel => 'Телефон закупца';
+
+  @override
+  String get tenantNotesLabel => 'Белешке о закупцу';
+
+  @override
+  String get viewTenantIdDocument =>
+      'Погледај идентификациони документ закупца';
+
+  @override
+  String get propertyManagedByAgency => 'Некретнина под управом агенције';
+
+  @override
+  String get paymentRecordedDebtClosed =>
+      'Уплата је успешно евидентирана и дуг је затворен.';
+
+  @override
+  String get receiptUploadedDebtClosed =>
+      'Признаница је отпремљена и дуг је затворен.';
+
+  @override
+  String get billNoteHint => 'Додајте напомену о рачуну...';
+
+  @override
+  String get uploadNewBill => 'Отпреми нови рачун';
+
+  @override
+  String get resetAmountAndBill => 'Поништи / обриши износ и рачун';
+
+  @override
+  String get changeFile => 'Промени фајл';
+
+  @override
+  String get includedInRentBadge => 'У склопу кирије';
+
+  @override
+  String get noAmountEntered => 'Износ није унет';
+
+  @override
+  String get awaitingPaymentApproval => 'Чека одобрење уплате';
+
+  @override
+  String get awaitingAgencyApproval => 'Чека одобрење агенције';
+
+  @override
+  String get awaitingApprovalBadge => 'Чека одобрење';
+
+  @override
+  String get paymentDueBadge => 'Чека уплату';
+
+  @override
+  String get pendingBadge => 'На чекању';
+
+  @override
+  String get transactionHistory => 'Историја трансакција';
+
+  @override
+  String get updateAmountOrBill => 'Ажурирај износ / рачун';
+
+  @override
+  String confirmApproveLandlordPaymentMsg(String title) {
+    return 'Да ли желите да одобрите пријаву уплате станодавца за $title?';
+  }
+
+  @override
+  String get confirmRejectLandlordPaymentMsg =>
+      'Да ли желите да одбијете ову пријаву уплате? Станодавац ће бити обавештен.';
+
+  @override
+  String get paymentAwaitingAgencyApprovalInfo =>
+      'Ваша пријава уплате је послата агенцији на одобрење.';
+
+  @override
+  String get declarePaymentBtn => 'Пријави уплату';
+
+  @override
+  String get enterBillAmount => 'Унесите износ рачуна';
+
+  @override
+  String get rejectPaymentSubmissionTitle => 'Одбиј пријаву уплате';
+
+  @override
+  String rejectPaymentSubmissionDesc(String statusBadgeName) {
+    return 'Пријава уплате ће бити одбијена и статус ће остати \"$statusBadgeName\".';
+  }
+
+  @override
+  String get rejectExpenseDeclarationDesc =>
+      'Ова пријава трошка ће бити одбијена и неће утицати на кирију или финансије некретнине.';
+
+  @override
+  String addTenantDebtToRentSub(String cost) {
+    return '$cost - Додајте дуг закупца на кирију или га наплатите';
+  }
+
+  @override
+  String get optionBankTransferAgencyDesc =>
+      'Приложите уплатницу банковног трансфера агенцији';
+
+  @override
+  String get optionCashPaymentAgencyDesc =>
+      'Пријавите да сте агенцији платили у готовини';
+
+  @override
+  String get rentAndBillsHeader => 'КИРИЈА И РАЧУНИ';
+
+  @override
+  String zeroPaidLabel(String currency) {
+    return '0 $currency (Плаћено)';
+  }
+
+  @override
+  String get tenantMaintenanceCreditsHeader =>
+      'ПОТРАЖИВАЊА ЗАКУПЦА ЗА ОДРЖАВАЊЕ';
+
+  @override
+  String get tenantMaintenanceDebtsHeader =>
+      'ДУГОВИ ЗАКУПЦА ЗА ОДРЖАВАЊЕ И ШТЕТУ';
+
+  @override
+  String zeroSettledLabel(String currency) {
+    return '0 $currency (Затворено)';
+  }
+
+  @override
+  String get maintInfoAgencyPaidSubmitted =>
+      'Закупац је поднео пријаву уплате. Чека се преглед агенције ради одобрења или одбијања.';
+
+  @override
+  String get maintInfoAgencyPaidTenantDamage =>
+      'Штета настала коришћењем закупца коју је агенција платила унапред. Биће додата на кирију или наплаћена од закупца.';
+
+  @override
+  String get maintInfoAgencyPaidPropertyFixture =>
+      'Трошак опреме некретнине који је агенција платила унапред. Биће одбијен од исплате кирије или наплаћен од станодавца.';
+
+  @override
+  String get maintInfoTenantPaidFixturePendingAgency =>
+      'Трошак станодавца који је закупац платио унапред. Биће спреман за одбитак од кирије након одобрења агенције.';
+
+  @override
+  String get maintInfoTenantPaidSelfPendingAgency =>
+      'Закупац је платио сопствену штету. Биће затворено као плаћено након одобрења агенције (без утицаја на кирију).';
+
+  @override
+  String get maintInfoLandlordPaidFixturePendingAgency =>
+      'Станодавац је платио као опрему некретнине. Биће затворено као плаћено након одобрења агенције (без утицаја на кирију).';
+
+  @override
+  String get maintInfoLandlordPaidDamagePendingAgency =>
+      'Штета закупца коју је станодавац платио унапред. Биће спремна за додавање на кирију након одобрења агенције.';
+
+  @override
+  String get maintInfoTenantPaidFixtureSettled =>
+      'Трошак станодавца који је закупац платио унапред. Биће одбијен од кирије или рефундиран од стране станодавца.';
+
+  @override
+  String get maintInfoLandlordPaidDamageSettled =>
+      'Штета закупца коју је станодавац платио унапред. Биће додата на кирију или наплаћена од закупца.';
+
+  @override
+  String get subLabelAwaitingBill => 'Чека се рачун';
+
+  @override
+  String get subLabelRentPayments => 'Износи кирије';
+
+  @override
+  String get subLabelUtilitiesDues => 'Струја, вода, комуналије';
+
+  @override
+  String get subLabelRepairsSettlements => 'Поправке и пребијања';
+
+  @override
+  String get subLabelOverduePayments => 'Закаснела плаћања';
+
+  @override
+  String get subLabelUpcomingRecords => 'Предстојеће обавезе';
 }

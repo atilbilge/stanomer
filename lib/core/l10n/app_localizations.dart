@@ -5725,7 +5725,7 @@ abstract class AppLocalizations {
   /// No description provided for @secondaryContacts.
   ///
   /// In sr, this message translates to:
-  /// **'Dodatne kontakt osobe'**
+  /// **'Dodatni kontakti'**
   String get secondaryContacts;
 
   /// No description provided for @addSecondaryContact.
@@ -7023,6 +7023,324 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Lozinka mora imati najmanje 6 karaktera.'**
   String get passwordTooShort;
+
+  /// No description provided for @editManualNoteSheetTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uredi ručnu belešku'**
+  String get editManualNoteSheetTitle;
+
+  /// No description provided for @manualNoteUpdatedSuccess.
+  ///
+  /// In sr, this message translates to:
+  /// **'Beleška je uspešno ažurirana'**
+  String get manualNoteUpdatedSuccess;
+
+  /// No description provided for @tenantIdPassportLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Lična karta / Pasoš'**
+  String get tenantIdPassportLabel;
+
+  /// No description provided for @tenantPhoneLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Telefon zakupca'**
+  String get tenantPhoneLabel;
+
+  /// No description provided for @tenantNotesLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'Beleške o zakupcu'**
+  String get tenantNotesLabel;
+
+  /// No description provided for @viewTenantIdDocument.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pogledaj identifikacioni dokument zakupca'**
+  String get viewTenantIdDocument;
+
+  /// No description provided for @propertyManagedByAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nekretnina pod upravom agencije'**
+  String get propertyManagedByAgency;
+
+  /// No description provided for @paymentRecordedDebtClosed.
+  ///
+  /// In sr, this message translates to:
+  /// **'Uplata je uspešno evidentirana i dug je zatvoren.'**
+  String get paymentRecordedDebtClosed;
+
+  /// No description provided for @receiptUploadedDebtClosed.
+  ///
+  /// In sr, this message translates to:
+  /// **'Priznanica je otpremljena i dug je zatvoren.'**
+  String get receiptUploadedDebtClosed;
+
+  /// No description provided for @billNoteHint.
+  ///
+  /// In sr, this message translates to:
+  /// **'Dodajte napomenu o računu...'**
+  String get billNoteHint;
+
+  /// No description provided for @uploadNewBill.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otpremi novi račun'**
+  String get uploadNewBill;
+
+  /// No description provided for @resetAmountAndBill.
+  ///
+  /// In sr, this message translates to:
+  /// **'Poništi / obriši iznos i račun'**
+  String get resetAmountAndBill;
+
+  /// No description provided for @changeFile.
+  ///
+  /// In sr, this message translates to:
+  /// **'Promeni fajl'**
+  String get changeFile;
+
+  /// No description provided for @includedInRentBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'U sklopu kirije'**
+  String get includedInRentBadge;
+
+  /// No description provided for @noAmountEntered.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznos nije unet'**
+  String get noAmountEntered;
+
+  /// No description provided for @awaitingPaymentApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje uplate'**
+  String get awaitingPaymentApproval;
+
+  /// No description provided for @awaitingAgencyApproval.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje agencije'**
+  String get awaitingAgencyApproval;
+
+  /// No description provided for @awaitingApprovalBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka odobrenje'**
+  String get awaitingApprovalBadge;
+
+  /// No description provided for @paymentDueBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka uplatu'**
+  String get paymentDueBadge;
+
+  /// No description provided for @pendingBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'Na čekanju'**
+  String get pendingBadge;
+
+  /// No description provided for @transactionHistory.
+  ///
+  /// In sr, this message translates to:
+  /// **'Istorija transakcija'**
+  String get transactionHistory;
+
+  /// No description provided for @updateAmountOrBill.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ažuriraj iznos / račun'**
+  String get updateAmountOrBill;
+
+  /// No description provided for @confirmApproveLandlordPaymentMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Da li želite da odobrite prijavu uplate stanodavca za {title}?'**
+  String confirmApproveLandlordPaymentMsg(String title);
+
+  /// No description provided for @confirmRejectLandlordPaymentMsg.
+  ///
+  /// In sr, this message translates to:
+  /// **'Da li želite da odbijete ovu prijavu uplate? Stanodavac će biti obavešten.'**
+  String get confirmRejectLandlordPaymentMsg;
+
+  /// No description provided for @paymentAwaitingAgencyApprovalInfo.
+  ///
+  /// In sr, this message translates to:
+  /// **'Vaša prijava uplate je poslata agenciji na odobrenje.'**
+  String get paymentAwaitingAgencyApprovalInfo;
+
+  /// No description provided for @declarePaymentBtn.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavi uplatu'**
+  String get declarePaymentBtn;
+
+  /// No description provided for @enterBillAmount.
+  ///
+  /// In sr, this message translates to:
+  /// **'Unesite iznos računa'**
+  String get enterBillAmount;
+
+  /// No description provided for @rejectPaymentSubmissionTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Odbij prijavu uplate'**
+  String get rejectPaymentSubmissionTitle;
+
+  /// No description provided for @rejectPaymentSubmissionDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijava uplate će biti odbijena i status će ostati \"{statusBadgeName}\".'**
+  String rejectPaymentSubmissionDesc(String statusBadgeName);
+
+  /// No description provided for @rejectExpenseDeclarationDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ova prijava troška će biti odbijena i neće uticati na kiriju ili finansije nekretnine.'**
+  String get rejectExpenseDeclarationDesc;
+
+  /// No description provided for @addTenantDebtToRentSub.
+  ///
+  /// In sr, this message translates to:
+  /// **'{cost} - Dodajte dug zakupca na kiriju ili ga naplatite'**
+  String addTenantDebtToRentSub(String cost);
+
+  /// No description provided for @optionBankTransferAgencyDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Priložite uplatnicu bankovnog transfera agenciji'**
+  String get optionBankTransferAgencyDesc;
+
+  /// No description provided for @optionCashPaymentAgencyDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Prijavite da ste agenciji platili u gotovini'**
+  String get optionCashPaymentAgencyDesc;
+
+  /// No description provided for @rentAndBillsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'KIRIJA I RAČUNI'**
+  String get rentAndBillsHeader;
+
+  /// No description provided for @zeroPaidLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'0 {currency} (Plaćeno)'**
+  String zeroPaidLabel(String currency);
+
+  /// No description provided for @tenantMaintenanceCreditsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'POTRAŽIVANJA ZAKUPCA ZA ODRŽAVANJE'**
+  String get tenantMaintenanceCreditsHeader;
+
+  /// No description provided for @tenantMaintenanceDebtsHeader.
+  ///
+  /// In sr, this message translates to:
+  /// **'DUGOVI ZAKUPCA ZA ODRŽAVANJE I ŠTETU'**
+  String get tenantMaintenanceDebtsHeader;
+
+  /// No description provided for @zeroSettledLabel.
+  ///
+  /// In sr, this message translates to:
+  /// **'0 {currency} (Zatvoreno)'**
+  String zeroSettledLabel(String currency);
+
+  /// No description provided for @maintInfoAgencyPaidSubmitted.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zakupac je podneo prijavu uplate. Čeka se pregled agencije radi odobrenja ili odbijanja.'**
+  String get maintInfoAgencyPaidSubmitted;
+
+  /// No description provided for @maintInfoAgencyPaidTenantDamage.
+  ///
+  /// In sr, this message translates to:
+  /// **'Šteta nastala korišćenjem zakupca koju je agencija platila unapred. Biće dodata na kiriju ili naplaćena od zakupca.'**
+  String get maintInfoAgencyPaidTenantDamage;
+
+  /// No description provided for @maintInfoAgencyPaidPropertyFixture.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak opreme nekretnine koji je agencija platila unapred. Biće odbijen od isplate kirije ili naplaćen od stanodavca.'**
+  String get maintInfoAgencyPaidPropertyFixture;
+
+  /// No description provided for @maintInfoTenantPaidFixturePendingAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak stanodavca koji je zakupac platio unapred. Biće spreman za odbitak od kirije nakon odobrenja agencije.'**
+  String get maintInfoTenantPaidFixturePendingAgency;
+
+  /// No description provided for @maintInfoTenantPaidSelfPendingAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zakupac je platio sopstvenu štetu. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).'**
+  String get maintInfoTenantPaidSelfPendingAgency;
+
+  /// No description provided for @maintInfoLandlordPaidFixturePendingAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Stanodavac je platio kao opremu nekretnine. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).'**
+  String get maintInfoLandlordPaidFixturePendingAgency;
+
+  /// No description provided for @maintInfoLandlordPaidDamagePendingAgency.
+  ///
+  /// In sr, this message translates to:
+  /// **'Šteta zakupca koju je stanodavac platio unapred. Biće spremna za dodavanje na kiriju nakon odobrenja agencije.'**
+  String get maintInfoLandlordPaidDamagePendingAgency;
+
+  /// No description provided for @maintInfoTenantPaidFixtureSettled.
+  ///
+  /// In sr, this message translates to:
+  /// **'Trošak stanodavca koji je zakupac platio unapred. Biće odbijen od kirije ili refundiran od strane stanodavca.'**
+  String get maintInfoTenantPaidFixtureSettled;
+
+  /// No description provided for @maintInfoLandlordPaidDamageSettled.
+  ///
+  /// In sr, this message translates to:
+  /// **'Šteta zakupca koju je stanodavac platio unapred. Biće dodata na kiriju ili naplaćena od zakupca.'**
+  String get maintInfoLandlordPaidDamageSettled;
+
+  /// No description provided for @subLabelAwaitingBill.
+  ///
+  /// In sr, this message translates to:
+  /// **'Čeka se račun'**
+  String get subLabelAwaitingBill;
+
+  /// No description provided for @subLabelRentPayments.
+  ///
+  /// In sr, this message translates to:
+  /// **'Iznosi kirije'**
+  String get subLabelRentPayments;
+
+  /// No description provided for @subLabelUtilitiesDues.
+  ///
+  /// In sr, this message translates to:
+  /// **'Struja, voda, komunalije'**
+  String get subLabelUtilitiesDues;
+
+  /// No description provided for @subLabelRepairsSettlements.
+  ///
+  /// In sr, this message translates to:
+  /// **'Popravke i prebijanja'**
+  String get subLabelRepairsSettlements;
+
+  /// No description provided for @subLabelOverduePayments.
+  ///
+  /// In sr, this message translates to:
+  /// **'Zakasnela plaćanja'**
+  String get subLabelOverduePayments;
+
+  /// No description provided for @subLabelUpcomingRecords.
+  ///
+  /// In sr, this message translates to:
+  /// **'Predstojeće obaveze'**
+  String get subLabelUpcomingRecords;
 }
 
 class _AppLocalizationsDelegate

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -79,7 +81,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
+      ShellRoute(
+        builder: (context, state, child) {
+          return kIsWeb ? SelectionArea(child: child) : child;
+        },
+        routes: [
+          GoRoute(
         path: '/',
         builder: (context, state) => const SplashScreen(),
       ),
@@ -350,6 +357,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/agency-demo',
         builder: (context, state) => const AgencyDemoRequestScreen(),
+      ),
+        ],
       ),
     ],
   );

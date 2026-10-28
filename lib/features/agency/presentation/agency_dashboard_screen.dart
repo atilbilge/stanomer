@@ -747,7 +747,11 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
               colors: colors,
               onNewRequest: () => _handleAgencyNewMaintenanceRequest(context, colors),
             ),
-          ],
+          ].asMap().entries.map((entry) {
+            return entry.key == _currentTab.clamp(0, 3)
+                ? entry.value
+                : SelectionContainer.disabled(child: entry.value);
+          }).toList(),
         ),
       ),
     ),

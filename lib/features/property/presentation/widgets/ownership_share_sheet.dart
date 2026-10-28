@@ -814,6 +814,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
   @override
   void initState() {
     super.initState();
+    debugPrint('>>> [OwnershipSheet] initState: propId=${widget.propertyId}, landlordEmail="${widget.landlordEmail}", token="${widget.token}", ownersCount=${widget.owners?.length}');
     _initOwners();
     _listenForAcceptance();
     _fetchOwnersAndLogs();
@@ -857,6 +858,14 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
       );
     }
     return _owners[_selectedOwnerIndex.clamp(0, _owners.length - 1)];
+  }
+
+  bool get _hasAnyLandlordEmail {
+    if (widget.landlordEmail.trim().isNotEmpty) return true;
+    for (final o in _owners) {
+      if ((o.email ?? '').trim().isNotEmpty) return true;
+    }
+    return false;
   }
 
   DateTime? _getLastSentForOwner(PropertyOwner owner) {
@@ -971,7 +980,8 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 pendingMap[email] = true;
               }
             }
-            if (inv['token'] == widget.token && status == 'accepted') {
+            final hasMatchingEmail = (email != null && email.isNotEmpty) || _hasAnyLandlordEmail;
+            if (inv['token'] == widget.token && status == 'accepted' && hasMatchingEmail) {
               _isAccepted = true;
               _isPrimaryConfirmed = true;
             }
@@ -992,15 +1002,19 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
 
         if (propRes != null && propRes['landlord_id'] != null && mounted) {
           final lEmail = (propRes['landlord_email'] as String?)?.toLowerCase().trim();
-          setState(() {
-            _isPrimaryConfirmed = true;
-            if (lEmail != null && lEmail.isNotEmpty) {
-              _ownerConfirmedMap[lEmail] = true;
-            }
-            if (_owners.length <= 1) {
-              _isAccepted = true;
-            }
-          });
+          final effectiveEmail = (lEmail != null && lEmail.isNotEmpty)
+              ? lEmail
+              : widget.landlordEmail.trim().toLowerCase();
+
+          if (effectiveEmail.isNotEmpty && _hasAnyLandlordEmail) {
+            setState(() {
+              _isPrimaryConfirmed = true;
+              _ownerConfirmedMap[effectiveEmail] = true;
+              if (_owners.length <= 1) {
+                _isAccepted = true;
+              }
+            });
+          }
         }
       } else {
         // Query by token
@@ -1061,7 +1075,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                 changed = true;
               }
             }
-            if (row['token'] == widget.token && isAccepted && !_isAccepted) {
+            if (row['token'] == widget.token && isAccepted && !_isAccepted && _hasAnyLandlordEmail) {
               _isAccepted = true;
               _isPrimaryConfirmed = true;
               changed = true;
@@ -1074,12 +1088,6 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
             });
             ref.invalidate(agencyPropertiesProvider);
             ref.invalidate(propertiesFutureProvider);
-
-            if (_owners.length <= 1 && _isAccepted) {
-              Future.delayed(const Duration(milliseconds: 2000), () {
-                if (mounted) Navigator.of(context).pop();
-              });
-            }
           }
         });
       } else {
@@ -1090,7 +1098,7 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
             .listen((data) {
               if (data.isNotEmpty && mounted) {
                 final status = data.first['status'] as String?;
-                if (status == 'accepted' && !_isAccepted) {
+                if (status == 'accepted' && !_isAccepted && _hasAnyLandlordEmail) {
                   setState(() {
                     _isAccepted = true;
                     _isPrimaryConfirmed = true;
@@ -1099,9 +1107,6 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
                   });
                   ref.invalidate(agencyPropertiesProvider);
                   ref.invalidate(propertiesFutureProvider);
-                  Future.delayed(const Duration(milliseconds: 2000), () {
-                    if (mounted) Navigator.of(context).pop();
-                  });
                 }
               }
             });
@@ -1984,62 +1989,6 @@ class _OwnershipShareSheetState extends ConsumerState<OwnershipShareSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final userRole = ref.watch(userRoleProvider);
     final isAgency = userRole == 'agency';
-
-    if (_isAccepted) {
-      return Container(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: StanomerColors.successPrimary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    LucideIcons.checkCircle2,
-                    color: StanomerColors.successPrimary,
-                    size: 56,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  loc.landlordAcceptedInviteTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: StanomerColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  loc.landlordOwnershipTransferredDesc(widget.propertyName),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: StanomerColors.textTertiary),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: StanomerColors.successPrimary,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: Text(loc.ok, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
 
     final primaryColor = ref.watch(agencyColorSchemeProvider).primary;
     final emailDetails = _buildEmailDetails();

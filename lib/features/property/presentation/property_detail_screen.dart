@@ -227,10 +227,17 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                             // Left 65%: Financials Tab
                             Expanded(
                               flex: 65,
-                              child: _FinancialsTab(
-                                property: property,
-                                initialExpandedPaymentId: widget.initialExpandedPaymentId,
-                              ),
+                              child: kIsWeb
+                                  ? SelectionArea(
+                                      child: _FinancialsTab(
+                                        property: property,
+                                        initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                                      ),
+                                    )
+                                  : _FinancialsTab(
+                                      property: property,
+                                      initialExpandedPaymentId: widget.initialExpandedPaymentId,
+                                    ),
                             ),
                             Container(width: 1, color: const Color(0xFFE2E8F0)),
                             // Right 35%: Sticky SaaS Bento Overview & Activity Panel
@@ -238,11 +245,19 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                               flex: 35,
                               child: Container(
                                 color: Colors.white,
-                                child: _OverviewAndActivityPanel(
-                                  property: property,
-                                  initialTabIndex: _selectedPanelIndex,
-                                  isSidebar: true,
-                                ),
+                                child: kIsWeb
+                                    ? SelectionArea(
+                                        child: _OverviewAndActivityPanel(
+                                          property: property,
+                                          initialTabIndex: _selectedPanelIndex,
+                                          isSidebar: true,
+                                        ),
+                                      )
+                                    : _OverviewAndActivityPanel(
+                                        property: property,
+                                        initialTabIndex: _selectedPanelIndex,
+                                        isSidebar: true,
+                                      ),
                               ),
                             ),
                           ],
@@ -261,7 +276,11 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                                   _OverviewTab(property: property, isSidebar: false),
                                   _MaintenanceTab(property: property, isSidebar: false),
                                   _ActivityTab(property: property, isSidebar: false),
-                                ],
+                                ].asMap().entries.map((entry) {
+                                  return entry.key == _mobileTabIndex
+                                      ? entry.value
+                                      : SelectionContainer.disabled(child: entry.value);
+                                }).toList(),
                               ),
                             ),
                           ],
@@ -475,6 +494,13 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
       vsync: this,
       initialIndex: widget.initialTabIndex.clamp(0, 2),
     );
+    _panelTabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -487,6 +513,7 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
 
   @override
   void dispose() {
+    _panelTabController.removeListener(_onTabChanged);
     _panelTabController.dispose();
     super.dispose();
   }
@@ -591,13 +618,17 @@ class _OverviewAndActivityPanelState extends State<_OverviewAndActivityPanel> wi
           ),
         ),
         Expanded(
-          child: TabBarView(
-            controller: _panelTabController,
+          child: IndexedStack(
+            index: _panelTabController.index,
             children: [
               _OverviewTab(property: widget.property, isSidebar: widget.isSidebar),
               _ActivityTab(property: widget.property, isSidebar: widget.isSidebar),
               _MaintenanceTab(property: widget.property, isSidebar: widget.isSidebar),
-            ],
+            ].asMap().entries.map((entry) {
+              return entry.key == _panelTabController.index
+                  ? entry.value
+                  : SelectionContainer.disabled(child: entry.value);
+            }).toList(),
           ),
         ),
       ],
@@ -617,11 +648,13 @@ class _ActivityTab extends ConsumerStatefulWidget {
 class _ActivityTabState extends ConsumerState<_ActivityTab> {
   int _selectedFilter = 0; // 0: All, 1: System, 2: Manual
 
-  void _showAddNoteSheet(BuildContext context) {
+  void _showAddOrEditNoteSheet(BuildContext context, {ActivityLog? existingLog}) {
     final loc = AppLocalizations.of(context)!;
     final roleColor = ref.read(propertyAgencyColorSchemeProvider(widget.property)).primary;
-    DateTime selectedDate = DateTime.now();
-    final noteController = TextEditingController();
+    final isEditing = existingLog != null;
+    DateTime selectedDate = existingLog != null ? existingLog.createdAt.toLocal() : DateTime.now();
+    final initialNote = existingLog != null ? (existingLog.metadata['note']?.toString() ?? '') : '';
+    final noteController = TextEditingController(text: initialNote);
     bool isSubmitting = false;
 
     showModalBottomSheet(
@@ -663,10 +696,10 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                       children: [
                         Row(
                           children: [
-                            Icon(LucideIcons.stickyNote, size: 20, color: roleColor),
+                            Icon(isEditing ? LucideIcons.pencil : LucideIcons.stickyNote, size: 20, color: roleColor),
                             const SizedBox(width: 8),
                             Text(
-                              loc.manualNoteSheetTitle,
+                              isEditing ? loc.editManualNoteSheetTitle : loc.manualNoteSheetTitle,
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -803,18 +836,26 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
 
                                 setSheetState(() => isSubmitting = true);
                                 try {
-                                  await ref.read(propertyRepositoryProvider).addManualActivityNote(
-                                        propertyId: widget.property.id,
-                                        note: text,
-                                        date: selectedDate,
-                                      );
+                                  if (isEditing) {
+                                    await ref.read(propertyRepositoryProvider).updateManualActivityNote(
+                                          logId: existingLog.id,
+                                          note: text,
+                                          date: selectedDate,
+                                        );
+                                  } else {
+                                    await ref.read(propertyRepositoryProvider).addManualActivityNote(
+                                          propertyId: widget.property.id,
+                                          note: text,
+                                          date: selectedDate,
+                                        );
+                                  }
                                   if (sheetContext.mounted) {
                                     Navigator.of(sheetContext).pop();
                                   }
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(loc.manualNoteSuccess),
+                                        content: Text(isEditing ? loc.manualNoteUpdatedSuccess : loc.manualNoteSuccess),
                                         backgroundColor: StanomerColors.successPrimary,
                                       ),
                                     );
@@ -927,6 +968,14 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final user = ref.watch(currentUserProvider);
+    final userProfileAsync = user?.id != null
+        ? ref.watch(profileProvider(user!.id))
+        : const AsyncValue<Map<String, dynamic>?>.data(null);
+    final role = userProfileAsync.value?['role'] as String? ??
+        user?.userMetadata?['role'] as String?;
+    final isAgencyManager = user?.id == widget.property.agencyId || role == 'agency';
+
     final activitiesAsync = ref.watch(activityLogsProvider(widget.property.id));
     final brandingState = ref.watch(agencyBrandingProvider);
     final agencyName = brandingState.appTitle.isNotEmpty && brandingState.appTitle != 'Stanomer'
@@ -936,17 +985,23 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
 
     return activitiesAsync.when(
       data: (activities) {
+        // Only agency users have authority to view manual notes
+        final visibleActivities = isAgencyManager
+            ? activities
+            : activities.where((l) => l.type != 'manual_note').toList();
+
         // Sort reverse chronological: newest first
-        final sortedActivities = List<ActivityLog>.from(activities)
+        final sortedActivities = List<ActivityLog>.from(visibleActivities)
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         final allCount = sortedActivities.length;
         final systemCount = sortedActivities.where((l) => l.type != 'manual_note').length;
         final manualCount = sortedActivities.where((l) => l.type == 'manual_note').length;
 
+        final effectiveFilter = (!isAgencyManager && _selectedFilter == 2) ? 0 : _selectedFilter;
         final filteredActivities = sortedActivities.where((l) {
-          if (_selectedFilter == 1) return l.type != 'manual_note';
-          if (_selectedFilter == 2) return l.type == 'manual_note';
+          if (effectiveFilter == 1) return l.type != 'manual_note';
+          if (effectiveFilter == 2) return l.type == 'manual_note';
           return true;
         }).toList();
 
@@ -972,39 +1027,43 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                           _buildFilterChip(0, loc.auditFilterAll, allCount, roleColor),
                           const SizedBox(width: 6),
                           _buildFilterChip(1, loc.auditFilterSystem, systemCount, roleColor),
-                          const SizedBox(width: 6),
-                          _buildFilterChip(2, loc.auditFilterManual, manualCount, roleColor),
+                          if (isAgencyManager) ...[
+                            const SizedBox(width: 6),
+                            _buildFilterChip(2, loc.auditFilterManual, manualCount, roleColor),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => _showAddNoteSheet(context),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: roleColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(LucideIcons.plus, size: 14, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            loc.addManualNoteBtn,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                  if (isAgencyManager) ...[
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => _showAddOrEditNoteSheet(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: roleColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.plus, size: 14, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              loc.addManualNoteBtn,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -1019,7 +1078,7 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _selectedFilter == 2
+                              effectiveFilter == 2
                                   ? LucideIcons.stickyNote
                                   : LucideIcons.history,
                               size: 44,
@@ -1027,7 +1086,7 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              _selectedFilter == 2
+                              effectiveFilter == 2
                                   ? loc.noManualNotesFound
                                   : loc.noActivityLogs,
                               style: const TextStyle(
@@ -1036,10 +1095,10 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            if (_selectedFilter == 2) ...[
+                            if (isAgencyManager && effectiveFilter == 2) ...[
                               const SizedBox(height: 12),
                               OutlinedButton.icon(
-                                onPressed: () => _showAddNoteSheet(context),
+                                onPressed: () => _showAddOrEditNoteSheet(context),
                                 icon: const Icon(LucideIcons.plus, size: 14),
                                 label: Text(loc.addManualNoteBtn),
                                 style: OutlinedButton.styleFrom(
@@ -1119,6 +1178,36 @@ class _ActivityTabState extends ConsumerState<_ActivityTab> {
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                                 color: StanomerColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                          if (isAgencyManager) ...[
+                                            const Spacer(),
+                                            InkWell(
+                                              onTap: () => _showAddOrEditNoteSheet(context, existingLog: log),
+                                              borderRadius: BorderRadius.circular(6),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFFEF3C7),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: const Color(0xFFFDE68A)),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(LucideIcons.pencil, size: 11, color: Color(0xFFB45309)),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      loc.edit,
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: Color(0xFFB45309),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -1689,11 +1778,11 @@ class _OverviewTab extends ConsumerWidget {
                 const SizedBox(height: 10),
               ],
               if (showAgencyTenantDetails && contract.tenantIdNumber != null && contract.tenantIdNumber!.isNotEmpty)
-                _ContractDetailRow(icon: LucideIcons.idCard, label: loc.localeName == 'tr' ? 'Kimlik / Pasaport' : 'ID / Passport', value: contract.tenantIdNumber!),
+                _ContractDetailRow(icon: LucideIcons.idCard, label: loc.tenantIdPassportLabel, value: contract.tenantIdNumber!),
               if (contract.tenantPhone != null && contract.tenantPhone!.isNotEmpty)
-                _ContractDetailRow(icon: LucideIcons.phone, label: loc.localeName == 'tr' ? 'Kiracı Telefonu' : 'Tenant Phone', value: contract.tenantPhone!),
+                _ContractDetailRow(icon: LucideIcons.phone, label: loc.tenantPhoneLabel, value: contract.tenantPhone!),
               if (showAgencyTenantDetails && contract.tenantNotes != null && contract.tenantNotes!.isNotEmpty)
-                _ContractDetailRow(icon: LucideIcons.fileText, label: loc.localeName == 'tr' ? 'Kiracı Notları' : 'Tenant Notes', value: contract.tenantNotes!),
+                _ContractDetailRow(icon: LucideIcons.fileText, label: loc.tenantNotesLabel, value: contract.tenantNotes!),
               if (showAgencyTenantDetails && contract.tenantIdDocumentUrl != null && contract.tenantIdDocumentUrl!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 SizedBox(
@@ -1703,7 +1792,7 @@ class _OverviewTab extends ConsumerWidget {
                       await _openFileOrUrl(context, contract.tenantIdDocumentUrl!, mounted: context.mounted);
                     },
                     icon: const Icon(LucideIcons.fileCheck, size: 16),
-                    label: Text(loc.localeName == 'tr' ? 'Kiracı Kimlik Belgesini Görüntüle' : 'View Tenant ID Document'),
+                    label: Text(loc.viewTenantIdDocument),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1711,7 +1800,7 @@ class _OverviewTab extends ConsumerWidget {
               if (showAgencyTenantDetails && contract.tenantSecondaryContacts.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
-                  loc.localeName == 'tr' ? 'Ek İletişim Kişileri' : 'Secondary Contacts',
+                  loc.secondaryContacts,
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: StanomerColors.textTertiary),
                 ),
                 const SizedBox(height: 6),
@@ -1761,8 +1850,8 @@ class _OverviewTab extends ConsumerWidget {
                       ? loc.roleLandlord
                       : (e.receiver == PaymentReceiver.utility ? loc.roleTenant : loc.included);
                   final methodLabel = e.isCash
-                      ? (loc.localeName == 'tr' ? 'Nakit' : 'Cash')
-                      : (loc.localeName == 'tr' ? 'Banka' : 'Bank');
+                      ? loc.paymentMethodCash
+                      : loc.paymentMethodBank;
                   return _ContractDetailRow(
                     icon: LucideIcons.zap,
                     label: e.name,
@@ -2333,7 +2422,7 @@ class _OverviewTab extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 14),
                                 Text(
-                                  loc.localeName == 'tr' ? 'Mülk Acente Yönetiminde' : 'Property Managed by Agency',
+                                  loc.propertyManagedByAgency,
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
@@ -4686,7 +4775,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           SnackBar(
             content: Text(
               isAgencyManager
-                  ? (loc.localeName == 'tr' ? 'Ödeme başarıyla kaydedildi ve borç kapatıldı.' : 'Payment successfully recorded and debt closed.')
+                  ? loc.paymentRecordedDebtClosed
                   : loc.paymentDeclaredHand
             ),
           ),
@@ -4754,7 +4843,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           SnackBar(
             content: Text(
               isAgencyManager
-                  ? (loc.localeName == 'tr' ? 'Dekont yüklendi ve borç kapatıldı.' : 'Receipt uploaded and debt closed.')
+                  ? loc.receiptUploadedDebtClosed
                   : loc.paymentDeclaredSuccess(ExpenseUtils.getLocalizedExpenseName(payment.title, loc))
             ),
           ),
@@ -5157,7 +5246,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       controller: noteController,
                       decoration: InputDecoration(
                         labelText: loc.explanationOptional,
-                        hintText: loc.localeName == 'tr' ? 'Fatura ile ilgili not ekle...' : loc.explanationHint,
+                        hintText: loc.billNoteHint,
                       ),
                       maxLines: useSingleRowActions ? 1 : 2,
                     ),
@@ -5291,7 +5380,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   child: OutlinedButton.icon(
                                     onPressed: () => pickInvoiceFile(setDialogState),
                                     icon: const Icon(LucideIcons.upload, size: 16),
-                                    label: Text(loc.localeName == 'tr' ? 'Yeni Fatura Yükle' : 'Upload New Bill'),
+                                    label: Text(loc.uploadNewBill),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.amber.shade900,
                                       side: BorderSide(color: Colors.amber.shade600),
@@ -5482,7 +5571,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           },
                           icon: const Icon(LucideIcons.trash2, size: 16, color: StanomerColors.alertPrimary),
                           label: Text(
-                            loc.localeName == 'tr' ? 'Tutarı ve Faturayı Sil / Sıfırla' : 'Reset / Clear Amount & Bill',
+                            loc.resetAmountAndBill,
                             style: const TextStyle(
                               color: StanomerColors.alertPrimary,
                               fontWeight: FontWeight.bold,
@@ -5525,7 +5614,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                   Flexible(
                                     child: Text(
                                       (selectedFile != null || (payment.invoiceUrl != null && !isExistingRemoved))
-                                          ? (loc.localeName == 'tr' ? 'Değiştir' : 'Change File')
+                                          ? loc.changeFile
                                           : loc.uploadInvoice,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -6008,7 +6097,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 border: Border.all(color: Colors.purple.shade200),
                               ),
                               child: Text(
-                                loc.localeName == 'tr' ? 'Kira İçi' : 'In Rent',
+                                loc.includedInRentBadge,
                                 style: TextStyle(fontSize: 9, color: Colors.purple.shade700, fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -6031,9 +6120,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 ),
                                 const SizedBox(width: 3),
                                 Text(
-                                  isCash
-                                      ? (loc.localeName == 'tr' ? 'Nakit' : (loc.localeName.startsWith('sr') ? 'Gotovina' : 'Cash'))
-                                      : (loc.localeName == 'tr' ? 'Banka' : (loc.localeName.startsWith('sr') ? 'Banka' : 'Bank')),
+                                  isCash ? loc.paymentMethodCash : loc.paymentMethodBank,
                                   style: TextStyle(
                                     fontSize: 9.5,
                                     color: isCash ? Colors.amber.shade900 : Colors.blue.shade800,
@@ -6051,7 +6138,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 const SizedBox(width: 8),
                 // Status badge
                 if (isAwaitingInvoice)
-                  _StatusBadge(label: isTenant ? loc.noInvoice : (loc.localeName == 'tr' ? 'Tutar Girilmedi' : 'No Amount'), color: StanomerColors.brandPrimary)
+                  _StatusBadge(label: isTenant ? loc.noInvoice : loc.noAmountEntered, color: StanomerColors.brandPrimary)
                 else if (isPaid)
                   _StatusBadge(label: loc.paidHeader, color: Colors.green)
                 else if (isInvoiceAwaitingAgencyApproval)
@@ -6064,18 +6151,18 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                 else if (isIncludedPaymentAwaitingAgencyApproval)
                   _StatusBadge(
                     label: isAgencyManager
-                        ? (loc.localeName == 'tr' ? 'Ödeme Onayı Bekliyor' : 'Awaiting Payment Approval')
-                        : (loc.localeName == 'tr' ? 'Acente Onayı Bekleniyor' : 'Awaiting Agency Approval'),
+                        ? loc.awaitingPaymentApproval
+                        : loc.awaitingAgencyApproval,
                     color: Colors.amber.shade700,
                   )
                 else if (isDeclared)
-                  _StatusBadge(label: isLandlord ? (loc.localeName == 'tr' ? 'Onay Bekliyor' : 'Awaiting Approval') : loc.awaitingHeader, color: Colors.orange)
+                  _StatusBadge(label: isLandlord ? loc.awaitingApprovalBadge : loc.awaitingHeader, color: Colors.orange)
                 else if (isDisputed)
                   _StatusBadge(label: loc.disputedHeader, color: StanomerColors.alertPrimary)
                 else if (isPending && isIncludedExpense)
-                  _StatusBadge(label: loc.localeName == 'tr' ? (payment.amount == 0 ? 'Tutar Girilmedi' : 'Ödeme Bekliyor') : (payment.amount == 0 ? 'No Amount' : 'Payment Due'), color: payment.amount == 0 ? StanomerColors.brandPrimary : Colors.purple.shade600)
+                  _StatusBadge(label: payment.amount == 0 ? loc.noAmountEntered : loc.paymentDueBadge, color: payment.amount == 0 ? StanomerColors.brandPrimary : Colors.purple.shade600)
                 else if (isPending)
-                  _StatusBadge(label: loc.localeName == 'tr' ? 'Bekliyor' : 'Pending', color: Colors.grey),
+                  _StatusBadge(label: loc.pendingBadge, color: Colors.grey),
                 const SizedBox(width: 8),
                 Icon(
                   isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
@@ -6100,7 +6187,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        loc.localeName == 'tr' ? 'İşlem Geçmişi' : 'Transaction History',
+                        loc.transactionHistory,
                         style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
@@ -6174,7 +6261,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        loc.localeName == 'tr' ? 'Dokümanlar' : 'Documents',
+                        loc.documents,
                         style: const TextStyle(fontSize: 11, color: StanomerColors.textTertiary, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
@@ -6422,7 +6509,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           OutlinedButton.icon(
                             onPressed: () => _handleInvoiceUpload(payment, monthName),
                             icon: const Icon(LucideIcons.edit3, size: 16),
-                            label: Text(loc.localeName == 'tr' ? 'Düzenle' : 'Edit'),
+                            label: Text(loc.edit),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: StanomerColors.brandPrimary,
                               side: const BorderSide(color: StanomerColors.brandPrimary),
@@ -6468,7 +6555,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       OutlinedButton.icon(
                         onPressed: () => _handleInvoiceUpload(payment, monthName),
                         icon: const Icon(LucideIcons.edit3, size: 16),
-                        label: Text(loc.localeName == 'tr' ? 'Tutarı / Belgeyi Güncelle' : 'Update Amount / Bill'),
+                        label: Text(loc.updateAmountOrBill),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: StanomerColors.brandPrimary,
                           side: const BorderSide(color: StanomerColors.brandPrimary),
@@ -6591,10 +6678,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             child: ElevatedButton.icon(
                               onPressed: () async {
                                 final confirmed = await _showConfirmDialog(
-                                  title: loc.localeName == 'tr' ? 'Ödemeyi Onayla' : 'Approve Payment',
-                                  message: loc.localeName == 'tr'
-                                      ? '${payment.title} için ev sahibinin bildirdiği ödemeyi onaylamak istiyor musunuz?'
-                                      : 'Do you want to approve the landlord\'s payment declaration for ${payment.title}?',
+                                  title: loc.confirmApprovePaymentTitle,
+                                  message: loc.confirmApproveLandlordPaymentMsg(payment.title),
                                 );
                                 if (confirmed) {
                                   await ref.read(propertyRepositoryProvider).approveRentPayment(payment.id, property.id, monthName, payment.dueDate);
@@ -6602,7 +6687,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                 }
                               },
                               icon: const Icon(LucideIcons.checkCircle, size: 16),
-                              label: Text(loc.localeName == 'tr' ? 'Ödemeyi Onayla' : 'Approve Payment'),
+                              label: Text(loc.confirmApprovePaymentTitle),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
@@ -6615,10 +6700,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           OutlinedButton.icon(
                             onPressed: () async {
                               final confirmed = await _showConfirmDialog(
-                                title: loc.localeName == 'tr' ? 'Ödemeyi Reddet' : 'Reject Payment',
-                                message: loc.localeName == 'tr'
-                                    ? 'Ödeme bildirimini reddetmek istiyor musunuz? Ev sahibi bilgilendirilecek.'
-                                    : 'Do you want to reject this payment declaration? The landlord will be notified.',
+                                title: loc.confirmRejectPaymentTitle,
+                                message: loc.confirmRejectLandlordPaymentMsg,
                               );
                               if (confirmed) {
                                 await ref.read(propertyRepositoryProvider).rejectRentPayment(payment.id, property.id, monthName, payment.dueDate);
@@ -6651,9 +6734,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                loc.localeName == 'tr'
-                                    ? 'Ödeme bildiriminiz acente onayına sunulmuştur.'
-                                    : 'Your payment declaration is awaiting agency approval.',
+                                loc.paymentAwaitingAgencyApprovalInfo,
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E40AF)),
                               ),
                             ),
@@ -6669,7 +6750,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         child: ElevatedButton.icon(
                           onPressed: _isPickingFile ? null : () => _showTenantActionSheet(context, payment, monthName, roleColor, loc),
                           icon: const Icon(LucideIcons.upload, size: 16),
-                          label: Text(loc.localeName == 'tr' ? 'Ödemeyi Bildir' : 'Declare Payment'),
+                          label: Text(loc.declarePaymentBtn),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.purple.shade600,
                             foregroundColor: Colors.white,
@@ -6685,7 +6766,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                         child: ElevatedButton.icon(
                           onPressed: () => _showMarkAsPaidModal(payment, monthName),
                           icon: const Icon(LucideIcons.checkCircle, size: 16),
-                          label: Text(loc.localeName == 'tr' ? 'Ödendi Olarak İşaretle' : 'Mark as Paid'),
+                          label: Text(loc.markAsPaid),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
@@ -6701,7 +6782,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       child: OutlinedButton.icon(
                         onPressed: () => _handleInvoiceUpload(payment, monthName),
                         icon: const Icon(LucideIcons.filePlus, size: 16),
-                        label: Text(loc.localeName == 'tr' ? 'Fatura Tutarını Gir' : 'Enter Bill Amount'),
+                        label: Text(loc.enterBillAmount),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: StanomerColors.brandPrimary,
                           side: const BorderSide(color: StanomerColors.brandPrimary),
@@ -6847,16 +6928,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final formKey = GlobalKey<FormState>();
 
     final dialogTitle = isPaymentReceiptRejection
-        ? (loc.localeName == 'tr' ? 'Ödeme Bildirimini Reddet' : 'Reject Payment Submission')
-        : (loc.localeName == 'tr' ? 'Masraf Beyanını Reddet' : loc.rejectExpenseTitle);
+        ? loc.rejectPaymentSubmissionTitle
+        : loc.rejectExpenseTitle;
 
     final dialogDesc = isPaymentReceiptRejection
-        ? (loc.localeName == 'tr'
-            ? 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf "$statusBadgeName" statüsünde kalmaya devam edecektir.'
-            : 'Payment submission will be rejected and status will revert to "$statusBadgeName".')
-        : (loc.localeName == 'tr'
-            ? 'Bu masraf beyanı reddedilecek ve mülk mali planına / kiraya yansıtılmayacaktır.'
-            : 'This expense declaration will be rejected and will not affect rent or property finances.');
+        ? loc.rejectPaymentSubmissionDesc(statusBadgeName)
+        : loc.rejectExpenseDeclarationDesc;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -7242,7 +7319,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                           const SizedBox(height: 2),
                           Text(
                             isAddToRent
-                                ? (loc.localeName == 'tr' ? '$formattedCost - Kiracı borcunu kiraya ekleyin veya tahsil edin' : '$formattedCost - Add tenant debt to rent or collect')
+                                ? loc.addTenantDebtToRentSub(formattedCost)
                                 : '$formattedCost - ${loc.settleExpenseSub}',
                             style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary),
                           ),
@@ -7711,9 +7788,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   icon: LucideIcons.fileUp,
                   iconColor: const Color(0xFF059669),
                   title: loc.iPaidBtn,
-                  subtitle: loc.localeName == 'tr'
-                      ? 'Acenteye yaptığınız banka transferi dekontunu yükleyin'
-                      : loc.optionBankTransferDesc,
+                  subtitle: loc.optionBankTransferAgencyDesc,
                   onTap: () async {
                     Navigator.pop(ctx);
                     await _handleUploadSettlementReceipt(req, formattedCost, loc);
@@ -7726,9 +7801,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                   icon: LucideIcons.hand,
                   iconColor: const Color(0xFFD97706),
                   title: loc.iPaidCashBtn,
-                  subtitle: loc.localeName == 'tr'
-                      ? 'Acenteye elden/nakit ödeme yaptığınızı bildirin'
-                      : loc.optionCashPaymentDesc,
+                  subtitle: loc.optionCashPaymentAgencyDesc,
                   onTap: () async {
                     Navigator.pop(ctx);
                     await _handleDeclareCashSettlement(req, formattedCost, loc);
@@ -7858,7 +7931,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(isAddToRent ? (loc.localeName == 'tr' ? 'Kiraya Ekle' : 'Add to Rent') : loc.optionOffsetFromRent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          title: Text(isAddToRent ? loc.costAddToRent : loc.optionOffsetFromRent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           content: Text(loc.noEligiblePendingPayments(reqCurrency)),
           actions: [
             TextButton(
@@ -7904,7 +7977,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
-                        loc.localeName == 'tr' ? 'KİRA VE FATURALAR' : 'RENT & BILLS',
+                        loc.rentAndBillsHeader,
                         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF64748B), letterSpacing: 0.5),
                       ),
                     ),
@@ -8009,7 +8082,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                       final beforeStr = CurrencyUtils.formatAmount(p.amount, p.currency);
                       final afterStr = paymentNewAmount > 0
                           ? CurrencyUtils.formatAmount(paymentNewAmount, p.currency)
-                          : (loc.localeName == 'tr' ? '0 ${p.currency} (Ödendi)' : '0 ${p.currency} (Paid)');
+                          : loc.zeroPaidLabel(p.currency);
                       final offsetStr = CurrencyUtils.formatAmount(offsetAmt, p.currency);
 
                       final subtitleText = remainingCredit > 0
@@ -8114,8 +8187,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     padding: EdgeInsets.only(top: eligiblePayments.isNotEmpty ? 10 : 0, bottom: 8),
                     child: Text(
                       isAddToRent
-                          ? (loc.localeName == 'tr' ? 'KİRACI BAKIM ALACAKLARI (MAHSUPLAŞMA)' : 'TENANT MAINTENANCE CREDITS')
-                          : (loc.localeName == 'tr' ? 'KİRACI BAKIM & HASAR BORÇLARI' : 'TENANT MAINTENANCE DEBTS'),
+                          ? loc.tenantMaintenanceCreditsHeader
+                          : loc.tenantMaintenanceDebtsHeader,
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF64748B), letterSpacing: 0.5),
                     ),
                   ),
@@ -8134,7 +8207,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     final beforeStr = CurrencyUtils.formatAmount(otherAmt, mCurrency);
                     final afterStr = otherNewAmount > 0
                         ? CurrencyUtils.formatAmount(otherNewAmount, mCurrency)
-                        : (loc.localeName == 'tr' ? '0 $mCurrency (Kapatıldı)' : '0 $mCurrency (Settled)');
+                        : loc.zeroSettledLabel(mCurrency);
                     final offsetStr = CurrencyUtils.formatAmount(offsetAmt, mCurrency);
 
                     final subtitleText = remainingCredit > 0
@@ -9343,43 +9416,23 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               child: Text(
                                 isAgencyPaid
                                     ? (hasPaymentSubmission
-                                        ? (loc.localeName == 'tr'
-                                            ? 'Kiracı tarafından ödeme bildirimi sunuldu. Acentenin dekontu inceleyip tahsilatı onaylaması veya reddetmesi bekleniyor.'
-                                            : 'Payment declaration submitted by tenant. Awaiting agency review to approve or reject.')
+                                        ? loc.maintInfoAgencyPaidSubmitted
                                         : (isTenantDebtor
-                                            ? (loc.localeName == 'tr'
-                                                ? 'Acente tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
-                                                : 'Tenant usage damage covered by agency upfront. To be added to rent or collected from tenant.')
-                                            : (loc.localeName == 'tr'
-                                                ? 'Acente tarafından karşılanan mülk demirbaş masrafı. Kira aktarımından kesilecek veya ev sahibinden tahsil edilecek.'
-                                                : 'Property fixture expense covered by agency upfront. To be deducted from rent payout or collected from landlord.')))
+                                            ? loc.maintInfoAgencyPaidTenantDamage
+                                            : loc.maintInfoAgencyPaidPropertyFixture))
                                     : (isPendingAgencyApproval
                                         ? (isDeductFromRent
-                                            ? (loc.localeName == 'tr'
-                                                ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.'
-                                                : 'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.')
+                                            ? loc.maintInfoTenantPaidFixturePendingAgency
                                             : request.paidBy == 'tenant'
-                                                ? (loc.localeName == 'tr'
-                                                    ? 'Kiracı tarafından kendi kullanım hasarı olarak ödendi. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
-                                                    : 'Paid by tenant for self usage damage. Will be closed as paid upon agency approval (no rent impact).')
-                                                : (loc.localeName == 'tr'
-                                                    ? 'Ev sahibi tarafından mülk demirbaşı olarak karşılandı. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).'
-                                                    : 'Paid by landlord as property fixture. Will be closed as paid upon agency approval (no rent impact).'))
+                                                ? loc.maintInfoTenantPaidSelfPendingAgency
+                                                : loc.maintInfoLandlordPaidFixturePendingAgency)
                                         : (isPendingOppositeApproval
                                             ? (isDeductFromRent
-                                                ? (loc.localeName == 'tr'
-                                                    ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.'
-                                                    : 'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.')
-                                                : (loc.localeName == 'tr'
-                                                    ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Acente onayı sonrası kiraya ilave edilebilir duruma gelecektir.'
-                                                    : 'Tenant usage damage covered by landlord upfront. Will be ready to add to rent upon agency approval.'))
+                                                ? loc.maintInfoTenantPaidFixturePendingAgency
+                                                : loc.maintInfoLandlordPaidDamagePendingAgency)
                                             : (isDeductFromRent
-                                                ? (loc.localeName == 'tr'
-                                                    ? 'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.'
-                                                    : 'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.')
-                                                : (loc.localeName == 'tr'
-                                                    ? 'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.'
-                                                    : 'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.')))),
+                                                ? loc.maintInfoTenantPaidFixtureSettled
+                                                : loc.maintInfoLandlordPaidDamageSettled))),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -10531,7 +10584,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                           : (loc.localeName.startsWith('sr')
                                               ? 'Neuneti'
                                               : 'Unentered')),
-                                  subLabel: loc.localeName == 'tr' ? 'Tutar bekleniyor' : 'Awaiting bill',
+                                  subLabel: loc.subLabelAwaitingBill,
                                   count: unenteredCount,
                                   color: const Color(0xFFEA580C),
                                   icon: LucideIcons.fileQuestion,
@@ -10592,7 +10645,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             children: [
                               _SummaryChip(
                                 label: loc.localeName == 'tr' ? 'Kira' : (loc.localeName == 'ru' ? 'Аренда' : (loc.localeName.startsWith('sr') ? 'Zakup' : 'Rent')),
-                                subLabel: loc.localeName == 'tr' ? 'Kira bedelleri' : 'Rent payments',
+                                subLabel: loc.subLabelRentPayments,
                                 count: rentTypeCount,
                                 color: StanomerColors.brandPrimary,
                                 icon: LucideIcons.home,
@@ -10602,7 +10655,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               const SizedBox(width: 6),
                               _SummaryChip(
                                 label: loc.localeName == 'tr' ? 'Fatura & Aidat' : (loc.localeName == 'ru' ? 'Счета и комм.' : (loc.localeName.startsWith('sr') ? 'Računi i troškovi' : 'Bills & Dues')),
-                                subLabel: loc.localeName == 'tr' ? 'Elektrik, su, aidat' : 'Utilities & dues',
+                                subLabel: loc.subLabelUtilitiesDues,
                                 count: billsTypeCount,
                                 color: const Color(0xFF3B82F6),
                                 icon: LucideIcons.receipt,
@@ -10612,7 +10665,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               const SizedBox(width: 6),
                               _SummaryChip(
                                 label: loc.localeName == 'tr' ? 'Bakım Masrafı' : (loc.localeName == 'ru' ? 'Ремонт' : (loc.localeName.startsWith('sr') ? 'Održavanje' : 'Maintenance')),
-                                subLabel: loc.localeName == 'tr' ? 'Onarım & mahsup' : 'Repairs & settlements',
+                                subLabel: loc.subLabelRepairsSettlements,
                                 count: maintenanceTypeTotalCount,
                                 color: const Color(0xFF8B5CF6),
                                 icon: LucideIcons.wrench,
@@ -10632,7 +10685,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                             children: [
                               _SummaryChip(
                                 label: loc.localeName == 'tr' ? 'Vadesi Geçmiş' : (loc.localeName == 'ru' ? 'Просроченные' : (loc.localeName.startsWith('sr') ? 'Istekli' : 'Overdue')),
-                                subLabel: loc.localeName == 'tr' ? 'Gecikmiş ödemeler' : 'Overdue payments',
+                                subLabel: loc.subLabelOverduePayments,
                                 count: totalOverdueCount,
                                 color: const Color(0xFFE11D48),
                                 icon: LucideIcons.calendarX,
@@ -10642,7 +10695,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                               const SizedBox(width: 6),
                               _SummaryChip(
                                 label: loc.localeName == 'tr' ? 'Vadesi Gelmemiş' : (loc.localeName == 'ru' ? 'Предстоящие' : (loc.localeName.startsWith('sr') ? 'Predstojeći' : 'Upcoming')),
-                                subLabel: loc.localeName == 'tr' ? 'Gelecek vadeli kayıtlar' : 'Upcoming records',
+                                subLabel: loc.subLabelUpcomingRecords,
                                 count: totalUpcomingCount,
                                 color: const Color(0xFF0284C7),
                                 icon: LucideIcons.calendarCheck,

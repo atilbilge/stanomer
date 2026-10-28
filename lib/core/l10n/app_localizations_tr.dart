@@ -3912,4 +3912,189 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'Şifre en az 6 karakter olmalıdır.';
+
+  @override
+  String get editManualNoteSheetTitle => 'Manuel Notu Düzenle';
+
+  @override
+  String get manualNoteUpdatedSuccess => 'Not başarıyla güncellendi';
+
+  @override
+  String get tenantIdPassportLabel => 'Kimlik / Pasaport';
+
+  @override
+  String get tenantPhoneLabel => 'Kiracı Telefonu';
+
+  @override
+  String get tenantNotesLabel => 'Kiracı Notları';
+
+  @override
+  String get viewTenantIdDocument => 'Kiracı Kimlik Belgesini Görüntüle';
+
+  @override
+  String get propertyManagedByAgency => 'Mülk Acente Yönetiminde';
+
+  @override
+  String get paymentRecordedDebtClosed =>
+      'Ödeme başarıyla kaydedildi ve borç kapatıldı.';
+
+  @override
+  String get receiptUploadedDebtClosed => 'Dekont yüklendi ve borç kapatıldı.';
+
+  @override
+  String get billNoteHint => 'Fatura ile ilgili not ekle...';
+
+  @override
+  String get uploadNewBill => 'Yeni Fatura Yükle';
+
+  @override
+  String get resetAmountAndBill => 'Tutarı ve Faturayı Sil / Sıfırla';
+
+  @override
+  String get changeFile => 'Değiştir';
+
+  @override
+  String get includedInRentBadge => 'Kira İçi';
+
+  @override
+  String get noAmountEntered => 'Tutar Girilmedi';
+
+  @override
+  String get awaitingPaymentApproval => 'Ödeme Onayı Bekliyor';
+
+  @override
+  String get awaitingAgencyApproval => 'Acente Onayı Bekleniyor';
+
+  @override
+  String get awaitingApprovalBadge => 'Onay Bekliyor';
+
+  @override
+  String get paymentDueBadge => 'Ödeme Bekliyor';
+
+  @override
+  String get pendingBadge => 'Bekliyor';
+
+  @override
+  String get transactionHistory => 'İşlem Geçmişi';
+
+  @override
+  String get updateAmountOrBill => 'Tutarı / Belgeyi Güncelle';
+
+  @override
+  String confirmApproveLandlordPaymentMsg(String title) {
+    return '$title için ev sahibinin bildirdiği ödemeyi onaylamak istiyor musunuz?';
+  }
+
+  @override
+  String get confirmRejectLandlordPaymentMsg =>
+      'Ödeme bildirimini reddetmek istiyor musunuz? Ev sahibi bilgilendirilecek.';
+
+  @override
+  String get paymentAwaitingAgencyApprovalInfo =>
+      'Ödeme bildiriminiz acente onayına sunulmuştur.';
+
+  @override
+  String get declarePaymentBtn => 'Ödemeyi Bildir';
+
+  @override
+  String get enterBillAmount => 'Fatura Tutarını Gir';
+
+  @override
+  String get rejectPaymentSubmissionTitle => 'Ödeme Bildirimini Reddet';
+
+  @override
+  String rejectPaymentSubmissionDesc(String statusBadgeName) {
+    return 'Sunulan ödeme bildirimi / dekont reddedilecek ve masraf \"$statusBadgeName\" statüsünde kalmaya devam edecektir.';
+  }
+
+  @override
+  String get rejectExpenseDeclarationDesc =>
+      'Bu masraf beyanı reddedilecek ve mülk mali planına / kiraya yansıtılmayacaktır.';
+
+  @override
+  String addTenantDebtToRentSub(String cost) {
+    return '$cost - Kiracı borcunu kiraya ekleyin veya tahsil edin';
+  }
+
+  @override
+  String get optionBankTransferAgencyDesc =>
+      'Acenteye yaptığınız banka transferi dekontunu yükleyin';
+
+  @override
+  String get optionCashPaymentAgencyDesc =>
+      'Acenteye elden/nakit ödeme yaptığınızı bildirin';
+
+  @override
+  String get rentAndBillsHeader => 'KİRA VE FATURALAR';
+
+  @override
+  String zeroPaidLabel(String currency) {
+    return '0 $currency (Ödendi)';
+  }
+
+  @override
+  String get tenantMaintenanceCreditsHeader =>
+      'KİRACI BAKIM ALACAKLARI (MAHSUPLAŞMA)';
+
+  @override
+  String get tenantMaintenanceDebtsHeader => 'KİRACI BAKIM & HASAR BORÇLARI';
+
+  @override
+  String zeroSettledLabel(String currency) {
+    return '0 $currency (Kapatıldı)';
+  }
+
+  @override
+  String get maintInfoAgencyPaidSubmitted =>
+      'Kiracı tarafından ödeme bildirimi sunuldu. Acentenin dekontu inceleyip tahsilatı onaylaması veya reddetmesi bekleniyor.';
+
+  @override
+  String get maintInfoAgencyPaidTenantDamage =>
+      'Acente tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.';
+
+  @override
+  String get maintInfoAgencyPaidPropertyFixture =>
+      'Acente tarafından karşılanan mülk demirbaş masrafı. Kira aktarımından kesilecek veya ev sahibinden tahsil edilecek.';
+
+  @override
+  String get maintInfoTenantPaidFixturePendingAgency =>
+      'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Acente onayı sonrası kiradan mahsup edilebilir duruma gelecektir.';
+
+  @override
+  String get maintInfoTenantPaidSelfPendingAgency =>
+      'Kiracı tarafından kendi kullanım hasarı olarak ödendi. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).';
+
+  @override
+  String get maintInfoLandlordPaidFixturePendingAgency =>
+      'Ev sahibi tarafından mülk demirbaşı olarak karşılandı. Acente onayı sonrası ödendi olarak kapatılacak (Kiraya yansıtılmaz).';
+
+  @override
+  String get maintInfoLandlordPaidDamagePendingAgency =>
+      'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Acente onayı sonrası kiraya ilave edilebilir duruma gelecektir.';
+
+  @override
+  String get maintInfoTenantPaidFixtureSettled =>
+      'Kiracı tarafından peşin ödenen ev sahibi demirbaş masrafı. Kiradan mahsup edilecek veya ev sahibi tarafından iade edilecek.';
+
+  @override
+  String get maintInfoLandlordPaidDamageSettled =>
+      'Ev sahibi tarafından karşılanan kiracı kullanım hasarı. Kiraya eklenecek veya kiracıdan tahsil edilecek.';
+
+  @override
+  String get subLabelAwaitingBill => 'Tutar bekleniyor';
+
+  @override
+  String get subLabelRentPayments => 'Kira bedelleri';
+
+  @override
+  String get subLabelUtilitiesDues => 'Elektrik, su, aidat';
+
+  @override
+  String get subLabelRepairsSettlements => 'Onarım & mahsup';
+
+  @override
+  String get subLabelOverduePayments => 'Gecikmiş ödemeler';
+
+  @override
+  String get subLabelUpcomingRecords => 'Gelecek vadeli kayıtlar';
 }

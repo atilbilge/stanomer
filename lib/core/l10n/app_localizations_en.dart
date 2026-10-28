@@ -3908,4 +3908,188 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'Password must be at least 6 characters.';
+
+  @override
+  String get editManualNoteSheetTitle => 'Edit Manual Note';
+
+  @override
+  String get manualNoteUpdatedSuccess => 'Note updated successfully';
+
+  @override
+  String get tenantIdPassportLabel => 'ID / Passport';
+
+  @override
+  String get tenantPhoneLabel => 'Tenant Phone';
+
+  @override
+  String get tenantNotesLabel => 'Tenant Notes';
+
+  @override
+  String get viewTenantIdDocument => 'View Tenant ID Document';
+
+  @override
+  String get propertyManagedByAgency => 'Property Managed by Agency';
+
+  @override
+  String get paymentRecordedDebtClosed =>
+      'Payment successfully recorded and debt closed.';
+
+  @override
+  String get receiptUploadedDebtClosed => 'Receipt uploaded and debt closed.';
+
+  @override
+  String get billNoteHint => 'Add a note about the bill...';
+
+  @override
+  String get uploadNewBill => 'Upload New Bill';
+
+  @override
+  String get resetAmountAndBill => 'Reset / Clear Amount & Bill';
+
+  @override
+  String get changeFile => 'Change File';
+
+  @override
+  String get includedInRentBadge => 'In Rent';
+
+  @override
+  String get noAmountEntered => 'No Amount';
+
+  @override
+  String get awaitingPaymentApproval => 'Awaiting Payment Approval';
+
+  @override
+  String get awaitingAgencyApproval => 'Awaiting Agency Approval';
+
+  @override
+  String get awaitingApprovalBadge => 'Awaiting Approval';
+
+  @override
+  String get paymentDueBadge => 'Payment Due';
+
+  @override
+  String get pendingBadge => 'Pending';
+
+  @override
+  String get transactionHistory => 'Transaction History';
+
+  @override
+  String get updateAmountOrBill => 'Update Amount / Bill';
+
+  @override
+  String confirmApproveLandlordPaymentMsg(String title) {
+    return 'Do you want to approve the landlord\'s payment declaration for $title?';
+  }
+
+  @override
+  String get confirmRejectLandlordPaymentMsg =>
+      'Do you want to reject this payment declaration? The landlord will be notified.';
+
+  @override
+  String get paymentAwaitingAgencyApprovalInfo =>
+      'Your payment declaration is awaiting agency approval.';
+
+  @override
+  String get declarePaymentBtn => 'Declare Payment';
+
+  @override
+  String get enterBillAmount => 'Enter Bill Amount';
+
+  @override
+  String get rejectPaymentSubmissionTitle => 'Reject Payment Submission';
+
+  @override
+  String rejectPaymentSubmissionDesc(String statusBadgeName) {
+    return 'Payment submission will be rejected and status will revert to \"$statusBadgeName\".';
+  }
+
+  @override
+  String get rejectExpenseDeclarationDesc =>
+      'This expense declaration will be rejected and will not affect rent or property finances.';
+
+  @override
+  String addTenantDebtToRentSub(String cost) {
+    return '$cost - Add tenant debt to rent or collect';
+  }
+
+  @override
+  String get optionBankTransferAgencyDesc =>
+      'Upload bank transfer receipt sent to the agency';
+
+  @override
+  String get optionCashPaymentAgencyDesc =>
+      'Declare that you made a cash payment to the agency';
+
+  @override
+  String get rentAndBillsHeader => 'RENT & BILLS';
+
+  @override
+  String zeroPaidLabel(String currency) {
+    return '0 $currency (Paid)';
+  }
+
+  @override
+  String get tenantMaintenanceCreditsHeader => 'TENANT MAINTENANCE CREDITS';
+
+  @override
+  String get tenantMaintenanceDebtsHeader => 'TENANT MAINTENANCE DEBTS';
+
+  @override
+  String zeroSettledLabel(String currency) {
+    return '0 $currency (Settled)';
+  }
+
+  @override
+  String get maintInfoAgencyPaidSubmitted =>
+      'Payment declaration submitted by tenant. Awaiting agency review to approve or reject.';
+
+  @override
+  String get maintInfoAgencyPaidTenantDamage =>
+      'Tenant usage damage covered by agency upfront. To be added to rent or collected from tenant.';
+
+  @override
+  String get maintInfoAgencyPaidPropertyFixture =>
+      'Property fixture expense covered by agency upfront. To be deducted from rent payout or collected from landlord.';
+
+  @override
+  String get maintInfoTenantPaidFixturePendingAgency =>
+      'Landlord fixture expense paid by tenant upfront. Will be ready for rent deduction upon agency approval.';
+
+  @override
+  String get maintInfoTenantPaidSelfPendingAgency =>
+      'Paid by tenant for self usage damage. Will be closed as paid upon agency approval (no rent impact).';
+
+  @override
+  String get maintInfoLandlordPaidFixturePendingAgency =>
+      'Paid by landlord as property fixture. Will be closed as paid upon agency approval (no rent impact).';
+
+  @override
+  String get maintInfoLandlordPaidDamagePendingAgency =>
+      'Tenant usage damage covered by landlord upfront. Will be ready to add to rent upon agency approval.';
+
+  @override
+  String get maintInfoTenantPaidFixtureSettled =>
+      'Landlord-covered maintenance expense paid by tenant upfront. To be deducted from rent or reimbursed.';
+
+  @override
+  String get maintInfoLandlordPaidDamageSettled =>
+      'Tenant-responsible damage covered by landlord upfront. To be added to rent or collected from tenant.';
+
+  @override
+  String get subLabelAwaitingBill => 'Awaiting bill';
+
+  @override
+  String get subLabelRentPayments => 'Rent payments';
+
+  @override
+  String get subLabelUtilitiesDues => 'Utilities & dues';
+
+  @override
+  String get subLabelRepairsSettlements => 'Repairs & settlements';
+
+  @override
+  String get subLabelOverduePayments => 'Overdue payments';
+
+  @override
+  String get subLabelUpcomingRecords => 'Upcoming records';
 }

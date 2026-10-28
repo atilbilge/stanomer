@@ -3141,7 +3141,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get roomTypeStudio => 'Студия';
 
   @override
-  String get secondaryContacts => 'Дополнительные контактные лица';
+  String get secondaryContacts => 'Дополнительные контакты';
 
   @override
   String get addSecondaryContact => 'Добавить контакт';
@@ -3931,4 +3931,191 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get passwordTooShort => 'Пароль должен содержать не менее 6 символов.';
+
+  @override
+  String get editManualNoteSheetTitle => 'Редактировать заметку';
+
+  @override
+  String get manualNoteUpdatedSuccess => 'Заметка успешно обновлена';
+
+  @override
+  String get tenantIdPassportLabel => 'Паспорт / удостоверение';
+
+  @override
+  String get tenantPhoneLabel => 'Телефон арендатора';
+
+  @override
+  String get tenantNotesLabel => 'Заметки об арендаторе';
+
+  @override
+  String get viewTenantIdDocument => 'Посмотреть документ арендатора';
+
+  @override
+  String get propertyManagedByAgency => 'Объект под управлением агентства';
+
+  @override
+  String get paymentRecordedDebtClosed =>
+      'Платеж успешно записан, и задолженность закрыта.';
+
+  @override
+  String get receiptUploadedDebtClosed =>
+      'Квитанция загружена, и задолженность закрыта.';
+
+  @override
+  String get billNoteHint => 'Добавить заметку к счету...';
+
+  @override
+  String get uploadNewBill => 'Загрузить новый счет';
+
+  @override
+  String get resetAmountAndBill => 'Сбросить / удалить сумму и счет';
+
+  @override
+  String get changeFile => 'Изменить файл';
+
+  @override
+  String get includedInRentBadge => 'В аренде';
+
+  @override
+  String get noAmountEntered => 'Сумма не введена';
+
+  @override
+  String get awaitingPaymentApproval => 'Ожидает подтверждения оплаты';
+
+  @override
+  String get awaitingAgencyApproval => 'Ожидает одобрения агентства';
+
+  @override
+  String get awaitingApprovalBadge => 'Ожидает подтверждения';
+
+  @override
+  String get paymentDueBadge => 'Ожидает оплаты';
+
+  @override
+  String get pendingBadge => 'В ожидании';
+
+  @override
+  String get transactionHistory => 'История операций';
+
+  @override
+  String get updateAmountOrBill => 'Обновить сумму / счет';
+
+  @override
+  String confirmApproveLandlordPaymentMsg(String title) {
+    return 'Вы хотите подтвердить заявку на оплату от арендодателя за $title?';
+  }
+
+  @override
+  String get confirmRejectLandlordPaymentMsg =>
+      'Вы хотите отклонить эту заявку на оплату? Арендодатель будет уведомлен.';
+
+  @override
+  String get paymentAwaitingAgencyApprovalInfo =>
+      'Ваше уведомление об оплате ожидает одобрения агентством.';
+
+  @override
+  String get declarePaymentBtn => 'Сообщить об оплате';
+
+  @override
+  String get enterBillAmount => 'Введите сумму счета';
+
+  @override
+  String get rejectPaymentSubmissionTitle => 'Отклонить подтверждение оплаты';
+
+  @override
+  String rejectPaymentSubmissionDesc(String statusBadgeName) {
+    return 'Заявка на оплату будет отклонена, и статус останется \"$statusBadgeName\".';
+  }
+
+  @override
+  String get rejectExpenseDeclarationDesc =>
+      'Эта декларация расходов будет отклонена и не повлияет на аренду или финансы объекта.';
+
+  @override
+  String addTenantDebtToRentSub(String cost) {
+    return '$cost - Добавьте долг арендатора к аренде или взыщите его';
+  }
+
+  @override
+  String get optionBankTransferAgencyDesc =>
+      'Загрузите квитанцию банковского перевода агентству';
+
+  @override
+  String get optionCashPaymentAgencyDesc =>
+      'Сообщите об оплате агентству наличными';
+
+  @override
+  String get rentAndBillsHeader => 'АРЕНДА И СЧЕТА';
+
+  @override
+  String zeroPaidLabel(String currency) {
+    return '0 $currency (Оплачено)';
+  }
+
+  @override
+  String get tenantMaintenanceCreditsHeader =>
+      'ТРЕБОВАНИЯ АРЕНДАТОРА ПО ОБСЛУЖИВАНИЮ';
+
+  @override
+  String get tenantMaintenanceDebtsHeader =>
+      'ДОЛГИ АРЕНДАТОРА ПО ОБСЛУЖИВАНИЮ И УЩЕРБУ';
+
+  @override
+  String zeroSettledLabel(String currency) {
+    return '0 $currency (Погашено)';
+  }
+
+  @override
+  String get maintInfoAgencyPaidSubmitted =>
+      'Арендатор подал уведомление об оплате. Ожидается проверка агентством для одобрения или отклонения.';
+
+  @override
+  String get maintInfoAgencyPaidTenantDamage =>
+      'Ущерб арендатора, предварительно покрытый агентством. Будет добавлен к аренде или взыскан с арендатора.';
+
+  @override
+  String get maintInfoAgencyPaidPropertyFixture =>
+      'Расход на имущество, предварительно покрытый агентством. Будет вычтен из выплаты аренды или взыскан с арендодателя.';
+
+  @override
+  String get maintInfoTenantPaidFixturePendingAgency =>
+      'Расход арендодателя, оплаченный арендатором вперед. Будет готов к зачету из аренды после одобрения агентством.';
+
+  @override
+  String get maintInfoTenantPaidSelfPendingAgency =>
+      'Оплачено арендатором за собственный ущерб. Будет закрыто после одобрения агентством (без влияния на аренду).';
+
+  @override
+  String get maintInfoLandlordPaidFixturePendingAgency =>
+      'Оплачено арендодателем как имущество объекта. Будет закрыто после одобрения агентством (без влияния на аренду).';
+
+  @override
+  String get maintInfoLandlordPaidDamagePendingAgency =>
+      'Ущерб арендатора, оплаченный арендодателем вперед. Будет готов к добавлению к аренде после одобрения агентством.';
+
+  @override
+  String get maintInfoTenantPaidFixtureSettled =>
+      'Расход арендодателя, оплаченный арендатором вперед. Будет вычтен из аренды или возмещен арендодателем.';
+
+  @override
+  String get maintInfoLandlordPaidDamageSettled =>
+      'Ущерб арендатора, оплаченный арендодателем вперед. Будет добавлен к аренде или взыскан с арендатора.';
+
+  @override
+  String get subLabelAwaitingBill => 'Ожидается счет';
+
+  @override
+  String get subLabelRentPayments => 'Суммы аренды';
+
+  @override
+  String get subLabelUtilitiesDues => 'Коммунальные услуги';
+
+  @override
+  String get subLabelRepairsSettlements => 'Ремонт и взаимозачет';
+
+  @override
+  String get subLabelOverduePayments => 'Просроченные платежи';
+
+  @override
+  String get subLabelUpcomingRecords => 'Предстоящие записи';
 }

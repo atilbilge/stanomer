@@ -525,10 +525,60 @@ CREATE POLICY "notifications_update_policy" ON public.notifications FOR UPDATE T
 
 DROP POLICY IF EXISTS "activity_logs_select_policy" ON public.activity_logs;
 CREATE POLICY "activity_logs_select_policy" ON public.activity_logs FOR SELECT TO authenticated
-    USING (user_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = activity_logs.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())));
+    USING (
+        CASE 
+            WHEN type = 'manual_note' THEN
+                (user_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = activity_logs.property_id AND p.agency_id = auth.uid()))
+            ELSE
+                (user_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = activity_logs.property_id AND (p.landlord_id = auth.uid() OR p.tenant_id = auth.uid() OR p.agency_id = auth.uid())))
+        END
+    );
 
 DROP POLICY IF EXISTS "activity_logs_insert_policy" ON public.activity_logs;
-CREATE POLICY "activity_logs_insert_policy" ON public.activity_logs FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "activity_logs_insert_policy" ON public.activity_logs FOR INSERT TO authenticated
+    WITH CHECK (
+        CASE 
+            WHEN type = 'manual_note' THEN
+                (public.is_agency_of_property(property_id, auth.uid()) OR EXISTS (SELECT 1 FROM public.properties p WHERE p.id = activity_logs.property_id AND p.agency_id = auth.uid()) OR user_id = auth.uid())
+            ELSE true
+        END
+    );
+
+DROP POLICY IF EXISTS "activity_logs_update_policy" ON public.activity_logs;
+CREATE POLICY "activity_logs_update_policy" ON public.activity_logs FOR UPDATE TO authenticated
+    USING (
+        type = 'manual_note' AND (
+            public.is_agency_of_property(property_id, auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.properties p
+                WHERE p.id = activity_logs.property_id AND p.agency_id = auth.uid()
+            ) OR
+            user_id = auth.uid()
+        )
+    )
+    WITH CHECK (
+        type = 'manual_note' AND (
+            public.is_agency_of_property(property_id, auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.properties p
+                WHERE p.id = activity_logs.property_id AND p.agency_id = auth.uid()
+            ) OR
+            user_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "activity_logs_delete_policy" ON public.activity_logs;
+CREATE POLICY "activity_logs_delete_policy" ON public.activity_logs FOR DELETE TO authenticated
+    USING (
+        type = 'manual_note' AND (
+            public.is_agency_of_property(property_id, auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.properties p
+                WHERE p.id = activity_logs.property_id AND p.agency_id = auth.uid()
+            ) OR
+            user_id = auth.uid()
+        )
+    );
 
 -- Maintenance Charges RLS
 ALTER TABLE public.maintenance_charges ENABLE ROW LEVEL SECURITY;

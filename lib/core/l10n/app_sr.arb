@@ -1508,7 +1508,7 @@
   "equipmentAndHeatingStandardsSubtitle": "Status opremljenosti i infrastruktura grejanja",
   "featuredAmenitiesSubtitle": "Istaknute pogodnosti i detaljan opis",
   "roomTypeStudio": "Garsonjera",
-  "secondaryContacts": "Dodatne kontakt osobe",
+  "secondaryContacts": "Dodatni kontakti",
   "addSecondaryContact": "Dodaj kontakt",
   "secondaryContactsOptionalDesc": "Opciono: Možete dodati pomoćne kontakte poput asistenta, zastupnika ili člana porodice.",
   "roleOrRelation": "Uloga / Odnos",
@@ -2080,6 +2080,93 @@
   "resendCode": "Pošalji kod ponovo",
   "resetPasswordButton": "Resetuj lozinku",
   "sendResetCode": "Pošalji verifikacioni kod",
-  "passwordTooShort": "Lozinka mora imati najmanje 6 karaktera."
+  "passwordTooShort": "Lozinka mora imati najmanje 6 karaktera.",
+  "editManualNoteSheetTitle": "Uredi ručnu belešku",
+  "manualNoteUpdatedSuccess": "Beleška je uspešno ažurirana",
+  "tenantIdPassportLabel": "Lična karta / Pasoš",
+  "tenantPhoneLabel": "Telefon zakupca",
+  "tenantNotesLabel": "Beleške o zakupcu",
+  "viewTenantIdDocument": "Pogledaj identifikacioni dokument zakupca",
+  "propertyManagedByAgency": "Nekretnina pod upravom agencije",
+  "paymentRecordedDebtClosed": "Uplata je uspešno evidentirana i dug je zatvoren.",
+  "receiptUploadedDebtClosed": "Priznanica je otpremljena i dug je zatvoren.",
+  "billNoteHint": "Dodajte napomenu o računu...",
+  "uploadNewBill": "Otpremi novi račun",
+  "resetAmountAndBill": "Poništi / obriši iznos i račun",
+  "changeFile": "Promeni fajl",
+  "includedInRentBadge": "U sklopu kirije",
+  "noAmountEntered": "Iznos nije unet",
+  "awaitingPaymentApproval": "Čeka odobrenje uplate",
+  "awaitingAgencyApproval": "Čeka odobrenje agencije",
+  "awaitingApprovalBadge": "Čeka odobrenje",
+  "paymentDueBadge": "Čeka uplatu",
+  "pendingBadge": "Na čekanju",
+  "transactionHistory": "Istorija transakcija",
+  "updateAmountOrBill": "Ažuriraj iznos / račun",
+  "confirmApproveLandlordPaymentMsg": "Da li želite da odobrite prijavu uplate stanodavca za {title}?",
+  "@confirmApproveLandlordPaymentMsg": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRejectLandlordPaymentMsg": "Da li želite da odbijete ovu prijavu uplate? Stanodavac će biti obavešten.",
+  "paymentAwaitingAgencyApprovalInfo": "Vaša prijava uplate je poslata agenciji na odobrenje.",
+  "declarePaymentBtn": "Prijavi uplatu",
+  "enterBillAmount": "Unesite iznos računa",
+  "rejectPaymentSubmissionTitle": "Odbij prijavu uplate",
+  "rejectPaymentSubmissionDesc": "Prijava uplate će biti odbijena i status će ostati \"{statusBadgeName}\".",
+  "@rejectPaymentSubmissionDesc": {
+    "placeholders": {
+      "statusBadgeName": {
+        "type": "String"
+      }
+    }
+  },
+  "rejectExpenseDeclarationDesc": "Ova prijava troška će biti odbijena i neće uticati na kiriju ili finansije nekretnine.",
+  "addTenantDebtToRentSub": "{cost} - Dodajte dug zakupca na kiriju ili ga naplatite",
+  "@addTenantDebtToRentSub": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "optionBankTransferAgencyDesc": "Priložite uplatnicu bankovnog transfera agenciji",
+  "optionCashPaymentAgencyDesc": "Prijavite da ste agenciji platili u gotovini",
+  "rentAndBillsHeader": "KIRIJA I RAČUNI",
+  "zeroPaidLabel": "0 {currency} (Plaćeno)",
+  "@zeroPaidLabel": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "tenantMaintenanceCreditsHeader": "POTRAŽIVANJA ZAKUPCA ZA ODRŽAVANJE",
+  "tenantMaintenanceDebtsHeader": "DUGOVI ZAKUPCA ZA ODRŽAVANJE I ŠTETU",
+  "zeroSettledLabel": "0 {currency} (Zatvoreno)",
+  "@zeroSettledLabel": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "maintInfoAgencyPaidSubmitted": "Zakupac je podneo prijavu uplate. Čeka se pregled agencije radi odobrenja ili odbijanja.",
+  "maintInfoAgencyPaidTenantDamage": "Šteta nastala korišćenjem zakupca koju je agencija platila unapred. Biće dodata na kiriju ili naplaćena od zakupca.",
+  "maintInfoAgencyPaidPropertyFixture": "Trošak opreme nekretnine koji je agencija platila unapred. Biće odbijen od isplate kirije ili naplaćen od stanodavca.",
+  "maintInfoTenantPaidFixturePendingAgency": "Trošak stanodavca koji je zakupac platio unapred. Biće spreman za odbitak od kirije nakon odobrenja agencije.",
+  "maintInfoTenantPaidSelfPendingAgency": "Zakupac je platio sopstvenu štetu. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).",
+  "maintInfoLandlordPaidFixturePendingAgency": "Stanodavac je platio kao opremu nekretnine. Biće zatvoreno kao plaćeno nakon odobrenja agencije (bez uticaja na kiriju).",
+  "maintInfoLandlordPaidDamagePendingAgency": "Šteta zakupca koju je stanodavac platio unapred. Biće spremna za dodavanje na kiriju nakon odobrenja agencije.",
+  "maintInfoTenantPaidFixtureSettled": "Trošak stanodavca koji je zakupac platio unapred. Biće odbijen od kirije ili refundiran od strane stanodavca.",
+  "maintInfoLandlordPaidDamageSettled": "Šteta zakupca koju je stanodavac platio unapred. Biće dodata na kiriju ili naplaćena od zakupca.",
+  "subLabelAwaitingBill": "Čeka se račun",
+  "subLabelRentPayments": "Iznosi kirije",
+  "subLabelUtilitiesDues": "Struja, voda, komunalije",
+  "subLabelRepairsSettlements": "Popravke i prebijanja",
+  "subLabelOverduePayments": "Zakasnela plaćanja",
+  "subLabelUpcomingRecords": "Predstojeće obaveze"
 }
-
