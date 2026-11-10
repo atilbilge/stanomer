@@ -1637,6 +1637,7 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
+                                    onFieldSubmitted: (val) => _saveTenantEmail(val),
                                     onChanged: (val) {
                                       setState(() {
                                         _currentEmail = val.trim();
@@ -1801,6 +1802,10 @@ class _TenantInviteShareSheetState extends ConsumerState<TenantInviteShareSheet>
                           InkWell(
                             borderRadius: BorderRadius.circular(8),
                             onTap: () {
+                              final textToSave = _emailController.text.trim().toLowerCase();
+                              if (textToSave.isNotEmpty && textToSave != _currentEmail.toLowerCase() && !_isSavingEmail) {
+                                _saveTenantEmail(textToSave);
+                              }
                               Clipboard.setData(ClipboardData(
                                 text: '${loc.subjectHeader}: ${emailDetails.subject}\n\n${emailDetails.body}',
                               ));

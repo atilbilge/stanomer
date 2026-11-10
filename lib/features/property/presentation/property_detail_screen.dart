@@ -4105,6 +4105,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
   String? _uploadingPaymentId;
   final Set<String> _expandedPaymentIds = {};
   final Set<String> _expandedMaintenanceIds = {};
+  final Set<String> _selectedPaymentIds = {};
 
   // Financial Filters
   String _selectedTypeFilter = 'all';     // 'all' | 'rent' | 'bills' | 'maintenance'
@@ -4340,6 +4341,612 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     }
   }
 
+  Future<void> _showBulkMarkAsPaidModal(List<RentPayment> selectedPayments) async {
+    if (selectedPayments.isEmpty) return;
+    final loc = AppLocalizations.of(context)!;
+
+    final Map<String, double> totalsByCurrency = {};
+    for (final p in selectedPayments) {
+      totalsByCurrency[p.currency] = (totalsByCurrency[p.currency] ?? 0) + p.amount;
+    }
+    final formattedTotal = totalsByCurrency.entries
+        .map((e) => CurrencyUtils.formatAmount(e.value, e.key, useSymbol: true))
+        .join(' + ');
+
+    final titleStr = loc.localeName == 'tr'
+        ? 'Toplu Ödendi Olarak İşaretle'
+        : (loc.localeName == 'ru'
+            ? 'Отметить как оплаченные'
+            : (loc.localeName.startsWith('sr')
+                ? 'Označi izabrano kao plaćeno'
+                : 'Mark Selected as Paid'));
+    final subtitleStr = loc.localeName == 'tr'
+        ? '${selectedPayments.length} adet borç için toplu tahsilat/ödeme kaydı'
+        : (loc.localeName == 'ru'
+            ? 'Групповая запись об оплате для ${selectedPayments.length} платежей'
+            : (loc.localeName.startsWith('sr')
+                ? 'Grupni zapis o uplati za ${selectedPayments.length} stavki'
+                : 'Bulk payment record for ${selectedPayments.length} debts'));
+
+    PlatformFile? pickedReceiptFile;
+    final noteController = TextEditingController();
+    bool isSubmitting = false;
+    String selectedPaymentMethod = selectedPayments.any((p) => p.paymentMethod == 'cash') ? 'cash' : 'bank_transfer';
+
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF059669).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(LucideIcons.checkCheck, color: Color(0xFF059669), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(titleStr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 2),
+                      Text(subtitleStr, style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                loc.localeName == 'tr' ? 'Seçilen Borçlar:' : (loc.localeName == 'ru' ? 'Выбранные счета:' : (loc.localeName.startsWith('sr') ? 'Izabrana dugovanja:' : 'Selected Debts:')),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                              ),
+                              Text(
+                                formattedTotal,
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF059669)),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 16, thickness: 1, color: Color(0xFFE2E8F0)),
+                          for (final p in selectedPayments) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${ExpenseUtils.getLocalizedExpenseName(p.title, loc)} (${DateFormat('MMM yyyy', loc.localeName).format(p.dueDate)})',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    CurrencyUtils.formatAmount(p.amount, p.currency, useSymbol: true),
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: StanomerColors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    Text(loc.paymentMethodLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: StanomerColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: isSubmitting ? null : () => setDialogState(() => selectedPaymentMethod = 'bank_transfer'),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFFEFF6FF) : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+                                  width: selectedPaymentMethod == 'bank_transfer' ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.landmark, size: 15, color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF1D4ED8) : const Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    loc.bankTransferOption,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: selectedPaymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
+                                      color: selectedPaymentMethod == 'bank_transfer' ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: isSubmitting ? null : () => setDialogState(() => selectedPaymentMethod = 'cash'),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: selectedPaymentMethod == 'cash' ? const Color(0xFFFEF3C7) : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: selectedPaymentMethod == 'cash' ? const Color(0xFFF59E0B) : const Color(0xFFE2E8F0),
+                                  width: selectedPaymentMethod == 'cash' ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.banknote, size: 15, color: selectedPaymentMethod == 'cash' ? const Color(0xFFB45309) : const Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    loc.paymentMethodCash,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: selectedPaymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                                      color: selectedPaymentMethod == 'cash' ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    Text(
+                      loc.localeName == 'tr' ? 'Ortak Dekont / Makbuz (İsteğe Bağlı)' : (loc.localeName == 'ru' ? 'Общий чек / квитанция (необязательно)' : (loc.localeName.startsWith('sr') ? 'Zajednička priznanica (opciono)' : 'Shared Receipt (Optional)')),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: StanomerColors.textSecondary),
+                    ),
+                    const SizedBox(height: 6),
+                    if (pickedReceiptFile == null)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final res = await FilePicker.platform.pickFiles(
+                                  type: FileType.custom,
+                                  allowedExtensions: ['pdf', 'PDF'],
+                                  withData: true,
+                                );
+                                if (res != null && res.files.isNotEmpty) {
+                                  setDialogState(() => pickedReceiptFile = res.files.first);
+                                }
+                              },
+                              icon: const Icon(LucideIcons.fileText, size: 16, color: StanomerColors.brandPrimary),
+                              label: Text(
+                                loc.localeName == 'tr' ? 'PDF Belgesi' : 'PDF Document',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: StanomerColors.textPrimary,
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final res = await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                  withData: true,
+                                );
+                                if (res != null && res.files.isNotEmpty) {
+                                  setDialogState(() => pickedReceiptFile = res.files.first);
+                                }
+                              },
+                              icon: const Icon(LucideIcons.image, size: 16, color: Color(0xFF059669)),
+                              label: Text(
+                                loc.localeName == 'tr' ? 'Görsel / Foto' : 'Photo / Image',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: StanomerColors.textPrimary,
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF10B981)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(LucideIcons.fileCheck, size: 16, color: Color(0xFF059669)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                pickedReceiptFile!.name,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF059669),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => setDialogState(() => pickedReceiptFile = null),
+                              child: const Icon(LucideIcons.x, size: 16, color: Color(0xFFEF4444)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 14),
+
+                    Text(loc.explanationOptional, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: StanomerColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: noteController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: loc.explanationHint,
+                        hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: StanomerColors.brandPrimary)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting ? null : () => Navigator.pop(dialogCtx),
+                child: Text(loc.cancel),
+              ),
+              ElevatedButton.icon(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        setDialogState(() => isSubmitting = true);
+                        try {
+                          String? uploadedReceiptUrl;
+                          if (pickedReceiptFile != null) {
+                            uploadedReceiptUrl = await _uploadReceiptFile(pickedReceiptFile!);
+                          }
+
+                          final paymentIds = selectedPayments.map((p) => p.id).toList();
+                          final summaryTitle = selectedPayments.map((p) => p.title).toSet().join(', ');
+
+                          await ref.read(propertyRepositoryProvider).approveRentPaymentsBatch(
+                            paymentIds: paymentIds,
+                            propertyId: widget.property.id,
+                            summaryTitle: summaryTitle,
+                            receiptUrl: uploadedReceiptUrl,
+                            note: noteController.text.trim().isEmpty ? null : noteController.text.trim(),
+                            paymentMethod: selectedPaymentMethod,
+                          );
+
+                          if (mounted) {
+                            setState(() {
+                              _selectedPaymentIds.clear();
+                            });
+                            ref.invalidate(rentPaymentsProvider(widget.property.id));
+                            ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+                            ref.invalidate(propertiesStreamProvider);
+                            ref.invalidate(agencyPropertiesProvider);
+                            Navigator.pop(dialogCtx);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  loc.localeName == 'tr'
+                                      ? '${paymentIds.length} adet borç ödendi olarak kaydedildi.'
+                                      : (loc.localeName == 'ru'
+                                          ? '${paymentIds.length} платежей успешно отмечены как оплаченные.'
+                                          : (loc.localeName.startsWith('sr')
+                                              ? '${paymentIds.length} stavki je označeno kao plaćeno.'
+                                              : '${paymentIds.length} debts marked as paid successfully.')),
+                                ),
+                                backgroundColor: const Color(0xFF059669),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          setDialogState(() => isSubmitting = false);
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Hata: $e'),
+                              backgroundColor: StanomerColors.alertPrimary,
+                            ),
+                          );
+                        }
+                      },
+                icon: isSubmitting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(LucideIcons.checkCheck, size: 16),
+                label: Text(
+                  isSubmitting ? loc.statusPending : loc.saveAsPaid,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleBulkApproval(List<RentPayment> selectedPayments) async {
+    if (selectedPayments.isEmpty) return;
+    final loc = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(LucideIcons.checkCheck, color: Color(0xFF059669), size: 20),
+            const SizedBox(width: 10),
+            Text(
+              loc.localeName == 'tr'
+                  ? 'Toplu Onay'
+                  : (loc.localeName == 'ru' ? 'Групповое подтверждение' : (loc.localeName.startsWith('sr') ? 'Grupno odobrenje' : 'Bulk Approval')),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          loc.localeName == 'tr'
+              ? 'Seçilen ${selectedPayments.length} adet ödeme bildirimini onaylamak ve ödendi olarak kaydetmek istiyor musunuz?'
+              : (loc.localeName == 'ru'
+                  ? 'Вы действительно хотите одобрить и подтвердить ${selectedPayments.length} платежей?'
+                  : (loc.localeName.startsWith('sr')
+                      ? 'Da li želite da odobrite ${selectedPayments.length} prijavljenih uplata?'
+                      : 'Do you want to approve ${selectedPayments.length} declared payments?')),
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF059669),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(loc.confirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final paymentIds = selectedPayments.map((p) => p.id).toList();
+      final summaryTitle = selectedPayments.map((p) => p.title).toSet().join(', ');
+
+      await ref.read(propertyRepositoryProvider).approveRentPaymentsBatch(
+        paymentIds: paymentIds,
+        propertyId: widget.property.id,
+        summaryTitle: summaryTitle,
+      );
+
+      if (mounted) {
+        setState(() {
+          _selectedPaymentIds.clear();
+        });
+        ref.invalidate(rentPaymentsProvider(widget.property.id));
+        ref.invalidate(propertyFinancialStatusProvider(widget.property.id));
+        ref.invalidate(propertiesStreamProvider);
+        ref.invalidate(agencyPropertiesProvider);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.localeName == 'tr'
+                  ? '${paymentIds.length} adet ödeme onaylandı.'
+                  : (loc.localeName == 'ru'
+                      ? '${paymentIds.length} платежей успешно подтверждены.'
+                      : (loc.localeName.startsWith('sr')
+                          ? '${paymentIds.length} uplata je odobreno.'
+                          : '${paymentIds.length} payments approved.')),
+            ),
+            backgroundColor: const Color(0xFF059669),
+          ),
+        );
+      }
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+          backgroundColor: StanomerColors.alertPrimary,
+        ),
+      );
+    }
+  }
+
+  Widget _buildBulkActionBar({
+    required BuildContext context,
+    required List<RentPayment> allPayments,
+    required bool isLandlord,
+    required bool isTenant,
+    required bool isAgencyManager,
+    required AppLocalizations loc,
+  }) {
+    if (!isAgencyManager) return const SizedBox.shrink();
+    final selectedPayments = allPayments.where((p) => _selectedPaymentIds.contains(p.id)).toList();
+    if (selectedPayments.isEmpty) return const SizedBox.shrink();
+
+    final Map<String, double> totalsByCurrency = {};
+    for (final p in selectedPayments) {
+      totalsByCurrency[p.currency] = (totalsByCurrency[p.currency] ?? 0) + p.amount;
+    }
+    final formattedTotal = totalsByCurrency.entries
+        .map((e) => CurrencyUtils.formatAmount(e.value, e.key, useSymbol: true))
+        .join(' + ');
+
+    final allDeclared = selectedPayments.every((p) => p.status == 'declared');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => setState(() => _selectedPaymentIds.clear()),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.x, size: 16, color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${selectedPayments.length} ${loc.localeName == 'tr' ? 'borç seçildi' : (loc.localeName == 'ru' ? 'выбрано' : (loc.localeName.startsWith('sr') ? 'duga izabrano' : 'debts selected'))}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8)),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    formattedTotal,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            if (allDeclared)
+              ElevatedButton.icon(
+                onPressed: () => _handleBulkApproval(selectedPayments),
+                icon: const Icon(LucideIcons.checkCheck, size: 15),
+                label: Text(
+                  loc.localeName == 'tr'
+                      ? 'Onayla'
+                      : (loc.localeName == 'ru' ? 'Одобрить' : (loc.localeName.startsWith('sr') ? 'Odobri' : 'Approve')),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+              )
+            else
+              ElevatedButton.icon(
+                onPressed: () => _showBulkMarkAsPaidModal(selectedPayments),
+                icon: const Icon(LucideIcons.checkCircle2, size: 15),
+                label: Text(
+                  loc.localeName == 'tr'
+                      ? 'Ödendi İşaretle'
+                      : (loc.localeName == 'ru' ? 'Отметить оплату' : (loc.localeName.startsWith('sr') ? 'Označi plaćeno' : 'Mark as Paid')),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _showMarkAsPaidModal(RentPayment payment, String monthName) async {
     final loc = AppLocalizations.of(context)!;
     final localizedTitle = ExpenseUtils.getLocalizedExpenseName(payment.title, loc);
@@ -4355,7 +4962,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
     await showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           return AlertDialog(
@@ -4926,10 +5533,12 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     );
   }
 
-  Future<FilePickerResult?> _pickReceiptFile() async {
+  Future<FilePickerResult?> _pickReceiptFile({BuildContext? customContext}) async {
+    final targetContext = customContext ?? context;
     final source = await showModalBottomSheet<String>(
-      context: context,
-      isDismissible: false,
+      context: targetContext,
+      useRootNavigator: true,
+      isDismissible: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         final l = AppLocalizations.of(context)!;
@@ -5020,7 +5629,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     Future<FilePickerResult?> pickInvoiceFile(StateSetter setDialogState) async {
       final source = await showModalBottomSheet<String>(
         context: context,
-        isDismissible: false,
+        useRootNavigator: true,
+        isDismissible: true,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         builder: (ctx) {
           final l = AppLocalizations.of(context)!;
@@ -5962,10 +6572,16 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       property: property,
     );
 
+    final isSelected = _selectedPaymentIds.contains(payment.id);
+    final isSelectable = isAgencyManager && !isPaid && payment.amount > 0;
+
     Color borderColor = StanomerColors.borderDefault;
     Color bgColor = Theme.of(context).cardColor;
     
-    if (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval) {
+    if (isSelected) {
+      borderColor = StanomerColors.brandPrimary;
+      bgColor = StanomerColors.brandPrimary.withValues(alpha: 0.04);
+    } else if (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval) {
       borderColor = Colors.amber.shade700;
       bgColor = Colors.amber.withValues(alpha: 0.04);
     } else if (isDeclared) {
@@ -5977,7 +6593,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       bgColor = StanomerColors.alertPrimary.withValues(alpha: 0.02);
     }
     if (isAwaitingInvoice && isLandlord) borderColor = StanomerColors.brandPrimary.withValues(alpha: 0.4);
-    if (isIncludedExpense && !isAwaitingInvoice && !isDeclared && !isPaid) {
+    if (isIncludedExpense && !isAwaitingInvoice && !isDeclared && !isPaid && !isSelected) {
       borderColor = Colors.purple.shade200;
     }
 
@@ -5985,25 +6601,27 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final paymentLogs = _getPaymentActivityLogs(payment, allLogs, loc.localeName);
 
     // Accent stripe color: status-driven left edge
-    final Color stripeColor = isPaid
-        ? const Color(0xFF16A34A)  // green
-        : (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval)
-            ? const Color(0xFFD97706) // amber
-            : isDeclared
+    final Color stripeColor = isSelected
+        ? StanomerColors.brandPrimary
+        : isPaid
+            ? const Color(0xFF16A34A)  // green
+            : (isInvoiceAwaitingAgencyApproval || isIncludedPaymentAwaitingAgencyApproval)
                 ? const Color(0xFFD97706) // amber
-                : isDisputed
-                    ? StanomerColors.alertPrimary
-                    : isAwaitingInvoice
-                        ? StanomerColors.brandPrimary
-                        : isIncludedExpense
-                            ? Colors.purple.shade300 // mor — kiraya dahil, ödeme bekliyor
-                            : const Color(0xFFCBD5E1); // slate-300 for pending
+                : isDeclared
+                    ? const Color(0xFFD97706) // amber
+                    : isDisputed
+                        ? StanomerColors.alertPrimary
+                        : isAwaitingInvoice
+                            ? StanomerColors.brandPrimary
+                            : isIncludedExpense
+                                ? Colors.purple.shade300 // mor — kiraya dahil, ödeme bekliyor
+                                : const Color(0xFFCBD5E1); // slate-300 for pending
 
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: borderColor, width: isSelected ? 1.5 : 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.025),
@@ -6039,6 +6657,27 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
             },
             child: Row(
               children: [
+                if (isSelectable)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedPaymentIds.remove(payment.id);
+                        } else {
+                          _selectedPaymentIds.add(payment.id);
+                        }
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Icon(
+                        isSelected ? LucideIcons.checkSquare2 : LucideIcons.square,
+                        size: 20,
+                        color: isSelected ? StanomerColors.brandPrimary : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
                 Container(
                   width: 38, height: 38,
                   decoration: BoxDecoration(color: catColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
@@ -7402,7 +8041,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
 
     await showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           final titleText = loc.collectSettleExpenseTitle;
@@ -10459,7 +11098,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               children: [
                 ListView(
                   controller: _financialScrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, (isAgencyManager && _selectedPaymentIds.isNotEmpty) ? 100 : 32),
                   children: [
                     // ── TOP CONTROL PANEL: FILTER & SUMMARY DECK ─────────
                     Container(
@@ -10882,9 +11521,70 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    // Status mini badges
+                                    // Status mini badges & Month Selection
                                     Row(
                                       children: [
+                                        Builder(
+                                          builder: (_) {
+                                            if (!isAgencyManager) return const SizedBox.shrink();
+                                            final monthSelectable = monthPayments.where((p) => p.status != 'paid' && p.amount > 0).toList();
+                                            if (monthSelectable.isEmpty) return const SizedBox.shrink();
+                                            final allMonthSelected = monthSelectable.every((p) => _selectedPaymentIds.contains(p.id));
+
+                                            return GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
+                                              onTap: () {
+                                                setState(() {
+                                                  if (allMonthSelected) {
+                                                    for (final p in monthSelectable) {
+                                                      _selectedPaymentIds.remove(p.id);
+                                                    }
+                                                  } else {
+                                                    for (final p in monthSelectable) {
+                                                      _selectedPaymentIds.add(p.id);
+                                                    }
+                                                  }
+                                                });
+                                              },
+                                              child: Container(
+                                                margin: const EdgeInsets.only(right: 6),
+                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                                                decoration: BoxDecoration(
+                                                  color: allMonthSelected
+                                                      ? StanomerColors.brandPrimary.withValues(alpha: 0.12)
+                                                      : const Color(0xFFF1F5F9),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(
+                                                    color: allMonthSelected
+                                                        ? StanomerColors.brandPrimary.withValues(alpha: 0.4)
+                                                        : const Color(0xFFE2E8F0),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      allMonthSelected ? LucideIcons.checkSquare2 : LucideIcons.square,
+                                                      size: 11,
+                                                      color: allMonthSelected ? StanomerColors.brandPrimary : const Color(0xFF64748B),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      allMonthSelected
+                                                          ? (loc.localeName == 'tr' ? 'Seçili' : (loc.localeName == 'ru' ? 'Выбрано' : (loc.localeName.startsWith('sr') ? 'Izabrano' : 'Selected')))
+                                                          : (loc.localeName == 'tr' ? 'Ayı Seç' : (loc.localeName == 'ru' ? 'Выбрать' : (loc.localeName.startsWith('sr') ? 'Izaberi' : 'Select Month'))),
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: allMonthSelected ? StanomerColors.brandPrimary : const Color(0xFF64748B),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                         if (pendingCountM > 0) _MiniBadge(count: pendingCountM, color: const Color(0xFF94A3B8)),
                                         if (awaitingCountM > 0) _MiniBadge(count: awaitingCountM, color: const Color(0xFFD97706)),
                                         if (paidCountM > 0) _MiniBadge(count: paidCountM, color: const Color(0xFF16A34A)),
@@ -10998,6 +11698,22 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
                     left: 16,
                     right: 16,
                     child: _buildStickyFilterSummaryBar(loc),
+                  ),
+
+                // ── Sticky / Floating Bulk Action Bar (Agency Only) ───
+                if (isAgencyManager && _selectedPaymentIds.isNotEmpty)
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: _buildBulkActionBar(
+                      context: context,
+                      allPayments: allDeduplicatedPayments,
+                      isLandlord: isLandlord,
+                      isTenant: isTenant,
+                      isAgencyManager: isAgencyManager,
+                      loc: loc,
+                    ),
                   ),
               ],
             );

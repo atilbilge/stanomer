@@ -122,19 +122,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           final allPendingInvites = await supabase
               .from('invitations')
               .select('id, target_role, token')
-              .eq('invitee_email', userEmail)
+              .ilike('invitee_email', userEmail)
               .eq('status', 'pending');
 
           final landlordProperties = await supabase
               .from('properties')
               .select('id')
-              .eq('landlord_email', userEmail);
+              .ilike('landlord_email', userEmail);
 
-          final tenantContracts = await supabase
+          final tenantContractsRaw = await supabase
               .from('contracts')
-              .select('id')
-              .eq('invitee_email', userEmail)
-              .inFilter('status', ['pending', 'negotiating', 'revision_requested']);
+              .select('id, status, tenant_id')
+              .ilike('invitee_email', userEmail);
+
+          final tenantContracts = tenantContractsRaw.where((c) {
+            final status = c['status'] as String?;
+            final tenantId = c['tenant_id'];
+            if (tenantId != null && status != 'revision_requested') return false;
+            return status == 'pending' ||
+                status == 'negotiating' ||
+                status == 'revision_requested' ||
+                (status == 'active' && tenantId == null);
+          }).toList();
 
           final hasLandlordInvite = landlordProperties.isNotEmpty ||
               allPendingInvites.any((inv) {
@@ -537,18 +546,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // ── Pending Landlord Ownership invitations (if any) ──────────────────────
+                        // ── Pending Invitations (Landlord & Tenant) ──────────────────────
                         () {
-                          final landlordInvites = (pendingInvitesAsync.value ?? [])
-                              .where((invite) => invite['target_role'] == 'landlord')
-                              .toList();
-                          if (landlordInvites.isEmpty) return const SizedBox.shrink();
+                          final allInvites = pendingInvitesAsync.value ?? [];
+                          if (allInvites.isEmpty) return const SizedBox.shrink();
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              ...landlordInvites.map((invite) {
-                                final p = invite['properties'] as Map<String, dynamic>?;
-                                if (p == null) return const SizedBox.shrink();
+                              ...allInvites.map((invite) {
+                                final p = (invite['properties'] as Map<String, dynamic>?) ?? {};
                                 return _InvitationCard(invite: invite, propertyData: p);
                               }),
                               const SizedBox(height: 12),
@@ -684,9 +690,8 @@ else if (propertiesAsync.hasError) ...[
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // ── 0. Pending tenant invitations (if any) ──────────────────
-                        ...tenantInvites.map((invite) {
-                          final p = invite['properties'] as Map<String, dynamic>?;
-                          if (p == null) return const SizedBox.shrink();
+                        ...allInvites.map((invite) {
+                          final p = (invite['properties'] as Map<String, dynamic>?) ?? {};
                           return _InvitationCard(invite: invite, propertyData: p);
                         }),
 
@@ -2984,7 +2989,7 @@ class _InvitationCard extends StatelessWidget {
                       ),
                       child: Builder(
                         builder: (context) {
-                          final rawStatus = invite['status'] as String;
+                          final rawStatus = (invite['status'] as String?) ?? 'pending';
                           final statusEnum = rawStatus == 'revision_requested'
                               ? ContractStatus.revisionRequested
                               : ContractStatus.values.firstWhere((e) => e.name == rawStatus, orElse: () => ContractStatus.pending);
@@ -2997,7 +3002,11 @@ class _InvitationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      propertyData['name'] ?? 'Property',
+                      (propertyData['name'] as String?)?.isNotEmpty == true
+                          ? propertyData['name'] as String
+                          : (invite['inviter_name'] as String?)?.isNotEmpty == true
+                              ? invite['inviter_name'] as String
+                              : 'Property',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                     ),
                     if (invite['inviter_name'] != null)

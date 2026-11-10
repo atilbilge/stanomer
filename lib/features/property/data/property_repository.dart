@@ -1776,24 +1776,73 @@ class PropertyRepository {
     try {
       Map<String, dynamic>? contractData;
       if (token != null && token.isNotEmpty) {
-        contractData = await _client.from('contracts').select('id, property_id').eq('token', token).maybeSingle();
+        contractData = await _client
+            .from('contracts')
+            .select('id, property_id, status, tenant_id')
+            .eq('token', token)
+            .maybeSingle();
       }
 
-      await _client.rpc('accept_contract', params: {
-        'contract_token': token, // null ise RPC email fallback'e geçer
-      });
+      // If user is already the assigned tenant and status is active, treat as idempotent success
+      if (contractData != null && contractData['tenant_id'] == user.id && contractData['status'] == 'active') {
+        return;
+      }
+
+      bool rpcSucceeded = false;
+      try {
+        await _client.rpc('accept_contract', params: {
+          'contract_token': token, // null ise RPC email fallback'e geçer
+        });
+        rpcSucceeded = true;
+      } catch (rpcErr) {
+        debugPrint('DEBUG [acceptContract]: RPC accept_contract error: $rpcErr');
+        // Fallback: Check if contract is already active or unassigned so we can claim directly
+        Map<String, dynamic>? recheck;
+        if (token != null && token.isNotEmpty) {
+          recheck = await _client
+              .from('contracts')
+              .select('id, property_id, tenant_id, status')
+              .eq('token', token)
+              .maybeSingle();
+        } else if (user.email != null) {
+          recheck = await _client
+              .from('contracts')
+              .select('id, property_id, tenant_id, status')
+              .ilike('invitee_email', user.email!.trim().toLowerCase())
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle();
+        }
+
+        if (recheck != null && (recheck['tenant_id'] == user.id || recheck['tenant_id'] == null)) {
+          await _client.from('contracts').update({
+            'status': 'active',
+            'tenant_id': user.id,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          }).eq('id', recheck['id']);
+
+          await _client.from('properties').update({
+            'tenant_id': user.id,
+          }).eq('id', recheck['property_id']);
+
+          contractData = recheck;
+          rpcSucceeded = true;
+        } else {
+          rethrow;
+        }
+      }
 
       if (contractData == null && user.email != null) {
         contractData = await _client
             .from('contracts')
             .select('id, property_id')
-            .eq('invitee_email', user.email!.trim().toLowerCase())
+            .ilike('invitee_email', user.email!.trim().toLowerCase())
             .order('created_at', ascending: false)
             .limit(1)
             .maybeSingle();
       }
 
-      if (contractData != null) {
+      if (contractData != null && rpcSucceeded) {
         final propertyId = contractData['property_id'] as String;
         final contractId = contractData['id'] as String;
 
@@ -2366,15 +2415,33 @@ class PropertyRepository {
   }
 
   Stream<List<Map<String, dynamic>>> getPendingContractsStreamForEmail(String email) {
+    final cleanEmail = email.trim().toLowerCase();
     return resilientStream(
-      () => _client
-          .from('contracts')
-          .stream(primaryKey: ['id'])
-          .eq('invitee_email', email.trim().toLowerCase())
-          .cast<dynamic>()
-          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-          .asyncMap((rows) => _filterAndEnrichContracts(rows)),
-      debugName: 'getPendingContractsStreamForEmail($email)',
+      () {
+        // Initial direct query to immediately fetch contracts without waiting for websocket
+        final directStream = Stream.fromFuture(
+          _client
+              .from('contracts')
+              .select()
+              .ilike('invitee_email', cleanEmail)
+              .then((rows) => _filterAndEnrichContracts(rows))
+              .catchError((e) {
+                debugPrint('DEBUG [PendingContracts direct]: $e');
+                return <Map<String, dynamic>>[];
+              }),
+        );
+
+        final realtimeStream = _client
+            .from('contracts')
+            .stream(primaryKey: ['id'])
+            .eq('invitee_email', cleanEmail)
+            .cast<dynamic>()
+            .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+            .asyncMap((rows) => _filterAndEnrichContracts(rows));
+
+        return Rx.merge([directStream, realtimeStream]);
+      },
+      debugName: 'getPendingContractsStreamForEmail($cleanEmail)',
     );
   }
 
@@ -2404,21 +2471,36 @@ class PropertyRepository {
           if (status == 'revision_requested' && r['tenant_id'] != null) {
             return false;
           }
-          return status == 'pending' || status == 'negotiating' || status == 'revision_requested';
+          final isUnclaimedActive = status == 'active' && r['tenant_id'] == null;
+          return status == 'pending' || status == 'negotiating' || status == 'revision_requested' || isUnclaimedActive;
         })
         .toList();
 
     if (pendingRows.isEmpty) return [];
 
     final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
-    final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
-    final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+    Map<String, dynamic> propsMap = {};
+    try {
+      final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
+      propsMap = {for (var p in propsResponse) p['id'] as String: p};
+    } catch (e) {
+      debugPrint('DEBUG: Error enriching properties for contracts: $e');
+    }
 
-    return pendingRows.map((item) => {
-      ...item,
-      'type': 'contract',
-      'target_role': 'tenant',
-      'properties': propsMap[item['property_id']],
+    return pendingRows.map((item) {
+      final propData = propsMap[item['property_id']] ?? {
+        'id': item['property_id'],
+        'name': item['inviter_name'] ?? 'Mülk',
+        'address': '',
+        'currency': item['currency'] ?? 'EUR',
+        'default_monthly_rent': item['monthly_rent'],
+      };
+      return {
+        ...item,
+        'type': 'contract',
+        'target_role': 'tenant',
+        'properties': propData,
+      };
     }).toList();
   }
 
@@ -2449,18 +2531,28 @@ class PropertyRepository {
     if (pendingRows.isEmpty) return [];
 
     final propertyIds = pendingRows.map((r) => r['property_id'] as String).toSet().toList();
-    final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
-    final propsMap = {for (var p in propsResponse) p['id'] as String: p};
+    Map<String, dynamic> propsMap = {};
+    try {
+      final propsResponse = await _client.from('properties').select().inFilter('id', propertyIds);
+      propsMap = {for (var p in propsResponse) p['id'] as String: p};
+    } catch (e) {
+      debugPrint('DEBUG: Error enriching properties for invitations: $e');
+    }
 
     return pendingRows.map((item) {
       final token = item['token'] as String? ?? '';
       final dbRole = item['target_role'] as String?;
       final targetRole = dbRole ?? (token.startsWith('landlord_') ? 'landlord' : 'tenant');
+      final propData = propsMap[item['property_id']] ?? {
+        'id': item['property_id'],
+        'name': item['inviter_name'] ?? 'Mülk',
+        'address': '',
+      };
       return {
         ...item,
         'type': 'invitation',
         'target_role': targetRole,
-        'properties': propsMap[item['property_id']],
+        'properties': propData,
       };
     }).toList();
   }
@@ -2626,6 +2718,110 @@ class PropertyRepository {
         }
       } catch (e) {
         print('Error creating notification for rent approval: $e');
+      }
+    }
+  }
+
+  Future<void> declareRentPaymentsBatch({
+    required List<String> paymentIds,
+    required String propertyId,
+    required String summaryTitle,
+    String? receiptUrl,
+    String? note,
+  }) async {
+    if (paymentIds.isEmpty) return;
+
+    final Map<String, dynamic> updateData = {
+      'status': 'declared',
+      'declared_at': DateTime.now().toIso8601String(),
+    };
+    if (receiptUrl != null) {
+      updateData['receipt_url'] = receiptUrl;
+    }
+    if (note != null && note.trim().isNotEmpty) {
+      updateData['owner_note'] = note.trim();
+    }
+
+    await _client.from('rent_payments').update(updateData).inFilter('id', paymentIds);
+
+    if (propertyId.isNotEmpty) {
+      try {
+        await _logActivity(propertyId, 'rent_declared', {
+          'payment_ids': paymentIds,
+          'count': paymentIds.length,
+          'summary': summaryTitle,
+          'has_receipt': receiptUrl != null,
+          'is_cash': receiptUrl == 'CASH',
+        });
+      } catch (e) {
+        print('Error logging activity for bulk rent declaration: $e');
+      }
+
+      try {
+        await _notifyPropertyManagers(
+          propertyId: propertyId,
+          title: 'Payments Declared',
+          body: 'Tenant has declared ${paymentIds.length} payments as paid: $summaryTitle',
+          type: 'rent',
+          relatedId: propertyId,
+        );
+      } catch (e) {
+        print('Error notifying property managers for bulk rent declaration: $e');
+      }
+    }
+  }
+
+  Future<void> approveRentPaymentsBatch({
+    required List<String> paymentIds,
+    required String propertyId,
+    required String summaryTitle,
+    String? receiptUrl,
+    String? note,
+    String? paymentMethod,
+  }) async {
+    if (paymentIds.isEmpty) return;
+
+    final Map<String, dynamic> updateData = {
+      'status': 'paid',
+      'paid_at': DateTime.now().toIso8601String(),
+      'dispute_reason': null,
+    };
+    if (receiptUrl != null) {
+      updateData['receipt_url'] = receiptUrl;
+    }
+    if (note != null && note.trim().isNotEmpty) {
+      updateData['owner_note'] = note.trim();
+    }
+    if (paymentMethod != null && paymentMethod.isNotEmpty) {
+      updateData['payment_method'] = paymentMethod;
+    }
+
+    await _client.from('rent_payments').update(updateData).inFilter('id', paymentIds);
+
+    if (propertyId.isNotEmpty) {
+      try {
+        await _logActivity(propertyId, 'rent_approved', {
+          'payment_ids': paymentIds,
+          'count': paymentIds.length,
+          'summary': summaryTitle,
+        });
+      } catch (e) {
+        print('Error logging activity for bulk rent approval: $e');
+      }
+
+      try {
+        final tenantId = await _getTenantId(propertyId);
+        if (tenantId != null && tenantId.isNotEmpty) {
+          await _createNotification(
+            userId: tenantId,
+            title: 'Payments Approved',
+            body: '${paymentIds.length} payments have been approved: $summaryTitle',
+            type: 'rent',
+            relatedId: propertyId,
+          );
+        }
+      } catch (e) {
+        print('Error creating notification for bulk rent approval: $e');
       }
     }
   }
