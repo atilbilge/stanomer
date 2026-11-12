@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage, Language } from "../../components/LanguageProvider";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase, prodPublicClient } from "../../lib/supabaseClient";
 
 interface CleanAgency {
   id: number;
@@ -294,24 +294,86 @@ export default function FindAgencyPage() {
       setError(null);
 
       try {
-        // Fetch profiles with logos to enrich directory agencies
-        const { data: agencyProfiles } = await supabase
-          .from("profiles")
-          .select("email, company_name, logo_url")
-          .not("logo_url", "is", null);
+        // Parallel fetch: profiles (for logos & Stanomer usage), referral partners (for official partner badges) and directory agencies
+        const [profilesRes, partnersRes, agenciesRes] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("email, company_name, full_name, logo_url, role"),
+          supabase
+            .from("agency_referral_partners")
+            .select("agency_name, email"),
+          supabase
+            .from("view_clean_agencies")
+            .select("*")
+            .order("id", { ascending: true })
+        ]);
 
+        const partnerNames = new Set<string>();
+        const partnerEmails = new Set<string>();
+        (partnersRes.data || []).forEach((p: any) => {
+          if (p.agency_name) partnerNames.add(p.agency_name.toLowerCase().trim());
+          if (p.email) partnerEmails.add(p.email.toLowerCase().trim());
+        });
+
+        const stanomerUserNames = new Set<string>();
+        const stanomerUserEmails = new Set<string>();
         const logoMap = new Map<string, string>();
-        (agencyProfiles || []).forEach((p: any) => {
+
+        (profilesRes.data || []).forEach((p: any) => {
+          const email = p.email ? p.email.toLowerCase().trim() : null;
+          const company = p.company_name ? p.company_name.toLowerCase().trim() : null;
+          const fullName = p.full_name ? p.full_name.toLowerCase().trim() : null;
+
           if (p.logo_url) {
-            if (p.email) logoMap.set(p.email.toLowerCase().trim(), p.logo_url);
-            if (p.company_name) logoMap.set(p.company_name.toLowerCase().trim(), p.logo_url);
+            if (email) logoMap.set(email, p.logo_url);
+            if (company) logoMap.set(company, p.logo_url);
+          }
+
+          // If profile has role='agency' or company_name, it's managing on Stanomer
+          if (p.role === "agency" || company) {
+            if (company) stanomerUserNames.add(company);
+            if (fullName && p.role === "agency") stanomerUserNames.add(fullName);
+            if (email) stanomerUserEmails.add(email);
           }
         });
 
-        const { data, error } = await supabase
-          .from("view_clean_agencies")
-          .select("*")
-          .order("id", { ascending: true });
+        const checkMatch = (
+          name: string | null | undefined,
+          longName: string | null | undefined,
+          emailsStr: string | null | undefined,
+          namesSet: Set<string>,
+          emailsSet: Set<string>
+        ): boolean => {
+          if (name && namesSet.has(name.toLowerCase().trim())) return true;
+          if (longName && namesSet.has(longName.toLowerCase().trim())) return true;
+          if (emailsStr) {
+            const emails = emailsStr.split(",").map((e: string) => e.toLowerCase().trim());
+            for (const em of emails) {
+              if (emailsSet.has(em)) return true;
+            }
+          }
+          return false;
+        };
+
+        let data = agenciesRes.data;
+        let error = agenciesRes.error;
+
+        // If current database has 0 agencies (e.g. empty dev database on localhost),
+        // fallback to public production directory to ensure realistic listing
+        if (error || !data || data.length === 0) {
+          try {
+            const prodRes = await prodPublicClient
+              .from("view_clean_agencies")
+              .select("*")
+              .order("id", { ascending: true });
+            if (prodRes.data && prodRes.data.length > 0) {
+              data = prodRes.data;
+              error = null;
+            }
+          } catch (e) {
+            console.warn("Production directory public fallback error:", e);
+          }
+        }
 
         if (error) {
           console.error("Supabase view query error, trying fallback:", error);
@@ -322,6 +384,8 @@ export default function FindAgencyPage() {
           if (rawError) throw rawError;
 
           const mapped = (rawAgencies || []).map((a: any) => {
+            const isMatchedPartner = checkMatch(a.name, a.long_name, null, partnerNames, partnerEmails);
+            const isMatchedStanomer = checkMatch(a.name, a.long_name, null, stanomerUserNames, stanomerUserEmails);
             const logo = a.name ? logoMap.get(a.name.toLowerCase().trim()) : null;
             return {
               id: a.id,
@@ -332,14 +396,17 @@ export default function FindAgencyPage() {
               web_sitesi: a.website || null,
               telefonlar: null,
               eposta_adresleri: null,
-              is_partner: !!a.is_partner,
-              uses_stanomer: !!a.uses_stanomer,
+              is_partner: !!a.is_partner || isMatchedPartner,
+              uses_stanomer: !!a.uses_stanomer || isMatchedStanomer,
               logo_url: logo || null
             };
           });
           setAgencies(mapped);
         } else {
           const enriched = (data || []).map((a: any) => {
+            const isMatchedPartner = checkMatch(a.acente_adi, a.resmi_tam_unvan, a.eposta_adresleri, partnerNames, partnerEmails);
+            const isMatchedStanomer = checkMatch(a.acente_adi, a.resmi_tam_unvan, a.eposta_adresleri, stanomerUserNames, stanomerUserEmails);
+
             let logo = a.logo_url || null;
             if (!logo) {
               if (a.acente_adi && logoMap.has(a.acente_adi.toLowerCase().trim())) {
@@ -358,6 +425,8 @@ export default function FindAgencyPage() {
             }
             return {
               ...a,
+              is_partner: !!a.is_partner || isMatchedPartner,
+              uses_stanomer: !!a.uses_stanomer || isMatchedStanomer,
               logo_url: logo || null
             };
           });
