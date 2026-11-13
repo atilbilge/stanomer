@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { 
   Building2, 
   Search, 
@@ -10,7 +11,7 @@ import {
   Globe, 
   Filter, 
   CheckCircle2, 
-  ExternalLink, 
+  ArrowUpRight,
   ShieldCheck, 
   Sparkles,
   ChevronDown,
@@ -593,36 +594,36 @@ export default function FindAgencyPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               {/* PRIMARY #1 FILTER: Stanomer User Agency Toggle */}
-              <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border cursor-pointer transition select-none ${
+              <label className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition select-none ${
                 stanomerOnly 
-                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/30 border-transparent ring-2 ring-amber-400" 
-                  : "bg-amber-50/80 border-amber-200 text-amber-900 hover:bg-amber-100"
+                  ? "bg-amber-50 border-amber-300 text-amber-900 shadow-xs" 
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
               }`}>
                 <input
                   type="checkbox"
                   checked={stanomerOnly}
                   onChange={(e) => setStanomerOnly(e.target.checked)}
-                  className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                  className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                 />
-                <Zap className={`w-4 h-4 ${stanomerOnly ? "text-yellow-100" : "text-amber-600"}`} />
+                <Zap className={`w-3.5 h-3.5 ${stanomerOnly ? "text-amber-600 fill-amber-500" : "text-slate-400"}`} />
                 <span>{t.filterStanomer}</span>
               </label>
 
               {/* SECONDARY #2 FILTER: Partner Only Toggle */}
-              <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border cursor-pointer transition select-none ${
+              <label className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition select-none ${
                 partnerOnly 
-                  ? "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/25 border-transparent ring-2 ring-indigo-400" 
-                  : "bg-indigo-50/80 border-indigo-200 text-indigo-900 hover:bg-indigo-100"
+                  ? "bg-slate-900 border-slate-900 text-white shadow-xs" 
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
               }`}>
                 <input
                   type="checkbox"
                   checked={partnerOnly}
                   onChange={(e) => setPartnerOnly(e.target.checked)}
-                  className="rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                 />
-                <Award className={`w-4 h-4 ${partnerOnly ? "text-indigo-200" : "text-indigo-600"}`} />
+                <Award className={`w-3.5 h-3.5 ${partnerOnly ? "text-amber-400" : "text-slate-400"}`} />
                 <span>{t.filterPartner}</span>
               </label>
 
@@ -630,7 +631,7 @@ export default function FindAgencyPage() {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>{t.clearFilters}</span>
@@ -733,44 +734,38 @@ export default function FindAgencyPage() {
               return (
                 <div
                   key={agency.id}
-                  className={`bg-white rounded-2xl p-6 border transition-all duration-300 flex flex-col justify-between space-y-5 group relative overflow-hidden ${
+                  className={`bg-white rounded-xl p-5 sm:p-6 border transition-all duration-200 flex flex-col justify-between space-y-4 group relative ${
                     usesStanomer
-                      ? "border-amber-500 shadow-xl shadow-amber-500/20 bg-gradient-to-br from-amber-50/50 via-white to-yellow-50/30 hover:border-amber-600 hover:shadow-2xl ring-2 ring-amber-400/50"
+                      ? "border-amber-300 shadow-sm hover:border-amber-400 hover:shadow-md ring-1 ring-amber-200/60"
                       : isPartner 
-                      ? "border-indigo-400/90 shadow-lg shadow-indigo-500/10 bg-gradient-to-br from-indigo-50/20 via-white to-blue-50/20 hover:border-indigo-500 hover:shadow-xl ring-1 ring-indigo-400/30"
-                      : "border-slate-200/80 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5"
+                      ? "border-slate-300 shadow-sm hover:border-slate-400 hover:shadow-md"
+                      : "border-slate-200 hover:border-slate-300 hover:shadow-md shadow-xs"
                   }`}
                 >
-                  {/* BADGES CONTAINER - STANOMER IS #1 HIGHEST PRIORITY */}
-                  <div className="flex flex-col gap-1.5 mb-1">
-                    {/* STANOMER USER BADGE (#1 TOP PRIORITY) */}
-                    {usesStanomer && (
-                      <div className="flex items-center justify-between bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-md shadow-amber-500/30">
-                        <div className="flex items-center gap-1.5">
-                          <Zap className="w-4 h-4 fill-yellow-100 text-white animate-pulse" />
+                  {/* BADGES CONTAINER */}
+                  {(usesStanomer || isPartner) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {usesStanomer && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80">
+                          <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
                           <span>{t.stanomerBadge}</span>
                         </div>
-                        <CheckCircle2 className="w-4 h-4 text-yellow-100" />
-                      </div>
-                    )}
+                      )}
 
-                    {/* PARTNER BADGE */}
-                    {isPartner && (
-                      <div className="flex items-center justify-between bg-gradient-to-r from-indigo-500 via-blue-600 to-violet-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-md shadow-indigo-500/20">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 fill-indigo-200 text-white" />
+                      {isPartner && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 text-white">
+                          <Award className="w-3.5 h-3.5 text-amber-400" />
                           <span>{t.partnerBadge}</span>
                         </div>
-                        <Award className="w-4 h-4 text-indigo-200" />
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         {agency.logo_url ? (
-                          <div className="w-11 h-11 rounded-xl bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+                          <div className="w-10 h-10 rounded-lg bg-white p-1 border border-slate-200 shadow-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
                             <img
                               src={agency.logo_url}
                               alt={agency.acente_adi}
@@ -783,72 +778,64 @@ export default function FindAgencyPage() {
                             />
                           </div>
                         ) : null}
-                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0 ${
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-500 ${
                           agency.logo_url ? "hidden" : ""
-                        } ${
-                          usesStanomer
-                            ? "bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-md shadow-amber-500/25"
-                            : isPartner 
-                            ? "bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-700 border border-indigo-300" 
-                            : "bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 text-blue-600"
                         }`}>
-                          <Building2 className="w-5 h-5" />
+                          <Building2 className="w-5 h-5 text-slate-500" />
                         </div>
 
-                        <div>
-                          <h3 className="font-extrabold text-slate-900 text-lg leading-snug group-hover:text-blue-600 transition-colors">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-slate-900 text-base leading-snug group-hover:text-blue-600 transition-colors truncate" title={agency.acente_adi}>
                             {agency.acente_adi}
                           </h3>
                           {agency.sehir && (
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500">
-                              <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
                               {agency.sehir}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex-shrink-0" title={t.verifiedBadge}>
-                        <ShieldCheck className={`w-5 h-5 ${
-                          usesStanomer ? "text-amber-500" : isPartner ? "text-indigo-500" : "text-emerald-500"
-                        }`} />
+                      <div className="flex-shrink-0 pt-0.5" title={t.verifiedBadge}>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       </div>
                     </div>
 
                     {agency.resmi_tam_unvan && agency.resmi_tam_unvan !== agency.acente_adi && (
-                      <p className="text-xs text-slate-500 font-medium line-clamp-1 italic bg-slate-50 p-2 rounded-lg border border-slate-100">
+                      <p className="text-xs text-slate-500 font-normal line-clamp-1">
                         {agency.resmi_tam_unvan}
                       </p>
                     )}
 
                     {agency.adres && (
-                      <p className="text-xs text-slate-600 flex items-start gap-1.5 leading-relaxed">
+                      <p className="text-xs text-slate-500 flex items-start gap-1.5 leading-relaxed">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
                         <span className="line-clamp-2">{agency.adres}</span>
                       </p>
                     )}
                   </div>
 
-                  {/* SINGLE MASKED BUTTONS PER TYPE */}
-                  <div className="pt-4 border-t border-slate-100 space-y-2.5 text-xs">
+                  {/* ACTION BUTTONS (PHONE, EMAIL, WEBSITES) */}
+                  <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
                     {/* Single Phone Button */}
                     {phoneCount > 0 && (
                       <button
                         type="button"
                         onClick={() => openPhoneModal(agency.acente_adi, agency.telefonlar!)}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-50/80 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200/60 transition group/btn cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 font-medium transition cursor-pointer group/btn"
                       >
                         <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <Phone className="w-3.5 h-3.5 text-slate-500 group-hover/btn:text-blue-600 transition-colors" />
                           <span>{t.showPhones}</span>
                           {phoneCount > 1 && (
-                            <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded-full font-extrabold">
+                            <span className="text-[10px] bg-slate-100 group-hover/btn:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-medium">
                               {phoneCount}
                             </span>
                           )}
                         </div>
-                        <span className="text-xs opacity-70 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-transform">
-                          •••••••••
+                        <span className="text-[11px] text-slate-400 group-hover/btn:text-slate-600 font-normal">
+                          {t.callAction} →
                         </span>
                       </button>
                     )}
@@ -858,19 +845,19 @@ export default function FindAgencyPage() {
                       <button
                         type="button"
                         onClick={() => openEmailModal(agency.acente_adi, agency.eposta_adresleri!)}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-violet-50/80 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200/60 transition group/btn cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 font-medium transition cursor-pointer group/btn"
                       >
                         <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-violet-600 flex-shrink-0" />
+                          <Mail className="w-3.5 h-3.5 text-slate-500 group-hover/btn:text-violet-600 transition-colors" />
                           <span>{t.showEmails}</span>
                           {emailCount > 1 && (
-                            <span className="text-[10px] bg-violet-600 text-white px-1.5 py-0.5 rounded-full font-extrabold">
+                            <span className="text-[10px] bg-slate-100 group-hover/btn:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-medium">
                               {emailCount}
                             </span>
                           )}
                         </div>
-                        <span className="text-xs opacity-70 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-transform">
-                          ••••@••••.com
+                        <span className="text-[11px] text-slate-400 group-hover/btn:text-slate-600 font-normal">
+                          {t.emailAction} →
                         </span>
                       </button>
                     )}
@@ -884,11 +871,11 @@ export default function FindAgencyPage() {
                             href={web.startsWith("http") ? web : "https://" + web}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold border border-emerald-200/60 transition truncate max-w-full"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 text-xs font-medium transition truncate max-w-full group/web"
                           >
-                            <Globe className="w-3.5 h-3.5 flex-shrink-0" />
-                            <span className="truncate">{web.replace(/^https?:\/\//, '')}</span>
-                            <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-70" />
+                            <Globe className="w-3.5 h-3.5 text-slate-400 group-hover/web:text-blue-600 flex-shrink-0 transition-colors" />
+                            <span className="truncate">{web.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                            <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover/web:text-slate-600 flex-shrink-0 opacity-70 group-hover/web:opacity-100 transition" />
                           </a>
                         ))}
                       </div>
@@ -897,27 +884,28 @@ export default function FindAgencyPage() {
 
                   {/* CTA + OPT-OUT FOOTER (non-partner, non-stanomer only) */}
                   {!isPartner && !usesStanomer && (
-                    <div className="pt-3 mt-1 border-t border-slate-100/80 space-y-2">
-                      <a
-                        href="/agency-referral"
-                        className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200/70 text-amber-800 font-bold text-xs transition group/cta"
+                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <Link
+                        href="/agencies"
+                        className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 hover:text-slate-900 font-medium text-xs transition-colors group/cta"
                       >
-                        <span className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover/cta:animate-spin" />
+                        <span className="flex items-center gap-1.5 text-slate-600">
+                          <Building2 className="w-3.5 h-3.5 text-slate-400 group-hover/cta:text-slate-600" />
                           <span>{t.ctaTitle}</span>
                         </span>
-                        <span className="text-amber-600 group-hover/cta:translate-x-0.5 transition-transform text-[11px] font-extrabold">
+                        <span className="inline-flex items-center gap-1 text-blue-600 group-hover/cta:text-blue-700 font-semibold text-[11px]">
                           {t.ctaButton}
+                          <ArrowUpRight className="w-3 h-3 transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5" />
                         </span>
-                      </a>
-                      <div className="text-center">
-                        <a
+                      </Link>
+                      <div className="text-center pt-0.5">
+                        <Link
                           href="/support"
-                          className="inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition underline underline-offset-2 decoration-dotted"
+                          className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 transition"
                         >
                           <span>{t.optOutText}</span>
-                          <span className="font-semibold">{t.optOutLink}</span>
-                        </a>
+                          <span className="underline underline-offset-2">{t.optOutLink}</span>
+                        </Link>
                       </div>
                     </div>
                   )}
@@ -942,59 +930,57 @@ export default function FindAgencyPage() {
 
       {/* CONTACT DETAILS POPOVER / DIALOG MODAL */}
       {modal.isOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[2000] flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div 
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-5 relative animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                  modal.type === "phone" ? "bg-blue-100 text-blue-600" : "bg-violet-100 text-violet-600"
-                }`}>
-                  {modal.type === "phone" ? <Phone className="w-6 h-6" /> : <Mail className="w-6 h-6" />}
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 text-slate-700 border border-slate-200/80">
+                  {modal.type === "phone" ? <Phone className="w-5 h-5 text-slate-600" /> : <Mail className="w-5 h-5 text-slate-600" />}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-lg">
+                  <h3 className="font-semibold text-slate-900 text-base">
                     {modal.type === "phone" ? t.phoneModalTitle : t.emailModalTitle}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">{modal.agencyName}</p>
+                  <p className="text-xs text-slate-500 font-medium">{modal.agencyName}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setModal({ ...modal, isOpen: false })}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {modal.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 hover:bg-white hover:shadow-md transition-all gap-3"
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200/80 hover:bg-white hover:border-slate-300 transition-colors gap-3"
                 >
-                  <span className="font-bold text-slate-800 text-sm tracking-wide truncate">
+                  <span className="font-medium text-slate-800 text-sm tracking-normal truncate">
                     {item}
                   </span>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => handleCopy(item)}
-                      className="p-2 rounded-xl bg-slate-200/70 hover:bg-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 rounded-md bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-medium flex items-center gap-1 transition cursor-pointer"
                       title={t.copyAction}
                     >
                       {copiedItem === item ? (
                         <>
                           <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="text-emerald-700 font-bold">{t.copiedAction}</span>
+                          <span className="text-emerald-700 font-semibold">{t.copiedAction}</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-3.5 h-3.5 text-slate-400" />
                           <span className="hidden sm:inline">{t.copyAction}</span>
                         </>
                       )}
@@ -1003,17 +989,17 @@ export default function FindAgencyPage() {
                     {modal.type === "phone" ? (
                       <a
                         href={"tel:" + item.replace(/\s+/g, '')}
-                        className="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition"
+                        className="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 transition"
                       >
-                        <Phone className="w-3.5 h-3.5" />
+                        <Phone className="w-3 h-3 text-slate-300" />
                         <span>{t.callAction}</span>
                       </a>
                     ) : (
                       <a
                         href={"mailto:" + item}
-                        className="px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-violet-600/20 transition"
+                        className="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 transition"
                       >
-                        <Mail className="w-3.5 h-3.5" />
+                        <Mail className="w-3 h-3 text-slate-300" />
                         <span>{t.emailAction}</span>
                       </a>
                     )}
@@ -1022,11 +1008,11 @@ export default function FindAgencyPage() {
               ))}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => setModal({ ...modal, isOpen: false })}
-                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-lg transition cursor-pointer"
               >
                 {t.close}
               </button>
