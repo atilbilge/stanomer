@@ -273,7 +273,7 @@ export default function GuideHubPage() {
             <span>{currentLabels.heroTag}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
             {currentLabels.heroTitle}
           </h1>
 

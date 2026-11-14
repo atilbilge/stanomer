@@ -264,7 +264,7 @@ export default function RussianGuidePage() {
 
         {/* Section 5: Conclusion */}
         <section className="pt-6 border-t border-gray-100" lang="ru">
-          <div className="bg-gradient-to-r from-gray-900 to-slate-900 text-white p-6 sm:p-8 rounded-2xl space-y-4 shadow-xl">
+          <div className="bg-gray-900 text-white p-6 sm:p-8 rounded-2xl space-y-4 shadow-md">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Zap className="w-5 h-5 text-brand-green" />
               Организуйте свой быт с первого дня в Белграде

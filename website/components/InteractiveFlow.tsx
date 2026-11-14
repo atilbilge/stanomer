@@ -150,7 +150,7 @@ export function InteractiveFlow() {
           <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
           {t("how_it_works_label")}
         </div>
-        <h2 className="text-[22px] sm:text-[26px] font-extrabold text-gray-900 leading-tight tracking-tight mb-1.5">
+        <h2 className="text-[22px] sm:text-[26px] font-semibold text-gray-900 leading-tight tracking-tight mb-1.5">
           <a href={`#${t("how_it_works_slug")}`} className="hover:text-brand-blue transition-colors">
             {t("how_it_works_title")}
           </a>
@@ -197,7 +197,7 @@ export function InteractiveFlow() {
             <img 
               src={currentInfographic} 
               alt={t("how_it_works_title")} 
-              className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-md"
             />
           </div>
         </div>

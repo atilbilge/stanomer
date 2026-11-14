@@ -196,7 +196,7 @@ export default function LeaseAgreementSerbianCyrillicGuidePage() {
             Прави посао почиње након потписивања уговора: праћење месечне кирије, провера плаћених рачуна и подсећање на датуме обнове уговора. Ако имате више некретнина, вођење евиденције у Excel-у или на папиру повећава ризик од грешака.
           </p>
 
-          <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 rounded-2xl border border-gray-200 space-y-4">
+          <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 space-y-4">
             <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-brand-blue" />
               Професионализација уз Станомер:

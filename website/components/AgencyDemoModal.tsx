@@ -113,7 +113,7 @@ export function AgencyDemoModal({
   return createPortal(
     <div className="fixed inset-0 z-[999999] overflow-y-auto bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-        <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden text-left my-8">
+        <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden text-left my-8">
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -123,14 +123,14 @@ export function AgencyDemoModal({
           </button>
 
         {/* Modal Header */}
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-7 text-white">
+        <div className="bg-blue-600 p-7 text-white">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>
               {isTR ? "İnteraktif Acente Simülasyonu" : isSR ? "Interaktivna Simulacija Panela" : "Interactive Agency Simulation"}
             </span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
+          <h3 className="text-xl sm:text-2xl font-semibold tracking-tight leading-tight">
             {isTR
               ? "Acentenizi Anında Simüle Edin"
               : isSR
@@ -153,7 +153,7 @@ export function AgencyDemoModal({
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-9 h-9" />
               </div>
-              <h4 className="text-xl font-extrabold text-slate-900">
+              <h4 className="text-xl font-semibold text-slate-900">
                 {isTR ? "Giriş Bağlantınız Gönderildi!" : isSR ? "Link za Prijavu je Poslat!" : "Login Link Sent!"}
               </h4>
               <p className="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">

@@ -142,7 +142,7 @@ export function AgencyAppWalkthroughStack() {
             className="group/pill inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-sm font-semibold shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
           >
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold tracking-wide">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
               <span>{isTR ? "SİMÜLASYON" : isSR ? "SIMULACIJA" : "SIMULATION"}</span>
             </span>
             <span>
@@ -225,7 +225,7 @@ export function AgencyAppWalkthroughStack() {
     "shadow-[0_25px_60px_-15px_rgba(6,78,59,0.35),0_12px_24px_-8px_rgba(6,78,59,0.22)] ring-1 ring-emerald-950/15";
 
   return (
-    <section className="relative py-16 sm:py-24 bg-gradient-to-b from-slate-50 via-amber-50/20 to-slate-50">
+    <section className="relative py-16 sm:py-24 bg-slate-50">
       {/* Sticky Step Navigator */}
       <div className="sticky top-16 z-50 bg-white/95 backdrop-blur-md py-2.5 sm:py-3 border-y border-slate-200 shadow-xs">
         <div className="max-w-5xl mx-auto px-2.5 sm:px-6 flex items-center justify-center sm:justify-between gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
@@ -323,11 +323,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-[#A37D4C] block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -501,11 +501,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-[#A37D4C] block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -591,7 +591,7 @@ export function AgencyAppWalkthroughStack() {
                         </div>
                       </div>
                       <div className="text-right space-y-1">
-                        <span className="text-xs sm:text-sm font-black text-slate-900 block">750 €</span>
+                        <span className="text-xs sm:text-sm font-semibold text-slate-900 block">750 €</span>
                         <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">
                           {isTR ? "Borç Yok ✓" : isSR ? "Nema duga ✓" : "No Debt ✓"}
                         </span>
@@ -620,7 +620,7 @@ export function AgencyAppWalkthroughStack() {
                         </div>
                       </div>
                       <div className="text-right space-y-1">
-                        <span className="text-xs sm:text-sm font-black text-rose-700 block">650 €</span>
+                        <span className="text-xs sm:text-sm font-semibold text-rose-700 block">650 €</span>
                         <button className="text-[10px] font-bold text-blue-600 hover:underline">
                           {isTR ? "Detayı Aç →" : isSR ? "Otvori detalje →" : "View Details →"}
                         </button>
@@ -685,11 +685,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-[#A37D4C] block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -724,14 +724,14 @@ export function AgencyAppWalkthroughStack() {
             <div className="flex-1 p-3 sm:p-3.5 flex flex-col justify-between overflow-hidden">
               <div className="space-y-2">
                 {/* 1. Ultra-Compact Role-Aware Hero Header (_PropertyDetailHeroHeader) */}
-                <div className="w-full rounded-2xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white p-3 border border-slate-700/60 shadow-md flex items-center justify-between">
+                <div className="w-full rounded-2xl bg-[#0F172A] text-white p-3 border border-slate-700/60 shadow-md flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-7 h-7 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center cursor-pointer flex-shrink-0">
                       <ChevronLeft className="w-4 h-4 text-white" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs sm:text-sm font-black text-white truncate">
+                        <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
                           Bulevar Evrope 82, Stan 15
                         </h4>
                         <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold px-1.5 py-0.2 rounded">
@@ -748,7 +748,7 @@ export function AgencyAppWalkthroughStack() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 pl-2">
-                    <span className="text-sm font-black text-white block">750 €</span>
+                    <span className="text-sm font-semibold text-white block">750 €</span>
                     <span className="text-[9px] text-slate-300">{isTR ? "/ aylık kira" : isSR ? "/ mesečno" : "/ month"}</span>
                   </div>
                 </div>
@@ -801,7 +801,7 @@ export function AgencyAppWalkthroughStack() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-black text-slate-900">750,00 €</p>
+                        <p className="font-semibold text-slate-900">750,00 €</p>
                         <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded">
                           {isTR ? "✓ Tahsil Edildi" : isSR ? "✓ Naplaćeno" : "✓ Collected"}
                         </span>
@@ -822,7 +822,7 @@ export function AgencyAppWalkthroughStack() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-black text-slate-900">14.250 RSD</p>
+                        <p className="font-semibold text-slate-900">14.250 RSD</p>
                         <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded">
                           {isTR ? "⏱️ Onay Bekliyor" : isSR ? "⏱️ Čeka odobrenje" : "⏱️ Pending"}
                         </span>
@@ -843,7 +843,7 @@ export function AgencyAppWalkthroughStack() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-black text-slate-900">4.980 RSD</p>
+                        <p className="font-semibold text-slate-900">4.980 RSD</p>
                         <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded">
                           {isTR ? "✓ Ödendi" : isSR ? "✓ Plaćeno" : "✓ Paid"}
                         </span>
@@ -908,11 +908,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-[#A37D4C] block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -964,7 +964,7 @@ export function AgencyAppWalkthroughStack() {
                   <div className="flex-1 bg-white rounded-lg py-1.5 px-3 flex items-center justify-center gap-2 shadow-xs font-bold text-slate-900 border border-slate-200/70">
                     <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                     <span>{isTR ? "Aksiyon Alınacaklar" : isSR ? "Potrebna akcija" : "Action Required"}</span>
-                    <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                    <span className="bg-amber-100 text-amber-900 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                       17
                     </span>
                   </div>
@@ -981,7 +981,7 @@ export function AgencyAppWalkthroughStack() {
                       <span className="flex items-center gap-1">⏱️ {isTR ? "Bekleyen" : isSR ? "Čekaju" : "Pending"}</span>
                       <span className="bg-[#C4A47C]/20 text-[#8B6A3E] font-bold px-1.5 rounded-full text-[9px]">3</span>
                     </div>
-                    <p className="text-xs sm:text-sm font-black text-slate-900 mt-1">1.850,00 €</p>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-900 mt-1">1.850,00 €</p>
                   </div>
 
                   <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-xs">
@@ -989,7 +989,7 @@ export function AgencyAppWalkthroughStack() {
                       <span className="flex items-center gap-1">📄 {isTR ? "Girilmeyen" : isSR ? "Neuneti" : "Unentered"}</span>
                       <span className="bg-amber-100 text-amber-800 font-bold px-1.5 rounded-full text-[9px]">12</span>
                     </div>
-                    <p className="text-xs sm:text-sm font-black text-slate-900 mt-1">240,00 €</p>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-900 mt-1">240,00 €</p>
                   </div>
 
                   <div className="bg-rose-50/50 rounded-xl p-2 sm:p-2.5 border border-rose-200 shadow-xs">
@@ -997,7 +997,7 @@ export function AgencyAppWalkthroughStack() {
                       <span className="flex items-center gap-1">⚠️ {isTR ? "Geciken" : isSR ? "Kašnjenja" : "Overdue"}</span>
                       <span className="bg-rose-200 text-rose-900 font-bold px-1.5 rounded-full text-[9px]">2</span>
                     </div>
-                    <p className="text-xs sm:text-sm font-black text-rose-900 mt-1">1.400,00 €</p>
+                    <p className="text-xs sm:text-sm font-semibold text-rose-900 mt-1">1.400,00 €</p>
                   </div>
 
                   <div className="bg-emerald-50/50 rounded-xl p-2 sm:p-2.5 border border-emerald-200 shadow-xs">
@@ -1005,7 +1005,7 @@ export function AgencyAppWalkthroughStack() {
                       <span className="flex items-center gap-1">✓ {isTR ? "Onaylanan" : isSR ? "Odobreno" : "Approved"}</span>
                       <span className="bg-emerald-200 text-emerald-900 font-bold px-1.5 rounded-full text-[9px]">18</span>
                     </div>
-                    <p className="text-xs sm:text-sm font-black text-emerald-900 mt-1">13.500,00 €</p>
+                    <p className="text-xs sm:text-sm font-semibold text-emerald-900 mt-1">13.500,00 €</p>
                   </div>
                 </div>
 
@@ -1036,7 +1036,7 @@ export function AgencyAppWalkthroughStack() {
                         {isTR ? "Kiracı: Mirjana Marković • Acente banka hesabına havale" : isSR ? "Stanar: Mirjana Marković • Uplata na račun agencije" : "Tenant: Mirjana Marković • Transfer to agency bank account"}
                       </p>
                     </div>
-                    <span className="text-sm font-black text-slate-900">750,00 €</span>
+                    <span className="text-sm font-semibold text-slate-900">750,00 €</span>
                   </div>
 
                   <div className="bg-slate-50 rounded-lg p-2 border border-slate-200/60 flex items-center justify-between text-[11px]">
@@ -1107,11 +1107,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-[#C4A47C] text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-[#A37D4C] block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -1204,7 +1204,7 @@ export function AgencyAppWalkthroughStack() {
                         Bulevar Evrope 82, Stan 15 • {isTR ? "Bildiren: Mirjana Marković (Kiracı)" : isSR ? "Prijavila: Mirjana Marković (Stanar)" : "Reported by: Mirjana Marković (Tenant)"}
                       </p>
                     </div>
-                    <span className="text-sm font-black text-slate-900">180,00 €</span>
+                    <span className="text-sm font-semibold text-slate-900">180,00 €</span>
                   </div>
 
                   {/* Assigned Craftsman / Payer Row from Stanomer DB */}
@@ -1219,7 +1219,7 @@ export function AgencyAppWalkthroughStack() {
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/60">
                       <span>
-                        💰 {isTR ? "Ödeme Sorumlusu:" : isSR ? "Trošak snosi:" : "Cost borne by:"} <b>{isTR ? "Ev Sahibi (Kira Mahsubu)" : isSR ? "Vlasnik (Odbitak od kirije)" : "Landlord (Rent Offset)"}</b>
+                        {isTR ? "Ödeme Sorumlusu:" : isSR ? "Trošak snosi:" : "Cost borne by:"} <b>{isTR ? "Ev Sahibi (Kira Mahsubu)" : isSR ? "Vlasnik (Odbitak od kirije)" : "Landlord (Rent Offset)"}</b>
                       </span>
                       <span className="font-mono">Faktura #INV-882</span>
                     </div>
@@ -1285,11 +1285,11 @@ export function AgencyAppWalkthroughStack() {
             <div className="w-[165px] flex-shrink-0 bg-white border-r border-slate-200/80 p-3 hidden sm:flex flex-col justify-between select-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-semibold text-xs shadow-xs">
                     D
                   </div>
                   <div className="leading-tight">
-                    <span className="text-[11px] font-black tracking-tight text-slate-900 block">DEMO</span>
+                    <span className="text-[11px] font-semibold tracking-tight text-slate-900 block">DEMO</span>
                     <span className="text-[8px] font-bold tracking-widest text-emerald-700 block -mt-0.5">REAL ESTATE</span>
                   </div>
                 </div>
@@ -1326,7 +1326,7 @@ export function AgencyAppWalkthroughStack() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-xs sm:text-sm font-black text-slate-900">
+                    <h4 className="text-xs sm:text-sm font-semibold text-slate-900">
                       Bulevar Evrope 82, Stan 15 — {isTR ? "Ekim 2026 Otomatik Mahsuplaşma" : isSR ? "Oktobar 2026 Obračun i Poravnanje" : "October 2026 Settlement"}
                     </h4>
                     <p className="text-[10px] text-slate-500">
@@ -1365,9 +1365,8 @@ export function AgencyAppWalkthroughStack() {
                       <span className="font-bold">-75,00 €</span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 font-black text-sm bg-emerald-50/80 p-2 rounded-xl text-emerald-950 border border-emerald-200">
+                    <div className="flex items-center justify-between pt-1 font-semibold text-sm bg-emerald-50/80 p-2 rounded-xl text-emerald-950 border border-emerald-200">
                       <span className="flex items-center gap-1.5">
-                        <span>💰</span>
                         {isTR ? "Ev Sahibine Net Aktarılacak Tutar:" : isSR ? "Neto za isplatu vlasniku:" : "Net Payout to Landlord:"}
                       </span>
                       <span className="text-base text-emerald-700">495,00 €</span>
@@ -1426,7 +1425,6 @@ export function AgencyAppWalkthroughStack() {
           </div>
         </button>
         <p className="mt-2.5 text-xs sm:text-sm text-slate-500 font-medium flex items-center justify-center gap-2">
-          <span>✨</span>
           <span>
             {isTR
               ? "3 günlük ücretsiz sandbox ortamı • Logonuz ve renklerinizle hazır gelir"

@@ -239,10 +239,10 @@ export default function AgencyReferralPage() {
             {/* Header */}
             <div className="space-y-3">
               <div className="flex items-center justify-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center font-extrabold text-xl">
+                <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center font-semibold text-xl">
                   S
                 </div>
-                <span className="text-3xl font-black tracking-tight text-slate-900">Stanomer</span>
+                <span className="text-3xl font-semibold tracking-tight text-slate-900">Stanomer</span>
               </div>
               <p className="text-sm font-semibold text-slate-500 tracking-wider uppercase">
                 {t("ref_poster_subtitle")}
@@ -251,7 +251,7 @@ export default function AgencyReferralPage() {
 
             {/* Poster Headline */}
             <div className="space-y-2 py-4 border-y-2 border-slate-100">
-              <h1 className="text-3xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-3xl font-semibold text-slate-900 leading-tight">
                 {t("ref_poster_headline")}
               </h1>
               <p className="text-base text-slate-600 max-w-md mx-auto">
@@ -261,13 +261,13 @@ export default function AgencyReferralPage() {
 
             {/* QR Code */}
             <div className="flex flex-col items-center justify-center space-y-4 py-4">
-              <div className="p-4 bg-slate-900 rounded-2xl shadow-xl border border-slate-800">
+              <div className="p-4 bg-slate-900 rounded-2xl shadow-md border border-slate-800">
                 {qrDataUrl && (
                   <img src={qrDataUrl} alt="Stanomer QR Code" className="w-64 h-64 object-contain rounded-lg" />
                 )}
               </div>
               <div>
-                <p className="text-xl font-black text-violet-700 tracking-wide">
+                <p className="text-xl font-semibold text-violet-700 tracking-wide">
                   {partnerResult.agency_name.toUpperCase()}
                 </p>
                 <p className="text-xs font-mono text-slate-400 mt-1">
@@ -296,16 +296,15 @@ export default function AgencyReferralPage() {
       <main className="flex-1 py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full print:hidden">
 
         {/* Top Decorative Blob */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-violet-400/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
         {/* HEADER */}
         <div className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 border border-violet-200/80 text-violet-700 text-xs sm:text-sm font-semibold tracking-wide shadow-sm">
-            <QrCode className="w-4 h-4 text-violet-600 animate-pulse" />
+            <QrCode className="w-4 h-4 text-violet-600" />
             <span>Referral Partner Program</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
             {t("ref_form_title")}
           </h1>
 
@@ -316,7 +315,7 @@ export default function AgencyReferralPage() {
 
         {/* STATE 1: FORM & LOOKUP TABS */}
         {!partnerResult ? (
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xl relative overflow-hidden space-y-8">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-md relative overflow-hidden space-y-8">
             
             {/* Tab Switcher */}
             <div className="flex bg-slate-100 p-1.5 rounded-2xl max-w-md mx-auto">
@@ -518,7 +517,7 @@ export default function AgencyReferralPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-xl shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                    className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-md shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
                     {loading ? (
                       <>
@@ -566,7 +565,7 @@ export default function AgencyReferralPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-xl shadow-violet-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-md shadow-violet-500/25 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -592,7 +591,7 @@ export default function AgencyReferralPage() {
             <canvas ref={canvasRef} className="hidden" />
 
             {/* Success & Dashboard Card */}
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-2xl space-y-8 text-center">
+            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-md space-y-8 text-center">
 
               {/* Status Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs sm:text-sm font-bold tracking-wide">
@@ -606,11 +605,11 @@ export default function AgencyReferralPage() {
 
               {/* LIVE REFERRAL STATS WIDGET */}
               {referralStats && (
-                <div className="bg-gradient-to-br from-violet-900 via-slate-900 to-slate-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl max-w-xl mx-auto space-y-4 text-left border border-violet-700/50">
+                <div className="bg-violet-900 p-6 sm:p-8 rounded-3xl text-white shadow-md max-w-xl mx-auto space-y-4 text-left border border-violet-700/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-amber-400" />
-                      <h3 className="font-extrabold text-sm sm:text-base tracking-wide text-white">
+                      <h3 className="font-semibold text-sm sm:text-base tracking-wide text-white">
                         {t("ref_stats_title")}
                       </h3>
                     </div>
@@ -621,7 +620,7 @@ export default function AgencyReferralPage() {
 
                   <div className="grid grid-cols-3 gap-3 pt-2">
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center">
-                      <p className="text-2xl sm:text-3xl font-black text-amber-400">
+                      <p className="text-2xl sm:text-3xl font-semibold text-amber-400">
                         {referralStats.totalReferred}
                       </p>
                       <p className="text-[11px] font-semibold text-slate-300 mt-1">
@@ -630,7 +629,7 @@ export default function AgencyReferralPage() {
                     </div>
 
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center">
-                      <p className="text-2xl sm:text-3xl font-black text-emerald-400">
+                      <p className="text-2xl sm:text-3xl font-semibold text-emerald-400">
                         {referralStats.landlordCount}
                       </p>
                       <p className="text-[11px] font-semibold text-slate-300 mt-1">
@@ -639,7 +638,7 @@ export default function AgencyReferralPage() {
                     </div>
 
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center">
-                      <p className="text-2xl sm:text-3xl font-black text-cyan-400">
+                      <p className="text-2xl sm:text-3xl font-semibold text-cyan-400">
                         {referralStats.tenantCount}
                       </p>
                       <p className="text-[11px] font-semibold text-slate-300 mt-1">
@@ -652,7 +651,7 @@ export default function AgencyReferralPage() {
 
               {/* QR Code Container */}
               <div className="space-y-4">
-                <div className="inline-block p-6 bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 relative">
+                <div className="inline-block p-6 bg-slate-900 rounded-3xl shadow-md border border-slate-800 relative">
                   {qrDataUrl ? (
                     <img
                       src={qrDataUrl}
@@ -661,7 +660,7 @@ export default function AgencyReferralPage() {
                     />
                   ) : (
                     <div className="w-56 h-56 bg-slate-100 flex items-center justify-center rounded-lg">
-                      <QrCode className="w-12 h-12 text-slate-400 animate-pulse" />
+                      <QrCode className="w-12 h-12 text-slate-400" />
                     </div>
                   )}
                 </div>
@@ -670,7 +669,7 @@ export default function AgencyReferralPage() {
                   <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                     Referral Code / Slug
                   </p>
-                  <p className="text-base font-extrabold font-mono text-violet-400 tracking-wide bg-slate-800/80 py-1.5 px-3 rounded-lg border border-slate-700 inline-block">
+                  <p className="text-base font-semibold font-mono text-violet-400 tracking-wide bg-slate-800/80 py-1.5 px-3 rounded-lg border border-slate-700 inline-block">
                     {partnerResult.slug}
                   </p>
                 </div>
@@ -680,7 +679,7 @@ export default function AgencyReferralPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto pt-2">
                 <button
                   onClick={handleDownloadPNG}
-                  className="flex-1 inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm shadow-xl shadow-violet-500/20 transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  className="flex-1 inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm shadow-md shadow-violet-500/20 transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>{t("ref_download_png")}</span>

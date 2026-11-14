@@ -11,7 +11,7 @@ export default function GlobalError({
     <html lang="tr">
       <body>
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
-          <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md w-full space-y-4">
+          <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-100 max-w-md w-full space-y-4">
             <h2 className="text-xl font-bold text-gray-900">Sistem Hatası</h2>
             <p className="text-sm text-gray-600">
               Kritik bir yükleme hatası oluştu.

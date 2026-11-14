@@ -106,15 +106,8 @@ export default function AgenciesPage() {
           HERO — CHOICE SECTION
       ═══════════════════════════════════════════ */}
       <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full text-center">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs sm:text-sm font-semibold tracking-wide shadow-sm mb-6">
-          <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-          <span>{t("agencies_hero_badge")}</span>
-        </div>
-
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-5">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15] mb-5">
           {t("agencies_hero_select_title")}
         </h1>
 
@@ -126,13 +119,13 @@ export default function AgenciesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
           <a
             href="#section-whitelabel"
-            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer text-left"
+            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-500 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer text-left"
           >
             <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Building2 className="w-7 h-7" />
             </div>
             <div>
-              <p className="font-extrabold text-slate-900 text-base sm:text-lg leading-tight mb-1">
+              <p className="font-semibold text-slate-900 text-base sm:text-lg leading-tight mb-1">
                 {t("agencies_hero_option1_label")}
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">White-Label Partner Panel</p>
@@ -145,13 +138,13 @@ export default function AgenciesPage() {
 
           <a
             href="#section-referral"
-            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-violet-200 hover:border-violet-500 hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer text-left"
+            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-violet-200 hover:border-violet-500 hover:shadow-md hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer text-left"
           >
             <div className="w-14 h-14 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <QrCode className="w-7 h-7" />
             </div>
             <div>
-              <p className="font-extrabold text-slate-900 text-base sm:text-lg leading-tight mb-1">
+              <p className="font-semibold text-slate-900 text-base sm:text-lg leading-tight mb-1">
                 {t("agencies_hero_option2_label")}
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">Referral Partner</p>
@@ -182,7 +175,7 @@ export default function AgenciesPage() {
 
           {/* Left Side: Copy & CTAs */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
               {t("agencies_hero_title")}
             </h2>
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
@@ -193,10 +186,10 @@ export default function AgenciesPage() {
               <button
                 type="button"
                 onClick={() => setIsDemoModalOpen(true)}
-                className="group h-14 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
+                className="group h-14 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-md shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
               >
                 <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-white text-[10px] font-bold tracking-wide">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
                   <span>
                     {lang === "TR"
                       ? "SİMÜLASYON"
@@ -253,13 +246,12 @@ export default function AgenciesPage() {
 
           {/* Right Side: White-Label Product Mockup */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
-            <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-3xl transform scale-90 -z-10" />
             <div
               onClick={(e) => {
                 e.stopPropagation();
                 setIsHeroPillOpen((prev) => !prev);
               }}
-              className="group relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-2xl space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500 overflow-hidden cursor-pointer"
+              className="group relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-md space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500 overflow-hidden cursor-pointer"
             >
 
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -280,11 +272,11 @@ export default function AgenciesPage() {
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <p className="text-[10px] text-slate-500 font-medium">{t("agencies_mockup_active_portfolio")}</p>
-                  <p className="text-lg font-extrabold text-slate-900">{t("agencies_mockup_apartments_count")}</p>
+                  <p className="text-lg font-semibold text-slate-900">{t("agencies_mockup_apartments_count")}</p>
                 </div>
                 <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
                   <p className="text-[10px] text-blue-600 font-medium">{t("agencies_mockup_monthly_collected")}</p>
-                  <p className="text-lg font-extrabold text-blue-700">€28,500</p>
+                  <p className="text-lg font-semibold text-blue-700">€28,500</p>
                 </div>
               </div>
 
@@ -296,7 +288,7 @@ export default function AgenciesPage() {
                     </div>
                     <span className="text-xs font-semibold text-slate-200">{t("agencies_mockup_mobile_ui")}</span>
                   </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 </div>
                 <div className="bg-slate-800/90 p-2.5 rounded-lg text-xs space-y-1">
                   <p className="text-slate-400 text-[10px]">{t("agencies_mockup_tenant_notif")}</p>
@@ -322,9 +314,9 @@ export default function AgenciesPage() {
                       e.stopPropagation();
                       setIsDemoModalOpen(true);
                     }}
-                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-xs font-semibold shadow-xl shadow-slate-950/30 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
+                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-xs font-semibold shadow-md shadow-slate-950/30 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                     <span>
                       {lang === "TR"
                         ? "Acentenizi Simüle Edin"
@@ -350,14 +342,14 @@ export default function AgenciesPage() {
       <section className="py-16 md:py-24 bg-white border-y border-slate-200/80 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("agencies_val_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Palette className="w-7 h-7" />
               </div>
@@ -365,7 +357,7 @@ export default function AgenciesPage() {
               <p className="text-slate-600 text-sm leading-relaxed">{t("agencies_val_1_desc")}</p>
             </div>
 
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ShieldCheck className="w-7 h-7" />
               </div>
@@ -373,7 +365,7 @@ export default function AgenciesPage() {
               <p className="text-slate-600 text-sm leading-relaxed">{t("agencies_val_2_desc")}</p>
             </div>
 
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <UserCheck className="w-7 h-7" />
               </div>
@@ -390,7 +382,7 @@ export default function AgenciesPage() {
       <section className="py-16 md:py-24 bg-slate-50 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("agencies_how_title")}
             </h2>
             <p className="text-slate-600 text-base leading-relaxed">{t("agencies_how_intro")}</p>
@@ -421,8 +413,6 @@ export default function AgenciesPage() {
         id="section-referral"
         className="relative py-20 md:py-32 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-200/80 scroll-mt-24"
       >
-        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-400/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="mb-8 flex justify-center lg:justify-start">
@@ -436,8 +426,7 @@ export default function AgenciesPage() {
 
             {/* Left: QR Mockup Card */}
             <div className="lg:col-span-5 relative flex justify-center items-center">
-              <div className="absolute inset-0 bg-violet-400/20 rounded-full blur-3xl transform scale-90 -z-10" />
-              <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-2xl space-y-4 transform rotate-1 hover:rotate-0 transition duration-500">
+              <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-md space-y-4 transform rotate-1 hover:rotate-0 transition duration-500">
 
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
@@ -487,11 +476,11 @@ export default function AgenciesPage() {
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <p className="text-[10px] text-slate-500 font-medium">{t("agencies_ref_qr_card_users")}</p>
-                    <p className="text-lg font-extrabold text-violet-700">{t("agencies_ref_qr_card_count")}</p>
+                    <p className="text-lg font-semibold text-violet-700">{t("agencies_ref_qr_card_count")}</p>
                   </div>
                   <div className="bg-violet-50/60 p-3 rounded-xl border border-violet-100">
                     <p className="text-[10px] text-violet-600 font-medium">{t("agencies_ref_qr_card_title")}</p>
-                    <p className="text-sm font-extrabold text-violet-800 leading-tight mt-0.5">✓ Active</p>
+                    <p className="text-sm font-semibold text-violet-800 leading-tight mt-0.5">✓ Active</p>
                   </div>
                 </div>
 
@@ -505,7 +494,7 @@ export default function AgenciesPage() {
             {/* Right: Copy + Reasons + CTA */}
             <div className="lg:col-span-7 space-y-8">
               <div className="space-y-4">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                <h2 className="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
                   {t("agencies_ref_section_title")}
                 </h2>
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
@@ -536,7 +525,7 @@ export default function AgenciesPage() {
                 <p className="text-slate-600 text-sm sm:text-base italic">{t("agencies_ref_cta_subtitle")}</p>
                 <Link
                   href="/agency-referral"
-                  className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-700 font-bold text-base shadow-xl shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                  className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-700 font-bold text-base shadow-md shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <span>{t("agencies_ref_cta_btn")}</span>
                   <ArrowRight className="w-5 h-5" />
@@ -553,7 +542,7 @@ export default function AgenciesPage() {
       <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-10">
           <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("agencies_cmp_title")}
             </h2>
             <div className="w-16 h-1 bg-violet-500 mx-auto rounded-full" />
@@ -564,13 +553,13 @@ export default function AgenciesPage() {
               <thead>
                 <tr className="bg-slate-900 text-white">
                   <th className="px-5 py-4 text-left font-semibold text-slate-400 w-1/3 rounded-tl-2xl">&nbsp;</th>
-                  <th className="px-5 py-4 text-center font-extrabold text-blue-300 w-1/3">
+                  <th className="px-5 py-4 text-center font-semibold text-blue-300 w-1/3">
                     <div className="flex items-center justify-center gap-2">
                       <Building2 className="w-4 h-4" />
                       <span>{t("agencies_cmp_col1")}</span>
                     </div>
                   </th>
-                  <th className="px-5 py-4 text-center font-extrabold text-violet-300 w-1/3 rounded-tr-2xl">
+                  <th className="px-5 py-4 text-center font-semibold text-violet-300 w-1/3 rounded-tr-2xl">
                     <div className="flex items-center justify-center gap-2">
                       <QrCode className="w-4 h-4" />
                       <span>{t("agencies_cmp_col2")}</span>
@@ -609,19 +598,17 @@ export default function AgenciesPage() {
           SECTION 6 — BOTTOM CTA BAND
       ═══════════════════════════════════════════ */}
       <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-12">
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-md relative overflow-hidden">
 
           <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {t("agencies_bottom_title")}
             </h2>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-500 font-bold text-base shadow-xl shadow-blue-600/30 transition"
+                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-500 font-bold text-base shadow-md shadow-blue-600/30 transition"
               >
                 <Building2 className="w-5 h-5" />
                 <span>{t("agencies_cta_demo")}</span>
@@ -629,7 +616,7 @@ export default function AgenciesPage() {
               </Link>
               <Link
                 href="/agency-referral"
-                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-500 font-bold text-base shadow-xl shadow-violet-600/30 transition"
+                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-500 font-bold text-base shadow-md shadow-violet-600/30 transition"
               >
                 <QrCode className="w-5 h-5" />
                 <span>{t("agencies_ref_cta_btn")}</span>

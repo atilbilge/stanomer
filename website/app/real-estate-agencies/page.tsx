@@ -530,9 +530,7 @@ export default function FindAgencyPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-500 selection:text-white">
       <Navbar />
 
-      <section className="pt-28 pb-16 md:pt-36 md:pb-20 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 text-white relative overflow-hidden border-b border-slate-800">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
+      <section className="pt-28 pb-16 md:pt-36 md:pb-20 bg-slate-900 text-white relative overflow-hidden border-b border-slate-800">
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-300 text-xs sm:text-sm font-semibold tracking-wide backdrop-blur-md">
@@ -540,7 +538,7 @@ export default function FindAgencyPage() {
             <span>{t.badge}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-white max-w-4xl mx-auto leading-tight">
             {t.title}
           </h1>
 
@@ -549,7 +547,7 @@ export default function FindAgencyPage() {
           </p>
 
           <div className="max-w-3xl mx-auto pt-4">
-            <div className="relative flex items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-2 border border-white/20 focus-within:ring-4 focus-within:ring-blue-500/30 transition-all">
+            <div className="relative flex items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-md p-2 border border-white/20 focus-within:ring-4 focus-within:ring-blue-500/30 transition-all">
               <Search className="w-6 h-6 text-slate-400 ml-4 flex-shrink-0" />
               <input
                 type="text"
@@ -661,7 +659,7 @@ export default function FindAgencyPage() {
 
         <div className="flex items-center justify-between text-sm text-slate-600 px-1 font-medium">
           <div>
-            <span className="font-extrabold text-slate-900 text-lg mr-2">{filteredAgencies.length}</span>
+            <span className="font-semibold text-slate-900 text-lg mr-2">{filteredAgencies.length}</span>
             <span>{t.foundCount}</span>
           </div>
 
@@ -675,7 +673,7 @@ export default function FindAgencyPage() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4 animate-pulse">
+              <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-slate-200 rounded-xl" />
                   <div className="space-y-2 flex-grow">
@@ -932,7 +930,7 @@ export default function FindAgencyPage() {
       {modal.isOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[2000] flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div 
-            className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-5 relative animate-in zoom-in-95 duration-150"
+            className="bg-white rounded-xl max-w-md w-full p-6 shadow-md border border-slate-200 space-y-5 relative animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">

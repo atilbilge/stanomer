@@ -71,11 +71,11 @@ export function FloatingContactWidget() {
     <div ref={widgetRef} className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
       {/* Expanded Popup Menu */}
       {isOpen && (
-        <div className="mb-3 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="mb-3 w-72 bg-white rounded-2xl shadow-md border border-slate-200/80 p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
           {/* Header */}
           <div className="flex items-center gap-2 pb-2.5 mb-2 border-b border-slate-100">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className=" absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
             <span className="text-xs font-semibold text-slate-700">{texts.title}</span>
@@ -135,7 +135,7 @@ export function FloatingContactWidget() {
         className={`relative w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none ${
           isOpen
             ? "bg-slate-800 text-white shadow-slate-900/30"
-            : "bg-[#1A5EB8] hover:bg-[#154c94] text-white shadow-blue-900/30 hover:shadow-xl"
+            : "bg-[#1A5EB8] hover:bg-[#154c94] text-white shadow-blue-900/30 hover:shadow-md"
         }`}
       >
         {isOpen ? (

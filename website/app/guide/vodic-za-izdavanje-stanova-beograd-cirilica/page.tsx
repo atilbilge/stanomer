@@ -220,7 +220,7 @@ export default function SerbianCyrillicGuidePage() {
             Сви ови проблеми – загубљени рачуни, заборављени рокови и лоша комуникација – решавају се добром организацијом. Stanomer је дигитални асистент дизајниран управо за то.
           </p>
 
-          <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 rounded-2xl border border-gray-200 space-y-4">
+          <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 space-y-4">
             <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-brand-blue" />
               Са Stanomer-ом:

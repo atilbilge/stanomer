@@ -228,7 +228,7 @@ function VerificationContent() {
 
       <div className="pt-28 pb-12 flex-grow flex flex-col justify-center sm:px-6 lg:px-8">
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg px-4">
-          <div className="bg-white py-10 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-100 text-center">
+          <div className="bg-white py-10 px-6 shadow-md rounded-3xl sm:px-10 border border-slate-100 text-center">
             {loading ? (
               <div className="py-12 space-y-4">
                 <div className="relative mx-auto w-16 h-16">
@@ -255,12 +255,11 @@ function VerificationContent() {
                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     <span>{agencyName ? `${agencyName} Demo Sandbox` : "Stanomer Agency Sandbox"}</span>
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900">
+                  <h3 className="text-2xl font-semibold text-slate-900">
                     {isTR ? "Giriş Yapıldı! Panelinize Aktarılıyorsunuz..." : isSR ? "Prijavljeni ste! Panel se otvara..." : "Connected! Opening Your Panel..."}
                   </h3>
                   {wasExpired && (
                     <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200 shadow-sm animate-in fade-in duration-300">
-                      <span>✨</span>
                       <span>
                         {isTR
                           ? "Demo erişim süreniz 3 gün daha uzatıldı ve portföyünüz hazırlandı."
@@ -283,7 +282,7 @@ function VerificationContent() {
                 <div className="pt-2">
                   <a
                     href={targetUrl}
-                    className="w-full inline-flex justify-center items-center gap-3 px-8 py-4 rounded-2xl text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 font-black text-sm sm:text-base shadow-xl shadow-blue-500/30 transform hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+                    className="w-full inline-flex justify-center items-center gap-3 px-8 py-4 rounded-2xl text-white bg-blue-600 hover:from-blue-700 hover:to-indigo-700 font-semibold text-sm sm:text-base shadow-md shadow-blue-500/30 transform hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
                   >
                     <span>{isTR ? "Acente Panelini Aç (Doğrudan Bağlan)" : isSR ? "Otvorite Agencijski Panel" : "Launch Agency Panel Now"}</span>
                     <ArrowRight className="w-5 h-5" />
@@ -312,7 +311,7 @@ function VerificationContent() {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900">
+                  <h3 className="text-2xl font-semibold text-slate-900">
                     {isTR ? "Test Datanız Silindi veya Süresi Doldu" : isSR ? "Test podaci su obrisani ili je link istekao" : "Test Data Expired or Cleared"}
                   </h3>
                   <p className="text-slate-600 text-sm mt-2 leading-relaxed max-w-md mx-auto">

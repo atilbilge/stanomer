@@ -196,7 +196,7 @@ export default function LeaseAgreementTurkishGuidePage() {
             Asıl iş sözleşme imzalandıktan sonra başlar: Aylık kira takibi, ödenen faturaların kontrolü ve sözleşme yenileme tarihlerinin hatırlanması. Birden fazla mülkünüz varsa bunu Excel&apos;de veya kağıt üzerinde tutmak hata riskini artırır.
           </p>
 
-          <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 rounded-2xl border border-gray-200 space-y-4">
+          <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 space-y-4">
             <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-brand-blue" />
               Stanomer ile Tam Profesyonelleşme:

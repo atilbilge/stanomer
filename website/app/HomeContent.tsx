@@ -57,13 +57,8 @@ export function HomeContent() {
           
           {/* Left Side: Headline & CTAs */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs sm:text-sm font-semibold tracking-wide shadow-sm">
-              <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-              <span>{t("hero_badge")}</span>
-            </div>
-
             <h1
-              className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]"
+              className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]"
               dangerouslySetInnerHTML={{ __html: t("hero_title") }}
             />
 
@@ -162,10 +157,9 @@ export function HomeContent() {
           {/* Right Side: Clean Card Container with Realistic Property Mockup */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
             {/* Background Glow */}
-            <div className="absolute inset-0 bg-blue-500/15 rounded-full blur-3xl transform scale-95 -z-10" />
 
             {/* Product Card Container */}
-            <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl p-5 border border-slate-200/90 shadow-2xl space-y-4 transform hover:scale-[1.01] transition duration-300">
+            <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl p-5 border border-slate-200/90 shadow-md space-y-4 transform hover:scale-[1.01] transition duration-300">
               
               {/* Card Header: Property Identity */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -179,7 +173,7 @@ export function HomeContent() {
                   </div>
                 </div>
                 <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-200/80 inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {t("hero_mockup_contract_badge")}
                 </span>
               </div>
@@ -188,11 +182,11 @@ export function HomeContent() {
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <p className="text-[10px] text-slate-500 font-semibold">{t("hero_mockup_monthly_rent")}</p>
-                  <p className="text-base font-extrabold text-slate-900">€650 <span className="text-[10px] text-emerald-600 font-bold ml-1">{t("hero_mockup_paid")}</span></p>
+                  <p className="text-base font-semibold text-slate-900">€650 <span className="text-[10px] text-emerald-600 font-bold ml-1">{t("hero_mockup_paid")}</span></p>
                 </div>
                 <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100">
                   <p className="text-[10px] text-blue-600 font-semibold">{t("hero_mockup_duration_label")}</p>
-                  <p className="text-base font-extrabold text-blue-700">{t("hero_mockup_days_left")}</p>
+                  <p className="text-base font-semibold text-blue-700">{t("hero_mockup_days_left")}</p>
                 </div>
               </div>
 
@@ -244,7 +238,7 @@ export function HomeContent() {
         <div className="max-w-5xl mx-auto space-y-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("pain_strip_title")}
             </h2>
             <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full" />
@@ -350,7 +344,7 @@ export function HomeContent() {
         </div>
 
         {/* Light Agency Teaser Bar (Link to /agencies) */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white backdrop-blur-md border border-blue-200/80 rounded-2xl p-5 text-center text-sm text-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-8 bg-blue-50/90 backdrop-blur-md border border-blue-200/80 rounded-2xl p-5 text-center text-sm text-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="font-medium text-slate-700">
             {t("agency_teaser_text")}
           </span>
@@ -381,7 +375,7 @@ export function HomeContent() {
             <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">
               {t("features_label")}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("features_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
@@ -391,7 +385,7 @@ export function HomeContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             {/* Feature 1 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ClipboardList className="w-7 h-7" />
               </div>
@@ -404,7 +398,7 @@ export function HomeContent() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <FileText className="w-7 h-7" />
               </div>
@@ -417,7 +411,7 @@ export function HomeContent() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Bell className="w-7 h-7" />
               </div>
@@ -430,7 +424,7 @@ export function HomeContent() {
             </div>
 
             {/* Feature 4 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Wrench className="w-7 h-7" />
               </div>
@@ -443,7 +437,7 @@ export function HomeContent() {
             </div>
 
             {/* Feature 5 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Globe className="w-7 h-7" />
               </div>
@@ -456,7 +450,7 @@ export function HomeContent() {
             </div>
 
             {/* Feature 6 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-xl hover:bg-white transition-all duration-300 group">
+            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Shield className="w-7 h-7" />
               </div>
@@ -482,7 +476,7 @@ export function HomeContent() {
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
               {t("trust_label")}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("trust_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
@@ -528,7 +522,7 @@ export function HomeContent() {
             <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">
               {t("pricing_label")}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
               {t("pricing_title")}
             </h2>
             <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
@@ -551,7 +545,7 @@ export function HomeContent() {
                 </div>
 
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">{t("pricing_free_price")}</span>
+                  <span className="text-4xl font-semibold text-slate-900">{t("pricing_free_price")}</span>
                   <span className="text-slate-500 text-sm font-medium">{t("pricing_free_period")}</span>
                 </div>
 
@@ -579,9 +573,8 @@ export function HomeContent() {
             </div>
 
             {/* Pro / Agency Plan Card */}
-            <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between text-white shadow-xl space-y-6 relative overflow-hidden">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between text-white shadow-md space-y-6 relative overflow-hidden">
               {/* Background Glow */}
-              <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl pointer-events-none" />
 
               <div className="space-y-5 relative z-10">
                 <div className="flex items-center justify-between">
@@ -596,7 +589,7 @@ export function HomeContent() {
                 </div>
 
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-white">{t("pricing_pro_price")}</span>
+                  <span className="text-3xl font-semibold text-white">{t("pricing_pro_price")}</span>
                   <span className="text-slate-400 text-sm font-medium">{t("pricing_pro_period")}</span>
                 </div>
 
@@ -631,14 +624,12 @@ export function HomeContent() {
       {/* SECTION 8: KAPANIŞ CTA BANDI (Agencies Dark Navy Banner Style)           */}
       {/* ========================================================================= */}
       <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-12">
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-2xl relative overflow-hidden">
+        <div className="bg-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-md relative overflow-hidden">
           
           {/* Background Glow Overlay */}
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {t("footer_cta_title")}
             </h2>
 

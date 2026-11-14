@@ -61,7 +61,7 @@ function TermsContent() {
     <div className="space-y-8">
       {/* Page Header Banner */}
       <div className="border-b border-gray-200/80 pb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3 tracking-tight flex items-center gap-3">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-3 tracking-tight flex items-center gap-3">
           <FileText className="w-7 h-7 text-brand-blue" />
           {t("terms_title")}
         </h1>
@@ -128,7 +128,7 @@ function TermsContent() {
                 <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 shadow-2xs">
                   {sectionIcons[idx] || <FileText className="w-5 h-5 text-gray-600" />}
                 </div>
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 tracking-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
                   {title}
                 </h2>
               </div>

@@ -396,8 +396,6 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
       <span id="section-pricing" className="sr-only" />
 
       {/* Background gradients */}
-      <div className="absolute top-10 left-1/3 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Header */}
@@ -407,7 +405,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             <span>{texts.badge}</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
             {texts.h1}
           </h2>
 
@@ -417,13 +415,13 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
         </div>
 
         {/* Interactive Calculator Card */}
-        <div id="pricing-calculator" className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-9 shadow-xl shadow-slate-200/50 space-y-6 scroll-mt-28">
+        <div id="pricing-calculator" className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-9 shadow-md shadow-slate-200/50 space-y-6 scroll-mt-28">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-            <label htmlFor="property-range-input" className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <label htmlFor="property-range-input" className="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2">
               <span>{texts.count}</span>
             </label>
             <div className="flex items-baseline gap-2">
-              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-blue-600">
+              <span className="font-mono text-3xl sm:text-4xl font-semibold text-blue-600">
                 {count}
               </span>
               <span className="text-sm font-semibold text-slate-500">{texts.lg}</span>
@@ -495,7 +493,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                 {texts.std}
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="font-mono text-3xl sm:text-4xl font-extrabold text-slate-900">
+                <span className="font-mono text-3xl sm:text-4xl font-semibold text-slate-900">
                   €{money(totalStd)}
                 </span>
                 <span className="text-xs text-slate-500">{texts.pm}</span>
@@ -536,7 +534,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-mono text-3xl sm:text-4xl font-extrabold text-emerald-700">
+                  <span className="font-mono text-3xl sm:text-4xl font-semibold text-emerald-700">
                     €{money(totalFnd)}
                   </span>
                   <span className="text-xs text-emerald-700 font-semibold">{texts.pm}</span>
@@ -553,7 +551,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-sm sm:text-base border-collapse">
               <thead>
-                <tr className="bg-slate-100/80 text-slate-800 font-extrabold border-b border-slate-200">
+                <tr className="bg-slate-100/80 text-slate-800 font-semibold border-b border-slate-200">
                   <th className="py-3 px-4 text-left font-bold">{texts.th1}</th>
                   <th className="py-3 px-4 text-right font-bold">{texts.th2}</th>
                 </tr>
@@ -578,7 +576,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
         {isFoundingActive && (
           <div
             id="founding-partners"
-            className="scroll-mt-28 bg-gradient-to-br from-emerald-500/10 via-white to-blue-500/10 border-2 border-emerald-300/80 rounded-3xl p-6 sm:p-9 shadow-lg space-y-8"
+            className="scroll-mt-28 bg-emerald-500/10 border-2 border-emerald-300/80 rounded-3xl p-6 sm:p-9 shadow-lg space-y-8"
           >
             {/* Anchor aliases */}
             <span id="founding-feedback-partners" className="sr-only" />
@@ -589,7 +587,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                   <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                   <span>31.12.2026</span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900">
                   {texts.h2f}
                 </h3>
                 <p className="text-slate-600 text-sm sm:text-base">{texts.fintro}</p>
@@ -644,7 +642,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                       {monthLabel}
                     </span>
                     <span
-                      className={`block font-mono text-xl sm:text-2xl font-extrabold ${
+                      className={`block font-mono text-xl sm:text-2xl font-semibold ${
                         isPromo ? "text-white" : "text-slate-900"
                       }`}
                     >
@@ -665,7 +663,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             {/* What You Get vs What We Ask */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 space-y-4">
-                <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <h4 className="text-base font-semibold text-slate-900 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                   <span>{texts.get}</span>
                 </h4>
@@ -686,7 +684,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
               </div>
 
               <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 space-y-4">
-                <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <h4 className="text-base font-semibold text-slate-900 flex items-center gap-2">
                   <HelpCircle className="w-5 h-5 text-blue-600" />
                   <span>{texts.ask}</span>
                 </h4>
@@ -756,7 +754,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
 
         {/* FAQ Accordions */}
         <div className="space-y-4 pt-4">
-          <h3 className="text-2xl font-extrabold text-slate-900 text-center sm:text-left">
+          <h3 className="text-2xl font-semibold text-slate-900 text-center sm:text-left">
             {texts.h2q}
           </h3>
 
@@ -770,7 +768,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                 key={idx}
                 className="group bg-white border border-slate-200/90 rounded-2xl p-5 open:shadow-md transition-all cursor-pointer"
               >
-                <summary className="font-extrabold text-slate-900 text-base sm:text-lg flex justify-between items-center list-none select-none">
+                <summary className="font-semibold text-slate-900 text-base sm:text-lg flex justify-between items-center list-none select-none">
                   <span>{faq.q}</span>
                   <span className="text-slate-400 group-open:rotate-180 transition-transform text-xl font-mono">
                     ▾
@@ -785,9 +783,9 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
         </div>
 
         {/* CTA Bar */}
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6 text-center sm:text-left sm:flex sm:items-center sm:justify-between sm:space-y-0 gap-6">
+        <div className="bg-blue-900 text-white rounded-3xl p-8 sm:p-12 shadow-md space-y-6 text-center sm:text-left sm:flex sm:items-center sm:justify-between sm:space-y-0 gap-6">
           <div className="space-y-2 max-w-xl">
-            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight">
               {texts.h2c}
             </h3>
             <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed">
@@ -799,7 +797,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             <button
               type="button"
               onClick={handleSimulate}
-              className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-slate-900 bg-white hover:bg-slate-100 font-bold text-base shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-slate-900 bg-white hover:bg-slate-100 font-bold text-base shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
               <span>{texts.btn}</span>
               <ArrowRight className="w-5 h-5 text-blue-600" />

@@ -265,7 +265,7 @@ export default function TurkishGuidePage() {
             Belgrad ev kiralama rehberi boyunca bahsettiğimiz üç sorun — <strong>fatura kaybetme, kira ödeme tarihini unutma ve ev sahibiyle iletişim karmaşası</strong> — aslında tek bir kök nedene bağlanıyor: dağınık takip sistemi. Stanomer, tam olarak bu boşluğu doldurmak için tasarlandı.
           </p>
 
-          <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 rounded-2xl border border-gray-200 space-y-4">
+          <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 space-y-4">
             <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-brand-blue" />
               Stanomer Kiracılara Ne Sunuyor?
@@ -329,7 +329,7 @@ export default function TurkishGuidePage() {
             Belgrad&apos;da kiralık daire bulmak, doğru mahalleyi seçmek, sözleşmenin yasal detaylarını anlamak ve fatura süreçlerini yönetmek kadar basit bir denklem. Her adımı doğru atarsanız, şehirdeki ilk aylarınız stressiz geçer. Arama ve sözleşme aşamasını tamamladıktan sonra geriye kalan tek şey, günlük hayatın rutinini düzenli tutmak — ve bunun için doğru araç fark yaratır.
           </p>
 
-          <div className="p-5 rounded-2xl bg-gray-900 text-white text-center space-y-3 shadow-xl">
+          <div className="p-5 rounded-2xl bg-gray-900 text-white text-center space-y-3 shadow-md">
             <h3 className="font-bold text-base text-brand-green">
               📲 Kira takibini unutmayın, faturalarınızı kaybetmeyin.
             </h3>

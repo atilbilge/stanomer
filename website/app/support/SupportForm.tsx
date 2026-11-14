@@ -166,7 +166,7 @@ export function SupportForm() {
         disabled={isPending}
         className={cn(
           "w-full md:w-auto px-10 py-4 bg-gray-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:bg-black active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm",
-          isPending && "animate-pulse"
+          isPending && ""
         )}
       >
         {isPending ? t("sending") : (

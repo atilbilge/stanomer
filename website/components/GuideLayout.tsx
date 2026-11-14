@@ -92,13 +92,13 @@ export function GuideLayout({
         <article className="bg-white/85 backdrop-blur-[20px] rounded-3xl border border-gray-200 shadow-[0_10px_50px_rgba(59,130,246,0.08)] overflow-hidden">
           
           {/* Header Banner */}
-          <div className="bg-gradient-to-br from-brand-blue/10 via-white to-brand-green/10 border-b border-gray-200/70 p-6 sm:p-10 relative">
+          <div className="bg-brand-blue/10 border-b border-gray-200/70 p-6 sm:p-10 relative">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-blue/15 border border-brand-blue/30 text-brand-blue text-[11px] font-bold uppercase tracking-wider mb-4">
               <BookOpen className="w-3.5 h-3.5" />
               <span>{categoryTitle}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight tracking-tight mb-4">
               {title}
             </h1>
 
@@ -128,9 +128,7 @@ export function GuideLayout({
             {children}
 
             {/* Mid-Article / Main High-Impact CTA Banner */}
-            <section className="my-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-gray-900 via-gray-900 to-slate-800 text-white shadow-2xl relative overflow-hidden">
-              <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-brand-blue/25 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-brand-green/25 blur-3xl pointer-events-none" />
+            <section className="my-8 p-6 sm:p-8 rounded-2xl bg-gray-900 text-white shadow-md relative overflow-hidden">
 
               <div className="relative z-10 text-center sm:text-left space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-blue text-xs font-semibold backdrop-blur-md border border-white/10">
@@ -140,7 +138,7 @@ export function GuideLayout({
                   </span>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-white leading-snug">
+                <h3 className="text-xl font-semibold text-white leading-snug">
                   {ctaText}
                 </h3>
 

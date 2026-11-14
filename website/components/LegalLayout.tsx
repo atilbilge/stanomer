@@ -16,7 +16,7 @@ export function LegalLayout({ children, activeTab }: { children: React.ReactNode
       <div className="h-[80px]" />
 
       {/* Main Content */}
-      <main className="flex-grow max-w-[680px] mx-auto px-4 sm:px-8 py-8 md:py-12 w-full bg-white/80 backdrop-blur-[16px] rounded-2xl md:rounded-3xl border border-gray-200 shadow-xl my-4 md:my-8">
+      <main className="flex-grow max-w-[680px] mx-auto px-4 sm:px-8 py-8 md:py-12 w-full bg-white/80 backdrop-blur-[16px] rounded-2xl md:rounded-3xl border border-gray-200 shadow-md my-4 md:my-8">
         {/* Tab Switcher */}
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-1 bg-gray-100/80 p-1 rounded-xl mb-8 md:mb-12 w-full sm:w-fit border border-gray-200/50">
           <a

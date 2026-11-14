@@ -12,14 +12,46 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Kararlı",
     initial: "İlk Lansman",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_4_date: "Kasım 2026",
     v2_0_0_date: "Ağustos 2026",
     v1_3_0_date: "Haziran 2026",
     v1_2_0_date: "Mayıs 2026",
     v1_1_0_date: "Nisan 2026",
     v1_0_0_date: "Mart 2026",
     mockup_header: "Arayüz Göstergesi Önizleme",
-    mockup_preview_text: "📱 Yerel Mod: Belge sadece bu cihazda saklanacak ve çevrimdışı kalacaktır.",
+    mockup_preview_text: "Yerel Mod: Belge sadece bu cihazda saklanacak ve çevrimdışı kalacaktır.",
     
+    // v2.0.4
+    v204_i1_title: "Acenteler İçin Toplu Ödeme & Makbuz Yükleme",
+    v204_i1_desc: "Acenteler birden fazla ödemeyi tek seferde kaydedebilir; makbuz yükleme penceresi daha anlaşılır hale getirildi.",
+    v204_i1_li1: "Toplu ödeme: Sadece acente hesaplarında, bir mülkün birden fazla kira ve fatura kalemi tek işlemde ödendi olarak işaretlenir.",
+    v204_i1_li2: "Makbuz yükleme penceresi: Dosya seçimi, önizleme ve onay adımları sadeleştirildi.",
+    v204_i1_li3: "Daha hızlı liste: Mülk ekranındaki sözleşme listesi açılışta hemen yüklenir.",
+
+    v204_i2_title: "Sözleşme Daveti & Ev Sahibi Sahiplik Davetleri",
+    v204_i2_desc: "Davet bağlantıları artık daha güvenilir çalışıyor, mülk detay ekranı tüm dillerde tam çevrildi.",
+    v204_i2_li1: "Tekrarlanabilir kabul: Kiracı sözleşme davetini tekrar açarsa hata almaz; zaten kabul edilmişse işlem başarıyla tamamlanır, başka bir kiracının sözleşmesi ise üzerine yazılmaz.",
+    v204_i2_li2: "Ev sahibi daveti: Acente, sahiplik davet e-postasını istediği zaman yeniden gönderebilir veya bağlantıyı kopyalayabilir; paylaşım penceresi kabul sonrası kendiliğinden kapanmaz.",
+    v204_i2_li3: "Eksik e-posta koruması: Ev sahibi e-postası boşsa davet kabulü başlatılmaz. Mülk detay ekranındaki metinler TR, EN, SR ve RU dillerinde eksiksiz.",
+
+    v204_i3_title: "Hesap Güvenliği & Web Sitesi",
+    v204_i3_desc: "E-posta ile giriş yapan kullanıcılar şifresini uygulama içinden değiştirebiliyor; web sitesi menüsü yenilendi.",
+    v204_i3_li1: "Şifre değiştirme: Profil ekranına, e-posta ile giriş yapan kullanıcılar için yeni şifre belirleme penceresi eklendi.",
+    v204_i3_li2: "Yeni üst menü: Bireyler ve Acenteler menüleri sadeleştirildi, alt menülere ikon ve Demo Talep Et bağlantısı eklendi.",
+    v204_i3_li3: "Emlak acentesi dizini: 'Emlak Acentesi Bul' sayfasına doğrudan üst menüden ulaşılır; acente kartları yeni menü tasarımıyla uyumlu.",
+
+    v204_i4_title: "Sözleşme Yenileme",
+    v204_i4_desc: "Biten bir sözleşme yeni dönem için rol bazlı onayla yenilenebilir; yenilenen sözleşme başlangıç tarihine kadar 'yaklaşan sözleşme' olarak bekler.",
+    v204_i4_li1: "Rol bazlı onay: Yenileme teklifi ev sahibi, kiracı ve acente rollerine göre ilgili tarafın onayına gider.",
+    v204_i4_li2: "Yaklaşan sözleşme: Mülk detayında yürürlükteki sözleşmenin yanında, başlangıç tarihi gelmemiş yenilenmiş sözleşme ayrıca görünür.",
+    v204_i4_li3: "Tarih duyarlı kira üretimi: Aylık kira kayıtları yalnızca yürürlükteki sözleşmeden oluşturulur; yenilenen sözleşme başlamadan kira satırı üretmez.",
+
+    v204_i5_title: "Manuel Notlar (Faaliyet Kaydı)",
+    v204_i5_desc: "Mülkün faaliyet kaydına elle not eklenebilir ve kayıtlar not tipine göre filtrelenebilir.",
+    v204_i5_li1: "Not ekleme ve düzenleme: Notlar faaliyet kaydında diğer kayıtlarla birlikte listelenir; eklenen not sonradan düzenlenebilir veya silinebilir.",
+    v204_i5_li2: "Filtre: Faaliyet kaydına, manuel notları ayırt etmek için filtre eklendi.",
+    v204_i5_li3: "Erişim kuralı: Manuel notların görüntülenmesi, eklenmesi, düzenlenmesi ve silinmesi mülkün acentesi veya notu yazan kullanıcıyla sınırlandırıldı.",
+
     // v2.0.0 Item 1
     v200_i1_title: "Emlak Ofisleri İçin Acente Profili & White-Label Altyapısı",
     v200_i1_desc: "Mülk yönetimini profesyonel boyuta taşımak isteyen emlak ofisleri için özel Acente Profili ve White-Label marka özelleştirme mimarisi yayına alındı.",
@@ -70,14 +102,46 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Stable",
     initial: "Initial Launch",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_4_date: "November 2026",
     v2_0_0_date: "August 2026",
     v1_3_0_date: "June 2026",
     v1_2_0_date: "May 2026",
     v1_1_0_date: "April 2026",
     v1_0_0_date: "March 2026",
     mockup_header: "UI Indicator Preview",
-    mockup_preview_text: "📱 Local Mode: Document will be stored on this device only and will remain offline.",
+    mockup_preview_text: "Local Mode: Document will be stored on this device only and will remain offline.",
     
+    // v2.0.4
+    v204_i1_title: "Bulk Payments for Agencies & Receipt Upload",
+    v204_i1_desc: "Agencies can record several payments at once, and the receipt upload dialog is now clearer.",
+    v204_i1_li1: "Bulk payments: Available to agency accounts only, mark several rent and bill items of a property as paid in one step.",
+    v204_i1_li2: "Receipt upload dialog: File selection, preview and confirmation steps were simplified.",
+    v204_i1_li3: "Faster lists: The contract list on the property screen loads immediately.",
+
+    v204_i2_title: "Contract Invites & Landlord Ownership Invites",
+    v204_i2_desc: "Invite links are more reliable, and the property detail screen is fully translated in all languages.",
+    v204_i2_li1: "Repeatable acceptance: If a tenant opens a contract invite again it no longer fails; an already accepted contract completes normally, and another tenant's contract is never overwritten.",
+    v204_i2_li2: "Landlord invite: Agencies can resend the ownership invite email or copy the link at any time, and the share sheet no longer closes by itself after acceptance.",
+    v204_i2_li3: "Missing email guard: Acceptance is blocked when the landlord email is empty. All texts on the property detail screen are complete in TR, EN, SR and RU.",
+
+    v204_i3_title: "Account Security & Website",
+    v204_i3_desc: "Email users can change their password inside the app, and the website navigation was redesigned.",
+    v204_i3_li1: "Password change: A new password sheet in the Profile screen for users who sign in with email.",
+    v204_i3_li2: "New header menu: Individuals and Agencies menus were simplified, with icons in the submenus and a Request Demo link.",
+    v204_i3_li3: "Agency directory: The Find Real Estate Agency page is one click from the header, and its agency cards match the new menu design.",
+
+    v204_i4_title: "Contract Renewal",
+    v204_i4_desc: "An expiring contract can be renewed for a new term with role-based approval; the renewed contract waits as an upcoming contract until its start date.",
+    v204_i4_li1: "Role-based approval: The renewal proposal goes to the right party for approval depending on landlord, tenant and agency roles.",
+    v204_i4_li2: "Upcoming contract: The property screen shows the renewed contract separately next to the current one until it starts.",
+    v204_i4_li3: "Date-aware rent generation: Monthly rent rows are created only from the currently effective contract, so a renewed contract creates no rows before it starts.",
+
+    v204_i5_title: "Manual Notes (Activity Log)",
+    v204_i5_desc: "Notes can be added by hand to a property's activity log, and entries can be filtered by type.",
+    v204_i5_li1: "Add and edit: Notes appear in the activity log with other entries, and an added note can be edited or deleted later.",
+    v204_i5_li2: "Filter: The activity log has a filter to tell manual notes apart.",
+    v204_i5_li3: "Access rule: Viewing, adding, editing and deleting manual notes is limited to the property's agency or the user who wrote the note.",
+
     // v2.0.0 Item 1
     v200_i1_title: "Agency Profile & White-Label Infrastructure for Real Estate Offices",
     v200_i1_desc: "Launched a dedicated Agency Profile and White-Label branding architecture for real estate offices seeking professional property management.",
@@ -128,13 +192,45 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Stabilno",
     initial: "Prvo lansiranje",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_4_date: "Novembar 2026",
     v2_0_0_date: "Avgust 2026",
     v1_3_0_date: "Jun 2026",
     v1_2_0_date: "Maj 2026",
     v1_1_0_date: "April 2026",
     v1_0_0_date: "Mart 2026",
     mockup_header: "Pregled interfejsa",
-    mockup_preview_text: "📱 Lokalni režim: Dokument se čuva samo na uređaju i ostaje van mreže.",
+    mockup_preview_text: "Lokalni režim: Dokument se čuva samo na uređaju i ostaje van mreže.",
+
+    // v2.0.4
+    v204_i1_title: "Grupna plaćanja za agencije i otpremanje potvrda",
+    v204_i1_desc: "Agencije mogu da evidentiraju više uplata odjednom, a prozor za otpremanje potvrde je jasniji.",
+    v204_i1_li1: "Grupna plaćanja: Dostupno samo agencijskim nalozima, više stavki kirije i računa jedne nekretnine označava se kao plaćeno u jednom koraku.",
+    v204_i1_li2: "Prozor za otpremanje potvrde: Koraci biranja fajla, pregleda i potvrde su pojednostavljeni.",
+    v204_i1_li3: "Brže liste: Lista ugovora na ekranu nekretnine učitava se odmah.",
+
+    v204_i2_title: "Pozivi za ugovor i pozivi vlasnicima",
+    v204_i2_desc: "Linkovi za pozivanje rade pouzdanije, a ekran nekretnine je u potpunosti preveden na sve jezike.",
+    v204_i2_li1: "Ponovljivo prihvatanje: Ako zakupac ponovo otvori poziv za ugovor, više ne dolazi do greške; već prihvaćen ugovor se uspešno završava, a ugovor drugog zakupca se nikad ne prepisuje.",
+    v204_i2_li2: "Poziv vlasniku: Agencija u svakom trenutku može ponovo da pošalje e-poštu sa pozivom ili da kopira link, a prozor za deljenje se ne zatvara sam posle prihvatanja.",
+    v204_i2_li3: "Zaštita od prazne e-pošte: Prihvatanje je blokirano ako je e-pošta vlasnika prazna. Svi tekstovi na ekranu nekretnine su kompletni na TR, EN, SR i RU.",
+
+    v204_i3_title: "Bezbednost naloga i veb sajt",
+    v204_i3_desc: "Korisnici koji se prijavljuju e-poštom mogu da promene lozinku u aplikaciji, a meni veb sajta je redizajniran.",
+    v204_i3_li1: "Promena lozinke: Na ekranu profila dodat je prozor za novu lozinku za korisnike koji se prijavljuju e-poštom.",
+    v204_i3_li2: "Novi gornji meni: Meniji za pojedince i agencije su pojednostavljeni, podmeniji imaju ikone, a dodat je link Zatražite demo.",
+    v204_i3_li3: "Imenik agencija: Stranica Pronađi agenciju za nekretnine dostupna je jednim klikom iz zaglavlja, a kartice agencija prate novi dizajn menija.",
+
+    v204_i4_title: "Obnova ugovora",
+    v204_i4_desc: "Ugovor koji ističe može se obnoviti za novi period uz odobrenje prema ulozi; obnovljeni ugovor čeka kao nadolazeći ugovor do datuma početka.",
+    v204_i4_li1: "Odobrenje prema ulozi: Predlog obnove ide na odobrenje odgovarajućoj strani, zavisno od uloga vlasnika, zakupca i agencije.",
+    v204_i4_li2: "Nadolazeći ugovor: Ekran nekretnine prikazuje obnovljeni ugovor odvojeno, pored važećeg, dok ne počne.",
+    v204_i4_li3: "Generisanje kirije prema datumu: Mesečne stavke kirije prave se samo iz važećeg ugovora, pa obnovljeni ugovor ne pravi stavke pre početka.",
+
+    v204_i5_title: "Ručne beleške (dnevnik aktivnosti)",
+    v204_i5_desc: "U dnevnik aktivnosti nekretnine mogu se ručno dodati beleške, a unosi se mogu filtrirati po tipu.",
+    v204_i5_li1: "Dodavanje i izmena: Beleške se prikazuju u dnevniku zajedno sa ostalim unosima, a dodata beleška se kasnije može izmeniti ili obrisati.",
+    v204_i5_li2: "Filter: Dnevnik aktivnosti ima filter za izdvajanje ručnih beleški.",
+    v204_i5_li3: "Pravilo pristupa: Pregled, dodavanje, izmena i brisanje ručnih beleški ograničeni su na agenciju nekretnine ili korisnika koji je napisao belešku.",
 
     // v2.0.0 Item 1
     v200_i1_title: "Agencijski Profil i White-Label Infrastruktura za Agencije za Nekretnine",
@@ -186,13 +282,45 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Стабилно",
     initial: "Прво лансирање",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_4_date: "Новембар 2026",
     v2_0_0_date: "Август 2026",
     v1_3_0_date: "Јун 2026",
     v1_2_0_date: "Мај 2026",
     v1_1_0_date: "Април 2026",
     v1_0_0_date: "Март 2026",
     mockup_header: "Преглед интерфејса",
-    mockup_preview_text: "📱 Локални режим: Документ се чува само на уређају и остаје ван мреже.",
+    mockup_preview_text: "Локални режим: Документ се чува само на уређају и остаје ван мреже.",
+
+    // v2.0.4
+    v204_i1_title: "Групна плаћања за агенције и отпремање потврда",
+    v204_i1_desc: "Агенције могу да евидентирају више уплата одједном, а прозор за отпремање потврде је јаснији.",
+    v204_i1_li1: "Групна плаћања: Доступно само агенцијским налозима, више ставки кирије и рачуна једне некретнине означава се као плаћено у једном кораку.",
+    v204_i1_li2: "Прозор за отпремање потврде: Кораци бирања фајла, прегледа и потврде су поједностављени.",
+    v204_i1_li3: "Брже листе: Листа уговора на екрану некретнине учитава се одмах.",
+
+    v204_i2_title: "Позиви за уговор и позиви власницима",
+    v204_i2_desc: "Линкови за позивање раде поузданије, а екран некретнине је у потпуности преведен на све језике.",
+    v204_i2_li1: "Поновљиво прихватање: Ако закупац поново отвори позив за уговор, више не долази до грешке; већ прихваћен уговор се успешно завршава, а уговор другог закупца се никад не преписује.",
+    v204_i2_li2: "Позив власнику: Агенција у сваком тренутку може поново да пошаље е-пошту са позивом или да копира линк, а прозор за дељење се не затвара сам после прихватања.",
+    v204_i2_li3: "Заштита од празне е-поште: Прихватање је блокирано ако је е-пошта власника празна. Сви текстови на екрану некретнине су комплетни на ТР, ЕН, СР и РУ.",
+
+    v204_i3_title: "Безбедност налога и веб сајт",
+    v204_i3_desc: "Корисници који се пријављују е-поштом могу да промене лозинку у апликацији, а мени веб сајта је редизајниран.",
+    v204_i3_li1: "Промена лозинке: На екрану профила додат је прозор за нову лозинку за кориснике који се пријављују е-поштом.",
+    v204_i3_li2: "Нови горњи мени: Менији за појединце и агенције су поједностављени, подменији имају иконе, а додат је линк Затражите демо.",
+    v204_i3_li3: "Именик агенција: Страница Пронађи агенцију за некретнине доступна је једним кликом из заглавља, а картице агенција прате нови дизајн менија.",
+
+    v204_i4_title: "Обнова уговора",
+    v204_i4_desc: "Уговор који истиче може се обновити за нови период уз одобрење према улози; обновљени уговор чека као надолазећи уговор до датума почетка.",
+    v204_i4_li1: "Одобрење према улози: Предлог обнове иде на одобрење одговарајућој страни, зависно од улога власника, закупца и агенције.",
+    v204_i4_li2: "Надолазећи уговор: Екран некретнине приказује обновљени уговор одвојено, поред важећег, док не почне.",
+    v204_i4_li3: "Генерисање кирије према датуму: Месечне ставке кирије праве се само из важећег уговора, па обновљени уговор не прави ставке пре почетка.",
+
+    v204_i5_title: "Ручне белешке (дневник активности)",
+    v204_i5_desc: "У дневник активности некретнине могу се ручно додати белешке, а уноси се могу филтрирати по типу.",
+    v204_i5_li1: "Додавање и измена: Белешке се приказују у дневнику заједно са осталим уносима, а додата белешка се касније може изменити или обрисати.",
+    v204_i5_li2: "Филтер: Дневник активности има филтер за издвајање ручних белешки.",
+    v204_i5_li3: "Правило приступа: Преглед, додавање, измена и брисање ручних белешки ограничени су на агенцију некретнине или корисника који је написао белешку.",
 
     // v2.0.0 Item 1
     v200_i1_title: "Агенцијски Профил и White-Label Инфраструктура за Агенције за Некретнине",
@@ -244,13 +372,45 @@ const changelogTranslations: Record<string, Record<string, string>> = {
     stable: "Стабильно",
     initial: "Первый запуск",
     changelog_badge: "STANOMER CHANGELOG",
+    v2_0_4_date: "Ноябрь 2026",
     v2_0_0_date: "Август 2026",
     v1_3_0_date: "Июнь 2026",
     v1_2_0_date: "Май 2026",
     v1_1_0_date: "Апрель 2026",
     v1_0_0_date: "Март 2026",
     mockup_header: "Предварительный просмотр",
-    mockup_preview_text: "📱 Локальный режим: Документ сохраняется только на устройстве и остается офлайн.",
+    mockup_preview_text: "Локальный режим: Документ сохраняется только на устройстве и остается офлайн.",
+
+    // v2.0.4
+    v204_i1_title: "Массовые платежи для агентств и загрузка квитанций",
+    v204_i1_desc: "Агентства могут вносить несколько платежей сразу, а окно загрузки квитанции стало понятнее.",
+    v204_i1_li1: "Массовые платежи: Доступно только агентским аккаунтам, несколько позиций аренды и счетов объекта отмечаются оплаченными за один шаг.",
+    v204_i1_li2: "Окно загрузки квитанции: Шаги выбора файла, предпросмотра и подтверждения упрощены.",
+    v204_i1_li3: "Быстрые списки: Список договоров на экране объекта загружается сразу.",
+
+    v204_i2_title: "Приглашения по договору и приглашения владельцев",
+    v204_i2_desc: "Ссылки-приглашения работают надёжнее, а экран объекта полностью переведён на все языки.",
+    v204_i2_li1: "Повторное принятие: Если арендатор снова откроет приглашение по договору, ошибки не будет; уже принятый договор завершается нормально, а договор другого арендатора не перезаписывается.",
+    v204_i2_li2: "Приглашение владельца: Агентство в любой момент может повторно отправить письмо-приглашение или скопировать ссылку, а окно «Поделиться» больше не закрывается само после принятия.",
+    v204_i2_li3: "Защита от пустого email: Принятие блокируется, если email владельца пуст. Все тексты на экране объекта полные на TR, EN, SR и RU.",
+
+    v204_i3_title: "Безопасность аккаунта и сайт",
+    v204_i3_desc: "Пользователи, входящие по email, могут менять пароль в приложении, а меню сайта обновлено.",
+    v204_i3_li1: "Смена пароля: В профиле добавлено окно нового пароля для пользователей, входящих по email.",
+    v204_i3_li2: "Новое верхнее меню: Меню для частных лиц и агентств упрощены, у подменю появились иконки и ссылка «Запросить демо».",
+    v204_i3_li3: "Каталог агентств: Страница «Найти агентство недвижимости» доступна в один клик из шапки, карточки агентств соответствуют новому дизайну меню.",
+
+    v204_i4_title: "Продление договора",
+    v204_i4_desc: "Истекающий договор можно продлить на новый срок с подтверждением по ролям; продлённый договор ожидает как предстоящий до даты начала.",
+    v204_i4_li1: "Подтверждение по ролям: Предложение о продлении отправляется на подтверждение нужной стороне в зависимости от ролей владельца, арендатора и агентства.",
+    v204_i4_li2: "Предстоящий договор: Экран объекта показывает продлённый договор отдельно рядом с действующим, пока он не начался.",
+    v204_i4_li3: "Начисление аренды по датам: Ежемесячные записи создаются только по действующему договору, поэтому продлённый договор не создаёт записей до начала.",
+
+    v204_i5_title: "Ручные заметки (журнал действий)",
+    v204_i5_desc: "В журнал действий объекта можно вручную добавлять заметки, а записи можно фильтровать по типу.",
+    v204_i5_li1: "Добавление и правка: Заметки отображаются в журнале вместе с другими записями, добавленную заметку можно позже изменить или удалить.",
+    v204_i5_li2: "Фильтр: В журнале действий добавлен фильтр для выделения ручных заметок.",
+    v204_i5_li3: "Правило доступа: Просмотр, добавление, изменение и удаление ручных заметок доступны только агентству объекта или автору заметки.",
 
     // v2.0.0 Item 1
     v200_i1_title: "Агентский Профиль и White-Label Инфраструктура для Агентств Недвижимости",
@@ -310,7 +470,7 @@ function ChangelogContent() {
         <span className="inline-block bg-brand-blue/10 text-brand-blue px-4 py-1.5 rounded-full text-xs font-bold tracking-wider mb-4">
           {tLocal("changelog_badge")}
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight mb-2">
           {tLocal("title")}
         </h1>
         <div className="text-gray-500 text-[15px] sm:text-[17px] font-light leading-relaxed">
@@ -319,18 +479,167 @@ function ChangelogContent() {
       </header>
 
       <div className="relative pl-6 sm:pl-8 border-l border-gray-200 ml-1 sm:ml-2">
-        {/* SÜRÜM 2.0 */}
+        {/* SÜRÜM 2.0.4 */}
         <div className="relative mb-16">
           {/* dot */}
           <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow-[0_0_0_6px_rgba(37,99,235,0.2)]"></div>
+          
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="text-2xl font-bold text-gray-900">v2.0.4</span>
+            <span className="text-[13px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-semibold">
+              {tLocal("v2_0_4_date")}
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
+              {tLocal("latest")}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            {/* Item 1 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <BarChart3 className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v204_i1_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  property_detail_screen.dart
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v204_i1_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i1_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i1_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i1_li3")}
+                </li>
+              </ul>
+            </div>
+            {/* Item 2 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <Smartphone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v204_i2_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  ownership_share_sheet.dart
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v204_i2_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i2_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i2_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i2_li3")}
+                </li>
+              </ul>
+            </div>
+            {/* Item 3 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <Shield className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v204_i3_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  profile_screen.dart
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v204_i3_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i3_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i3_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i3_li3")}
+                </li>
+              </ul>
+            </div>
+            {/* Item 4 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <Settings className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v204_i4_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  property_detail_screen.dart
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v204_i4_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i4_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i4_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i4_li3")}
+                </li>
+              </ul>
+            </div>
+            {/* Item 5 */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-7 shadow-sm transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-3">
+                <Lock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-[16px] sm:text-[17px] font-bold text-gray-900">
+                  {tLocal("v204_i5_title")}
+                </h3>
+                <span className="font-mono bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md ml-auto hidden sm:inline-block">
+                  activity_logs
+                </span>
+              </div>
+              <p className="text-[13.5px] sm:text-[14.5px] text-gray-600 mb-4 leading-relaxed">
+                {tLocal("v204_i5_desc")}
+              </p>
+              <ul className="space-y-2 list-none pl-0">
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i5_li1")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i5_li2")}
+                </li>
+                <li className="relative pl-5 text-[13px] sm:text-[14px] text-gray-650 leading-relaxed before:content-['•'] before:absolute before:left-1.5 before:text-blue-600 before:font-bold">
+                  {tLocal("v204_i5_li3")}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* SÜRÜM 2.0 */}
+        <div className="relative mb-16">
+          {/* dot */}
+          <div className="absolute -left-[34px] sm:-left-[42px] top-1.5 w-5 h-5 rounded-full bg-gray-400 border-4 border-white shadow-sm"></div>
           
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-2xl font-bold text-gray-900">v2.0.0</span>
             <span className="text-[13px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-semibold">
               {tLocal("v2_0_0_date")}
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
-              {tLocal("latest")}
+            <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full">
+              {tLocal("stable")}
             </span>
           </div>
 
@@ -433,7 +742,7 @@ function ChangelogContent() {
                 </div>
                 <div className="bg-[#fffbeb] border border-[#fde68a] text-[#92400e] text-[12px] font-medium py-2 px-3 rounded-lg flex items-center gap-2">
                   <Smartphone className="w-4 h-4 flex-shrink-0" />
-                  <span>{tLocal("mockup_preview_text").replace("📱 ", "")}</span>
+                  <span>{tLocal("mockup_preview_text")}</span>
                 </div>
               </div>
             </div>

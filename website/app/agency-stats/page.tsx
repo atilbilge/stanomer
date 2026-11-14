@@ -251,7 +251,6 @@ export default function AgencyStatsPage() {
       <main className="flex-1 py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full flex flex-col justify-center">
 
         {/* Top Decorative Background Glow */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-violet-400/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
         {/* ═══════════════════════════════════════════
             STATE 1: EMAIL ENTRY
@@ -265,7 +264,7 @@ export default function AgencyStatsPage() {
                 <span>{t("stats_portal_badge")}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
                 {t("stats_email_title")}
               </h1>
 
@@ -274,7 +273,7 @@ export default function AgencyStatsPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-md space-y-6">
               
               {errorMessage && (
                 <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-3">
@@ -304,7 +303,7 @@ export default function AgencyStatsPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-xl shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-md shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -341,7 +340,7 @@ export default function AgencyStatsPage() {
                 <span>{t("stats_otp_title")}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight">
                 {t("stats_otp_title")}
               </h1>
 
@@ -350,7 +349,7 @@ export default function AgencyStatsPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-md space-y-6">
 
               {infoMessage && (
                 <div className="bg-violet-50 border border-violet-200 text-violet-800 p-4 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-3">
@@ -378,14 +377,14 @@ export default function AgencyStatsPage() {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                     placeholder="123456"
-                    className="w-full py-4 text-center tracking-[0.5em] text-2xl font-mono font-extrabold bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-300 placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white transition"
+                    className="w-full py-4 text-center tracking-[0.5em] text-2xl font-mono font-semibold bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-300 placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white transition"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading || otpCode.length !== 6}
-                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-xl shadow-violet-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-base shadow-md shadow-violet-500/25 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -438,7 +437,7 @@ export default function AgencyStatsPage() {
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>{t("stats_dash_badge")}</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
                   {partner.agency_name} {t("stats_dash_title_suffix")}
                 </h1>
                 <p className="text-xs text-slate-500">
@@ -460,14 +459,14 @@ export default function AgencyStatsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
               {/* Total Referral Count Card */}
-              <div className="bg-gradient-to-br from-violet-900 via-slate-900 to-slate-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl space-y-3 border border-violet-700/50">
+              <div className="bg-violet-900 p-6 sm:p-8 rounded-3xl text-white shadow-md space-y-3 border border-violet-700/50">
                 <div className="flex items-center justify-between text-violet-200">
                   <span className="text-xs font-bold tracking-wider uppercase">{t("stats_total_card")}</span>
                   <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
                     <Sparkles className="w-5 h-5 text-amber-400" />
                   </div>
                 </div>
-                <p className="text-4xl sm:text-5xl font-black text-amber-400">
+                <p className="text-4xl sm:text-5xl font-semibold text-amber-400">
                   {stats?.totalReferred ?? 0}
                 </p>
                 <p className="text-xs text-slate-300 font-medium">
@@ -483,7 +482,7 @@ export default function AgencyStatsPage() {
                     <Building2 className="w-5 h-5 text-emerald-600" />
                   </div>
                 </div>
-                <p className="text-4xl font-extrabold text-emerald-600">
+                <p className="text-4xl font-semibold text-emerald-600">
                   {stats?.landlordCount ?? 0}
                 </p>
                 <p className="text-xs text-slate-500">
@@ -499,7 +498,7 @@ export default function AgencyStatsPage() {
                     <UserCheck className="w-5 h-5 text-cyan-600" />
                   </div>
                 </div>
-                <p className="text-4xl font-extrabold text-cyan-600">
+                <p className="text-4xl font-semibold text-cyan-600">
                   {stats?.tenantCount ?? 0}
                 </p>
                 <p className="text-xs text-slate-500">
@@ -534,7 +533,7 @@ export default function AgencyStatsPage() {
                           </span>
                           <div
                             style={{ height: `${heightPercent}%` }}
-                            className="w-full max-w-[48px] bg-gradient-to-t from-violet-600 to-violet-400 rounded-t-xl group-hover:from-violet-700 group-hover:to-violet-500 transition-all shadow-md shadow-violet-500/20"
+                            className="w-full max-w-[48px] bg-violet-600 rounded-t-xl group-hover:from-violet-700 group-hover:to-violet-500 transition-all shadow-md shadow-violet-500/20"
                           />
                           <span className="text-[11px] font-semibold text-slate-500 mt-2">
                             {item.label}
@@ -563,7 +562,7 @@ export default function AgencyStatsPage() {
                     <img src={qrDataUrl} alt="Acente QR Code" className="w-24 h-24 object-contain rounded-lg" />
                   ) : (
                     <div className="w-24 h-24 bg-slate-800 rounded-lg flex items-center justify-center">
-                      <QrCode className="w-8 h-8 text-slate-400 animate-pulse" />
+                      <QrCode className="w-8 h-8 text-slate-400" />
                     </div>
                   )}
                 </div>
@@ -580,7 +579,7 @@ export default function AgencyStatsPage() {
 
               <a
                 href="/agency-referral"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-xl shadow-violet-500/20 transition transform hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-500/20 transition transform hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
               >
                 <Download className="w-4 h-4" />
                 <span>{t("stats_qr_download_btn")}</span>

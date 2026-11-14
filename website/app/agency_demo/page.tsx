@@ -241,7 +241,7 @@ export default function AgencyDemoPage() {
 
       <div className="pt-28 pb-12 flex-grow flex flex-col justify-center sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-          <h2 className="text-3xl font-extrabold text-slate-900">
+          <h2 className="text-3xl font-semibold text-slate-900">
             {t("agency_demo_title")}
           </h2>
           <p className="mt-2 text-sm text-slate-600">
@@ -250,7 +250,7 @@ export default function AgencyDemoPage() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-          <div className="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-slate-100">
+          <div className="bg-white py-8 px-6 shadow-md rounded-2xl sm:px-10 border border-slate-100">
             {submitted ? (
               <div className="text-center py-8">
                 <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
