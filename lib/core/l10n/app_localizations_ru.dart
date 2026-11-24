@@ -247,6 +247,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get inviteNotFound => 'Приглашение не найдено или истек срок действия';
 
   @override
+  String get invalidInviteToken =>
+      'Недействительный код или ссылка приглашения.';
+
+  @override
+  String get inviteAlreadyClaimed =>
+      'Этот договор или приглашение уже приняты другим арендатором.';
+
+  @override
   String get invitationAcceptedSuccess =>
       'Добро пожаловать! Приглашение принято.';
 
@@ -1781,7 +1789,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ownershipQrOrLink => 'QR / Ссылка на владение';
 
   @override
-  String get changeLandlord => 'Сменить владельца';
+  String get changeLandlord => 'Обновить данные владельца';
 
   @override
   String get pendingDebtWarning =>
@@ -4118,4 +4126,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get subLabelUpcomingRecords => 'Предстоящие записи';
+
+  @override
+  String maintenanceAddedToRentNote(
+    Object amount,
+    Object ticket,
+    Object title,
+  ) {
+    return '$ticket: +$amount ($title) добавлено к аренде';
+  }
+
+  @override
+  String maintenanceOffsetFromRentNote(Object amount, Object title) {
+    return '$amount ($title) зачтено в счет аренды';
+  }
+
+  @override
+  String get agencyWebPanelBannerBadge => 'НОВАЯ ВЕБ-ПАНЕЛЬ';
+
+  @override
+  String get agencyWebPanelBannerTitle =>
+      'Расширенная веб-панель для агентств готова!';
+
+  @override
+  String get agencyWebPanelBannerDesc =>
+      'Мы подготовили расширенную веб-панель управления для агентств. Теперь вы можете продолжать работу агентства через веб-панель.';
+
+  @override
+  String get agencyWebPanelBannerCta => 'Открыть веб-панель';
 }

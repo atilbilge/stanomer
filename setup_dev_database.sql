@@ -72,6 +72,12 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_source TEXT DEFAULT NUL
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_medium TEXT DEFAULT NULL;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS utm_campaign TEXT DEFAULT NULL;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS referred_by_agency_code TEXT DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'Property & Lease Management';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS active_modules TEXT[] DEFAULT ARRAY['property_lease_management']::TEXT[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS monthly_fee NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS billing_currency TEXT DEFAULT 'EUR';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS next_billing_date DATE DEFAULT NULL;
 
 CREATE TABLE IF NOT EXISTS public.properties (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -115,6 +121,7 @@ ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_phone TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_email TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS landlord_name TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS tenant_name TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS is_detailed BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS unit_number TEXT;
@@ -126,6 +133,132 @@ ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS furnishing TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS heating_type TEXT;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS amenities JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS last_listing_id UUID;
+
+CREATE TABLE IF NOT EXISTS public.listings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    directory_agency_id BIGINT DEFAULT NULL,
+    managed_property_id UUID REFERENCES public.properties(id) ON DELETE SET NULL,
+    external_ref TEXT DEFAULT NULL,
+    title TEXT NOT NULL,
+    description TEXT DEFAULT NULL,
+    transaction_type TEXT NOT NULL DEFAULT 'izdavanje' CHECK (transaction_type IN ('izdavanje', 'prodaja')),
+    property_type TEXT NOT NULL DEFAULT 'apartment',
+    price NUMERIC(12,2) NOT NULL DEFAULT 0,
+    deposit_amount NUMERIC(12,2) DEFAULT NULL,
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    area_sqm NUMERIC(10,2) DEFAULT NULL,
+    room_count TEXT DEFAULT NULL,
+    floor TEXT DEFAULT NULL,
+    total_floors INTEGER DEFAULT NULL,
+    heating_type TEXT DEFAULT NULL,
+    condition TEXT DEFAULT NULL,
+    furnishing TEXT DEFAULT NULL,
+    city TEXT NOT NULL DEFAULT 'Beograd',
+    municipality TEXT DEFAULT NULL,
+    neighborhood TEXT DEFAULT NULL,
+    address TEXT DEFAULT NULL,
+    latitude NUMERIC(10,7) DEFAULT NULL,
+    longitude NUMERIC(10,7) DEFAULT NULL,
+    amenities JSONB NOT NULL DEFAULT '[]'::jsonb,
+    is_published BOOLEAN NOT NULL DEFAULT TRUE,
+    listing_status TEXT NOT NULL DEFAULT 'active' CHECK (listing_status IN ('active', 'reserved', 'rented', 'sold', 'archived')),
+    closed_at TIMESTAMPTZ DEFAULT NULL,
+    closing_price NUMERIC(12,2) DEFAULT NULL,
+    closing_notes TEXT DEFAULT NULL,
+    closing_contract_id UUID,
+    published_portals JSONB NOT NULL DEFAULT '["stanomer", "4zida", "halooglasi", "sasomange", "nekretnine"]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS listings_agency_published_idx
+    ON public.listings (agency_id, is_published)
+    WHERE is_published = TRUE;
+CREATE INDEX IF NOT EXISTS listings_managed_property_id_idx ON public.listings (managed_property_id);
+CREATE INDEX IF NOT EXISTS listings_status_idx ON public.listings (listing_status);
+CREATE INDEX IF NOT EXISTS listings_closing_contract_id_idx ON public.listings (closing_contract_id);
+ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.listing_images (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    listing_id UUID NOT NULL REFERENCES public.listings(id) ON DELETE CASCADE,
+    url TEXT NOT NULL,
+    order_index INTEGER NOT NULL DEFAULT 0,
+    is_cover BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS listing_images_listing_order_idx
+    ON public.listing_images (listing_id, is_cover DESC, order_index ASC);
+ALTER TABLE public.listing_images ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.agency_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id TEXT NOT NULL,
+    lead_type TEXT NOT NULL DEFAULT 'owner_consignment' CHECK (lead_type IN ('owner_consignment', 'viewing_request', 'general_inquiry')),
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'evaluation', 'viewing_scheduled', 'offer_made', 'contract_signed', 'converted', 'archived')),
+    client_name TEXT NOT NULL,
+    client_phone TEXT NOT NULL,
+    client_email TEXT DEFAULT NULL,
+    transaction_type TEXT DEFAULT 'prodaja' CHECK (transaction_type IN ('prodaja', 'izdavanje')),
+    property_type TEXT DEFAULT 'apartment',
+    location TEXT DEFAULT NULL,
+    area_sqm NUMERIC(10,2) DEFAULT NULL,
+    expected_price NUMERIC(12,2) DEFAULT NULL,
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    notes TEXT DEFAULT NULL,
+    listing_id UUID DEFAULT NULL REFERENCES public.listings(id) ON DELETE SET NULL,
+    listing_title TEXT DEFAULT NULL,
+    agent_notes TEXT DEFAULT NULL,
+    comments JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS agency_leads_agency_id_idx ON public.agency_leads (agency_id);
+CREATE INDEX IF NOT EXISTS agency_leads_status_idx ON public.agency_leads (status);
+CREATE INDEX IF NOT EXISTS agency_leads_created_at_idx ON public.agency_leads (created_at DESC);
+ALTER TABLE public.agency_leads ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for listings, listing_images, and agency_leads
+DROP POLICY IF EXISTS "public_select_published_listings" ON public.listings;
+CREATE POLICY "public_select_published_listings" ON public.listings
+    FOR SELECT TO public USING (is_published = TRUE);
+DROP POLICY IF EXISTS "agency_select_own_listings" ON public.listings;
+CREATE POLICY "agency_select_own_listings" ON public.listings
+    FOR SELECT TO authenticated USING (agency_id = auth.uid());
+DROP POLICY IF EXISTS "agency_insert_own_listings" ON public.listings;
+CREATE POLICY "agency_insert_own_listings" ON public.listings
+    FOR INSERT TO authenticated WITH CHECK (agency_id = auth.uid());
+DROP POLICY IF EXISTS "agency_update_own_listings" ON public.listings;
+CREATE POLICY "agency_update_own_listings" ON public.listings
+    FOR UPDATE TO authenticated USING (agency_id = auth.uid()) WITH CHECK (agency_id = auth.uid());
+DROP POLICY IF EXISTS "agency_delete_own_listings" ON public.listings;
+CREATE POLICY "agency_delete_own_listings" ON public.listings
+    FOR DELETE TO authenticated USING (agency_id = auth.uid());
+
+DROP POLICY IF EXISTS "public_view_published_listing_images" ON public.listing_images;
+CREATE POLICY "public_view_published_listing_images" ON public.listing_images
+    FOR SELECT TO public USING (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND l.is_published = TRUE));
+DROP POLICY IF EXISTS "agency_manage_own_listing_images" ON public.listing_images;
+CREATE POLICY "agency_manage_own_listing_images" ON public.listing_images
+    FOR ALL TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND l.agency_id = auth.uid()))
+    WITH CHECK (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND l.agency_id = auth.uid()));
+
+DROP POLICY IF EXISTS "allow_anon_insert_agency_leads" ON public.agency_leads;
+CREATE POLICY "allow_anon_insert_agency_leads" ON public.agency_leads
+    FOR INSERT TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "allow_agency_select_leads" ON public.agency_leads;
+CREATE POLICY "allow_agency_select_leads" ON public.agency_leads
+    FOR SELECT TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo');
+DROP POLICY IF EXISTS "allow_agency_update_leads" ON public.agency_leads;
+CREATE POLICY "allow_agency_update_leads" ON public.agency_leads
+    FOR UPDATE TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo') WITH CHECK (agency_id = auth.uid()::text OR agency_id = 'demo');
+DROP POLICY IF EXISTS "allow_agency_delete_leads" ON public.agency_leads;
+CREATE POLICY "allow_agency_delete_leads" ON public.agency_leads
+    FOR DELETE TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo');
+GRANT INSERT ON public.agency_leads TO anon, authenticated;
+GRANT SELECT, UPDATE, DELETE ON public.agency_leads TO authenticated;
 
 CREATE TABLE IF NOT EXISTS public.contracts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -166,10 +299,22 @@ ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS inviter_name TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS token TEXT;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS deposit_currency TEXT DEFAULT 'EUR';
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_feedback TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_name TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_phone TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_id_number TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_notes TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_id_document_url TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenant_secondary_contacts JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS contract_url TEXT;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS expenses_config JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_date DATE;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS termination_approved BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS proposed_changes JSONB;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS pending_update JSONB;
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS source_listing_id UUID REFERENCES public.listings(id) ON DELETE SET NULL;
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+CREATE INDEX IF NOT EXISTS contracts_source_listing_id_idx ON public.contracts (source_listing_id);
 
 CREATE TABLE IF NOT EXISTS public.invitations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -197,27 +342,39 @@ CREATE TABLE IF NOT EXISTS public.rent_payments (
     contract_id UUID REFERENCES public.contracts(id) ON DELETE SET NULL,
     landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    period_start DATE NOT NULL,
-    period_end DATE NOT NULL,
+    period_start DATE,
+    period_end DATE,
     due_date DATE NOT NULL,
+    amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     rent_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     expenses_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     currency TEXT NOT NULL DEFAULT 'EUR',
     status public.rent_payment_status DEFAULT 'pending',
     payment_type TEXT DEFAULT 'rent',
+    payment_method TEXT DEFAULT 'bank_transfer',
     notes TEXT,
     receipt_url TEXT,
+    invoice_url TEXT,
     declared_at TIMESTAMPTZ,
+    paid_at TIMESTAMPTZ,
     auto_approval_at TIMESTAMPTZ,
+    linked_charge_id UUID,
     dispute_reason TEXT,
     disputed_by UUID REFERENCES public.profiles(id),
     disputed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS invoice_url TEXT;
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'bank_transfer';
+ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS linked_charge_id UUID;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS landlord_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.rent_payments ALTER COLUMN landlord_id DROP NOT NULL;
+ALTER TABLE public.rent_payments ALTER COLUMN period_start DROP NOT NULL;
+ALTER TABLE public.rent_payments ALTER COLUMN period_end DROP NOT NULL;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS contract_id UUID REFERENCES public.contracts(id) ON DELETE SET NULL;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS agency_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
@@ -232,6 +389,11 @@ ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS auto_approval_at TIMES
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS dispute_reason TEXT;
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_by UUID REFERENCES public.profiles(id);
 ALTER TABLE public.rent_payments ADD COLUMN IF NOT EXISTS disputed_at TIMESTAMPTZ;
+
+-- Backfill amount from total_amount/rent_amount if available
+UPDATE public.rent_payments 
+SET amount = COALESCE(NULLIF(amount, 0), NULLIF(total_amount, 0), rent_amount, 0)
+WHERE amount IS NULL OR amount = 0;
 
 CREATE TABLE IF NOT EXISTS public.maintenance_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -364,14 +526,37 @@ ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS related_id UUID;
 CREATE TABLE IF NOT EXISTS public.activity_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     payment_id UUID REFERENCES public.rent_payments(id) ON DELETE SET NULL,
-    action_type TEXT NOT NULL,
-    description TEXT NOT NULL,
-    metadata JSONB,
+    type TEXT NOT NULL DEFAULT 'system_event',
+    action_type TEXT,
+    description TEXT,
+    entity_type TEXT,
+    entity_id UUID,
+    metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'system_event';
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS action_type TEXT;
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS entity_type TEXT;
+ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS entity_id UUID;
 ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = 'activity_logs' AND column_name = 'action_type' AND is_nullable = 'NO'
+    ) THEN
+        ALTER TABLE public.activity_logs ALTER COLUMN action_type DROP NOT NULL;
+    END IF;
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = 'activity_logs' AND column_name = 'description' AND is_nullable = 'NO'
+    ) THEN
+        ALTER TABLE public.activity_logs ALTER COLUMN description DROP NOT NULL;
+    END IF;
+END $$;
 
 -- 3. ENABLE RLS ON ALL TABLES
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -394,6 +579,51 @@ CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT
 
 DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
+
+-- 3.5 HELPER FUNCTIONS FOR RLS (SECURITY DEFINER)
+-- Prevents RLS circular recursion loops between properties, invitations, and rent_payments
+-- Uses dynamic SQL (EXECUTE) to prevent compile-time relation dependencies
+CREATE OR REPLACE FUNCTION public.is_invited_to_property(check_property_id UUID, check_email TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_result BOOLEAN := FALSE;
+BEGIN
+  IF to_regclass('public.invitations') IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  EXECUTE 'SELECT EXISTS (
+    SELECT 1 FROM public.invitations
+    WHERE property_id = $1
+      AND LOWER(invitee_email) = LOWER(COALESCE($2, ''''))
+  )' INTO v_result USING check_property_id, check_email;
+  RETURN v_result;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_agency_of_property(check_property_id UUID, check_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_result BOOLEAN := FALSE;
+BEGIN
+  IF to_regclass('public.properties') IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  EXECUTE 'SELECT EXISTS (
+    SELECT 1 FROM public.properties
+    WHERE id = $1
+      AND agency_id = $2
+  )' INTO v_result USING check_property_id, check_user_id;
+  RETURN v_result;
+END;
+$$;
 
 -- Properties RLS (with agency support)
 DROP POLICY IF EXISTS "landlord_select_properties" ON public.properties;
@@ -423,21 +653,21 @@ CREATE POLICY "properties_update_policy" ON public.properties FOR UPDATE TO auth
 DROP POLICY IF EXISTS "Users can view relevant contracts" ON public.contracts;
 DROP POLICY IF EXISTS "contracts_select_policy" ON public.contracts;
 CREATE POLICY "contracts_select_policy" ON public.contracts FOR SELECT TO authenticated
-    USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))) OR (token IS NOT NULL));
+    USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))) OR (token IS NOT NULL));
 
 DROP POLICY IF EXISTS "Landlords can insert contracts" ON public.contracts;
 DROP POLICY IF EXISTS "contracts_insert_policy" ON public.contracts;
 CREATE POLICY "contracts_insert_policy" ON public.contracts FOR INSERT TO authenticated
-    WITH CHECK (landlord_id = auth.uid() OR agency_id = auth.uid());
+    WITH CHECK (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
 
 DROP POLICY IF EXISTS "Users can update relevant contracts" ON public.contracts;
 DROP POLICY IF EXISTS "contracts_update_policy" ON public.contracts;
 CREATE POLICY "contracts_update_policy" ON public.contracts FOR UPDATE TO authenticated
-    USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR tenant_id = auth.uid() OR tenant_id IS NULL OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))));
+    USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR tenant_id = auth.uid() OR tenant_id IS NULL OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))));
 
 DROP POLICY IF EXISTS "contracts_delete_policy" ON public.contracts;
 CREATE POLICY "contracts_delete_policy" ON public.contracts FOR DELETE TO authenticated
-    USING (landlord_id = auth.uid() OR agency_id = auth.uid());
+    USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()));
 
 DROP POLICY IF EXISTS "Users can view invitations" ON public.invitations;
 CREATE POLICY "Users can view invitations" ON public.invitations FOR SELECT TO authenticated USING (inviter_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', '')) OR (token IS NOT NULL));
@@ -718,8 +948,48 @@ DECLARE
     v_invite_json JSONB;
     v_contract_json JSONB;
 BEGIN
+    -- 1. First check contracts table (tenant contract invitations always live in public.contracts)
+    SELECT (to_jsonb(c.*) || jsonb_build_object(
+        'type', 'contract',
+        'active_contract', to_jsonb(c.*),
+        'properties', jsonb_build_object(
+            'id', p.id,
+            'name', p.name,
+            'title', p.title,
+            'address', p.address,
+            'default_monthly_rent', p.default_monthly_rent,
+            'default_deposit_amount', p.default_deposit_amount,
+            'currency', p.currency,
+            'landlord_id', p.landlord_id,
+            'tenant_id', p.tenant_id,
+            'agency_id', p.agency_id,
+            'landlord_name', p.landlord_name,
+            'landlord_email', p.landlord_email,
+            'landlord_phone', p.landlord_phone
+        )
+    ))
+    INTO v_contract_json
+    FROM public.contracts c
+    JOIN public.properties p ON p.id = c.property_id
+    WHERE c.token = p_token
+      AND (c.status IN ('pending', 'negotiating', 'revision_requested') OR (c.status = 'active' AND c.tenant_id IS NULL))
+    ORDER BY c.created_at DESC
+    LIMIT 1;
+
+    -- 2. Next check invitations table (landlord ownership invitations or standalone invitations)
     SELECT (to_jsonb(i.*) || jsonb_build_object(
-        'type', CASE WHEN i.target_role = 'landlord' THEN 'landlord_ownership' ELSE 'invitation' END,
+        'type', CASE WHEN i.target_role = 'landlord' THEN 'landlord_ownership' ELSE COALESCE(v_contract_json->>'type', 'invitation') END,
+        'active_contract', COALESCE(
+            v_contract_json,
+            (
+                SELECT to_jsonb(c2.*)
+                FROM public.contracts c2
+                WHERE (c2.id = i.contract_id OR c2.property_id = i.property_id)
+                  AND c2.status IN ('pending', 'negotiating', 'active', 'revision_requested')
+                ORDER BY c2.created_at DESC
+                LIMIT 1
+            )
+        ),
         'properties', jsonb_build_object(
             'id', p.id,
             'name', p.name,
@@ -741,38 +1011,17 @@ BEGIN
     JOIN public.properties p ON p.id = i.property_id
     WHERE i.token = p_token
       AND i.status = 'pending'
-      AND i.expires_at > now();
+      AND (i.expires_at IS NULL OR i.expires_at > now());
 
-    IF v_invite_json IS NOT NULL THEN
+    IF v_invite_json IS NOT NULL AND (v_invite_json->>'target_role' = 'landlord' OR v_contract_json IS NULL) THEN
         RETURN v_invite_json;
     END IF;
-
-    SELECT (to_jsonb(c.*) || jsonb_build_object(
-        'type', 'contract',
-        'properties', jsonb_build_object(
-            'id', p.id,
-            'name', p.name,
-            'title', p.title,
-            'address', p.address,
-            'default_monthly_rent', p.default_monthly_rent,
-            'default_deposit_amount', p.default_deposit_amount,
-            'currency', p.currency,
-            'landlord_id', p.landlord_id,
-            'tenant_id', p.tenant_id,
-            'agency_id', p.agency_id
-        )
-    ))
-    INTO v_contract_json
-    FROM public.contracts c
-    JOIN public.properties p ON p.id = c.property_id
-    WHERE c.token = p_token
-      AND c.status IN ('pending', 'negotiating');
 
     IF v_contract_json IS NOT NULL THEN
         RETURN v_contract_json;
     END IF;
 
-    RETURN NULL;
+    RETURN v_invite_json;
 END;
 $$;
 
@@ -937,6 +1186,27 @@ CREATE POLICY "property_photos_delete_policy"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'property-photos' AND auth.uid() IS NOT NULL);
 
+-- maintenance bucket
+DROP POLICY IF EXISTS "maintenance_select_policy" ON storage.objects;
+CREATE POLICY "maintenance_select_policy"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'maintenance');
+
+DROP POLICY IF EXISTS "maintenance_insert_policy" ON storage.objects;
+CREATE POLICY "maintenance_insert_policy"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'maintenance' AND auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "maintenance_update_policy" ON storage.objects;
+CREATE POLICY "maintenance_update_policy"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'maintenance' AND auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "maintenance_delete_policy" ON storage.objects;
+CREATE POLICY "maintenance_delete_policy"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'maintenance' AND auth.uid() IS NOT NULL);
+
 -- maintenance-photos bucket
 DROP POLICY IF EXISTS "maintenance_photos_select_policy"  ON storage.objects;
 CREATE POLICY "maintenance_photos_select_policy"
@@ -947,6 +1217,11 @@ DROP POLICY IF EXISTS "maintenance_photos_insert_policy"  ON storage.objects;
 CREATE POLICY "maintenance_photos_insert_policy"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'maintenance-photos' AND auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "maintenance_photos_update_policy"  ON storage.objects;
+CREATE POLICY "maintenance_photos_update_policy"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'maintenance-photos' AND auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "maintenance_photos_delete_policy"  ON storage.objects;
 CREATE POLICY "maintenance_photos_delete_policy"
@@ -1395,6 +1670,7 @@ CREATE TABLE IF NOT EXISTS public.agency_demo_requests (
     utm_source TEXT DEFAULT NULL,
     utm_medium TEXT DEFAULT NULL,
     utm_campaign TEXT DEFAULT NULL,
+    selected_modules TEXT[] DEFAULT ARRAY['portfolio_distribution', 'property_lease_management']::TEXT[],
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -1405,6 +1681,7 @@ ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS token_expires_a
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_source TEXT DEFAULT NULL;
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_medium TEXT DEFAULT NULL;
 ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS utm_campaign TEXT DEFAULT NULL;
+ALTER TABLE public.agency_demo_requests ADD COLUMN IF NOT EXISTS selected_modules TEXT[] DEFAULT ARRAY['portfolio_distribution', 'property_lease_management']::TEXT[];
 
 ALTER TABLE public.agency_demo_requests ENABLE ROW LEVEL SECURITY;
 
@@ -1628,7 +1905,8 @@ CREATE TABLE IF NOT EXISTS public.agency_demo_requests (
     updated_at TIMESTAMPTZ DEFAULT now(),
     utm_source TEXT DEFAULT NULL,
     utm_medium TEXT DEFAULT NULL,
-    utm_campaign TEXT DEFAULT NULL
+    utm_campaign TEXT DEFAULT NULL,
+    selected_modules TEXT[] DEFAULT ARRAY['portfolio_distribution', 'property_lease_management']::TEXT[]
 );
 
 CREATE INDEX IF NOT EXISTS agency_demo_requests_email_idx ON public.agency_demo_requests (lower(email));
@@ -1792,6 +2070,7 @@ DECLARE
     v_temp_password TEXT := 'Stanomer2026!';
     v_instance_id UUID;
     v_was_expired BOOLEAN := FALSE;
+    v_modules TEXT[];
 BEGIN
     SELECT * INTO v_request
     FROM public.agency_demo_requests
@@ -1809,9 +2088,20 @@ BEGIN
     UPDATE public.agency_demo_requests
     SET is_email_verified = TRUE,
         status = 'active_demo',
-        token_expires_at = (now() + interval '3 days'),
+        token_expires_at = (now() + interval '7 days'),
         updated_at = now()
     WHERE id = v_request.id;
+
+    -- Determine active modules from request (respect selected_modules from modal)
+    IF v_request.selected_modules IS NOT NULL AND array_length(v_request.selected_modules, 1) > 0 THEN
+        v_modules := v_request.selected_modules;
+    ELSIF v_request.special_requests ILIKE '%portfolio_distribution%' AND v_request.special_requests NOT ILIKE '%property_lease_management%' THEN
+        v_modules := ARRAY['portfolio_distribution'];
+    ELSIF v_request.special_requests ILIKE '%property_lease_management%' AND v_request.special_requests NOT ILIKE '%portfolio_distribution%' THEN
+        v_modules := ARRAY['property_lease_management'];
+    ELSE
+        v_modules := ARRAY['portfolio_distribution', 'property_lease_management'];
+    END IF;
 
     SELECT instance_id INTO v_instance_id FROM auth.users WHERE instance_id IS NOT NULL LIMIT 1;
     IF v_instance_id IS NULL THEN
@@ -1880,18 +2170,21 @@ BEGIN
         identity_data = EXCLUDED.identity_data,
         updated_at = now();
 
+    -- Upsert public.profiles with 7 days sandbox expiration
     INSERT INTO public.profiles (
-        id, email, full_name, role, active_role, company_name, website_url, is_demo, demo_expires_at, created_at, updated_at
+        id, email, full_name, role, active_role, company_name, website_url, phone_number, is_demo, demo_expires_at, active_modules, created_at, updated_at
     ) VALUES (
         v_user_id, lower(v_request.email), v_request.agency_name, 'agency', 'agency', v_request.agency_name,
-        v_request.website, true, (now() + interval '3 days'), now(), now()
+        v_request.website, v_request.phone_number, true, (now() + interval '7 days'), v_modules, now(), now()
     ) ON CONFLICT (id) DO UPDATE SET
         role = 'agency',
         active_role = 'agency',
         company_name = EXCLUDED.company_name,
         website_url = EXCLUDED.website_url,
+        phone_number = COALESCE(EXCLUDED.phone_number, profiles.phone_number),
         is_demo = true,
-        demo_expires_at = (now() + interval '3 days'),
+        demo_expires_at = (now() + interval '7 days'),
+        active_modules = COALESCE(v_modules, profiles.active_modules),
         updated_at = now();
 
     -- Data yoksa tekrar üret, varsa dokunma:
@@ -1902,13 +2195,14 @@ BEGIN
     RETURN jsonb_build_object(
         'success', true,
         'message', CASE 
-            WHEN v_was_expired THEN 'Demo süreniz 3 gün daha uzatıldı ve portföyünüz hazırlandı.' 
-            ELSE 'Hesabınız başarıyla aktifleştirildi.' 
+            WHEN v_was_expired THEN 'Demo süreniz 7 gün olarak yenilendi ve portföyünüz hazırlandı.' 
+            ELSE 'Hesabınız başarıyla 7 günlük sandbox olarak aktifleştirildi.' 
         END,
         'was_expired', v_was_expired,
         'user_id', v_user_id,
         'email', lower(v_request.email),
         'agency_name', v_request.agency_name,
+        'active_modules', v_modules,
         'temp_password', v_temp_password
     );
 END;
@@ -1926,9 +2220,15 @@ DECLARE
     v_property_ids UUID[];
     v_contract_ids UUID[];
     v_request_ids UUID[];
-    v_landlord_ids UUID[];
+    v_listing_ids UUID[];
+    v_demo_user_ids UUID[];
+    v_agency_short TEXT;
     v_prop_count INT := 0;
+    v_listing_count INT := 0;
+    v_lead_count INT := 0;
 BEGIN
+    v_agency_short := substring(p_agency_id::text from 1 for 8);
+
     SELECT ARRAY_AGG(id) INTO v_property_ids
     FROM public.properties
     WHERE agency_id = p_agency_id;
@@ -1951,23 +2251,55 @@ BEGIN
         DELETE FROM public.activity_logs WHERE property_id = ANY(v_property_ids);
         DELETE FROM public.maintenance_requests WHERE property_id = ANY(v_property_ids);
         DELETE FROM public.rent_payments WHERE property_id = ANY(v_property_ids);
+        IF to_regclass('public.property_owners') IS NOT NULL THEN
+            DELETE FROM public.property_owners WHERE property_id = ANY(v_property_ids);
+        END IF;
+        IF to_regclass('public.invitations') IS NOT NULL THEN
+            DELETE FROM public.invitations WHERE property_id = ANY(v_property_ids);
+        END IF;
         DELETE FROM public.contracts WHERE property_id = ANY(v_property_ids) OR agency_id = p_agency_id;
         DELETE FROM public.properties WHERE id = ANY(v_property_ids);
     END IF;
 
-    SELECT ARRAY_AGG(id) INTO v_landlord_ids
-    FROM public.profiles
-    WHERE email LIKE '%@demo.stanomer.local' AND email LIKE ('%' || p_agency_id::text || '%');
+    -- Portfolio & Distribution tables (listings, listing_images, agency_leads)
+    IF to_regclass('public.listings') IS NOT NULL THEN
+        SELECT ARRAY_AGG(id) INTO v_listing_ids
+        FROM public.listings
+        WHERE agency_id = p_agency_id;
 
-    IF v_landlord_ids IS NOT NULL AND array_length(v_landlord_ids, 1) > 0 THEN
-        DELETE FROM public.profiles WHERE id = ANY(v_landlord_ids);
-        DELETE FROM auth.users WHERE id = ANY(v_landlord_ids);
+        IF v_listing_ids IS NOT NULL AND array_length(v_listing_ids, 1) > 0 THEN
+            v_listing_count := array_length(v_listing_ids, 1);
+            IF to_regclass('public.listing_images') IS NOT NULL THEN
+                DELETE FROM public.listing_images WHERE listing_id = ANY(v_listing_ids);
+            END IF;
+            DELETE FROM public.listings WHERE id = ANY(v_listing_ids);
+        END IF;
+    END IF;
+
+    IF to_regclass('public.agency_leads') IS NOT NULL THEN
+        DELETE FROM public.agency_leads WHERE agency_id = p_agency_id::text;
+        GET DIAGNOSTICS v_lead_count = ROW_COUNT;
+    END IF;
+
+    SELECT ARRAY_AGG(id) INTO v_demo_user_ids
+    FROM public.profiles
+    WHERE email LIKE '%@demo.stanomer.local'
+      AND (
+          email LIKE ('%_' || v_agency_short || '_%@demo.stanomer.local')
+          OR email LIKE ('%' || p_agency_id::text || '%')
+      );
+
+    IF v_demo_user_ids IS NOT NULL AND array_length(v_demo_user_ids, 1) > 0 THEN
+        DELETE FROM public.profiles WHERE id = ANY(v_demo_user_ids);
+        DELETE FROM auth.users WHERE id = ANY(v_demo_user_ids);
     END IF;
 
     RETURN jsonb_build_object(
         'success', true,
         'agency_id', p_agency_id,
-        'deleted_properties_count', v_prop_count
+        'deleted_properties_count', v_prop_count,
+        'deleted_listings_count', v_listing_count,
+        'deleted_leads_count', v_lead_count
     );
 END;
 $$;
@@ -2024,6 +2356,7 @@ DECLARE
     v_mr2 UUID := gen_random_uuid();
     v_mr3 UUID := gen_random_uuid();
     v_mr4 UUID := gen_random_uuid();
+    v_mr5 UUID := gen_random_uuid();
 
     v_agency_short TEXT;
     v_agency_name TEXT;
@@ -2040,7 +2373,7 @@ BEGIN
 
     UPDATE public.profiles
     SET is_demo = TRUE,
-        demo_expires_at = (now() + interval '3 days'),
+        demo_expires_at = (now() + interval '7 days'),
         updated_at = now()
     WHERE id = p_agency_id;
 
@@ -2126,21 +2459,24 @@ BEGIN
 
     INSERT INTO public.contracts (
         id, property_id, landlord_id, agency_id, tenant_id,
+        tenant_name, tenant_phone,
         monthly_rent, deposit_amount, currency, deposit_currency, due_day,
         start_date, end_date, status, invitee_email, inviter_name,
         token, expenses_config, created_at, updated_at
     ) VALUES
-        (v_c1, v_p1, v_l1, p_agency_id, v_t1, 650.00, 650.00, 'EUR', 'EUR', 5, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'nikola.markovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_1', '[{"name":"Infostan","amount":85,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":40,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
-        (v_c2, v_p2, v_l1, p_agency_id, v_t2, 450.00, 450.00, 'EUR', 'EUR', 1, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'ana.simic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_2', '[{"name":"Infostan","amount":50,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
-        (v_c3, v_p3, v_l2, p_agency_id, v_t3, 800.00, 800.00, 'EUR', 'EUR', 10, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'stefan.ilic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_3', '[{"name":"Infostan","amount":110,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":55,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Internet & TV","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
-        (v_c4, v_p4, v_l2, p_agency_id, v_t4, 700.00, 700.00, 'EUR', 'EUR', 5, '2026-05-15 10:00:00+00', '2027-05-14 10:00:00+00', 'active', 'milica.todorovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_4', '[{"name":"Infostan","amount":90,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Održavanje zgrade","amount":35,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-05-15 10:00:00+00', now()),
-        (v_c5, v_p5, v_l3, p_agency_id, v_t5, 1100.00, 1100.00, 'EUR', 'EUR', 1, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'aleksandar.jovanovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_5', '[{"name":"Infostan","amount":130,"receiver":"owner","payment_method":"bank_transfer"},{"name":"BW Maintenance","amount":120,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":70,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
-        (v_c6, v_p6, v_l4, p_agency_id, v_t6, 550.00, 550.00, 'EUR', 'EUR', 7, '2026-06-01 10:00:00+00', '2027-05-31 10:00:00+00', 'active', 'tamara.lukic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_6', '[{"name":"Infostan","amount":70,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":45,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-06-01 10:00:00+00', now()),
-        (v_c7, v_p7, v_l4, p_agency_id, v_t7, 500.00, 500.00, 'EUR', 'EUR', 1, '2026-06-01 10:00:00+00', '2027-05-31 10:00:00+00', 'active', 'vladimir.pavlovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_7', '[{"name":"Infostan","amount":65,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":35,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-06-01 10:00:00+00', now()),
-        (v_c8, v_p8, v_l5, p_agency_id, v_t8, 420.00, 420.00, 'EUR', 'EUR', 3, '2026-07-01 10:00:00+00', '2027-06-30 10:00:00+00', 'active', 'jovana.bogdanovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_8', '[{"name":"Infostan","amount":60,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Grejanje","amount":50,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-07-01 10:00:00+00', now()),
-        (v_c9, v_p9, v_l6, p_agency_id, v_t9, 480.00, 480.00, 'EUR', 'EUR', 1, '2026-08-01 10:00:00+00', '2027-07-31 10:00:00+00', 'active', 'luka.lazarevic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_9', '[{"name":"Infostan","amount":55,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":40,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-08-01 10:00:00+00', now()),
-        (v_c10, v_p10, v_l7, p_agency_id, v_t10, 380.00, 380.00, 'EUR', 'EUR', 1, '2026-08-15 10:00:00+00', '2027-08-14 10:00:00+00', 'active', 'sara.savic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_10', '[{"name":"Infostan","amount":45,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-08-15 10:00:00+00', now())
-    ON CONFLICT (id) DO NOTHING;
+        (v_c1, v_p1, v_l1, p_agency_id, v_t1, 'Nikola Marković', '+381652233441', 650.00, 650.00, 'EUR', 'EUR', 5, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'nikola.markovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_1', '[{"name":"Infostan","amount":85,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":40,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
+        (v_c2, v_p2, v_l1, p_agency_id, v_t2, 'Ana Simić', '+381652233442', 450.00, 450.00, 'EUR', 'EUR', 1, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'ana.simic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_2', '[{"name":"Infostan","amount":50,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
+        (v_c3, v_p3, v_l2, p_agency_id, v_t3, 'Stefan Ilić', '+381652233443', 800.00, 800.00, 'EUR', 'EUR', 10, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'stefan.ilic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_3', '[{"name":"Infostan","amount":110,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":55,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Internet & TV","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
+        (v_c4, v_p4, v_l2, p_agency_id, v_t4, 'Milica Todorović', '+381652233444', 700.00, 700.00, 'EUR', 'EUR', 5, '2026-05-15 10:00:00+00', '2027-05-14 10:00:00+00', 'active', 'milica.todorovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_4', '[{"name":"Infostan","amount":90,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Održavanje zgrade","amount":35,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-05-15 10:00:00+00', now()),
+        (v_c5, v_p5, v_l3, p_agency_id, v_t5, 'Aleksandar Jovanović', '+381652233445', 1100.00, 1100.00, 'EUR', 'EUR', 1, '2026-04-01 10:00:00+00', '2027-03-31 10:00:00+00', 'active', 'aleksandar.jovanovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_5', '[{"name":"Infostan","amount":130,"receiver":"owner","payment_method":"bank_transfer"},{"name":"BW Maintenance","amount":120,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":70,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-04-01 10:00:00+00', now()),
+        (v_c6, v_p6, v_l4, p_agency_id, v_t6, 'Tamara Lukić', '+381652233446', 550.00, 550.00, 'EUR', 'EUR', 7, '2026-06-01 10:00:00+00', '2027-05-31 10:00:00+00', 'active', 'tamara.lukic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_6', '[{"name":"Infostan","amount":70,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":45,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-06-01 10:00:00+00', now()),
+        (v_c7, v_p7, v_l4, p_agency_id, v_t7, 'Vladimir Pavlović', '+381652233447', 500.00, 500.00, 'EUR', 'EUR', 1, '2026-06-01 10:00:00+00', '2027-05-31 10:00:00+00', 'active', 'vladimir.pavlovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_7', '[{"name":"Infostan","amount":65,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":35,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-06-01 10:00:00+00', now()),
+        (v_c8, v_p8, v_l5, p_agency_id, v_t8, 'Jovana Bogdanović', '+381652233448', 420.00, 420.00, 'EUR', 'EUR', 3, '2026-07-01 10:00:00+00', '2027-06-30 10:00:00+00', 'active', 'jovana.bogdanovic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_8', '[{"name":"Infostan","amount":60,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Grejanje","amount":50,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-07-01 10:00:00+00', now()),
+        (v_c9, v_p9, v_l6, p_agency_id, v_t9, 'Luka Lazarević', '+381652233449', 480.00, 480.00, 'EUR', 'EUR', 1, '2026-08-01 10:00:00+00', '2027-07-31 10:00:00+00', 'active', 'luka.lazarevic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_9', '[{"name":"Infostan","amount":55,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":40,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-08-01 10:00:00+00', now()),
+        (v_c10, v_p10, v_l7, p_agency_id, v_t10, 'Sara Savić', '+381652233450', 380.00, 380.00, 'EUR', 'EUR', 1, '2026-08-15 10:00:00+00', '2027-08-14 10:00:00+00', 'active', 'sara.savic@example.com', v_agency_name, 'demo_token_' || v_agency_short || '_10', '[{"name":"Infostan","amount":45,"receiver":"owner","payment_method":"bank_transfer"},{"name":"Struja","amount":30,"receiver":"owner","payment_method":"bank_transfer"}]'::jsonb, '2026-08-15 10:00:00+00', now())
+    ON CONFLICT (id) DO UPDATE SET
+        tenant_name = COALESCE(public.contracts.tenant_name, EXCLUDED.tenant_name),
+        tenant_phone = COALESCE(public.contracts.tenant_phone, EXCLUDED.tenant_phone);
 
     -- --------------------------------------------------------------------------
     -- 5. Create Payments: Complete Slice of Rents + Rich Utility Bills
@@ -2629,11 +2965,554 @@ BEGIN
         ON CONFLICT (invitation_token) DO UPDATE 
         SET tenant_id = v_user_id, status = 'active';
     END IF;
+
+    -- 7. Sync invitations table if invitation exists
+    UPDATE public.invitations
+    SET status = 'accepted'
+    WHERE (contract_id = v_contract_id OR token = contract_token) AND status = 'pending';
 END;
 $$;
 
 GRANT ALL ON FUNCTION public.accept_contract(text) TO authenticated;
 GRANT ALL ON FUNCTION public.accept_contract(text) TO service_role;
+
+-- ACCEPT INVITATION RPC (Dual contract & invitation compatibility)
+CREATE OR REPLACE FUNCTION public.accept_invitation(p_invite_token text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_property_id UUID;
+    v_contract_id UUID;
+    v_invitee_email TEXT;
+    v_user_id UUID;
+    v_user_email TEXT;
+    v_start_date DATE;
+    v_end_date DATE;
+    v_contract_url TEXT;
+BEGIN
+    v_user_id := auth.uid();
+    v_user_email := auth.jwt() ->> 'email';
+
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    SELECT property_id, contract_id, invitee_email 
+    INTO v_property_id, v_contract_id, v_invitee_email
+    FROM public.invitations
+    WHERE token = p_invite_token AND status = 'pending'
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        -- Fallback: check if this token exists directly in contracts table
+        IF EXISTS (SELECT 1 FROM public.contracts WHERE token = p_invite_token) THEN
+            PERFORM public.accept_contract(p_invite_token);
+            RETURN;
+        END IF;
+        RAISE EXCEPTION 'Invitation not found or already accepted';
+    END IF;
+
+    -- Email soft check
+    IF v_invitee_email IS NOT NULL AND v_invitee_email != '' THEN
+        IF LOWER(v_invitee_email) != LOWER(COALESCE(v_user_email, ''))
+           AND COALESCE(v_user_email, '') NOT LIKE '%@privaterelay.appleid.com' THEN
+            RAISE EXCEPTION 'This invitation was sent to %, but you are logged in as %', 
+                v_invitee_email, v_user_email;
+        END IF;
+    END IF;
+
+    -- Update invitation status
+    UPDATE public.invitations
+    SET status = 'accepted'
+    WHERE token = p_invite_token;
+
+    -- Update contract if associated
+    IF v_contract_id IS NOT NULL THEN
+        SELECT start_date::date, end_date::date, contract_url
+        INTO v_start_date, v_end_date, v_contract_url
+        FROM public.contracts
+        WHERE id = v_contract_id;
+
+        UPDATE public.contracts
+        SET status = 'active',
+            tenant_id = v_user_id,
+            updated_at = now()
+        WHERE id = v_contract_id;
+    ELSE
+        SELECT start_date::date, end_date::date, contract_url
+        INTO v_start_date, v_end_date, v_contract_url
+        FROM public.contracts
+        WHERE property_id = v_property_id AND (status IN ('pending', 'active') AND (tenant_id IS NULL OR tenant_id = v_user_id))
+        ORDER BY created_at DESC
+        LIMIT 1;
+
+        UPDATE public.contracts
+        SET status = 'active',
+            tenant_id = v_user_id,
+            updated_at = now()
+        WHERE property_id = v_property_id AND (status IN ('pending', 'active') AND (tenant_id IS NULL OR tenant_id = v_user_id));
+    END IF;
+
+    -- Sync leases
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'leases') THEN
+        INSERT INTO public.leases (property_id, tenant_id, tenant_email, start_date, end_date, status, contract_pdf_url, invitation_token)
+        VALUES (v_property_id, v_user_id, v_user_email, v_start_date, v_end_date, 'active', v_contract_url, p_invite_token)
+        ON CONFLICT (invitation_token) DO UPDATE
+        SET tenant_id = v_user_id, status = 'active';
+    END IF;
+
+    -- Update property
+    UPDATE public.properties
+    SET tenant_id = v_user_id
+    WHERE id = v_property_id;
+END;
+$$;
+
+GRANT ALL ON FUNCTION public.accept_invitation(text) TO authenticated;
+GRANT ALL ON FUNCTION public.accept_invitation(text) TO service_role;
+
+-- ------------------------------------------------------------------------------
+-- PORTAL FEED ACCESS LOGS (Agency Hub & Multi-Portal XML Syndication)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.portal_feed_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    directory_agency_id BIGINT REFERENCES public.agencies(id) ON DELETE SET NULL,
+    portal TEXT NOT NULL,
+    ip_address TEXT DEFAULT NULL,
+    user_agent TEXT DEFAULT NULL,
+    listing_count INTEGER NOT NULL DEFAULT 0,
+    status_code INTEGER NOT NULL DEFAULT 200,
+    duration_ms INTEGER DEFAULT NULL,
+    error_message TEXT DEFAULT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS portal_feed_logs_agency_portal_idx
+    ON public.portal_feed_logs (agency_id, portal, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS portal_feed_logs_created_at_idx
+    ON public.portal_feed_logs (created_at DESC);
+
+ALTER TABLE public.portal_feed_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "allow_insert_portal_feed_logs" ON public.portal_feed_logs;
+CREATE POLICY "allow_insert_portal_feed_logs" ON public.portal_feed_logs
+    FOR INSERT TO public
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "agency_view_own_portal_feed_logs" ON public.portal_feed_logs;
+CREATE POLICY "agency_view_own_portal_feed_logs" ON public.portal_feed_logs
+    FOR SELECT TO authenticated
+    USING (agency_id = auth.uid());
+
+-- ----------------------------------------------------------------------------
+-- PORTAL INTEGRATION REQUESTS (Agency Concierge Portal Sync Requests)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.portal_integration_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id TEXT NOT NULL,
+    agency_name TEXT NOT NULL,
+    portal_name TEXT NOT NULL,
+    contact_phone TEXT,
+    contact_email TEXT,
+    portal_account_ref TEXT,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_portal_int_req_agency_id ON public.portal_integration_requests(agency_id);
+CREATE INDEX IF NOT EXISTS idx_portal_int_req_portal ON public.portal_integration_requests(portal_name);
+CREATE INDEX IF NOT EXISTS idx_portal_int_req_status ON public.portal_integration_requests(status);
+
+ALTER TABLE public.portal_integration_requests ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Agencies can insert integration requests" ON public.portal_integration_requests;
+CREATE POLICY "Agencies can insert integration requests"
+    ON public.portal_integration_requests
+    FOR INSERT
+    TO public
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Agencies can view their own integration requests" ON public.portal_integration_requests;
+CREATE POLICY "Agencies can view their own integration requests"
+    ON public.portal_integration_requests
+    FOR SELECT
+    TO public
+    USING (
+        auth.uid()::text = agency_id
+        OR agency_id = 'demo'
+        OR auth.role() = 'service_role'
+    );
+
+-- ==========================================
+-- 2.2.6 Agency Personalized Demo Sessions (Ephemeral 48h Sandbox)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.agency_demo_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token TEXT UNIQUE NOT NULL,
+    agency_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    city TEXT DEFAULT 'Beograd',
+    expires_at TIMESTAMPTZ NOT NULL,
+    last_accessed_at TIMESTAMPTZ DEFAULT now(),
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agency_demo_sessions_token ON public.agency_demo_sessions(token);
+CREATE INDEX IF NOT EXISTS idx_agency_demo_sessions_email ON public.agency_demo_sessions(email);
+
+ALTER TABLE public.agency_demo_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "agency_demo_sessions_public_insert" ON public.agency_demo_sessions;
+CREATE POLICY "agency_demo_sessions_public_insert" ON public.agency_demo_sessions FOR INSERT TO public WITH CHECK (true);
+
+DROP POLICY IF EXISTS "agency_demo_sessions_public_select" ON public.agency_demo_sessions;
+CREATE POLICY "agency_demo_sessions_public_select" ON public.agency_demo_sessions FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "agency_demo_sessions_public_update" ON public.agency_demo_sessions;
+CREATE POLICY "agency_demo_sessions_public_update" ON public.agency_demo_sessions FOR UPDATE TO public USING (true);
+
+-- ==========================================
+-- 2.2.7 Agency Demo Consents (ZZPL Audit Log)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.agency_demo_consents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT NOT NULL,
+    agency_name TEXT NOT NULL,
+    phone TEXT,
+    city TEXT,
+    marketing_consent BOOLEAN NOT NULL DEFAULT FALSE,
+    consent_text_key TEXT NOT NULL DEFAULT 'consent.marketing',
+    consent_text_version TEXT NOT NULL DEFAULT 'v1.0',
+    shown_locale TEXT NOT NULL DEFAULT 'sr',
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agency_demo_consents_email ON public.agency_demo_consents(email);
+CREATE INDEX IF NOT EXISTS idx_agency_demo_consents_created_at ON public.agency_demo_consents(created_at);
+
+ALTER TABLE public.agency_demo_consents ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "agency_demo_consents_public_insert" ON public.agency_demo_consents;
+CREATE POLICY "agency_demo_consents_public_insert" ON public.agency_demo_consents FOR INSERT TO public WITH CHECK (true);
+
+DROP POLICY IF EXISTS "agency_demo_consents_authenticated_select" ON public.agency_demo_consents;
+CREATE POLICY "agency_demo_consents_authenticated_select" ON public.agency_demo_consents FOR SELECT TO authenticated USING (true);
+
+-- ==========================================
+-- 2.2.8 Agency Invoices (Stanomer Platform Faturaları)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.agency_invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    invoice_number TEXT NOT NULL,
+    period TEXT NOT NULL,
+    amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    status TEXT NOT NULL DEFAULT 'paid', -- 'paid', 'pending', 'overdue'
+    due_date DATE,
+    paid_at TIMESTAMPTZ,
+    pdf_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS agency_invoices_agency_id_idx ON public.agency_invoices(agency_id);
+CREATE INDEX IF NOT EXISTS agency_invoices_status_idx ON public.agency_invoices(status);
+
+ALTER TABLE public.agency_invoices ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "agency_invoices_select_policy" ON public.agency_invoices;
+CREATE POLICY "agency_invoices_select_policy" ON public.agency_invoices
+    FOR SELECT TO authenticated
+    USING (agency_id = auth.uid() OR auth.role() = 'service_role');
+
+DROP POLICY IF EXISTS "agency_invoices_admin_all_policy" ON public.agency_invoices;
+CREATE POLICY "agency_invoices_admin_all_policy" ON public.agency_invoices
+    FOR ALL TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+-- ==========================================
+-- 2.2.8 Unified Agency Financial Ledger View (SSOT)
+-- ==========================================
+CREATE OR REPLACE VIEW public.view_agency_financial_ledger WITH (security_invoker = true) AS
+WITH deduplicated_rent_payments AS (
+  SELECT DISTINCT ON (
+    rp.property_id,
+    EXTRACT(YEAR FROM rp.due_date),
+    EXTRACT(MONTH FROM rp.due_date),
+    LOWER(TRIM(rp.title))
+  )
+    rp.id AS id,
+    p.agency_id,
+    rp.property_id,
+    rp.contract_id,
+    rp.tenant_id,
+    p.landlord_id,
+    'rent_payment'::TEXT AS source_table,
+    rp.title::TEXT AS title,
+    rp.title::TEXT AS raw_title,
+    (CASE 
+      WHEN LOWER(TRIM(rp.title)) = 'kira' 
+        OR LOWER(TRIM(rp.title)) LIKE '%rent%' 
+        OR LOWER(TRIM(rp.title)) LIKE '%kira%' 
+        OR LOWER(TRIM(rp.title)) LIKE '%zakupnina%' 
+        OR LOWER(TRIM(rp.title)) LIKE '%kirija%' 
+      THEN 'rent'
+      WHEN LOWER(TRIM(rp.title)) LIKE '%bakım%' 
+        OR LOWER(TRIM(rp.title)) LIKE '%maintenance%' 
+      THEN 'maintenance'
+      ELSE 'bill'
+    END)::TEXT AS category,
+    COALESCE(rp.amount, 0)::NUMERIC AS amount,
+    COALESCE(rp.currency, p.currency, 'EUR')::TEXT AS currency,
+    rp.due_date::DATE AS due_date,
+    rp.declared_at,
+    rp.paid_at,
+    rp.status::TEXT AS status,
+    NULL::TEXT AS payment_status,
+    COALESCE(rp.receiver_type, 'owner')::TEXT AS receiver_type,
+    'bank_transfer'::TEXT AS payment_method,
+    NULL::TEXT AS paid_by,
+    rp.receipt_url,
+    rp.invoice_url,
+    rp.owner_note,
+    rp.dispute_reason,
+    rp.disputed_at,
+    FALSE AS is_maintenance,
+    NULL::NUMERIC AS cost_amount,
+    NULL::NUMERIC AS remaining_amount,
+    NULL::NUMERIC AS settled_amount,
+    NULL::UUID AS debtor_id,
+    FALSE AS is_tenant_debtor,
+    FALSE AS is_landlord_debtor,
+    COALESCE(p.name, p.address, 'Mülk')::TEXT AS property_title,
+    COALESCE(p.address, '')::TEXT AS property_address,
+    COALESCE(p.city, '')::TEXT AS property_city,
+    COALESCE(p.landlord_name, lp.full_name, p.landlord_email, lp.email, '')::TEXT AS landlord_name,
+    COALESCE(p.landlord_email, lp.email, '')::TEXT AS landlord_email,
+    COALESCE(tp.full_name, tp.email, '')::TEXT AS tenant_name,
+    rp.created_at,
+    rp.created_at AS updated_at
+  FROM public.rent_payments rp
+  JOIN public.properties p ON p.id = rp.property_id
+  LEFT JOIN public.profiles lp ON lp.id = p.landlord_id
+  LEFT JOIN public.profiles tp ON tp.id = rp.tenant_id
+  WHERE p.agency_id IS NOT NULL
+  ORDER BY
+    rp.property_id,
+    EXTRACT(YEAR FROM rp.due_date),
+    EXTRACT(MONTH FROM rp.due_date),
+    LOWER(TRIM(rp.title)),
+    (CASE WHEN rp.amount > 0 THEN 1 ELSE 0 END) DESC,
+    (CASE WHEN rp.status IN ('declared', 'disputed') THEN 1 ELSE 0 END) DESC,
+    (CASE WHEN rp.receipt_url IS NOT NULL THEN 1 ELSE 0 END) DESC,
+    rp.created_at ASC,
+    rp.id ASC
+),
+synthetic_maintenance_payments AS (
+  SELECT
+    m.id AS id,
+    p.agency_id,
+    m.property_id,
+    m.contract_id,
+    p.tenant_id,
+    p.landlord_id,
+    'maintenance_request'::TEXT AS source_table,
+    ('🛠️ ' || m.title)::TEXT AS title,
+    m.title::TEXT AS raw_title,
+    'maintenance'::TEXT AS category,
+    (CASE 
+      WHEN (COALESCE(m.cost_amount, 0) - COALESCE(m.settled_amount, 0)) > 0 
+      THEN (COALESCE(m.cost_amount, 0) - COALESCE(m.settled_amount, 0)) 
+      ELSE m.cost_amount 
+    END)::NUMERIC AS amount,
+    COALESCE(m.currency, p.currency, 'EUR')::TEXT AS currency,
+    COALESCE(m.payment_date, m.updated_at, m.created_at)::DATE AS due_date,
+    (CASE WHEN m.payment_status IN ('pending_agency_approval', 'pending_review', 'pending_opposite_approval') THEN m.created_at ELSE NULL END) AS declared_at,
+    (CASE WHEN m.payment_status = 'paid' THEN COALESCE(m.payment_date, m.updated_at, m.created_at) ELSE NULL END) AS paid_at,
+    (CASE 
+      WHEN m.payment_status IN ('pending_agency_approval', 'pending_review', 'pending_opposite_approval') THEN 'declared'
+      WHEN m.payment_status = 'pending_payment' THEN 'pending_payment'
+      ELSE 'paid'
+    END)::TEXT AS status,
+    m.payment_status::TEXT AS payment_status,
+    (CASE 
+      WHEN m.paid_by = 'agency' AND mc.debtor_id IS NOT NULL AND mc.debtor_id != p.landlord_id THEN 'tenant'
+      ELSE 'landlord'
+    END)::TEXT AS receiver_type,
+    'bank_transfer'::TEXT AS payment_method,
+    m.paid_by::TEXT AS paid_by,
+    m.invoice_pdf_url AS receipt_url,
+    m.invoice_pdf_url AS invoice_url,
+    m.description AS owner_note,
+    m.rejection_reason AS dispute_reason,
+    NULL::TIMESTAMPTZ AS disputed_at,
+    TRUE AS is_maintenance,
+    m.cost_amount,
+    GREATEST(0, (COALESCE(m.cost_amount, 0) - COALESCE(m.settled_amount, 0)))::NUMERIC AS remaining_amount,
+    COALESCE(m.settled_amount, 0)::NUMERIC AS settled_amount,
+    mc.debtor_id,
+    (m.paid_by = 'agency' AND mc.debtor_id IS NOT NULL AND mc.debtor_id != p.landlord_id) AS is_tenant_debtor,
+    ((m.paid_by = 'agency' AND NOT (mc.debtor_id IS NOT NULL AND mc.debtor_id != p.landlord_id)) OR (m.paid_by = 'tenant')) AS is_landlord_debtor,
+    COALESCE(p.name, p.address, 'Mülk')::TEXT AS property_title,
+    COALESCE(p.address, '')::TEXT AS property_address,
+    COALESCE(p.city, '')::TEXT AS property_city,
+    COALESCE(p.landlord_name, lp.full_name, p.landlord_email, lp.email, '')::TEXT AS landlord_name,
+    COALESCE(p.landlord_email, lp.email, '')::TEXT AS landlord_email,
+    COALESCE(tp.full_name, tp.email, '')::TEXT AS tenant_name,
+    m.created_at,
+    m.updated_at
+  FROM public.maintenance_requests m
+  JOIN public.properties p ON p.id = m.property_id
+  LEFT JOIN public.profiles lp ON lp.id = p.landlord_id
+  LEFT JOIN public.profiles tp ON tp.id = p.tenant_id
+  LEFT JOIN LATERAL (
+    SELECT debtor_id FROM public.maintenance_charges c 
+    WHERE c.maintenance_request_id = m.id 
+    ORDER BY c.created_at DESC 
+    LIMIT 1
+  ) mc ON TRUE
+  WHERE p.agency_id IS NOT NULL
+    AND COALESCE(m.cost_amount, 0) > 0
+    AND m.payment_status IN ('pending_agency_approval', 'pending_review', 'pending_opposite_approval', 'paid', 'pending_payment')
+),
+raw_combined AS (
+  SELECT * FROM deduplicated_rent_payments
+  UNION ALL
+  SELECT * FROM synthetic_maintenance_payments
+)
+SELECT
+  r.id,
+  r.agency_id,
+  r.property_id,
+  r.contract_id,
+  r.tenant_id,
+  r.landlord_id,
+  r.source_table,
+  r.title,
+  r.raw_title,
+  r.category,
+  r.amount,
+  r.currency,
+  r.due_date,
+  r.declared_at,
+  r.paid_at,
+  r.status,
+  r.payment_status,
+  r.receiver_type,
+  r.payment_method,
+  r.paid_by,
+  r.receipt_url,
+  r.invoice_url,
+  r.owner_note,
+  r.dispute_reason,
+  r.disputed_at,
+  r.is_maintenance,
+  r.cost_amount,
+  r.remaining_amount,
+  r.settled_amount,
+  r.debtor_id,
+  r.is_tenant_debtor,
+  r.is_landlord_debtor,
+  r.property_title,
+  r.property_address,
+  r.property_city,
+  r.landlord_name,
+  r.landlord_email,
+  r.tenant_name,
+  r.created_at,
+  r.updated_at,
+
+  -- Pre-calculated KPI Flags (100% SSOT with Flutter Agency Finance Tab)
+  (r.status IN ('declared', 'disputed')) AS is_pending_approval,
+
+  (
+    r.status NOT IN ('paid', 'declared', 'disputed') 
+    AND (r.receiver_type IN ('owner', 'included') OR r.receiver_type IS NULL) 
+    AND r.category != 'rent' 
+    AND r.amount = 0
+  ) AS is_unentered_bill,
+
+  (
+    r.status NOT IN ('declared', 'disputed', 'paid') 
+    AND r.amount > 0 
+    AND (r.status = 'overdue' OR (r.status = 'pending' AND r.due_date < CURRENT_DATE))
+  ) AS is_overdue,
+
+  (
+    r.status = 'paid' 
+    AND r.category = 'rent'
+  ) AS is_rent_collected,
+
+  (
+    r.status = 'paid' 
+    AND r.category != 'rent' 
+    AND r.is_maintenance = FALSE 
+    AND r.receiver_type = 'owner'
+  ) AS is_bills_collected,
+
+  (
+    r.status = 'paid' 
+    AND r.category != 'rent' 
+    AND r.is_maintenance = FALSE 
+    AND r.receiver_type = 'included'
+  ) AS is_bills_to_institutions,
+
+  (
+    r.is_maintenance = TRUE 
+    AND (r.status = 'paid' OR r.payment_status = 'paid') 
+    AND (r.paid_by = 'landlord' OR (r.paid_by = 'agency' AND r.is_tenant_debtor = FALSE))
+  ) AS is_maintenance_paid,
+
+  (
+    r.is_maintenance = TRUE 
+    AND r.paid_by = 'agency' 
+    AND r.is_tenant_debtor = FALSE 
+    AND r.status != 'paid' 
+    AND r.payment_status NOT IN ('paid', 'rejected') 
+    AND (COALESCE(r.remaining_amount, 0) > 0 OR r.amount > 0)
+  ) AS is_maintenance_owed_to_agency,
+
+  (
+    r.is_maintenance = TRUE 
+    AND r.status NOT IN ('paid', 'declared') 
+    AND r.payment_status NOT IN ('pending_agency_approval', 'pending_review', 'pending_opposite_approval') 
+    AND (COALESCE(r.cost_amount, 0) > 0 OR r.amount > 0)
+  ) AS is_unpaid_maintenance,
+
+  (
+    r.category != 'rent' 
+    AND r.is_maintenance = FALSE 
+    AND r.status != 'paid' 
+    AND r.receiver_type = 'included' 
+    AND r.amount > 0
+  ) AS is_unpaid_bills_to_institutions,
+
+  (
+    r.is_maintenance = TRUE 
+    AND r.paid_by = 'tenant' 
+    AND r.payment_status NOT IN ('paid', 'rejected') 
+    AND (COALESCE(r.remaining_amount, 0) > 0 OR COALESCE(r.cost_amount, 0) > 0 OR r.amount > 0)
+  ) AS is_tenant_offset
+
+FROM raw_combined r;
+
+GRANT SELECT ON public.view_agency_financial_ledger TO authenticated;
+GRANT SELECT ON public.view_agency_financial_ledger TO anon;
+GRANT SELECT ON public.view_agency_financial_ledger TO service_role;
+
+
+
 
 
 

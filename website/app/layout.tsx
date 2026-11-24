@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Nunito, DM_Mono } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { LanguageProvider } from "../components/LanguageProvider";
@@ -12,9 +13,23 @@ const outfit = localFont({
   display: "swap",
 });
 
+const nunito = Nunito({
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  variable: "--font-nunito",
+  display: "swap",
+  weight: ["300", "400", "600", "700", "800"],
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-dm-mono",
+  display: "swap",
+  weight: ["400", "500"],
+});
+
 export const metadata: Metadata = {
-  title: "Stanomer | Nova generacija transparentnosti u upravljanju nekretninama",
-  description: "Digitalni most za stanodavce i stanare. Upravljajte ugovorima, plaćanjima i održavanjem u jednoj aplikaciji.",
+  title: "Stanomer | Posle potpisa ugovora, sve na jednom mestu",
+  description: "Zakupnina i računi, jasni za obe strane. Upravljajte ugovorima, plaćanjima i održavanjem na jednom mestu.",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.ico",
@@ -23,6 +38,7 @@ export const metadata: Metadata = {
   verification: {
     other: {
       "yandex-verification": "d17cff3e7f334900",
+      google: "notranslate",
     },
   },
 };
@@ -33,8 +49,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="sr" suppressHydrationWarning>
-      <body className={`${outfit.variable} font-sans antialiased`} suppressHydrationWarning>
+    <html lang="sr" className="notranslate" translate="no" suppressHydrationWarning>
+      <body className={`${nunito.variable} ${dmMono.variable} ${outfit.variable} font-sans antialiased notranslate`} translate="no" suppressHydrationWarning>
         <LanguageProvider>
           {children}
           <FloatingContactWidget />

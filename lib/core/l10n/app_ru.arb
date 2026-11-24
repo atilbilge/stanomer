@@ -77,6 +77,8 @@
   "acceptInvitation": "Да, я арендую это жилье",
   "declineInvitation": "Отклонить",
   "inviteNotFound": "Приглашение не найдено или истек срок действия",
+  "invalidInviteToken": "Недействительный код или ссылка приглашения.",
+  "inviteAlreadyClaimed": "Этот договор или приглашение уже приняты другим арендатором.",
   "invitationAcceptedSuccess": "Добро пожаловать! Приглашение принято.",
   "pendingInvitationBanner": "У вас есть приглашение для {property}",
   "@pendingInvitationBanner": {
@@ -794,7 +796,7 @@
   "actionableInsightsHeader": "Уведомления к действию",
   "inviteTenantOrAddContract": "Пригласить арендатора / Добавить договор",
   "ownershipQrOrLink": "QR / Ссылка на владение",
-  "changeLandlord": "Сменить владельца",
+  "changeLandlord": "Обновить данные владельца",
   "pendingDebtWarning": "Задолженность ожидает подтверждения агентства или оплаты арендатором",
   "landlordLabel": "Владелец: ",
   "invitePending": "Ожидает приглашения",
@@ -1748,5 +1750,11 @@
   "subLabelUtilitiesDues": "Коммунальные услуги",
   "subLabelRepairsSettlements": "Ремонт и взаимозачет",
   "subLabelOverduePayments": "Просроченные платежи",
-  "subLabelUpcomingRecords": "Предстоящие записи"
+  "subLabelUpcomingRecords": "Предстоящие записи",
+  "maintenanceAddedToRentNote": "{ticket}: +{amount} ({title}) добавлено к аренде",
+  "maintenanceOffsetFromRentNote": "{amount} ({title}) зачтено в счет аренды",
+  "agencyWebPanelBannerBadge": "НОВАЯ ВЕБ-ПАНЕЛЬ",
+  "agencyWebPanelBannerTitle": "Расширенная веб-панель для агентств готова!",
+  "agencyWebPanelBannerDesc": "Мы подготовили расширенную веб-панель управления для агентств. Теперь вы можете продолжать работу агентства через веб-панель.",
+  "agencyWebPanelBannerCta": "Открыть веб-панель"
 }

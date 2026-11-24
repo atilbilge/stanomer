@@ -1,13 +1,17 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X, ArrowUpRight } from "lucide-react";
 import { useLanguage } from "./LanguageProvider";
 
 export function FloatingContactWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
   const { lang } = useLanguage();
+
+  const isSuppressedRoute = pathname?.startsWith("/agencija") || pathname?.startsWith("/agency-panel");
 
   const phoneNumber = "+381 61 6036556";
   const rawNumber = "381616036556";
@@ -66,6 +70,10 @@ export function FloatingContactWidget() {
     window.location.href = viberUri;
     setIsOpen(false);
   };
+
+  if (isSuppressedRoute) {
+    return null;
+  }
 
   return (
     <div ref={widgetRef} className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">

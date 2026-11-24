@@ -247,6 +247,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteNotFound => 'Invitation not found or expired';
 
   @override
+  String get invalidInviteToken => 'Invalid invitation code or link.';
+
+  @override
+  String get inviteAlreadyClaimed =>
+      'This contract or invitation has already been claimed by another tenant.';
+
+  @override
   String get invitationAcceptedSuccess => 'Welcome home! Invitation accepted.';
 
   @override
@@ -1767,7 +1774,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ownershipQrOrLink => 'Ownership QR / Link';
 
   @override
-  String get changeLandlord => 'Change Landlord';
+  String get changeLandlord => 'Update Landlord Info';
 
   @override
   String get pendingDebtWarning =>
@@ -4092,4 +4099,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subLabelUpcomingRecords => 'Upcoming records';
+
+  @override
+  String maintenanceAddedToRentNote(
+    Object amount,
+    Object ticket,
+    Object title,
+  ) {
+    return '$ticket: +$amount ($title) added to rent';
+  }
+
+  @override
+  String maintenanceOffsetFromRentNote(Object amount, Object title) {
+    return '$amount ($title) offset from rent';
+  }
+
+  @override
+  String get agencyWebPanelBannerBadge => 'NEW WEB PANEL';
+
+  @override
+  String get agencyWebPanelBannerTitle => 'Advanced Agency Web Panel is Ready!';
+
+  @override
+  String get agencyWebPanelBannerDesc =>
+      'We built a more powerful web management panel dedicated to agencies. You can now continue managing your agency operations from the web panel.';
+
+  @override
+  String get agencyWebPanelBannerCta => 'Open Web Panel';
 }

@@ -52,6 +52,8 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
             // Use the active contract terms for display if available
             if (data['active_contract'] != null) {
               _contract = Contract.fromJson(data['active_contract']);
+            } else if (data['monthly_rent'] != null && data['start_date'] != null) {
+              _contract = Contract.fromJson(data);
             }
           }
 
@@ -64,8 +66,21 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
       }
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        String resolvedError;
+        final key = e is InviteException ? e.key : e.toString().replaceFirst('Exception: ', '').trim();
+        if (key == 'invalidInviteToken') {
+          resolvedError = loc.invalidInviteToken;
+        } else if (key == 'inviteAlreadyClaimed') {
+          resolvedError = loc.inviteAlreadyClaimed;
+        } else if (key == 'inviteNotFound') {
+          resolvedError = loc.inviteNotFound;
+        } else {
+          resolvedError = key;
+        }
+
         setState(() {
-          _error = e.toString();
+          _error = resolvedError;
           _isLoading = false;
         });
       }
@@ -318,9 +333,11 @@ class _InvitationAcceptScreenState extends ConsumerState<InvitationAcceptScreen>
               children: [
                 const Icon(LucideIcons.alertTriangle, size: 48, color: StanomerColors.alertPrimary),
                 const SizedBox(height: 16),
-                Text(loc.inviteNotFound, textAlign: TextAlign.center),
-                const SizedBox(height: 8),
-                if (_error != null) Text(_error!, style: const TextStyle(fontSize: 12, color: StanomerColors.textTertiary)),
+                Text(
+                  _error ?? loc.inviteNotFound,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: StanomerColors.textPrimary),
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(onPressed: () => context.go('/dashboard'), child: Text(loc.login)),
               ],

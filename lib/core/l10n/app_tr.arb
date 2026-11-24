@@ -77,6 +77,8 @@
   "acceptInvitation": "Kabul Et",
   "declineInvitation": "Reddet",
   "inviteNotFound": "Davet bulunamadı veya süresi dolmuş.",
+  "invalidInviteToken": "Geçersiz davet kodu veya bağlantısı.",
+  "inviteAlreadyClaimed": "Bu sözleşme veya davet daha önce başka bir kiracı tarafından kabul edilmiş.",
   "invitationAcceptedSuccess": "Eve hoş geldiniz! Daveti kabul ettiniz.",
   "pendingInvitationBanner": "{property} için bekleyen bir davetiniz var.",
   "@pendingInvitationBanner": {
@@ -794,7 +796,7 @@
   "actionableInsightsHeader": "Önemli Bildirimler & Aksiyonlar",
   "inviteTenantOrAddContract": "Kiracı Davet Et / Sözleşme Ekle",
   "ownershipQrOrLink": "Sahiplik QR / Linki",
-  "changeLandlord": "Ev Sahibini Değiştir",
+  "changeLandlord": "Ev Sahibi Bilgilerini Güncelle",
   "pendingDebtWarning": "Acente Onayı / Kiracı Ödemesi Bekleyen Borç Kalemi Var",
   "landlordLabel": "Ev Sahibi: ",
   "invitePending": "Davet Bekliyor",
@@ -1775,5 +1777,11 @@
   "subLabelUtilitiesDues": "Elektrik, su, aidat",
   "subLabelRepairsSettlements": "Onarım & mahsup",
   "subLabelOverduePayments": "Gecikmiş ödemeler",
-  "subLabelUpcomingRecords": "Gelecek vadeli kayıtlar"
+  "subLabelUpcomingRecords": "Gelecek vadeli kayıtlar",
+  "maintenanceAddedToRentNote": "{ticket}: +{amount} ({title}) kiraya eklendi",
+  "maintenanceOffsetFromRentNote": "{amount} ({title}) kiradan mahsup edildi",
+  "agencyWebPanelBannerBadge": "YENİ WEB PANELİ",
+  "agencyWebPanelBannerTitle": "Gelişmiş Acente Web Paneli Hazır!",
+  "agencyWebPanelBannerDesc": "Acente operasyonlarınız için web'te çok daha gelişmiş bir yönetim paneli hazırladık. Bundan sonra acente yönetimine web panelinden devam edebilirsiniz.",
+  "agencyWebPanelBannerCta": "Web Panelini Aç"
 }

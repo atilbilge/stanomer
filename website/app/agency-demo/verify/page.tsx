@@ -7,6 +7,7 @@ import { Navbar } from "../../../components/Navbar";
 import { useLanguage } from "../../../components/LanguageProvider";
 import { Sparkles, ArrowRight, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { AgencyDemoModal } from "../../../components/AgencyDemoModal";
+import { supabase } from "../../../lib/supabaseClient";
 
 function VerificationContent() {
   const { lang, t, setLang } = useLanguage();
@@ -61,17 +62,17 @@ function VerificationContent() {
         isTR
           ? "Geçersiz veya eksik demo bağlantısı."
           : isSR
-          ? "Nevažeći ili nepotpun link za demo nalog."
-          : "Invalid or missing demo access link."
+            ? "Nevažeći ili nepotpun link za demo nalog."
+            : "Invalid or missing demo access link."
       );
       return;
     }
 
     const verifyAndLogin = async () => {
       try {
-        const supabaseUrl = "https://thvbpifahvasyzmngpzp.supabase.co";
+        const supabaseUrl = "https://nbcbfmhztnnhfnapvaet.supabase.co";
         const supabaseKey =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
+          "sb_publishable_kY2aoizXZkGz2DsG6-sg-Q_Vm2Ef2mq";
 
         // 1. Verify demo token and provision agency sandbox user on Dev Supabase
         const res = await fetch(`${supabaseUrl}/rest/v1/rpc/verify_agency_demo_token`, {
@@ -95,29 +96,15 @@ function VerificationContent() {
             setWasExpired(true);
           }
 
-          // 2. Perform browser authentication with Supabase
+          // 2. Perform browser authentication with Supabase SDK (guarantees valid session storage & JWT)
           if (data.email && data.temp_password) {
             try {
-              const authRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  apikey: supabaseKey,
-                },
-                body: JSON.stringify({
-                  email: data.email,
-                  password: data.temp_password,
-                }),
+              const { error: signInErr } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.temp_password,
               });
-
-              if (authRes.ok) {
-                const sessionData = await authRes.json();
-                if (typeof window !== "undefined") {
-                  try {
-                    const hostRef = new URL(supabaseUrl).hostname.split(".")[0];
-                    localStorage.setItem(`sb-${hostRef}-auth-token`, JSON.stringify(sessionData));
-                  } catch (_) {}
-                }
+              if (signInErr) {
+                console.warn("Supabase signInWithPassword error:", signInErr);
               }
             } catch (authErr) {
               console.warn("Direct session initialization note:", authErr);
@@ -129,7 +116,7 @@ function VerificationContent() {
             try {
               localStorage.setItem("flutter.app_locale", flutterLocale);
               localStorage.setItem("stanomer_lang", activeLang);
-            } catch (_) {}
+            } catch (_) { }
           }
 
           // 2.5 Auto-trigger agency theme & logo scraping if website is configured
@@ -172,35 +159,52 @@ function VerificationContent() {
                             logo_url: faviconUrl,
                             updated_at: new Date().toISOString(),
                           }),
-                        }).catch(() => {});
-                      } catch (_) {}
+                        }).catch(() => { });
+                      } catch (_) { }
                     });
                   }
                 })
-                .catch(() => {});
-            } catch (_) {}
+                .catch(() => { });
+            } catch (_) { }
           }
 
-          // 3. Target URL for the Flutter Dev App with token and language
-          let appUrl = `/dev-app?demo_token=${encodeURIComponent(token)}&lang=${encodeURIComponent(flutterLocale)}`;
-          if (editSite) {
-            appUrl += `&edit_site=${encodeURIComponent(editSite)}`;
+          // 3. Store verified status in localStorage for /agency-panel
+          if (typeof window !== "undefined") {
+            try {
+              const currentDemo = localStorage.getItem("stanomer_agency_demo");
+              let parsedDemo = currentDemo ? JSON.parse(currentDemo) : {};
+              localStorage.setItem(
+                "stanomer_agency_demo",
+                JSON.stringify({
+                  ...parsedDemo,
+                  token: token,
+                  agencyName: data.agency_name || parsedDemo.agencyName || "Agency",
+                  email: data.email || parsedDemo.email,
+                  userId: data.user_id,
+                  isVerified: true,
+                  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                })
+              );
+            } catch (_) { }
           }
+
+          // 4. Target URL for the Next.js Agency Panel with token and language
+          let appUrl = `/agency-panel?verified_demo=1&demo_token=${encodeURIComponent(token)}&lang=${encodeURIComponent(activeLang)}`;
           setTargetUrl(appUrl);
 
-          // 4. Auto-redirect to the dev app so user doesn't have to do anything
+          // 5. Auto-redirect to the agency panel
           setTimeout(() => {
             if (typeof window !== "undefined") {
               window.location.href = appUrl;
             }
-          }, 1400);
+          }, 1200);
         } else {
           setSuccess(false);
           setErrorMessage(
             data?.message ||
-              (isTR
-                ? "Test datanız silindi veya süresi doldu."
-                : isSR
+            (isTR
+              ? "Test datanız silindi veya süresi doldu."
+              : isSR
                 ? "Vaši test podaci su obrisani ili je link istekao."
                 : "Your test data has expired or was cleared.")
           );
@@ -211,8 +215,8 @@ function VerificationContent() {
           isTR
             ? "Giriş yapılırken bir sorun oluştu. Lütfen bağlantınızı kontrol ediniz."
             : isSR
-            ? "Došlo je do greške prilikom prijave. Proverite vašu internet vezu."
-            : "An error occurred while connecting to your demo. Please check your connection."
+              ? "Došlo je do greške prilikom prijave. Proverite vašu internet vezu."
+              : "An error occurred while connecting to your demo. Please check your connection."
         );
       } finally {
         setLoading(false);
@@ -262,19 +266,19 @@ function VerificationContent() {
                     <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200 shadow-sm animate-in fade-in duration-300">
                       <span>
                         {isTR
-                          ? "Demo erişim süreniz 3 gün daha uzatıldı ve portföyünüz hazırlandı."
+                          ? "Demo erişim süreniz 7 gün daha uzatıldı ve portföyünüz hazırlandı."
                           : isSR
-                          ? "Vaš pristup demou je produžen za još 3 dana i portfolio je pripremljen."
-                          : "Your demo access has been renewed for 3 days and your portfolio is ready."}
+                            ? "Vaš pristup demou je produžen za još 7 dana i portfolio je pripremljen."
+                            : "Your demo access has been renewed for 7 days and your portfolio is ready."}
                       </span>
                     </div>
                   )}
                   <p className="text-slate-600 text-xs sm:text-sm mt-2 leading-relaxed max-w-md mx-auto">
                     {isTR
-                      ? "Acenteniz için 3 günlük sandbox ortamınız başarıyla açıldı. Birkaç saniye içinde doğrudan kokpitinize yönlendirileceksiniz."
+                      ? "Acenteniz için 7 günlük sandbox ortamınız başarıyla açıldı. Birkaç saniye içinde doğrudan kokpitinize yönlendirileceksiniz."
                       : isSR
-                      ? "Vaš 3-dnevni sandbox nalog je uspešno aktiviran. Za nekoliko sekundi bićete automatski prebačeni u panel."
-                      : "Your 3-day agency sandbox has been activated. You will be redirected to your dashboard in a few seconds."}
+                        ? "Vaš 7-dnevni sandbox nalog je uspešno aktiviran. Za nekoliko sekundi bićete automatski prebačeni u panel."
+                        : "Your 7-day agency sandbox has been activated. You will be redirected to your dashboard in a few seconds."}
                   </p>
                 </div>
 
@@ -299,8 +303,8 @@ function VerificationContent() {
                     {isTR
                       ? "Panel açıldığında üstteki asistan çubuğundan 'Temayı Al' ile web sitenizden logonuzu ve kurumsal renklerinizi çekebilir; 'Örnek Portföy Üret' ile anında 5 mülk, ev sahipleri ve kiracılardan oluşan canlı portföyü test edebilirsiniz."
                       : isSR
-                      ? "Kada se panel otvori, kliknite na 'Preuzmi temu' da automatski povučete vaš logo i boje, ili 'Generiši primer portfolija' za trenutni test sa 5 nekretnina, vlasnicima i zakupcima."
-                      : "Once in the dashboard, use 'Fetch Theme' to automatically load your agency logo and colors, and 'Generate Sample Portfolio' to test 5 realistic properties with active tenants and owners."}
+                        ? "Kada se panel otvori, kliknite na 'Preuzmi temu' da automatski povučete vaš logo i boje, ili 'Generiši primer portfolija' za trenutni test sa 5 nekretnina, vlasnicima i zakupcima."
+                        : "Once in the dashboard, use 'Fetch Theme' to automatically load your agency logo and colors, and 'Generate Sample Portfolio' to test 5 realistic properties with active tenants and owners."}
                   </p>
                 </div>
               </div>
@@ -317,10 +321,10 @@ function VerificationContent() {
                   <p className="text-slate-600 text-sm mt-2 leading-relaxed max-w-md mx-auto">
                     {errorMessage ||
                       (isTR
-                        ? "3 günlük deneme süreniz sona erdiği için sandbox verileriniz güvenlik gereği silinmiştir. Dilediğiniz an tek tıkla yeni bir test portföyü oluşturabilirsiniz."
+                        ? "7 günlük deneme süreniz sona erdiği için sandbox verileriniz güvenlik gereği silinmiştir. Dilediğiniz an tek tıkla yeni bir test portföyü oluşturabilirsiniz."
                         : isSR
-                        ? "Vaš 3-dnevni test period je istekao i podaci su obrisani. Možete u bilo kom trenutku ponovo kreirati novi primer portfolija."
-                        : "Your 3-day trial period has ended and test data was cleared. You can recreate a fresh sample portfolio anytime.")}
+                          ? "Vaš 7-dnevni test period je istekao i podaci su obrisani. Možete u bilo kom trenutku ponovo kreirati novi primer portfolija."
+                          : "Your 7-day trial period has ended and test data was cleared. You can recreate a fresh sample portfolio anytime.")}
                   </p>
                 </div>
 

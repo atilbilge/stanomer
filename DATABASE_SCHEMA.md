@@ -69,6 +69,12 @@ Kullanıcıların profil, kimlik ve rol bilgilerini saklar. `auth.users` ile Bir
 | `is_demo` | `BOOLEAN` | YES | `FALSE` | - | **[YENİ]** Sandbox/Demo acente hesabı mı |
 | `demo_expires_at` | `TIMESTAMPTZ` | YES | `NULL` | - | **[YENİ]** Demo portföyünün 3 günlük silinme süresi (TTL) |
 | `website_url` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente web sitesi URL'si (logo ve tema çekimi için) |
+| `subscription_plan` | `TEXT` | YES | `'Property & Lease Management'` | - | **[YENİ]** Acente Stanomer paket adı (örn. `Property & Lease Management`, `Stanomer Professional Agency Suite`) |
+| `subscription_status` | `TEXT` | YES | `'active'` | - | **[YENİ]** Abonelik durumu (`active`, `pending`, `past_due`, `cancelled`) |
+| `active_modules` | `TEXT[]` | YES | `ARRAY['property_lease_management']` | - | **[YENİ]** Acenteye tahsis edilen aktif Stanomer çekirdek modülleri (`portfolio_distribution`, `property_lease_management`) |
+| `monthly_fee` | `NUMERIC(10,2)` | YES | `0.00` | - | **[YENİ]** Acente aylık abonelik bedeli |
+| `billing_currency` | `TEXT` | YES | `'EUR'` | - | **[YENİ]** Fatura para birimi |
+| `next_billing_date` | `DATE` | YES | `NULL` | - | **[YENİ]** Sonraki fatura kesim tarihi |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
 
@@ -111,6 +117,7 @@ Ev sahiplerinin kaydettiği mülk (konut/daire) verilerini tutar.
 | `heating_type` | `TEXT` | YES | `NULL` | - | **[YENİ]** Isınma tipi (`cg`, `eg`, `gas`, `underfloor`, `ta`, `other`) |
 | `amenities` | `JSONB` | YES | `'[]'::jsonb` | - | **[YENİ]** Öne çıkan olanaklar (`pets_allowed`, `elevator`, `balcony`, `parking`, `storage`) |
 | `description` | `TEXT` | YES | `NULL` | - | **[YENİ]** Detaylı mülk / ilan açıklaması |
+| `last_listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | **[YENİ]** Mülkün bağlandığı en son ilan (tahliyede tek tıkla yeniden ilana çıkmak için) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Son güncelleme tarihi |
 
@@ -121,6 +128,230 @@ Ev sahiplerinin kaydettiği mülk (konut/daire) verilerini tutar.
 * **`landlord_update_properties`**: `FOR UPDATE TO authenticated USING (landlord_id = auth.uid())`
 * **`tenant_join_property`**: `FOR UPDATE TO authenticated USING (tenant_id IS NULL) WITH CHECK (tenant_id = auth.uid())`
 * **`tenant_leave_property`**: `FOR UPDATE TO authenticated USING (tenant_id = auth.uid()) WITH CHECK (tenant_id IS NULL)`
+
+---
+
+### 2.2.1 `listings`
+Acentelerin dış portallara (4zida.rs, Halo Oglasi, Sasomange, Nekretnine.rs) XML feed ile dağıtılan ve vitrinde sergilenen **halka açık satılık/kiralık emlak ilanlarını** (daire, müstakil ev, arsa/arazi, işyeri, garaj) tutar. Kira yönetimi (`public.properties`) tablosundan tamamen izoledir.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | İlan benzersiz kimliği |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | İlanın ait olduğu acente kullanıcı ID |
+| `directory_agency_id` | `BIGINT` | YES | `NULL` | **FK** `REFERENCES agencies(id) ON DELETE SET NULL` | Rehberdeki acente kaydı bağlantısı |
+| `managed_property_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES properties(id) ON DELETE SET NULL` | Kiralandığında eşleştiği iç yönetim mülk ID'si |
+| `external_ref` | `TEXT` | YES | `NULL` | - | Acentenin dahili ilan referans kodu (örn: `BG-2041`) |
+| `title` | `TEXT` | **NO** | - | - | İlan başlığı (Sırpça) |
+| `description` | `TEXT` | YES | `NULL` | - | Detaylı açıklama metni |
+| `transaction_type` | `TEXT` | **NO** | `'izdavanje'` | `CHECK (transaction_type IN ('izdavanje', 'prodaja'))` | İşlem tipi (`izdavanje` [kiralık], `prodaja` [satılık]) |
+| `property_type` | `TEXT` | **NO** | `'apartment'` | - | İlan/mülk tipi (`apartment`, `house`, `commercial`, `land`, `garage`) |
+| `price` | `NUMERIC(12,2)` | **NO** | `0` | - | İlan satış veya kira fiyatı |
+| `deposit_amount` | `NUMERIC(12,2)` | YES | `NULL` | - | Depozito tutarı |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi (`EUR`, `RSD`) |
+| `area_sqm` | `NUMERIC(10,2)` | YES | `NULL` | - | Metrekare (`m²`) |
+| `room_count` | `TEXT` | YES | `NULL` | - | Oda yapısı (`studio`, `1.0`, `1.5`, `2.0`, `2.5`, `3.0`, `3.5`, `4.0`, `5.0+`) |
+| `floor` | `TEXT` | YES | `NULL` | - | Bulunduğu kat |
+| `total_floors` | `INTEGER` | YES | `NULL` | - | Binadaki toplam kat sayısı |
+| `heating_type` | `TEXT` | YES | `NULL` | - | Isıtma tipi (`cg`, `eg`, `gas`, `underfloor`, `ta`, `klima`) |
+| `condition` | `TEXT` | YES | `NULL` | - | Bina/mülk durumu (`novogradnja`, `renovirano`, `lux`, `izvorno`, `u_izgradnji`) |
+| `furnishing` | `TEXT` | YES | `NULL` | - | Eşya durumu (`furnished`, `semi_furnished`, `unfurnished`) |
+| `city` | `TEXT` | **NO** | `'Beograd'` | - | Şehir (`Beograd`, `Novi Sad`, `Niš`, vb.) |
+| `municipality` | `TEXT` | YES | `NULL` | - | Sırbistan Opština (`Vračar`, `Novi Beograd`, vb.) |
+| `neighborhood` | `TEXT` | YES | `NULL` | - | Sırbistan Naselje / Mikrolokacija (`Dorćol`, `Crveni Krst`, vb.) |
+| `address` | `TEXT` | YES | `NULL` | - | Sokak ve kapı numarası |
+| `latitude` | `NUMERIC(10,7)` | YES | `NULL` | - | Harita enlem koordinatı |
+| `longitude` | `NUMERIC(10,7)` | YES | `NULL` | - | Harita boylam koordinatı |
+| `amenities` | `JSONB` | **NO** | `'[]'::jsonb` | - | Özellikler (`elevator`, `balcony`, `parking`, `storage`, `pets_allowed`) |
+| `is_published` | `BOOLEAN` | **NO** | `TRUE` | - | İlanın dış portallarda (XML) ve vitrinde yayında olup olmadığı |
+| `listing_status` | `TEXT` | **NO** | `'active'` | `CHECK (listing_status IN ('active', 'reserved', 'rented', 'sold', 'archived'))` | **[YENİ]** İlan yaşam döngüsü aşaması |
+| `closed_at` | `TIMESTAMPTZ` | YES | `NULL` | - | **[YENİ]** Kiralama / Satış kapanış tarihi |
+| `closing_price` | `NUMERIC(12,2)` | YES | `NULL` | - | **[YENİ]** Kapanış kira veya satış bedeli |
+| `closing_notes` | `TEXT` | YES | `NULL` | - | **[YENİ]** Kapanış notları ve detayları |
+| `closing_contract_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES contracts(id) ON DELETE SET NULL` | **[YENİ]** Kiralama sonucu bağlanan resmi kontrat ID |
+| `published_portals` | `JSONB` | **NO** | `'["stanomer", "4zida", "halooglasi", "sasomange", "nekretnine"]'::jsonb` | - | İlanın yayınlanacağı hedef portallar |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Son güncelleme tarihi |
+
+#### RLS Politikaları (`public.listings`)
+* **`public_select_published_listings`**: `FOR SELECT TO public USING (is_published = TRUE)`
+* **`agency_select_own_listings`**: `FOR SELECT TO authenticated USING (agency_id = auth.uid())`
+* **`agency_insert_own_listings`**: `FOR INSERT TO authenticated WITH CHECK (agency_id = auth.uid())`
+* **`agency_update_own_listings`**: `FOR UPDATE TO authenticated USING (agency_id = auth.uid()) WITH CHECK (agency_id = auth.uid())`
+* **`agency_delete_own_listings`**: `FOR DELETE TO authenticated USING (agency_id = auth.uid())`
+
+---
+
+### 2.2.2 `listing_images`
+`listings` tablosundaki ilanlara ait sıralı fotoğrafları saklar (`1:N` ilişki).
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Fotoğraf benzersiz kimliği |
+| `listing_id` | `UUID` | **NO** | - | **FK** `REFERENCES listings(id) ON DELETE CASCADE` | İlgili ilan ID |
+| `url` | `TEXT` | **NO** | - | - | Supabase Storage (`property-photos`) veya CDN üzerindeki resim URL'si |
+| `order_index` | `INTEGER` | **NO** | `0` | - | Sıralama indeksi (`0, 1, 2...`) |
+| `is_cover` | `BOOLEAN` | **NO** | `FALSE` | - | Kapak fotoğrafı mı? |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+
+#### RLS Politikaları (`public.listing_images`)
+* **`public_view_published_listing_images`**: `FOR SELECT TO public USING (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND l.is_published = TRUE))`
+* **`agency_view_own_listing_images`**: `FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND (l.agency_id = auth.uid() OR l.is_published = TRUE)))`
+* **`agency_manage_own_listing_images`**: `FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_images.listing_id AND l.agency_id = auth.uid()))`
+
+---
+
+### 2.2.3 `agency_leads`
+Acentenin vitrin web sitesinden (`/agencija/[slug]`) gelen müşteri başvurularını, mülk sahibi portföy bırakma taleplerini ve yer görme / randevu isteklerini saklayan CRM tablosu.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Talep benzersiz kimliği |
+| `agency_id` | `TEXT` | **NO** | - | - | Acente profile_id veya dizin ID |
+| `lead_type` | `TEXT` | **NO** | `'owner_consignment'` | `CHECK (lead_type IN ('owner_consignment', 'viewing_request', 'general_inquiry'))` | Talep türü |
+| `status` | `TEXT` | **NO** | `'new'` | `CHECK (status IN ('new', 'contacted', 'viewing_scheduled', 'converted', 'archived'))` | CRM aşama durumu |
+| `client_name` | `TEXT` | **NO** | - | - | Başvuru sahibinin adı soyadı |
+| `client_phone` | `TEXT` | **NO** | - | - | Telefon numarası |
+| `client_email` | `TEXT` | YES | `NULL` | - | E-posta adresi |
+| `transaction_type`| `TEXT` | YES | `'prodaja'` | `CHECK (transaction_type IN ('prodaja', 'izdavanje'))` | Satılık / Kiralık |
+| `property_type` | `TEXT` | YES | `'apartment'` | - | Gayrimenkul tipi |
+| `location` | `TEXT` | YES | `NULL` | - | İlçe / Semt / Açık Konum |
+| `area_sqm` | `NUMERIC(10,2)`| YES | `NULL` | - | Yüzölçümü (m²) |
+| `expected_price`| `NUMERIC(12,2)`| YES | `NULL` | - | Beklenen fiyat |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | Para birimi |
+| `notes` | `TEXT` | YES | `NULL` | - | Müşterinin bıraktığı not veya istek |
+| `listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | İlgili ilan ID (varsa) |
+| `listing_title` | `TEXT` | YES | `NULL` | - | İlgili ilan başlığı |
+| `agent_notes` | `TEXT` | YES | `NULL` | - | Acentenin iç takip / CRM notu |
+| `comments` | `JSONB` | **NO** | `'[]'::jsonb` | - | Zaman damgalı danışman yorumları ve geçmişi (`LeadComment[]`) |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme tarihi |
+
+#### RLS Politikaları (`public.agency_leads`)
+* **`allow_anon_insert_agency_leads`**: `FOR INSERT TO anon, authenticated WITH CHECK (true)` (Vitrin ziyaretçilerinin talep bırakabilmesi için)
+* **`allow_agency_select_leads`**: `FOR SELECT TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo')`
+* **`allow_agency_update_leads`**: `FOR UPDATE TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo')`
+* **`allow_agency_delete_leads`**: `FOR DELETE TO authenticated USING (agency_id = auth.uid()::text OR agency_id = 'demo')`
+
+---
+
+### 2.2.4 `portal_feed_logs`
+Çoklu portal XML senkronizasyonunda portalların (4zida.rs, Halo Oglasi, Sasomange, Nekretnine.rs) crawler isteklerini, IP adreslerini, teslim edilen ilan adetlerini ve HTTP yanıt sürelerini saklar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Log benzersiz kimliği |
+| `agency_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Acente profil kimliği |
+| `directory_agency_id`| `BIGINT` | YES | `NULL` | **FK** `REFERENCES agencies(id) ON DELETE SET NULL` | Dizin acente kimliği (varsa) |
+| `portal` | `TEXT` | **NO** | - | - | Hedef portal (`4zida`, `halooglasi`, `sasomange`, `nekretnine`) |
+| `ip_address` | `TEXT` | YES | `NULL` | - | Botun bağlandığı IP adresi |
+| `user_agent` | `TEXT` | YES | `NULL` | - | Botun User-Agent başlığı |
+| `listing_count` | `INTEGER` | **NO** | `0` | - | Yanıtta teslim edilen ilan sayısı |
+| `status_code` | `INTEGER` | **NO** | `200` | - | HTTP durum kodu |
+| `duration_ms` | `INTEGER` | YES | `NULL` | - | Yanıt üretim süresi (milisaniye) |
+| `error_message` | `TEXT` | YES | `NULL` | - | Varsa hata mesajı |
+| `created_at` | `TIMESTAMPTZ`| **NO** | `now()` | - | Çekilme zamanı |
+
+#### RLS Politikaları (`public.portal_feed_logs`)
+* **`allow_insert_portal_feed_logs`**: `FOR INSERT TO public WITH CHECK (true)` (Edge API'den log kaydı için)
+* **`agency_view_own_portal_feed_logs`**: `FOR SELECT TO authenticated USING (agency_id = auth.uid())` (Acentenin kendi senkronizasyon geçmişini görebilmesi için)
+
+---
+
+### 2.2.5 `portal_integration_requests`
+Acentelerin henüz tam açık olmayan veya acente doğrulaması talep eden portallar (Nekretnine.rs, Sasomange vb.) için ücretsiz konsiyerj entegrasyon taleplerini toplar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Talep ID |
+| `agency_id` | `TEXT` | **NO** | - | `idx_portal_int_req_agency_id` | Acente ID |
+| `agency_name` | `TEXT` | **NO** | - | - | Acente Adı |
+| `portal_name` | `TEXT` | **NO** | - | `idx_portal_int_req_portal` | Talep edilen portal (Nekretnine.rs, Sasomange vb.) |
+| `contact_phone` | `TEXT` | YES | `NULL` | - | İletişim Telefonu / Viber |
+| `contact_email` | `TEXT` | YES | `NULL` | - | İletişim E-postası |
+| `portal_account_ref` | `TEXT` | YES | `NULL` | - | Portaldaki kullanıcı adı veya acente hesap numarası |
+| `notes` | `TEXT` | YES | `NULL` | - | Varsa ek notlar |
+| `status` | `TEXT` | **NO** | `'pending'` | `idx_portal_int_req_status` | Durum (`pending`, `contacted`, `activated`, `rejected`) |
+| `created_at` | `TIMESTAMPTZ`| **NO** | `now()` | - | Oluşturulma tarihi |
+| `updated_at` | `TIMESTAMPTZ`| **NO** | `now()` | - | Güncelleme tarihi |
+
+#### RLS Politikaları (`public.portal_integration_requests`)
+* **`Agencies can insert integration requests`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`Agencies can view their own integration requests`**: `FOR SELECT TO public USING (auth.uid()::text = agency_id OR agency_id = 'demo' OR auth.role() = 'service_role')`
+
+---
+
+### 2.2.6 `agency_demo_sessions`
+Acentelerin "Demo Panelini Aç" butonuna basarak kişisel bilgilerini (acente adı, e-posta, telefon) girdiklerinde oluşturulan süreli (48 saat) ve kişiselleştirilmiş demo sandbox oturumlarını ve sihirli bağlantılarını (magic link) yönetir.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Oturum ID |
+| `token` | `TEXT` | **NO** | - | **UNIQUE**, `idx_agency_demo_sessions_token` | Güvenli erişim ve magic link belirteci |
+| `agency_name` | `TEXT` | **NO** | - | - | Acentenin girdiği şirket adı |
+| `email` | `TEXT` | **NO** | - | `idx_agency_demo_sessions_email` | Acente e-posta adresi |
+| `phone` | `TEXT` | YES | `NULL` | - | İletişim telefonu |
+| `city` | `TEXT` | YES | `'Beograd'` | - | Acentenin faaliyet şehri |
+| `expires_at` | `TIMESTAMPTZ`| **NO** | - | - | Oturum sona erme zamanı (Oluşturulma + 48 saat) |
+| `last_accessed_at` | `TIMESTAMPTZ`| YES | `now()` | - | Son erişim zamanı |
+| `created_at` | `TIMESTAMPTZ`| **NO** | `now()` | - | Oturum oluşturulma tarihi |
+
+#### RLS Politikaları (`public.agency_demo_sessions`)
+* **`agency_demo_sessions_public_insert`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`agency_demo_sessions_public_select`**: `FOR SELECT TO public USING (true)`
+* **`agency_demo_sessions_public_update`**: `FOR UPDATE TO public USING (true)`
+
+### 2.2.7 `agency_demo_consents`
+Sırbistan Kişisel Verileri Koruma Kanunu (ZZPL) ve genel veri uyumluluğu kapsamında acente demo sandbox başlatma sürecinde verilen pazarlama/iletişim rızalarını, metin anahtarlarını, versiyonunu ve gösterilen dili zaman damgalı olarak denetlenebilir şekilde saklar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Kayıt ID |
+| `email` | `TEXT` | **NO** | - | `idx_agency_demo_consents_email` | Acente e-posta adresi |
+| `agency_name` | `TEXT` | **NO** | - | - | Acentenin şirket adı |
+| `phone` | `TEXT` | YES | `NULL` | - | İletişim telefonu |
+| `city` | `TEXT` | YES | `NULL` | - | Faaliyet şehri |
+| `marketing_consent` | `BOOLEAN` | **NO** | `FALSE` | - | Pazarlama iletişimi onayı verildi mi |
+| `consent_text_key` | `TEXT` | **NO** | `'consent.marketing'` | - | Gösterilen rıza metni anahtarı |
+| `consent_text_version` | `TEXT` | **NO** | `'v1.0'` | - | Rıza metni sürümü |
+| `shown_locale` | `TEXT` | **NO** | `'sr'` | - | Rıza anında aktif olan dil/locale |
+| `ip_address` | `TEXT` | YES | `NULL` | - | İstemci IP adresi |
+| `user_agent` | `TEXT` | YES | `NULL` | - | İstemci tarayıcı bilgisi |
+| `created_at` | `TIMESTAMPTZ`| **NO** | `now()` | `idx_agency_demo_consents_created_at` | Rıza zaman damgası |
+
+#### RLS Politikaları (`public.agency_demo_consents`)
+* **`agency_demo_consents_public_insert`**: `FOR INSERT TO public WITH CHECK (true)`
+* **`agency_demo_consents_authenticated_select`**: `FOR SELECT TO authenticated USING (true)`
+
+### 2.2.8 `agency_invoices`
+Stanomer platformunun emlak acentelerine kestiği resmi aylık hizmet bedeli faturaları, tahsilat makbuzları ve ödeme kayıtlarıdır.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Fatura benzersiz kimliği |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Faturanın ait olduğu acente |
+| `invoice_number` | `TEXT` | **NO** | - | `agency_invoices_status_idx` | Resmi fatura seri no (örn. `INV-2026-011`) |
+| `period` | `TEXT` | **NO** | - | - | Hizmet dönemi (örn. `Novembar 2026` / `11/2026`) |
+| `amount` | `NUMERIC(10,2)` | **NO** | `0.00` | - | Fatura tutarı |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | Fatura para birimi |
+| `status` | `TEXT` | **NO** | `'paid'` | - | Fatura durumu (`paid`, `pending`, `overdue`) |
+| `due_date` | `DATE` | YES | `NULL` | - | Son ödeme / vade tarihi |
+| `paid_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Ödemenin tahsil edildiği zaman |
+| `pdf_url` | `TEXT` | YES | `NULL` | - | Fatura resmi PDF/makbuz indirme bağlantısı |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Kayıt oluşturulma zamanı |
+
+#### RLS Politikaları (`public.agency_invoices`)
+* **`agency_invoices_select_policy`**: `FOR SELECT TO authenticated USING (agency_id = auth.uid() OR auth.role() = 'service_role')`
+* **`agency_invoices_admin_all_policy`**: `FOR ALL TO service_role USING (true) WITH CHECK (true)`
+
+
 
 ---
 
@@ -163,6 +394,7 @@ Mülke bağlı ev sahibi ve kiracı arasındaki kira sözleşmelerini tutar.
 | `tenant_notes` | `TEXT` | YES | `NULL` | - | Kiracıya ilişkin özel notlar |
 | `tenant_id_document_url` | `TEXT` | YES | `NULL` | - | Kiracı kimlik fotokopisi URL |
 | `tenant_secondary_contacts` | `JSONB` | YES | `'[]'::jsonb` | - | Kiracı ek iletişim kişileri (asistan, PR, aile vb.) |
+| `source_listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | **[YENİ]** Sözleşmenin türetildiği kaynak portföy ilanı |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma tarihi |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme tarihi |
 
@@ -170,10 +402,10 @@ Mülke bağlı ev sahibi ve kiracı arasındaki kira sözleşmelerini tutar.
 * **`set_contracts_updated_at`**: `BEFORE UPDATE ON contracts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`
 
 #### RLS Politikaları (`public.contracts`)
-* **`contracts_select_policy`**: `FOR SELECT TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))))`
-* **`contracts_insert_policy`**: `FOR INSERT TO authenticated WITH CHECK (landlord_id = auth.uid() OR agency_id = auth.uid())`
-* **`contracts_update_policy`**: `FOR UPDATE TO authenticated USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR tenant_id = auth.uid() OR tenant_id IS NULL OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))))`
-* **`contracts_delete_policy`**: `FOR DELETE TO authenticated USING (landlord_id = auth.uid() OR agency_id = auth.uid())`
+* **`contracts_select_policy`**: `FOR SELECT TO authenticated USING (landlord_id = auth.uid() OR tenant_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))))`
+* **`contracts_insert_policy`**: `FOR INSERT TO authenticated WITH CHECK (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()))`
+* **`contracts_update_policy`**: `FOR UPDATE TO authenticated USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()) OR tenant_id = auth.uid() OR tenant_id IS NULL OR (invitee_email IS NOT NULL AND LOWER(invitee_email) = LOWER(COALESCE(auth.jwt()->>'email', ''))))`
+* **`contracts_delete_policy`**: `FOR DELETE TO authenticated USING (landlord_id = auth.uid() OR agency_id = auth.uid() OR public.is_agency_of_property(property_id, auth.uid()))`
 
 > **Not:** Eski politikalar (`landlord_manage_contracts`, `tenant_view_update_contracts`, `tenant_respond_contract`) kaldırıldı ve acente desteği ile yeniden yazıldı.
 
@@ -401,6 +633,7 @@ Acentelerin landing page / web sitesi üzerinden gönderdiği demo taleplerini t
 | `utm_source` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kaynak bilgisi |
 | `utm_medium` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM mecrası |
 | `utm_campaign` | `TEXT` | YES | `NULL` | - | **[YENİ]** Pazarlama UTM kampanya adı |
+| `selected_modules` | `TEXT[]` | YES | `ARRAY['portfolio_distribution', 'property_lease_management']` | - | **[YENİ]** Demo modalında seçilen modüller (`portfolio_distribution`, `property_lease_management`) |
 | `created_at` | `TIMESTAMPTZ` | YES | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | YES | `now()` | - | Güncellenme zamanı |
 
@@ -623,6 +856,27 @@ LEFT JOIN public.profiles a ON p.agency_id = a.id;
 ALTER VIEW public.properties_with_names SET (security_invoker = on);
 ```
 
+### 3.2 `view_agency_financial_ledger`
+Acentelerin finansal yönetim paneli için tek doğruluk kaynağıdır (Single Source of Truth - SSOT).
+`rent_payments` tablosundaki kiraları ve kurum faturalarını (ay ve başlık bazında PostgreSQL `DISTINCT ON` ile tekilleştirerek) ile `maintenance_requests` (bakım talepleri) ve `maintenance_charges` (rücu/mahsup masraf paylaştırma) kayıtlarını tek bir standart satır formatında birleştirir.
+
+İçerdiği hazır KPI bayrakları ve alanlar:
+- `dispute_reason`, `disputed_at`: Kiracının veya ev sahibinin borç/fatura itiraz açıklaması ve tarihi.
+- `is_pending_approval`: Beyan edilmiş (`declared`) veya kiracı tarafından itiraz edilmiş (`disputed`), acente aksiyonu bekleyen ödeme veya bakım onayları.
+- `is_unentered_bill`: Tutar = 0 olan ev sahibi veya dahil faturalar.
+- `is_overdue`: Vadesi geçmiş, ödenmemiş borçlar (amount > 0).
+- `is_rent_collected`: Tahsil edilen kira tutarı.
+- `is_bills_collected`: Kiracıdan tahsil edilen faturalar (receiver_type = 'owner').
+- `is_bills_to_institutions`: Kurumlara ödenen faturalar (receiver_type = 'included').
+- `is_maintenance_paid`: Ev sahibi veya acente tarafından karşılanan, tahsilatı tamamlanmış bakım masrafları.
+- `is_maintenance_owed_to_agency`: Acentenin peşin ödediği ve ev sahibinin acenteye borçlu olduğu masraflar.
+- `is_unpaid_maintenance`: Onaylanmış ama henüz ödenmemiş bakım masrafları.
+- `is_unpaid_bills_to_institutions`: Kurumlara henüz ödenmemiş faturalar.
+- `is_tenant_offset`: Kiracının peşin ödediği ve kiradan mahsup edilmesi gereken masraflar.
+
+Güvenlik: `WITH (security_invoker = true)` ile sorgulayan kullanıcının RLS izinleri işletilir.
+Migration: `migrations/2026-11-18_view_agency_financial_ledger.sql`
+
 ---
 
 ## 4. Saklı Yordamlar ve RPC Fonksiyonları (Stored Procedures & Complete SQL Bodies)
@@ -842,10 +1096,11 @@ BEGIN
         ON CONFLICT (invitation_token) DO UPDATE 
         SET tenant_id = v_user_id, status = 'active';
     END IF;
-END;
-$$;
-    WHERE id = v_property_id
-      AND tenant_id IS NULL;
+
+    -- 7. Sync invitations table if invitation exists
+    UPDATE public.invitations
+    SET status = 'accepted'
+    WHERE (contract_id = v_contract_id OR token = contract_token) AND status = 'pending';
 END;
 $$;
 ```
@@ -853,14 +1108,18 @@ $$;
 ---
 
 ### 4.3 `accept_invitation`
-**Açıklama**: Mülk davet jetonunu doğrular, kiracıyı mülkle eşleştirir ve otomatik taslak sözleşme oluşturur.
+**Açıklama**: Mülk davet jetonunu doğrular, kiracıyı mülkle ve sözleşmeyle eşleştirir, sözleşmeyi aktif yapar ve leases tablosunu senkronize eder.
 
 ```sql
-CREATE FUNCTION public.accept_invitation(p_invite_token text) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    AS $$
+CREATE OR REPLACE FUNCTION public.accept_invitation(p_invite_token text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
     v_property_id UUID;
+    v_contract_id UUID;
     v_invitee_email TEXT;
     v_user_id UUID;
     v_user_email TEXT;
@@ -875,32 +1134,76 @@ BEGIN
         RAISE EXCEPTION 'Not authenticated';
     END IF;
 
-    SELECT property_id, invitee_email 
-    INTO v_property_id, v_invitee_email
-    FROM invitations
-    WHERE token = p_invite_token AND status = 'pending'  -- ← p_ prefix
+    SELECT property_id, contract_id, invitee_email 
+    INTO v_property_id, v_contract_id, v_invitee_email
+    FROM public.invitations
+    WHERE token = p_invite_token AND status = 'pending'
     FOR UPDATE;
 
     IF NOT FOUND THEN
+        -- Fallback: check if this token exists directly in contracts table
+        IF EXISTS (SELECT 1 FROM public.contracts WHERE token = p_invite_token) THEN
+            PERFORM public.accept_contract(p_invite_token);
+            RETURN;
+        END IF;
         RAISE EXCEPTION 'Invitation not found or already accepted';
     END IF;
 
-    -- Email soft check (Apple relay geçişi)
-    IF LOWER(v_invitee_email) != LOWER(v_user_email)
-       AND v_user_email NOT LIKE '%@privaterelay.appleid.com' THEN
-        RAISE EXCEPTION 'This invitation was sent to %, but you are logged in as %', 
-            v_invitee_email, v_user_email;
+    -- Email soft check
+    IF v_invitee_email IS NOT NULL AND v_invitee_email != '' THEN
+        IF LOWER(v_invitee_email) != LOWER(COALESCE(v_user_email, ''))
+           AND COALESCE(v_user_email, '') NOT LIKE '%@privaterelay.appleid.com' THEN
+            RAISE EXCEPTION 'This invitation was sent to %, but you are logged in as %', 
+                v_invitee_email, v_user_email;
+        END IF;
     END IF;
 
-    SELECT start_date::date, end_date::date, contract_url
-    INTO v_start_date, v_end_date, v_contract_url
-    FROM contracts
-    WHERE property_id = v_property_id AND status = 'active'
-    LIMIT 1;
-
-    UPDATE invitations
+    -- Update invitation status
+    UPDATE public.invitations
     SET status = 'accepted'
-    WHERE token = p_invite_token;  -- ← p_ prefix
+    WHERE token = p_invite_token;
+
+    -- Update contract if associated
+    IF v_contract_id IS NOT NULL THEN
+        SELECT start_date::date, end_date::date, contract_url
+        INTO v_start_date, v_end_date, v_contract_url
+        FROM public.contracts
+        WHERE id = v_contract_id;
+
+        UPDATE public.contracts
+        SET status = 'active',
+            tenant_id = v_user_id,
+            updated_at = now()
+        WHERE id = v_contract_id;
+    ELSE
+        SELECT start_date::date, end_date::date, contract_url
+        INTO v_start_date, v_end_date, v_contract_url
+        FROM public.contracts
+        WHERE property_id = v_property_id AND (status IN ('pending', 'active') AND (tenant_id IS NULL OR tenant_id = v_user_id))
+        ORDER BY created_at DESC
+        LIMIT 1;
+
+        UPDATE public.contracts
+        SET status = 'active',
+            tenant_id = v_user_id,
+            updated_at = now()
+        WHERE property_id = v_property_id AND (status IN ('pending', 'active') AND (tenant_id IS NULL OR tenant_id = v_user_id));
+    END IF;
+
+    -- Sync leases
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'leases') THEN
+        INSERT INTO public.leases (property_id, tenant_id, tenant_email, start_date, end_date, status, contract_pdf_url, invitation_token)
+        VALUES (v_property_id, v_user_id, v_user_email, v_start_date, v_end_date, 'active', v_contract_url, p_invite_token)
+        ON CONFLICT (invitation_token) DO UPDATE
+        SET tenant_id = v_user_id, status = 'active';
+    END IF;
+
+    -- Update property
+    UPDATE public.properties
+    SET tenant_id = v_user_id
+    WHERE id = v_property_id;
+END;
+$$;
 
     INSERT INTO leases (property_id, tenant_id, tenant_email, start_date, end_date, status, contract_pdf_url, invitation_token)
     VALUES (v_property_id, v_user_id, v_user_email, v_start_date, v_end_date, 'active', v_contract_url, p_invite_token)  -- ← p_ prefix
@@ -1334,12 +1637,12 @@ $$;
 ---
 
 ### 4.16 `clear_agency_demo_data(p_agency_id UUID)`
-**Açıklama**: Belirtilen acenteye ait tüm demo mülkleri, sözleşmeleri, ödemeleri, bakım kayıtlarını ve ilişkili demo kullanıcıları temizler. Acente profilini korur.
+**Açıklama**: Belirtilen acenteye ait tüm demo mülkleri, sözleşmeleri, ödemeleri, bakım kayıtlarını (`maintenance_requests`, `maintenance_charges`, `maintenance_messages`), aktivite loglarını, sahiplik/davet kayıtlarını (`property_owners`, `invitations`), Portfolio & Distribution tablolarını (`listings`, `listing_images`, `agency_leads`) ve 8 karakterlik acente önekiyle üretilen ilişkili sentetik demo kullanıcıları (`@demo.stanomer.local`) temizler. Acente profilini korur.
 
 ---
 
 ### 4.17 `cleanup_expired_demo_data()`
-**Açıklama**: 3 günlük deneme süresi (`demo_expires_at < now()`) dolan acentelerin demo portföy verilerini otomatik olarak temizler. Acente profili korunur ve yeniden portföy oluşturma çağrısına hazır bırakılır.
+**Açıklama**: 7 günlük deneme süresi (`demo_expires_at < now()`) dolan acentelerin demo portföy verilerini otomatik olarak temizler. Acente profili korunur ve yeniden portföy oluşturma çağrısına hazır bırakılır.
 
 ---
 
@@ -1382,6 +1685,149 @@ SECURITY DEFINER
 SET search_path = public, auth, extensions
 AS $$
 ...
+$$;
+```
+
+---
+
+### 4.22 `get_invite_details(p_token TEXT)`
+**Kullanım Amacı**: Davet token'ı (`token`) üzerinden hem `contracts` (henüz sahiplenilmemiş / pending kiracı sözleşmeleri) hem de `invitations` (ev sahibi mülkiyet devri / kiracı davetleri) kayıtlarını RLS kısıtlamalarına takılmadan güvenlik tanımlı (`SECURITY DEFINER`) olarak çözer ve `active_contract` alanı ile birlikte detaylı JSON nesnesi döner.
+```sql
+CREATE OR REPLACE FUNCTION public.get_invite_details(p_token TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_invite_json JSONB;
+    v_contract_json JSONB;
+BEGIN
+    SELECT (to_jsonb(c.*) || jsonb_build_object(
+        'type', 'contract',
+        'active_contract', to_jsonb(c.*),
+        'properties', jsonb_build_object(
+            'id', p.id,
+            'name', p.name,
+            'title', p.title,
+            'address', p.address,
+            'default_monthly_rent', p.default_monthly_rent,
+            'default_deposit_amount', p.default_deposit_amount,
+            'currency', p.currency,
+            'landlord_id', p.landlord_id,
+            'tenant_id', p.tenant_id,
+            'agency_id', p.agency_id,
+            'landlord_name', p.landlord_name,
+            'landlord_email', p.landlord_email,
+            'landlord_phone', p.landlord_phone
+        )
+    ))
+    INTO v_contract_json
+    FROM public.contracts c
+    JOIN public.properties p ON p.id = c.property_id
+    WHERE c.token = p_token
+      AND (c.status IN ('pending', 'negotiating', 'revision_requested') OR (c.status = 'active' AND c.tenant_id IS NULL))
+    ORDER BY c.created_at DESC
+    LIMIT 1;
+
+    SELECT (to_jsonb(i.*) || jsonb_build_object(
+        'type', CASE WHEN i.target_role = 'landlord' THEN 'landlord_ownership' ELSE COALESCE(v_contract_json->>'type', 'invitation') END,
+        'active_contract', COALESCE(
+            v_contract_json,
+            (
+                SELECT to_jsonb(c2.*)
+                FROM public.contracts c2
+                WHERE (c2.id = i.contract_id OR c2.property_id = i.property_id)
+                  AND c2.status IN ('pending', 'negotiating', 'active', 'revision_requested')
+                ORDER BY c2.created_at DESC
+                LIMIT 1
+            )
+        ),
+        'properties', jsonb_build_object(
+            'id', p.id,
+            'name', p.name,
+            'title', p.title,
+            'address', p.address,
+            'default_monthly_rent', p.default_monthly_rent,
+            'default_deposit_amount', p.default_deposit_amount,
+            'currency', p.currency,
+            'landlord_id', p.landlord_id,
+            'tenant_id', p.tenant_id,
+            'agency_id', p.agency_id,
+            'landlord_name', p.landlord_name,
+            'landlord_email', p.landlord_email,
+            'landlord_phone', p.landlord_phone
+        )
+    ))
+    INTO v_invite_json
+    FROM public.invitations i
+    JOIN public.properties p ON p.id = i.property_id
+    WHERE i.token = p_token
+      AND i.status = 'pending'
+      AND (i.expires_at IS NULL OR i.expires_at > now());
+
+    IF v_invite_json IS NOT NULL AND (v_invite_json->>'target_role' = 'landlord' OR v_contract_json IS NULL) THEN
+        RETURN v_invite_json;
+    END IF;
+
+    IF v_contract_json IS NOT NULL THEN
+        RETURN v_contract_json;
+    END IF;
+
+    RETURN v_invite_json;
+END;
+$$;
+```
+
+### 4.23 `is_invited_to_property(check_property_id UUID, check_email TEXT)`
+**Açıklama**: RLS politikalarında özyinelemeli (circular recursion) kilitlenmeleri önlemek amacıyla `SECURITY DEFINER` ve dinamik SQL (`EXECUTE`) ile çalışan yardımcı güvenlik fonksiyonudur. Belirtilen e-posta adresine ilgili mülk için bir davet olup olmadığını döner.
+
+```sql
+CREATE OR REPLACE FUNCTION public.is_invited_to_property(check_property_id UUID, check_email TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_result BOOLEAN := FALSE;
+BEGIN
+  IF to_regclass('public.invitations') IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  EXECUTE 'SELECT EXISTS (
+    SELECT 1 FROM public.invitations
+    WHERE property_id = $1
+      AND LOWER(invitee_email) = LOWER(COALESCE($2, ''''))
+  )' INTO v_result USING check_property_id, check_email;
+  RETURN v_result;
+END;
+$$;
+```
+
+### 4.24 `is_agency_of_property(check_property_id UUID, check_user_id UUID)`
+**Açıklama**: Mülk veya ilişkili tabloların (kiralar, faturalar, bakım talepleri, sözleşmeler) RLS politikalarında acente yetkisini kontrol etmek üzere tasarlanmış, özyinelemeyi engelleyen `SECURITY DEFINER` yardımcı fonksiyondur.
+
+```sql
+CREATE OR REPLACE FUNCTION public.is_agency_of_property(check_property_id UUID, check_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_result BOOLEAN := FALSE;
+BEGIN
+  IF to_regclass('public.properties') IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  EXECUTE 'SELECT EXISTS (
+    SELECT 1 FROM public.properties
+    WHERE id = $1
+      AND agency_id = $2
+  )' INTO v_result USING check_property_id, check_user_id;
+  RETURN v_result;
+END;
 $$;
 ```
 

@@ -5,9 +5,9 @@
  * from the client browser. Compatible with static hosting and serverless deployments.
  */
 
-const DEV_SUPABASE_URL = "https://thvbpifahvasyzmngpzp.supabase.co";
+const DEV_SUPABASE_URL = "https://nbcbfmhztnnhfnapvaet.supabase.co";
 const DEV_SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
+  "sb_publishable_kY2aoizXZkGz2DsG6-sg-Q_Vm2Ef2mq";
 
 const BREVO_API_KEY =
   process.env.NEXT_PUBLIC_BREVO_API_KEY ||
@@ -29,42 +29,42 @@ const emailTranslations: Record<
   TR: {
     subject: "🚀 Stanomer Acente Paneliniz Hazır! (Tek Tıkla Giriş)",
     greeting: "Sayın",
-    text: "Acenteniz için 3 günlük kişiselleştirilmiş interaktif demo paneliniz hazırlandı. Şifreye ihtiyaç duymadan, aşağıdaki butona tıklayarak doğrudan acente kokpitinize bağlanabilir; logonuzu ve kurumsal renklerinizi web sitenizden çekerek tek tıkla örnek portföy üretebilirsiniz:",
+    text: "Acenteniz için 7 günlük kişiselleştirilmiş interaktif demo paneliniz hazırlandı. Şifreye ihtiyaç duymadan, aşağıdaki butona tıklayarak doğrudan acente kokpitinize bağlanabilir; logonuzu ve kurumsal renklerinizi web sitenizden çekerek tek tıkla örnek portföy üretebilirsiniz:",
     btn: "🎯 Acente Panelime Doğrudan Giriş Yap (Magic Link)",
     fallback: "Buton çalışmıyorsa aşağıdaki doğrudan giriş bağlantısını tarayıcınıza kopyalayabilirsiniz:",
-    footer: "Bu bağlantı acentenize özel tek tıkla giriş sağlayan güvenli magic linktir. 3 günlük ücretsiz sandbox süreniz bağlantıyı ilk açtığınız an başlar."
+    footer: "Bu bağlantı acentenize özel tek tıkla giriş sağlayan güvenli magic linktir. 7 günlük ücretsiz sandbox süreniz bağlantıyı ilk açtığınız an başlar."
   },
   EN: {
     subject: "🚀 Your Stanomer Agency Panel is Ready! (One-Click Magic Link)",
     greeting: "Dear",
-    text: "Your 3-day branded agency demo sandbox is ready. No password required! Click the button below to log directly into your agency cockpit, automatically fetch your logo & brand colors, and generate a full sample portfolio with a single click:",
+    text: "Your 7-day branded agency demo sandbox is ready. No password required! Click the button below to log directly into your agency cockpit, automatically fetch your logo & brand colors, and generate a full sample portfolio with a single click:",
     btn: "🎯 Launch Agency Cockpit (Magic Link)",
     fallback: "If the button above does not work, copy and paste this direct access link into your browser:",
-    footer: "This is a secure one-click magic link generated for your agency. Your 3-day free sandbox begins upon your first login."
+    footer: "This is a secure one-click magic link generated for your agency. Your 7-day free sandbox begins upon your first login."
   },
   SR_LAT: {
     subject: "🚀 Vaš Stanomer Agencijski Panel je Spreman! (Prijava Jednim Klikom)",
     greeting: "Poštovani",
-    text: "Vaš 3-dnevni personalizovani interaktivni demo panel za agenciju je pripremljen. Bez potrebe za lozinkom, kliknite na dugme ispod da se direktno prijavite u agencijski kokpit, preuzmete logo i boje sa vašeg sajta i jednim klikom generišete primer portfolija:",
+    text: "Vaš 7-dnevni personalizovani interaktivni demo panel za agenciju je pripremljen. Bez potrebe za lozinkom, kliknite na dugme ispod da se direktno prijavite u agencijski kokpit, preuzmete logo i boje sa vašeg sajta i jednim klikom generišete primer portfolija:",
     btn: "🎯 Otvorite Agencijski Panel (Magic Link)",
     fallback: "Ako dugme ne radi, kopirajte sledeći link za direktnu prijavu u vaš pregledač:",
-    footer: "Ovaj link je bezbedan jednokratni magic link kreiran za vašu agenciju. Vaš 3-dnevni besplatan sandbox period počinje prvim ulaskom."
+    footer: "Ovaj link je bezbedan jednokratni magic link kreiran za vašu agenciju. Vaš 7-dnevni besplatan sandbox period počinje prvim ulaskom."
   },
   SR_CYR: {
     subject: "🚀 Ваш Станомер Агенцијски Панел је Спреман! (Пријава Једним Кликом)",
     greeting: "Поштовани",
-    text: "Ваш 3-дневни персонализовани интерактивни демо панел за агенцију је припремљен. Без потребе за лозинком, кликните на дугме испод да се директно пријавите у агенцијски кокпит, преузмете лого и боје са вашег сајта и једним кликом генеришете пример портфолија:",
+    text: "Ваш 7-дневни персонализовани интерактивни демо панел за агенцију је припремљен. Без потребе за лозинком, кликните на дугме испод да се директно пријавите у агенцијски кокпит, преузмете лого и боје са вашег сајта и једним кликом генеришете пример портфолија:",
     btn: "🎯 Отворите Агенцијски Панел (Magic Link)",
     fallback: "Ако дугме не ради, копирајте следећи линк за директну пријаву у ваш прегледач:",
-    footer: "Овај линк је безбедан једнократни magic link креиран за вашу агенцију. Ваш 3-дневни бесплатан sandbox период почиње првим уласком."
+    footer: "Овај линк је безбедан једнократни magic link креиран за вашу агенцију. Ваш 7-дневни бесплатан sandbox период почиње првим уласком."
   },
   RU: {
     subject: "🚀 Ваша Панель Stanomer для Агентства Готова! (Вход в Один Клик)",
     greeting: "Уважаемый(ая)",
-    text: "Ваша 3-дневная персонализированная демо-панель для агентства готова. Без ввода пароля нажмите кнопку ниже, чтобы напрямую войти в панель управления, автоматически загрузить ваш логотип и цвета и в один клик создать тестовое портфолио:",
+    text: "Ваша 7-дневная персонализированная демо-панель для агентства готова. Без ввода пароля нажмите кнопку ниже, чтобы напрямую войти в панель управления, автоматически загрузить ваш логотип и цвета и в один клик создать тестовое портфолио:",
     btn: "🎯 Войти в Панель Агентства (Magic Link)",
     fallback: "Если кнопка не работает, скопируйте следующую ссылку для прямого входа в браузер:",
-    footer: "Это безопасная ссылка прямого доступа (magic link) для вашего агентства. 3-дневный тестовый период начинается с первого входа."
+    footer: "Это безопасная ссылка прямого доступа (magic link) для вашего агентства. 7-дневный тестовый период начинается с первого входа."
   }
 };
 
@@ -72,6 +72,10 @@ export interface SendDemoVerificationParams {
   email: string;
   agencyName: string;
   website?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  selectedModules?: string[];
+  focus?: "presales" | "aftersales" | "both";
   lang?: string;
   honeypot?: string;
   verificationToken?: string;
@@ -82,7 +86,7 @@ export async function sendDemoVerification(params: SendDemoVerificationParams): 
   message?: string;
   token?: string;
 }> {
-  const { email, agencyName, website, lang = "TR", honeypot, verificationToken } = params;
+  const { email, agencyName, website, phone, city, selectedModules, focus, lang = "TR", honeypot, verificationToken } = params;
 
   // Bot honeypot check
   if (honeypot && honeypot.trim().length > 0) {
@@ -106,7 +110,15 @@ export async function sendDemoVerification(params: SendDemoVerificationParams): 
 
   if (!token) {
     try {
-      const dbRes = await fetch(`${DEV_SUPABASE_URL}/rest/v1/agency_demo_requests`, {
+      const specialNotes = [
+        city ? `City: ${city}` : null,
+        selectedModules && selectedModules.length > 0 ? `Modules: ${selectedModules.join(", ")}` : null,
+        focus ? `Focus: ${focus}` : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      let dbRes = await fetch(`${DEV_SUPABASE_URL}/rest/v1/agency_demo_requests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,9 +130,33 @@ export async function sendDemoVerification(params: SendDemoVerificationParams): 
           agency_name: cleanAgencyName,
           email: cleanEmail,
           website: formattedWebsite,
+          phone_number: phone?.trim() || null,
+          special_requests: specialNotes || null,
+          selected_modules: selectedModules || ["portfolio_distribution", "property_lease_management"],
           status: "pending",
         }),
       });
+
+      // Graceful fallback if selected_modules column does not exist on table yet
+      if (!dbRes.ok) {
+        dbRes = await fetch(`${DEV_SUPABASE_URL}/rest/v1/agency_demo_requests`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: DEV_SUPABASE_KEY,
+            Authorization: `Bearer ${DEV_SUPABASE_KEY}`,
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify({
+            agency_name: cleanAgencyName,
+            email: cleanEmail,
+            website: formattedWebsite,
+            phone_number: phone?.trim() || null,
+            special_requests: specialNotes || null,
+            status: "pending",
+          }),
+        });
+      }
 
       if (!dbRes.ok) {
         const errText = await dbRes.text();

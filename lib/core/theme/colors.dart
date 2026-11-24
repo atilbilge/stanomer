@@ -1,65 +1,109 @@
 import 'package:flutter/material.dart';
 
-abstract class StanomerColors {
-  // Brand (logodan)
-  static const brandPrimary = Color(0xFF1A5EB8);
-  static const brandPrimaryPressed = Color(0xFF0E3D80);
-  static const brandPrimarySurface = Color(0xFFE6EEF9);
+/// Stanomer Design System v4.0 (Kasım 2026)
+/// Single Source of Truth: BRAND_GUIDELINES.md
 
-  // Success / Paid (logodan)
-  static const successPrimary = Color(0xFF2DB87A);
-  static const successPressed = Color(0xFF1D8A5A);
-  static const successSurface = Color(0xFFE6F7F0);
+abstract class SColors {
+  // Marka (logodan ölçüldü: #1B5888, #40945D)
+  static const brand        = Color(0xFF1B5888);
+  static const brandPressed = Color(0xFF12406A);
+  static const brandSurface = Color(0xFFE5EEF6);
+  static const logoGreen    = Color(0xFF40945D); // yalnızca grafik ve ikon
+
+  // Durum
+  static const successText    = Color(0xFF2A6E43);
+  static const successSurface = Color(0xFFE6F3EA);
+  static const alert          = Color(0xFFB5432E);
+  static const alertText      = Color(0xFFA33C29);
+  static const alertSurface   = Color(0xFFFBEAE6);
+  static const pendingText    = Color(0xFF8A5206);
+  static const pendingSurface = Color(0xFFFBF1DC);
+  static const pendingGraphic = Color(0xFFE0A63A);
+
+  // Nötr
+  static const bgPage        = Color(0xFFF8F7F5);
+  static const bgCard        = Color(0xFFFFFFFF);
+  static const textPrimary   = Color(0xFF1A1A1A);
+  static const textSecondary = Color(0xFF4A4A4A);
+  static const textTertiary  = Color(0xFF666666);
+  static const borderDefault = Color(0xFFE5E3DF);
+  static const borderInput   = Color(0xFF8A8A8A);
+}
+
+abstract class SColorsDark {
+  static const bgPage = Color(0xFF0D1828);
+  static const bgCard = Color(0xFF142238);
+  static const brand = Color(0xFF6FA6DA);
+  static const successText = Color(0xFF5DBB7E);
+  static const alertText = Color(0xFFE5806C);
+  static const pendingText = Color(0xFFE3B04F);
+  static const textPrimary = Color(0xFFE8EEF5);
+  static const textSecondary = Color(0xFF9DAEC2);
+  static const borderDefault = Color(0xFF25374F);
+}
+
+abstract class SShadows {
+  static const card = [
+    BoxShadow(color: Color(0x0A000000), blurRadius: 0, offset: Offset(0, 1)),
+    BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
+  ];
+  static const sheet = [
+    BoxShadow(color: Color(0x14000000), blurRadius: 16, offset: Offset(0, 4)),
+  ];
+}
+
+/// Backward compatibility layer for StanomerColors
+abstract class StanomerColors {
+  // Brand (logodan ölçüldü)
+  static const brandPrimary = SColors.brand;
+  static const brandPrimaryPressed = SColors.brandPressed;
+  static const brandPrimarySurface = SColors.brandSurface;
+  static const logoGreen = SColors.logoGreen;
+
+  // Success / Paid
+  static const successPrimary = SColors.successText;
+  static const successPressed = Color(0xFF1F5734);
+  static const successSurface = SColors.successSurface;
 
   // Alert / Overdue
-  static const alertPrimary = Color(0xFFC8503A);
-  static const alertPressed = Color(0xFFA83D29);
-  static const alertSurface = Color(0xFFFDF0EE);
+  static const alertPrimary = SColors.alert;
+  static const alertPressed = SColors.alertText;
+  static const alertSurface = SColors.alertSurface;
 
   // Status
-  static const statusPaid = Color(0xFF2DB87A);
-  static const statusPaidSurface = Color(0xFFE6F7F0);
-  static const statusPending = Color(0xFFB06C10);
-  static const statusPendingSurface = Color(0xFFFEF6E8);
-  static const statusPartial = Color(0xFF1A5EB8);
-  static const statusPartialSurface = Color(0xFFE6EEF9);
+  static const statusPaid = SColors.successText;
+  static const statusPaidSurface = SColors.successSurface;
+  static const statusPending = SColors.pendingText;
+  static const statusPendingSurface = SColors.pendingSurface;
+  static const statusPartial = SColors.brand;
+  static const statusPartialSurface = SColors.brandSurface;
 
   // Text
-  static const textPrimary = Color(0xFF1A1A1A);
-  static const textSecondary = Color(0xFF4A4A4A);
-  static const textTertiary = Color(0xFF767676);
+  static const textPrimary = SColors.textPrimary;
+  static const textSecondary = SColors.textSecondary;
+  static const textTertiary = SColors.textTertiary;
   static const textDisabled = Color(0x521A1A1A); // 32% opacity
   static const textInverse = Color(0xFFFFFFFF);
 
   // Surface
-  static const bgPage = Color(0xFFF8F7F5);
-  static const bgCard = Color(0xFFFFFFFF);
-  static const borderDefault = Color(0xFFEBEBEB);
-  static const borderPrimary = Color(0xFFEBEBEB);
-  static const borderInput = Color(0xFFC8C8C8);
-  static const borderFocused = Color(0xFF1A5EB8);
+  static const bgPage = SColors.bgPage;
+  static const bgCard = SColors.bgCard;
+  static const borderDefault = SColors.borderDefault;
+  static const borderPrimary = SColors.borderDefault;
+  static const borderInput = SColors.borderInput;
+  static const borderFocused = SColors.brand;
 
-  // Role Colors (Airbnb logic)
-  static const landlord = Color(0xFF1A5EB8);        // Blue
-  static const landlordPressed = Color(0xFF0E3D80);
-  static const landlordSurface = Color(0xFFE6EEF9);
-  
-  static const tenant = Color(0xFF2DB87A);          // Green
-  static const tenantPressed = Color(0xFF1D8A5A);
-  static const tenantSurface = Color(0xFFE6F7F0);
+  // Neutral Role Helpers (Design System v4: Roller renkle değil ikon ve etiketle ayrılır)
+  static const landlord = SColors.brand;
+  static const landlordPressed = SColors.brandPressed;
+  static const landlordSurface = SColors.brandSurface;
 
-  static Color getRoleColor(String? role) {
-    if (role == 'landlord') return landlord;
-    if (role == 'tenant') return tenant;
-    if (role == 'agency') return const Color(0xFF4A3AFF);
-    return brandPrimary;
-  }
+  static const tenant = SColors.logoGreen;
+  static const tenantPressed = Color(0xFF1F5734);
+  static const tenantSurface = SColors.successSurface;
 
-  static Color getRoleSurfaceColor(String? role) {
-    if (role == 'landlord') return landlordSurface;
-    if (role == 'tenant') return tenantSurface;
-    return brandPrimarySurface;
-  }
+  static Color getRoleColor(String? role) => SColors.brand;
+  static Color getRoleSurfaceColor(String? role) => SColors.brandSurface;
 }
 
 abstract class StanomerRadius {
@@ -72,14 +116,9 @@ abstract class StanomerRadius {
 }
 
 abstract class StanomerShadows {
-  static const card = [
-    BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
-    BoxShadow(color: Color(0x14000000), blurRadius: 1, offset: Offset(0, 1)), // Updated slightly for v3
-  ];
-  static const sheet = [
-    BoxShadow(color: Color(0x14000000), blurRadius: 16, offset: Offset(0, 4)),
-  ];
+  static const card = SShadows.card;
+  static const sheet = SShadows.sheet;
   static const fab = [
-    BoxShadow(color: Color(0x521A5EB8), blurRadius: 16, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x521B5888), blurRadius: 16, offset: Offset(0, 4)),
   ];
 }

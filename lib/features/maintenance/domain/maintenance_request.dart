@@ -111,8 +111,41 @@ abstract class MaintenanceRequest with _$MaintenanceRequest {
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _MaintenanceRequest;
 
-  factory MaintenanceRequest.fromJson(Map<String, dynamic> json) =>
-      _$MaintenanceRequestFromJson(json);
+  factory MaintenanceRequest.fromJson(Map<String, dynamic> json) {
+    final sanitized = Map<String, dynamic>.from(json);
+    sanitized['id'] = (sanitized['id'] ?? '').toString();
+    sanitized['property_id'] = (sanitized['property_id'] ?? '').toString();
+    sanitized['reporter_id'] = (sanitized['reporter_id'] ?? '').toString();
+    sanitized['title'] = (sanitized['title'] ?? '').toString();
+    sanitized['payment_status'] = (sanitized['payment_status'] ?? 'pending_review').toString();
+
+    if (sanitized['photos_urls'] == null && sanitized['photo_urls'] != null) {
+      sanitized['photos_urls'] = sanitized['photo_urls'];
+    }
+    if (sanitized['photos_urls'] is List) {
+      sanitized['photos_urls'] = (sanitized['photos_urls'] as List)
+          .map((e) => e?.toString() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } else {
+      sanitized['photos_urls'] = <String>[];
+    }
+
+    if (sanitized['created_at'] != null) {
+      final dt = DateTime.tryParse(sanitized['created_at'].toString());
+      if (dt != null) sanitized['created_at'] = dt.toIso8601String();
+    }
+    if (sanitized['updated_at'] != null) {
+      final dt = DateTime.tryParse(sanitized['updated_at'].toString());
+      if (dt != null) sanitized['updated_at'] = dt.toIso8601String();
+    }
+    if (sanitized['payment_date'] != null) {
+      final dt = DateTime.tryParse(sanitized['payment_date'].toString());
+      if (dt != null) sanitized['payment_date'] = dt.toIso8601String();
+    }
+
+    return _$MaintenanceRequestFromJson(sanitized);
+  }
 
   factory MaintenanceRequest.fromMap(Map<String, dynamic> map) =>
       MaintenanceRequest.fromJson(map);

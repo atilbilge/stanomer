@@ -114,13 +114,13 @@ export default function AgencyReferralPage() {
     setErrorMessage("");
 
     if (!agencyName.trim() || !contactName.trim() || !email.trim() || !city.trim()) {
-      setErrorMessage(t("ref_submit_error_required") || "Lütfen tüm zorunlu alanları doldurunuz.");
+      setErrorMessage(t("ref_submit_error_required"));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      setErrorMessage(t("ref_submit_error_email") || "Geçerli bir e-posta adresi giriniz.");
+      setErrorMessage(t("ref_submit_error_email"));
       return;
     }
 

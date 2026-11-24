@@ -8,7 +8,7 @@ export type Language = "TR" | "EN" | "SR_LAT" | "SR_CYR" | "RU";
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, any>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -58,6 +58,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      const code = lang === "SR_LAT" || lang === "SR_CYR" ? "sr" : lang.toLowerCase();
+      document.documentElement.lang = code;
+    }
+  }, [lang]);
+
   const handleSetLang = (newLang: Language) => {
     setLang(newLang);
     try {
@@ -67,25 +74,35 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const t = (key: string): string => {
+  const t = (key: string, params?: Record<string, any>): string => {
+    let result = key;
     // @ts-ignore
     const langDict = translations[lang];
     if (langDict && langDict[key] !== undefined) {
-      return langDict[key];
+      result = langDict[key];
+    } else {
+      // Fallback to SR_LAT dictionary
+      // @ts-ignore
+      const srDict = translations["SR_LAT"];
+      if (srDict && srDict[key] !== undefined) {
+        result = srDict[key];
+      } else {
+        // Fallback to TR dictionary
+        // @ts-ignore
+        const trDict = translations["TR"];
+        if (trDict && trDict[key] !== undefined) {
+          result = trDict[key];
+        }
+      }
     }
-    // Fallback to SR_LAT dictionary
-    // @ts-ignore
-    const srDict = translations["SR_LAT"];
-    if (srDict && srDict[key] !== undefined) {
-      return srDict[key];
+
+    if (params && typeof result === "string") {
+      for (const [rKey, rVal] of Object.entries(params)) {
+        result = result.replace(new RegExp(`\\{${rKey}\\}`, "g"), String(rVal ?? ""));
+      }
     }
-    // Fallback to TR dictionary
-    // @ts-ignore
-    const trDict = translations["TR"];
-    if (trDict && trDict[key] !== undefined) {
-      return trDict[key];
-    }
-    return key;
+
+    return result;
   };
 
   return (
@@ -100,3 +117,4 @@ export function useLanguage() {
   if (!context) throw new Error("useLanguage must be used within LanguageProvider");
   return context;
 }
+

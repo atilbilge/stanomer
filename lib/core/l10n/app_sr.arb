@@ -77,6 +77,8 @@
   "acceptInvitation": "Prihvati poziv",
   "declineInvitation": "Odbij poziv",
   "inviteNotFound": "Poziv nije pronađen ili je istekao",
+  "invalidInviteToken": "Nevažeći kod ili link za pozivnicu.",
+  "inviteAlreadyClaimed": "Ovaj ugovor ili pozivnicu je već prihvatio drugi stanar.",
   "invitationAcceptedSuccess": "Dobrodošao/la kući! Poziv je prihvaćen.",
   "pendingInvitationBanner": "Imaš poziv za {property}",
   "@pendingInvitationBanner": {
@@ -794,7 +796,7 @@
   "actionableInsightsHeader": "Poruke za akciju",
   "inviteTenantOrAddContract": "Pozovi stanara / Dodaj ugovor",
   "ownershipQrOrLink": "Vlasnički QR / Link",
-  "changeLandlord": "Promeni vlasnika",
+  "changeLandlord": "Ažuriraj podatke vlasnika",
   "pendingDebtWarning": "Dugovanje čeka odobrenje agencije ili uplatu stanara",
   "landlordLabel": "Vlasnik: ",
   "invitePending": "Čeka pozivnicu",
@@ -2168,5 +2170,11 @@
   "subLabelUtilitiesDues": "Struja, voda, komunalije",
   "subLabelRepairsSettlements": "Popravke i prebijanja",
   "subLabelOverduePayments": "Zakasnela plaćanja",
-  "subLabelUpcomingRecords": "Predstojeće obaveze"
+  "subLabelUpcomingRecords": "Predstojeće obaveze",
+  "maintenanceAddedToRentNote": "{ticket}: +{amount} ({title}) dodato na kiriju",
+  "maintenanceOffsetFromRentNote": "{amount} ({title}) prebijeno od kirije",
+  "agencyWebPanelBannerBadge": "NOVI WEB PANEL",
+  "agencyWebPanelBannerTitle": "Napredni Web Panel za Agencije je spreman!",
+  "agencyWebPanelBannerDesc": "Pripremili smo napredniji web panel posvećen agencijama. Od sada možete nastaviti upravljanje agencijom putem web panela.",
+  "agencyWebPanelBannerCta": "Otvori Web Panel"
 }

@@ -2,44 +2,44 @@ import { NextResponse } from "next/server";
 
 const emailTranslations: Record<string, { subject: string; greeting: string; text: string; btn: string; fallback: string; footer: string }> = {
   TR: {
-    subject: "🚀 Stanomer Acente Paneliniz Hazır! (Tek Tıkla Giriş)",
+    subject: "🚀 Stanomer Acente Paneliniz Hazır! (7 Günlük Tam Yetkili Giriş)",
     greeting: "Sayın",
-    text: "Acenteniz için 3 günlük kişiselleştirilmiş interaktif demo paneliniz hazırlandı. Şifreye ihtiyaç duymadan, aşağıdaki butona tıklayarak doğrudan acente kokpitinize bağlanabilir; logonuzu ve kurumsal renklerinizi web sitenizden çekerek tek tıkla örnek portföy üretebilirsiniz:",
+    text: "Acenteniz için 7 günlük kişiselleştirilmiş interaktif demo paneliniz hazırlandı. Şifreye ihtiyaç duymadan, aşağıdaki butona tıklayarak doğrudan acente kokpitinize bağlanabilir; yaptığınız tüm işlemleri güvenle saklayabilirsiniz:",
     btn: "🎯 Acente Panelime Doğrudan Giriş Yap (Magic Link)",
     fallback: "Buton çalışmıyorsa aşağıdaki doğrudan giriş bağlantısını tarayıcınıza kopyalayabilirsiniz:",
-    footer: "Bu bağlantı acentenize özel tek tıkla giriş sağlayan güvenli magic linktir. 3 günlük ücretsiz sandbox süreniz bağlantıyı ilk açtığınız an başlar."
+    footer: "Bu bağlantı acentenize özel tek tıkla giriş sağlayan güvenli magic linktir. 7 günlük ücretsiz sandbox süreniz bağlantıyı ilk açtığınız an başlar."
   },
   EN: {
-    subject: "🚀 Your Stanomer Agency Panel is Ready! (One-Click Magic Link)",
+    subject: "🚀 Your Stanomer Agency Panel is Ready! (7-Day Full Access Magic Link)",
     greeting: "Dear",
-    text: "Your 3-day branded agency demo sandbox is ready. No password required! Click the button below to log directly into your agency cockpit, automatically fetch your logo & brand colors, and generate a full sample portfolio with a single click:",
+    text: "Your 7-day branded agency demo sandbox is ready. No password required! Click the button below to log directly into your agency cockpit and keep all your changes safely stored:",
     btn: "🎯 Launch Agency Cockpit (Magic Link)",
     fallback: "If the button above does not work, copy and paste this direct access link into your browser:",
-    footer: "This is a secure one-click magic link generated for your agency. Your 3-day free sandbox begins upon your first login."
+    footer: "This is a secure one-click magic link generated for your agency. Your 7-day free sandbox begins upon your first login."
   },
   SR_LAT: {
-    subject: "🚀 Vaš Stanomer Agencijski Panel je Spreman! (Prijava Jednim Klikom)",
+    subject: "🚀 Vaš Stanomer Agencijski Panel je Spreman! (7-dnevna prijava jednim klikom)",
     greeting: "Poštovani",
-    text: "Vaš 3-dnevni personalizovani interaktivni demo panel za agenciju je pripremljen. Bez potrebe za lozinkom, kliknite na dugme ispod da se direktno prijavite u agencijski kokpit, preuzmete logo i boje sa vašeg sajta i jednim klikom generišete primer portfolija:",
+    text: "Vaš 7-dnevni personalizovani interaktivni demo panel za agenciju je pripremljen. Bez potrebe za lozinkom, kliknite na dugme ispod da se direktno prijavite u agencijski kokpit i bezbedno sačuvate sve podatke:",
     btn: "🎯 Otvorite Agencijski Panel (Magic Link)",
     fallback: "Ako dugme ne radi, kopirajte sledeći link za direktnu prijavu u vaš pregledač:",
-    footer: "Ovaj link je bezbedan jednokratni magic link kreiran za vašu agenciju. Vaš 3-dnevni besplatan sandbox period počinje prvim ulaskom."
+    footer: "Ovaj link je bezbedan jednokratni magic link kreiran za vašu agenciju. Vaš 7-dnevni besplatan sandbox period počinje prvim ulaskom."
   },
   SR_CYR: {
-    subject: "🚀 Ваш Станомер Агенцијски Панел је Спреман! (Пријава Једним Кликом)",
+    subject: "🚀 Ваш Станомер Агенцијски Панел је Спреман! (7-дневна пријава једним кликом)",
     greeting: "Поштовани",
-    text: "Ваш 3-дневни персонализовани интерактивни демо панел за агенцију је припремљен. Без потребе за лозинком, кликните на дугме испод да се директно пријавите у агенцијски кокпит, преузмете лого и боје са вашег сајта и једним кликом генеришете пример портфолија:",
+    text: "Ваш 7-дневни персонализовани интерактивни демо панел за агенцију је припремљен. Без потребе за лозинком, кликните на дугме испод да се директно пријавите у агенцијски кокпит и безбедно сачувате све податке:",
     btn: "🎯 Отворите Агенцијски Панел (Magic Link)",
     fallback: "Ако дугме не ради, копирајте следећи линк за директну пријаву у ваш прегледач:",
-    footer: "Овај линк је безбедан једнократни magic link креиран за вашу агенцију. Ваш 3-дневни бесплатан sandbox период почиње првим уласком."
+    footer: "Овај линк је безбедан једнократни magic link креиран за вашу агенцију. Ваш 7-дневни бесплатан sandbox период почиње првим уласком."
   },
   RU: {
-    subject: "🚀 Ваша Панель Stanomer для Агентства Готова! (Вход в Один Клик)",
+    subject: "🚀 Ваша Панель Stanomer для Агентства Готова! (Вход в один клик на 7 дней)",
     greeting: "Уважаемый(ая)",
-    text: "Ваша 3-дневная персонализированная демо-панель для агентства готова. Без ввода пароля нажмите кнопку ниже, чтобы напрямую войти в панель управления, автоматически загрузить ваш логотип и цвета и в один клик создать тестовое портфолио:",
+    text: "Ваша 7-дневная персонализированная демо-панель для агентства готова. Без ввода пароля нажмите кнопку ниже, чтобы напрямую войти в панель управления и сохранить все ваши данные:",
     btn: "🎯 Войти в Панель Агентства (Magic Link)",
     fallback: "Если кнопка не работает, скопируйте следующую ссылку для прямого входа в браузер:",
-    footer: "Это безопасная ссылка прямого доступа (magic link) для вашего агентства. 3-дневный тестовый период начинается с первого входа."
+    footer: "Это безопасная ссылка прямого доступа (magic link) для вашего агентства. 7-дневный тестовый период начинается с первого входа."
   }
 };
 
@@ -92,7 +92,7 @@ function checkRateLimit(ip: string): boolean {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, agencyName, website, verificationToken, lang, honeypot } = body;
+    const { email, agencyName, website, phone, verificationToken, lang, honeypot } = body;
 
     // 1. Invisible Honeypot Check (Catches bots that auto-fill all inputs)
     if (honeypot && typeof honeypot === "string" && honeypot.trim().length > 0) {
@@ -131,12 +131,16 @@ export async function POST(request: Request) {
     // 3. Resolve or generate verificationToken
     let token = verificationToken;
     if (!token) {
-      const devSupabaseUrl = "https://thvbpifahvasyzmngpzp.supabase.co";
+      const devSupabaseUrl = "https://nbcbfmhztnnhfnapvaet.supabase.co";
       const devSupabaseKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU";
+        "sb_publishable_kY2aoizXZkGz2DsG6-sg-Q_Vm2Ef2mq";
 
       const formattedWebsite = website && typeof website === "string" && website.trim()
         ? (/^https?:\/\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
+        : null;
+
+      const formattedPhone = phone && typeof phone === "string" && phone.trim()
+        ? phone.trim()
         : null;
 
       const dbRes = await fetch(`${devSupabaseUrl}/rest/v1/agency_demo_requests`, {
@@ -150,6 +154,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           agency_name: (agencyName || "Agency").trim(),
           email: email.toLowerCase().trim(),
+          phone_number: formattedPhone,
           website: formattedWebsite,
           status: "pending",
         }),

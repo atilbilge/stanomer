@@ -246,6 +246,13 @@ class AppLocalizationsSr extends AppLocalizations {
   String get inviteNotFound => 'Poziv nije pronađen ili je istekao';
 
   @override
+  String get invalidInviteToken => 'Nevažeći kod ili link za pozivnicu.';
+
+  @override
+  String get inviteAlreadyClaimed =>
+      'Ovaj ugovor ili pozivnicu je već prihvatio drugi stanar.';
+
+  @override
   String get invitationAcceptedSuccess =>
       'Dobrodošao/la kući! Poziv je prihvaćen.';
 
@@ -1764,7 +1771,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get ownershipQrOrLink => 'Vlasnički QR / Link';
 
   @override
-  String get changeLandlord => 'Promeni vlasnika';
+  String get changeLandlord => 'Ažuriraj podatke vlasnika';
 
   @override
   String get pendingDebtWarning =>
@@ -4094,6 +4101,34 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get subLabelUpcomingRecords => 'Predstojeće obaveze';
+
+  @override
+  String maintenanceAddedToRentNote(
+    Object amount,
+    Object ticket,
+    Object title,
+  ) {
+    return '$ticket: +$amount ($title) dodato na kiriju';
+  }
+
+  @override
+  String maintenanceOffsetFromRentNote(Object amount, Object title) {
+    return '$amount ($title) prebijeno od kirije';
+  }
+
+  @override
+  String get agencyWebPanelBannerBadge => 'NOVI WEB PANEL';
+
+  @override
+  String get agencyWebPanelBannerTitle =>
+      'Napredni Web Panel za Agencije je spreman!';
+
+  @override
+  String get agencyWebPanelBannerDesc =>
+      'Pripremili smo napredniji web panel posvećen agencijama. Od sada možete nastaviti upravljanje agencijom putem web panela.';
+
+  @override
+  String get agencyWebPanelBannerCta => 'Otvori Web Panel';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -4337,6 +4372,13 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get inviteNotFound => 'Позив није пронађен или је истекао';
+
+  @override
+  String get invalidInviteToken => 'Неважећи код или линк за позивницу.';
+
+  @override
+  String get inviteAlreadyClaimed =>
+      'Овај уговор или позивницу је већ прихватио други станар.';
 
   @override
   String get invitationAcceptedSuccess => 'Добродошли! Позив је прихваћен.';
@@ -5861,7 +5903,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get ownershipQrOrLink => 'Власнички QR / Линк';
 
   @override
-  String get changeLandlord => 'Промени власника';
+  String get changeLandlord => 'Ажурирај податке власника';
 
   @override
   String get pendingDebtWarning =>
@@ -8186,4 +8228,32 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get subLabelUpcomingRecords => 'Предстојеће обавезе';
+
+  @override
+  String maintenanceAddedToRentNote(
+    Object amount,
+    Object ticket,
+    Object title,
+  ) {
+    return '$ticket: +$amount ($title) додато на кирију';
+  }
+
+  @override
+  String maintenanceOffsetFromRentNote(Object amount, Object title) {
+    return '$amount ($title) пребијено од кирије';
+  }
+
+  @override
+  String get agencyWebPanelBannerBadge => 'НОВИ ВЕБ ПАНЕЛ';
+
+  @override
+  String get agencyWebPanelBannerTitle =>
+      'Напредни Веб Панел за Агенције је спреман!';
+
+  @override
+  String get agencyWebPanelBannerDesc =>
+      'Припремили смо напреднији веб панел посвећен агенцијама. Од сада можете наставити управљање агенцијом путем веб панела.';
+
+  @override
+  String get agencyWebPanelBannerCta => 'Отвори Веб Панел';
 }

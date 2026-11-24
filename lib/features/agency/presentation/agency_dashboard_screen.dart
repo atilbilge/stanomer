@@ -8,6 +8,7 @@
 //
 // Global FAB: Mülk Ekle (+)
 
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,6 +43,147 @@ import '../../maintenance/data/maintenance_repository.dart';
 import '../../maintenance/presentation/widgets/agency_property_picker_sheet.dart';
 import 'widgets/agency_demo_sandbox_banner.dart';
 import 'widgets/agency_finance_report_sheet.dart';
+
+// ---------------------------------------------------------------------------
+// Agency Web Panel Announcement Banner
+// ---------------------------------------------------------------------------
+
+class _AgencyWebPanelBanner extends StatelessWidget {
+  final AppLocalizations loc;
+
+  const _AgencyWebPanelBanner({required this.loc});
+
+  Future<void> _openWebPanel() async {
+    final uri = Uri.parse('https://www.stanomer.online/agency-panel');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 640;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF12406A), Color(0xFF1B5888)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1B5888).withValues(alpha: 0.22),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: isWide
+          ? Row(
+              children: [
+                _buildIconBox(),
+                const SizedBox(width: 14),
+                Expanded(child: _buildTextContent()),
+                const SizedBox(width: 16),
+                _buildActionButton(),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildIconBox(),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildTextContent()),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: _buildActionButton(),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildIconBox() {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: const Icon(LucideIcons.monitor, color: Colors.white, size: 20),
+    );
+  }
+
+  Widget _buildTextContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            loc.agencyWebPanelBannerBadge,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          loc.agencyWebPanelBannerTitle,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          loc.agencyWebPanelBannerDesc,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.88),
+            fontSize: 12,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton() {
+    return ElevatedButton.icon(
+      onPressed: _openWebPanel,
+      icon: const Icon(LucideIcons.externalLink, size: 15),
+      label: Text(
+        loc.agencyWebPanelBannerCta,
+        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF12406A),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 0,
+      ),
+    );
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Actionable Insights Types & Helpers
@@ -171,134 +314,332 @@ final agencyPropertiesProvider = StreamProvider<List<Property>>((ref) {
   return repo.getPropertiesStream(userId: user.id, role: role == 'landlord' ? 'landlord' : 'agency');
 });
 
-final agencyAllPaymentsProvider =
-    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
-  final propertiesAsync = ref.watch(agencyPropertiesProvider);
-  final properties = propertiesAsync.value ?? [];
-  final maintenanceAsync = ref.watch(agencyMaintenanceRequestsProvider);
-  final maintenanceList = maintenanceAsync.value ?? [];
-  final chargesAsync = ref.watch(agencyMaintenanceChargesProvider);
-  final charges = chargesAsync.value ?? [];
+List<Map<String, dynamic>> _processRentPayments(List<Map<String, dynamic>> rawRows) {
+  final Map<String, List<Map<String, dynamic>>> groupedByMonth = {};
+  for (final p in rawRows) {
+    final dueDateStr = p['due_date'] as String?;
+    final dt = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+    final key = dt != null ? '${dt.year}-${dt.month}' : 'unknown';
+    groupedByMonth.putIfAbsent(key, () => []).add(p);
+  }
+
+  final List<Map<String, dynamic>> list = [];
+  for (final monthList in groupedByMonth.values) {
+    final Map<String, Map<String, dynamic>> bestByTitle = {};
+    for (final p in monthList) {
+      final title = (p['title'] as String? ?? 'Kira').trim().toLowerCase();
+      final existing = bestByTitle[title];
+      if (existing == null) {
+        bestByTitle[title] = p;
+      } else {
+        final pAmount = (p['amount'] as num?)?.toDouble() ?? 0.0;
+        final exAmount = (existing['amount'] as num?)?.toDouble() ?? 0.0;
+        if (pAmount > 0 && exAmount == 0) {
+          bestByTitle[title] = p;
+        } else if (p['status'] == 'declared' && existing['status'] != 'declared') {
+          bestByTitle[title] = p;
+        } else if (p['receipt_url'] != null && existing['receipt_url'] == null) {
+          bestByTitle[title] = p;
+        }
+      }
+    }
+    list.addAll(bestByTitle.values);
+  }
+
+  list.sort((a, b) {
+    final aDate = a['due_date'] != null ? DateTime.tryParse(a['due_date'] as String) ?? DateTime(1970) : DateTime(1970);
+    final bDate = b['due_date'] != null ? DateTime.tryParse(b['due_date'] as String) ?? DateTime(1970) : DateTime(1970);
+    return bDate.compareTo(aDate);
+  });
+  return list;
+}
+
+final AutoDisposeProvider<void> _agencyPaymentsRealtimeListenerProvider =
+    Provider.autoDispose<void>((ref) {
+  final properties = ref.watch(agencyPropertiesProvider).value ?? [];
+  if (properties.isEmpty) return;
+
+  final user = ref.watch(currentUserProvider);
+  final client = Supabase.instance.client;
+  final propertiesMap = {for (var p in properties) p.id: p};
+
+  Timer? debounceTimer;
+  final channel = client
+      .channel('agency_payments_sync_${user?.id ?? 'agency'}')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'rent_payments',
+        callback: (payload) {
+          final changedPropId = payload.newRecord['property_id'] as String? ??
+              payload.oldRecord['property_id'] as String?;
+          if (changedPropId != null && propertiesMap.containsKey(changedPropId)) {
+            debounceTimer?.cancel();
+            debounceTimer = Timer(const Duration(milliseconds: 600), () {
+              ref.invalidate(agencyAllPaymentsProvider);
+            });
+          }
+        },
+      )
+      .subscribe();
+
+  ref.onDispose(() {
+    debounceTimer?.cancel();
+    client.removeChannel(channel);
+  });
+});
+
+final AutoDisposeFutureProvider<List<Map<String, dynamic>>> agencyAllPaymentsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+  ref.watch(_agencyPaymentsRealtimeListenerProvider);
+  final properties = ref.watch(agencyPropertiesProvider).value ?? [];
+  if (properties.isEmpty) return [];
+
+  final maintenanceList = ref.watch(agencyMaintenanceRequestsProvider).value ?? [];
+  final charges = ref.watch(agencyMaintenanceChargesProvider).value ?? [];
   final chargesByRequestId = {for (var c in charges) c.maintenanceRequestId: c};
 
-  if (properties.isEmpty) return Stream.value([]);
+  final client = Supabase.instance.client;
+  final propertiesMap = {for (var p in properties) p.id: p};
 
-  final repo = ref.watch(propertyRepositoryProvider);
-  return Rx.combineLatest<List<RentPayment>, List<Map<String, dynamic>>>(
-    properties.map((p) => repo.getRentPaymentsStream(p.id)),
-    (List<List<RentPayment>> allPaymentsList) {
-      final List<Map<String, dynamic>> result = [];
-      final propertiesMap = {for (var p in properties) p.id: p};
-      final seenPaymentIds = <String>{};
+  // Batch fetch rent_payments for all agency properties in a SINGLE query
+  final propertyIds = properties.map((p) => p.id).toList();
+  List<Map<String, dynamic>> rawRows = [];
+  try {
+    final rows = await client
+        .from('rent_payments')
+        .select('*')
+        .inFilter('property_id', propertyIds)
+        .order('due_date', ascending: false);
+    rawRows = (rows as List).map((r) => Map<String, dynamic>.from(r as Map)).toList();
+  } catch (_) {}
 
-      for (int i = 0; i < properties.length; i++) {
-        final propMap = properties[i].toJson();
-        for (final payment in allPaymentsList[i]) {
-          if (!seenPaymentIds.add(payment.id)) continue;
-          final json = payment.toJson();
-          json['property'] = propMap;
-          json['property_id'] = properties[i].id;
-          result.add(json);
-        }
-      }
+  // Group raw rows by property_id
+  final Map<String, List<Map<String, dynamic>>> rowsByProperty = {};
+  for (final r in rawRows) {
+    final pid = r['property_id'] as String?;
+    if (pid != null) {
+      rowsByProperty.putIfAbsent(pid, () => []).add(r);
+    }
+  }
 
-      // Add maintenance financial settlements awaiting agency approval (pending_agency_approval / pending_review / pending_opposite_approval with cost > 0) or paid
-      final seenMaintenanceIds = <String>{};
-      for (final m in maintenanceList) {
-        if (!seenMaintenanceIds.add(m.id)) continue;
-        final cost = (m.costAmount ?? 0.0);
-        final hasValidCost = cost > 0;
-        if (!hasValidCost) continue;
+  final List<Map<String, dynamic>> result = [];
+  final seenPaymentIds = <String>{};
 
-        final isPendingApproval = m.paymentStatus == 'pending_agency_approval' ||
-            m.paymentStatus == 'pending_review' ||
-            m.paymentStatus == 'pending_opposite_approval';
-        final isPaid = m.paymentStatus == 'paid';
-        final isPendingPayment = m.paymentStatus == 'pending_payment';
+  for (final prop in properties) {
+    final propRows = rowsByProperty[prop.id] ?? [];
+    final propMap = prop.toJson();
+    final processedPayments = _processRentPayments(propRows);
 
-        if (isPendingApproval || isPaid || isPendingPayment) {
-          final propObj = propertiesMap[m.propertyId];
-          if (propObj == null) continue;
-          final propMap = propObj.toJson();
+    for (final payment in processedPayments) {
+      final pid = payment['id'] as String?;
+      if (pid != null && !seenPaymentIds.add(pid)) continue;
+      final json = Map<String, dynamic>.from(payment);
+      json['property'] = propMap;
+      json['property_id'] = prop.id;
+      result.add(json);
+    }
+  }
 
-          final effectiveAmount = (m.remainingAmount > 0) ? m.remainingAmount : cost;
+  // Add maintenance financial settlements awaiting agency approval or paid
+  final seenMaintenanceIds = <String>{};
+  for (final m in maintenanceList) {
+    if (!seenMaintenanceIds.add(m.id)) continue;
+    final cost = (m.costAmount ?? 0.0);
+    final hasValidCost = cost > 0;
+    if (!hasValidCost) continue;
 
-          final matchingCharge = chargesByRequestId[m.id];
-          final isTenantDebtor = (m.paidBy == 'agency' && matchingCharge != null && matchingCharge.debtorId != propObj.landlordId);
-          final isLandlordDebtor = (m.paidBy == 'agency' && !isTenantDebtor) ||
-              (m.paidBy == 'tenant');
+    final isPendingApproval = m.paymentStatus == 'pending_agency_approval' ||
+        m.paymentStatus == 'pending_review' ||
+        m.paymentStatus == 'pending_opposite_approval';
+    final isPaid = m.paymentStatus == 'paid';
+    final isPendingPayment = m.paymentStatus == 'pending_payment';
 
-          final mJson = {
-            'id': m.id,
-            'property_id': m.propertyId,
-            'property': propMap,
-            'title': '🛠️ ${m.title}',
-            'amount': effectiveAmount,
-            'cost_amount': cost,
-            'remaining_amount': m.remainingAmount,
-            'settled_amount': m.settledAmount,
-            'currency': m.currency ?? (propObj.currency.isNotEmpty ? propObj.currency : 'EUR'),
-            'due_date': (m.paymentDate ?? m.updatedAt ?? m.createdAt ?? DateTime.now()).toIso8601String(),
-            'status': isPendingApproval ? 'declared' : (isPendingPayment ? 'pending_payment' : 'paid'),
-            'payment_status': m.paymentStatus,
-            'receiver_type': isTenantDebtor ? 'tenant' : 'landlord',
-            'paid_by': m.paidBy,
-            'receipt_url': m.invoicePdfUrl,
-            'is_maintenance': true,
-            'maintenance_request': m,
-            'maintenance_charge': matchingCharge,
-            'debtor_id': matchingCharge?.debtorId,
-            'is_tenant_debtor': isTenantDebtor,
-            'is_landlord_debtor': isLandlordDebtor,
-            'payer_role': m.paidBy ?? 'landlord',
-            'created_at': m.createdAt?.toIso8601String(),
-          };
-          result.add(mJson);
-        }
-      }
+    if (isPendingApproval || isPaid || isPendingPayment) {
+      final propObj = propertiesMap[m.propertyId];
+      if (propObj == null) continue;
+      final propMap = propObj.toJson();
 
-      result.sort((a, b) {
-        final dueAStr = a['due_date'] as String?;
-        final dueBStr = b['due_date'] as String?;
-        if (dueAStr == null || dueBStr == null) return 0;
-        final dueA = DateTime.tryParse(dueAStr) ?? DateTime(1970);
-        final dueB = DateTime.tryParse(dueBStr) ?? DateTime(1970);
-        return dueB.compareTo(dueA);
-      });
-      return result;
-    },
-  );
+      final effectiveAmount = (m.remainingAmount > 0) ? m.remainingAmount : cost;
+
+      final matchingCharge = chargesByRequestId[m.id];
+      final isTenantDebtor = (m.paidBy == 'agency' && matchingCharge != null && matchingCharge.debtorId != propObj.landlordId);
+      final isLandlordDebtor = (m.paidBy == 'agency' && !isTenantDebtor) ||
+          (m.paidBy == 'tenant');
+
+      final mJson = {
+        'id': m.id,
+        'property_id': m.propertyId,
+        'property': propMap,
+        'title': '🛠️ ${m.title}',
+        'amount': effectiveAmount,
+        'cost_amount': cost,
+        'remaining_amount': m.remainingAmount,
+        'settled_amount': m.settledAmount,
+        'currency': m.currency ?? (propObj.currency.isNotEmpty ? propObj.currency : 'EUR'),
+        'due_date': (m.paymentDate ?? m.updatedAt ?? m.createdAt ?? DateTime.now()).toIso8601String(),
+        'status': isPendingApproval ? 'declared' : (isPendingPayment ? 'pending_payment' : 'paid'),
+        'payment_status': m.paymentStatus,
+        'receiver_type': isTenantDebtor ? 'tenant' : 'landlord',
+        'paid_by': m.paidBy,
+        'receipt_url': m.invoicePdfUrl,
+        'is_maintenance': true,
+        'maintenance_request': m,
+        'maintenance_charge': matchingCharge,
+        'debtor_id': matchingCharge?.debtorId,
+        'is_tenant_debtor': isTenantDebtor,
+        'is_landlord_debtor': isLandlordDebtor,
+        'payer_role': m.paidBy ?? 'landlord',
+        'created_at': m.createdAt?.toIso8601String(),
+      };
+      result.add(mJson);
+    }
+  }
+
+  result.sort((a, b) {
+    final dueAStr = a['due_date'] as String?;
+    final dueBStr = b['due_date'] as String?;
+    if (dueAStr == null || dueBStr == null) return 0;
+    final dueA = DateTime.tryParse(dueAStr) ?? DateTime(1970);
+    final dueB = DateTime.tryParse(dueBStr) ?? DateTime(1970);
+    return dueB.compareTo(dueA);
+  });
+  return result;
 });
 
 final agencyPendingPaymentsProvider =
-    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+    Provider.autoDispose<AsyncValue<List<Map<String, dynamic>>>>((ref) {
   final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
-  final payments = allPaymentsAsync.value ?? [];
-  return Stream.value(payments.where((item) => item['status'] == 'declared' || item['status'] == 'disputed').toList());
+  return allPaymentsAsync.whenData((payments) =>
+      payments.where((item) => item['status'] == 'declared' || item['status'] == 'disputed').toList());
 });
 
-final agencyContractsMapProvider = StreamProvider.autoDispose<Map<String, Contract?>>((ref) {
-  final propertiesAsync = ref.watch(agencyPropertiesProvider);
-  final properties = propertiesAsync.value ?? [];
-  if (properties.isEmpty) return Stream.value({});
+final agencyContractsMapProvider =
+    FutureProvider.autoDispose<Map<String, Contract?>>((ref) async {
+  final properties = ref.watch(agencyPropertiesProvider).value ?? [];
+  if (properties.isEmpty) return {};
 
-  final repo = ref.watch(propertyRepositoryProvider);
-  return Rx.combineLatest<Contract?, Map<String, Contract?>>(
-    properties.map((p) => repo.getActiveContractStream(p.id)),
-    (List<Contract?> contracts) {
-      final Map<String, Contract?> map = {};
-      for (int i = 0; i < properties.length; i++) {
-        map[properties[i].id] = contracts[i];
+  final client = Supabase.instance.client;
+  final propertyIds = properties.map((p) => p.id).toList();
+  final Map<String, List<Contract>> contractsByProperty = {
+    for (final id in propertyIds) id: <Contract>[],
+  };
+
+  try {
+    final rows = await client
+        .from('contracts')
+        .select('*')
+        .inFilter('property_id', propertyIds);
+    for (final r in (rows as List)) {
+      try {
+        final contract = Contract.fromJson(r as Map<String, dynamic>);
+        if (contract.propertyId != null && contractsByProperty.containsKey(contract.propertyId)) {
+          contractsByProperty[contract.propertyId]!.add(contract);
+        }
+      } catch (_) {}
+    }
+  } catch (_) {}
+
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final Map<String, Contract?> result = {};
+
+  for (final prop in properties) {
+    final contracts = contractsByProperty[prop.id] ?? [];
+    if (contracts.isEmpty) {
+      result[prop.id] = null;
+      continue;
+    }
+
+    // 1. Check contracts that cover today
+    final currentCoverage = contracts.where((c) {
+      final startsInPastOrToday = c.startDate == null ||
+          !DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day).isAfter(today);
+      final endsInFutureOrToday = c.endDate == null ||
+          !DateTime(c.endDate!.year, c.endDate!.month, c.endDate!.day).isBefore(today);
+      return startsInPastOrToday &&
+          endsInFutureOrToday &&
+          (c.status == ContractStatus.active ||
+              c.status == ContractStatus.revisionRequested ||
+              c.status == ContractStatus.terminationRequested ||
+              c.status == ContractStatus.inactive);
+    }).toList();
+
+    if (currentCoverage.isNotEmpty) {
+      currentCoverage.sort((a, b) {
+        if (a.startDate != null && b.startDate != null) {
+          final cmp = b.startDate!.compareTo(a.startDate!);
+          if (cmp != 0) return cmp;
+        }
+        final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+        final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
+        return bTime.compareTo(aTime);
+      });
+      result[prop.id] = currentCoverage.first;
+      continue;
+    }
+
+    // 2. If no contract covers today, prefer contracts that started in the past or today
+    final pastOrCurrent = contracts.where((c) {
+      return c.startDate == null ||
+          !DateTime(c.startDate!.year, c.startDate!.month, c.startDate!.day).isAfter(today);
+    }).toList();
+
+    if (pastOrCurrent.isNotEmpty) {
+      pastOrCurrent.sort((a, b) {
+        final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+        final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
+        return bTime.compareTo(aTime);
+      });
+      result[prop.id] = pastOrCurrent.first;
+      continue;
+    }
+
+    // 3. Fallback: only future contracts exist
+    contracts.sort((a, b) {
+      final aTime = a.updatedAt ?? a.createdAt ?? DateTime(2000);
+      final bTime = b.updatedAt ?? b.createdAt ?? DateTime(2000);
+      return bTime.compareTo(aTime);
+    });
+    result[prop.id] = contracts.first;
+  }
+
+  return result;
+});
+
+final agencyLandlordInvitesMapProvider =
+    FutureProvider.autoDispose<Map<String, List<Map<String, dynamic>>>>((ref) async {
+  final properties = ref.watch(agencyPropertiesProvider).value ?? [];
+  if (properties.isEmpty) return {};
+
+  final client = Supabase.instance.client;
+  final propertyIds = properties.map((p) => p.id).toList();
+  final Map<String, List<Map<String, dynamic>>> resultMap = {
+    for (final id in propertyIds) id: <Map<String, dynamic>>[],
+  };
+
+  try {
+    final rows = await client
+        .from('invitations')
+        .select('id, property_id, target_role, status, invitee_email, created_at')
+        .inFilter('property_id', propertyIds)
+        .eq('target_role', 'landlord');
+    for (final r in (rows as List)) {
+      final map = r as Map<String, dynamic>;
+      final pid = map['property_id'] as String?;
+      if (pid != null && resultMap.containsKey(pid)) {
+        resultMap[pid]!.add(map);
       }
-      return map;
-    },
-  );
+    }
+  } catch (_) {}
+
+  return resultMap;
 });
 
 final propertyLandlordInvitesProvider =
-    StreamProvider.family.autoDispose<List<Map<String, dynamic>>, String>((ref, propertyId) {
-  final repo = ref.watch(propertyRepositoryProvider);
-  return repo.getLandlordInvitationsStreamForProperty(propertyId);
+    Provider.family.autoDispose<AsyncValue<List<Map<String, dynamic>>>, String>((ref, propertyId) {
+  final mapAsync = ref.watch(agencyLandlordInvitesMapProvider);
+  return mapAsync.whenData((map) => map[propertyId] ?? const []);
 });
 
 // ---------------------------------------------------------------------------
@@ -634,6 +975,8 @@ class _AgencyDashboardScreenState extends ConsumerState<AgencyDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _AgencyWebPanelBanner(loc: loc),
+                      const SizedBox(height: 16),
                       if (isDemo) ...[
                         AgencyDemoSandboxBanner(
                           agencyId: ref.watch(currentUserProvider)?.id ?? '',
@@ -1096,6 +1439,7 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
     final propertiesAsync = ref.watch(agencyPropertiesProvider);
     final allPaymentsAsync = ref.watch(agencyAllPaymentsProvider);
     final contractsMapAsync = ref.watch(agencyContractsMapProvider);
+    final landlordInvitesMap = ref.watch(agencyLandlordInvitesMapProvider).value ?? {};
     final userRole = ref.watch(userRoleProvider);
     final isLandlord = userRole == 'landlord';
 
@@ -1550,6 +1894,8 @@ class _AgencyPortfolioTabState extends ConsumerState<AgencyPortfolioTab> {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: _PropertyCard(
                                 property: property,
+                                contract: contractsMap[property.id],
+                                landlordInvites: landlordInvitesMap[property.id] ?? const [],
                                 hasPendingDebt: debtPropertyIds.contains(property.id),
                                 colors: widget.colors,
                                 onTap: () => context.push(
@@ -10002,20 +10348,23 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _PropertyTableView extends StatelessWidget {
+class _PropertyTableView extends ConsumerWidget {
   final List<Property> properties;
   final Set<String> debtPropertyIds;
   final AgencyColorScheme colors;
 
   const _PropertyTableView({
+    super.key,
     required this.properties,
     required this.debtPropertyIds,
     required this.colors,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
+    final contractsMap = ref.watch(agencyContractsMapProvider).value ?? {};
+    final landlordInvitesMap = ref.watch(agencyLandlordInvitesMapProvider).value ?? {};
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -10052,6 +10401,8 @@ class _PropertyTableView extends StatelessWidget {
                       final property = properties[i];
                       return _PropertyCompactRow(
                         property: property,
+                        contract: contractsMap[property.id],
+                        landlordInvites: landlordInvitesMap[property.id] ?? const [],
                         hasPendingDebt: debtPropertyIds.contains(property.id),
                         colors: colors,
                       );
@@ -10227,6 +10578,8 @@ class _PropertyTableView extends StatelessWidget {
                         final property = properties[i];
                         return _PropertyTableRow(
                           property: property,
+                          contract: contractsMap[property.id],
+                          landlordInvites: landlordInvitesMap[property.id] ?? const [],
                           hasPendingDebt: debtPropertyIds.contains(property.id),
                           colProperty: colProperty,
                           colLandlord: colLandlord,
@@ -10369,6 +10722,8 @@ class PortfolioDirectStatusHelper {
 
 class _PropertyTableRow extends ConsumerStatefulWidget {
   final Property property;
+  final Contract? contract;
+  final List<Map<String, dynamic>> landlordInvites;
   final bool hasPendingDebt;
   final double colProperty;
   final double colLandlord;
@@ -10380,6 +10735,8 @@ class _PropertyTableRow extends ConsumerStatefulWidget {
 
   const _PropertyTableRow({
     required this.property,
+    this.contract,
+    this.landlordInvites = const [],
     required this.hasPendingDebt,
     required this.colProperty,
     required this.colLandlord,
@@ -10402,13 +10759,9 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
     final loc = AppLocalizations.of(context)!;
     final property = widget.property;
     final hasPendingDebt = widget.hasPendingDebt;
-    final activeContractAsync = ref.watch(activeContractProvider(property.id));
-    final contract = activeContractAsync.value;
-    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
-    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
-
-    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
-    final landlordInvites = landlordInvitesAsync.value ?? [];
+    final contract = widget.contract;
+    final landlordInvites = widget.landlordInvites;
+    const String? tenantProfileName = null;
 
     final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
       property: property,
@@ -10764,22 +11117,22 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 'property_settings',
-                            child: Row(
-                              children: [
-                                const Icon(LucideIcons.settings, size: 15),
-                                const SizedBox(width: 8),
-                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 12.5)),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
                             value: 'change_landlord',
                             child: Row(
                               children: [
                                 const Icon(LucideIcons.userPlus, size: 15),
                                 const SizedBox(width: 8),
                                 Text(loc.changeLandlord, style: const TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'property_settings',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.settings, size: 15),
+                                const SizedBox(width: 8),
+                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 12.5)),
                               ],
                             ),
                           ),
@@ -10799,11 +11152,15 @@ class _PropertyTableRowState extends ConsumerState<_PropertyTableRow> {
 
 class _PropertyCompactRow extends ConsumerWidget {
   final Property property;
+  final Contract? contract;
+  final List<Map<String, dynamic>> landlordInvites;
   final bool hasPendingDebt;
   final AgencyColorScheme colors;
 
   const _PropertyCompactRow({
     required this.property,
+    this.contract,
+    this.landlordInvites = const [],
     required this.hasPendingDebt,
     required this.colors,
   });
@@ -10811,13 +11168,7 @@ class _PropertyCompactRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final activeContractAsync = ref.watch(activeContractProvider(property.id));
-    final contract = activeContractAsync.value;
-    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
-    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
-
-    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
-    final landlordInvites = landlordInvitesAsync.value ?? [];
+    const String? tenantProfileName = null;
 
     final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
       property: property,
@@ -10966,12 +11317,16 @@ class _PropertyCompactRow extends ConsumerWidget {
 
 class _PropertyCard extends ConsumerStatefulWidget {
   final Property property;
+  final Contract? contract;
+  final List<Map<String, dynamic>> landlordInvites;
   final bool hasPendingDebt;
   final VoidCallback onTap;
   final AgencyColorScheme colors;
 
   const _PropertyCard({
     required this.property,
+    this.contract,
+    this.landlordInvites = const [],
     required this.hasPendingDebt,
     required this.onTap,
     required this.colors,
@@ -10990,13 +11345,9 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
     final property = widget.property;
     final hasPendingDebt = widget.hasPendingDebt;
     final colors = widget.colors;
-    final activeContractAsync = ref.watch(activeContractProvider(property.id));
-    final contract = activeContractAsync.value;
-    final tenantProfileAsync = property.tenantId != null ? ref.watch(profileProvider(property.tenantId!)) : null;
-    final tenantProfileName = tenantProfileAsync?.value?['full_name'] as String?;
-
-    final landlordInvitesAsync = ref.watch(propertyLandlordInvitesProvider(property.id));
-    final landlordInvites = landlordInvitesAsync.value ?? [];
+    final contract = widget.contract;
+    final landlordInvites = widget.landlordInvites;
+    const String? tenantProfileName = null;
 
     final landlordInfo = PortfolioDirectStatusHelper.resolveLandlordDisplay(
       property: property,
@@ -11188,22 +11539,22 @@ class _PropertyCardState extends ConsumerState<_PropertyCard> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 'property_settings',
-                            child: Row(
-                              children: [
-                                const Icon(LucideIcons.settings, size: 16),
-                                const SizedBox(width: 8),
-                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 13)),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
                             value: 'change_landlord',
                             child: Row(
                               children: [
                                 const Icon(LucideIcons.userPlus, size: 16),
                                 const SizedBox(width: 8),
                                 Text(loc.changeLandlord, style: const TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'property_settings',
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.settings, size: 16),
+                                const SizedBox(width: 8),
+                                Text(loc.propertySettingsLabel, style: const TextStyle(fontSize: 13)),
                               ],
                             ),
                           ),

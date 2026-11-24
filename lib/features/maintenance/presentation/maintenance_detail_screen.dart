@@ -615,7 +615,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
     final bool isLandlordTenantDueDeclared = (request.paidBy == 'landlord' && !isLandlordSelfDeclared);
 
     final bool isAgencyTenantDamage = isPayerAgency &&
-        (latestCharge != null && latestCharge.chargeType == 'agency_advance' && latestCharge.debtorId != widget.property.landlordId);
+        (latestCharge != null && latestCharge.chargeType == 'agency_advance' && latestCharge.debtorId != null && latestCharge.debtorId != widget.property.landlordId);
 
     // Pure state-driven check: active receipt/payment submission under review
     // When debtor submits payment receipt, financialStatus moves to pendingReview/pendingAgencyApproval.
@@ -647,7 +647,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
                     ? 'Potvrda plaćanja'
                     : 'Payment Submission Approval'));
         final bool isLandlordDebtorSubmission = isPayerAgency
-            ? (latestCharge?.debtorId == widget.property.landlordId)
+            ? (latestCharge?.debtorId == null || latestCharge?.debtorId == widget.property.landlordId)
             : isPayerLandlord;
         approvalSubtitle = (loc.localeName == 'tr')
             ? (isLandlordDebtorSubmission

@@ -77,6 +77,8 @@
   "acceptInvitation": "Yes, I rented this place",
   "declineInvitation": "Decline Invitation",
   "inviteNotFound": "Invitation not found or expired",
+  "invalidInviteToken": "Invalid invitation code or link.",
+  "inviteAlreadyClaimed": "This contract or invitation has already been claimed by another tenant.",
   "invitationAcceptedSuccess": "Welcome home! Invitation accepted.",
   "pendingInvitationBanner": "You have a pending invitation for {property}",
   "@pendingInvitationBanner": {
@@ -794,7 +796,7 @@
   "actionableInsightsHeader": "Actionable Insights",
   "inviteTenantOrAddContract": "Invite Tenant / Add Contract",
   "ownershipQrOrLink": "Ownership QR / Link",
-  "changeLandlord": "Change Landlord",
+  "changeLandlord": "Update Landlord Info",
   "pendingDebtWarning": "Pending Debt Awaiting Agency Approval or Tenant Payment",
   "landlordLabel": "Landlord: ",
   "invitePending": "Invite Pending",
@@ -1775,5 +1777,11 @@
   "subLabelUtilitiesDues": "Utilities & dues",
   "subLabelRepairsSettlements": "Repairs & settlements",
   "subLabelOverduePayments": "Overdue payments",
-  "subLabelUpcomingRecords": "Upcoming records"
+  "subLabelUpcomingRecords": "Upcoming records",
+  "maintenanceAddedToRentNote": "{ticket}: +{amount} ({title}) added to rent",
+  "maintenanceOffsetFromRentNote": "{amount} ({title}) offset from rent",
+  "agencyWebPanelBannerBadge": "NEW WEB PANEL",
+  "agencyWebPanelBannerTitle": "Advanced Agency Web Panel is Ready!",
+  "agencyWebPanelBannerDesc": "We built a more powerful web management panel dedicated to agencies. You can now continue managing your agency operations from the web panel.",
+  "agencyWebPanelBannerCta": "Open Web Panel"
 }

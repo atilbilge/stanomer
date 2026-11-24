@@ -291,21 +291,43 @@ export default function FindAgencyPage() {
 
   useEffect(() => {
     async function fetchAgencies() {
+      // ── Client-side Local Storage Cache (24h) to eliminate repetitive PostgREST Egress ──
+      if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("stanomer_agencies_cache_v2");
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (
+              parsed &&
+              Array.isArray(parsed.agencies) &&
+              parsed.agencies.length > 0 &&
+              Date.now() - parsed.timestamp < 86400000 // 24 hours TTL
+            ) {
+              setAgencies(parsed.agencies);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+
       setLoading(true);
       setError(null);
 
       try {
-        // Parallel fetch: profiles (for logos & Stanomer usage), referral partners (for official partner badges) and directory agencies
+        // Parallel fetch: profiles (strictly agency role only to prevent mass user payload),
+        // referral partners (for official partner badges) and directory agencies (lean column projection)
         const [profilesRes, partnersRes, agenciesRes] = await Promise.all([
           supabase
             .from("profiles")
-            .select("email, company_name, full_name, logo_url, role"),
+            .select("email, company_name, full_name, logo_url, role")
+            .eq("role", "agency"),
           supabase
             .from("agency_referral_partners")
             .select("agency_name, email"),
           supabase
             .from("view_clean_agencies")
-            .select("*")
+            .select("id, acente_adi, resmi_tam_unvan, sehir, adres, web_sitesi, telefonlar, eposta_adresleri")
             .order("id", { ascending: true })
         ]);
 
@@ -365,7 +387,7 @@ export default function FindAgencyPage() {
           try {
             const prodRes = await prodPublicClient
               .from("view_clean_agencies")
-              .select("*")
+              .select("id, acente_adi, resmi_tam_unvan, sehir, adres, web_sitesi, telefonlar, eposta_adresleri")
               .order("id", { ascending: true });
             if (prodRes.data && prodRes.data.length > 0) {
               data = prodRes.data;
@@ -403,6 +425,11 @@ export default function FindAgencyPage() {
             };
           });
           setAgencies(mapped);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("stanomer_agencies_cache_v2", JSON.stringify({ timestamp: Date.now(), agencies: mapped }));
+            } catch (_) {}
+          }
         } else {
           const enriched = (data || []).map((a: any) => {
             const isMatchedPartner = checkMatch(a.acente_adi, a.resmi_tam_unvan, a.eposta_adresleri, partnerNames, partnerEmails);
@@ -432,6 +459,11 @@ export default function FindAgencyPage() {
             };
           });
           setAgencies(enriched);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("stanomer_agencies_cache_v2", JSON.stringify({ timestamp: Date.now(), agencies: enriched }));
+            } catch (_) {}
+          }
         }
       } catch (err: any) {
         console.error("Error fetching agencies:", err);

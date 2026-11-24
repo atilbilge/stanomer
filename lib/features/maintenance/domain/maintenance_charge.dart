@@ -73,9 +73,9 @@ class MaintenanceCharge {
 
   factory MaintenanceCharge.fromJson(Map<String, dynamic> json) {
     return MaintenanceCharge(
-      id: json['id'] as String,
-      maintenanceRequestId: json['maintenance_request_id'] as String,
-      propertyId: json['property_id'] as String,
+      id: (json['id'] ?? '').toString(),
+      maintenanceRequestId: (json['maintenance_request_id'] ?? '').toString(),
+      propertyId: (json['property_id'] ?? '').toString(),
       createdBy: json['created_by'] as String?,
       title: json['title'] as String?,
       chargeType: json['charge_type'] as String? ?? 'direct_charge',
@@ -89,7 +89,7 @@ class MaintenanceCharge {
       status: json['status'] as String? ?? 'pending',
       contractorPaymentStatus: json['contractor_payment_status'] as String?,
       contractorPaymentDate: json['contractor_payment_date'] != null
-          ? DateTime.tryParse(json['contractor_payment_date'] as String)
+          ? DateTime.tryParse(json['contractor_payment_date'].toString())
           : null,
       settlementMethod: json['settlement_method'] as String?,
       receiptUrl: json['receipt_url'] as String?,
@@ -97,20 +97,20 @@ class MaintenanceCharge {
       rejectionReason: json['rejection_reason'] as String?,
       rejectedBy: json['rejected_by'] as String?,
       declaredAt: json['declared_at'] != null
-          ? DateTime.tryParse(json['declared_at'] as String)
+          ? DateTime.tryParse(json['declared_at'].toString())
           : null,
       approvedAt: json['approved_at'] != null
-          ? DateTime.tryParse(json['approved_at'] as String)
+          ? DateTime.tryParse(json['approved_at'].toString())
           : null,
       approvedBy: json['approved_by'] as String?,
       paidAt: json['paid_at'] != null
-          ? DateTime.tryParse(json['paid_at'] as String)
+          ? DateTime.tryParse(json['paid_at'].toString())
           : null,
       createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
+          ? (DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now())
           : DateTime.now(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.tryParse(json['updated_at'] as String) ?? DateTime.now()
+          ? (DateTime.tryParse(json['updated_at'].toString()) ?? DateTime.now())
           : DateTime.now(),
     );
   }

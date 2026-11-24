@@ -11,7 +11,7 @@ class EnvConfig {
   /// Supabase URL (checks Flavor first, then dart-define, then .env)
   static String get supabaseUrl {
     if (F.appFlavor == Flavor.dev) {
-      return 'https://thvbpifahvasyzmngpzp.supabase.co';
+      return 'https://nbcbfmhztnnhfnapvaet.supabase.co';
     }
     if (F.appFlavor == Flavor.prod) {
       return 'https://ustcsvvkzsmsgzbptvpm.supabase.co';
@@ -27,7 +27,7 @@ class EnvConfig {
   /// Supabase Anon Key (checks Flavor first, then dart-define, then .env)
   static String get supabaseAnonKey {
     if (F.appFlavor == Flavor.dev) {
-      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmJwaWZhaHZhc3l6bW5ncHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjAxNzcsImV4cCI6MjEwMDgzNjE3N30.dNSz66kJcoSjflgCCrS7qw55efuDxF61TEMoYc3r4qU';
+      return 'sb_publishable_kY2aoizXZkGz2DsG6-sg-Q_Vm2Ef2mq';
     }
     if (F.appFlavor == Flavor.prod) {
       return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGNzdnZrenNtc2d6YnB0dnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzY1NjIsImV4cCI6MjA5MDkxMjU2Mn0.g1A1GfLrebJ3MnQUaCmr45JGPPAPLU77XtUKP6doA4g';

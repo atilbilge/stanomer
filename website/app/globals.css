@@ -3,24 +3,125 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 17, 24, 39; /* Gray 900 */
-  --background-rgb: 249, 250, 251; /* Gray 50 */
+  --foreground-rgb: 26, 26, 26; /* #1A1A1A */
+  --background-rgb: 248, 247, 245; /* #F8F7F5 */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));
-  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.70)), url('/assets/site_bg.jpg');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
+    @apply font-semibold tracking-tight text-[#1A1A1A];
   }
+}
+
+/* Stanomer Design System v4 (Kasım 2026) Component Utilities */
+.st-card {
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid #E5E3DF;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.st-btn-primary {
+  background-color: #1B5888;
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 10px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms ease;
+}
+.st-btn-primary:hover, .st-btn-primary:active {
+  background-color: #12406A;
+}
+.st-btn-primary:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.st-btn-secondary {
+  background-color: #FFFFFF;
+  color: #1B5888;
+  border: 1.5px solid #1B5888;
+  font-weight: 600;
+  border-radius: 10px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms ease;
+}
+.st-btn-secondary:hover {
+  background-color: #E5EEF6;
+}
+
+.st-input {
+  background-color: #FFFFFF;
+  border: 1.5px solid #8A8A8A;
+  border-radius: 8px;
+  min-height: 48px;
+  color: #1A1A1A;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.st-input:focus {
+  border-color: #1B5888;
+  box-shadow: 0 0 0 3px rgba(27, 88, 136, 0.35);
+}
+
+/* Status Pills (Design System v4: 6px radius, 4x10 padding, 12px 700, no uppercase) */
+.st-pill-paid {
+  background-color: #E6F3EA;
+  color: #2A6E43;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.02em;
+}
+
+.st-pill-pending {
+  background-color: #FBF1DC;
+  color: #8A5206;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.02em;
+}
+
+.st-pill-alert {
+  background-color: #FBEAE6;
+  color: #A33C29;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.02em;
+}
+
+.st-pill-partial {
+  background-color: #E5EEF6;
+  color: #1B5888;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.02em;
 }

@@ -41,5 +41,11 @@ abstract class Property with _$Property {
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _Property;
 
-  factory Property.fromJson(Map<String, dynamic> json) => _$PropertyFromJson(json);
+  factory Property.fromJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    normalized['name'] ??= normalized['title'] ?? '';
+    normalized['address'] ??= '';
+    normalized['default_monthly_rent'] ??= 0.0;
+    return _$PropertyFromJson(normalized);
+  }
 }

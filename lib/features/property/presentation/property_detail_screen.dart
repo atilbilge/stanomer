@@ -6458,6 +6458,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final logs = allLogs.where((log) {
       // 1. Precise match on payment_id
       if (log.metadata['payment_id'] == payment.id) return true;
+      final paymentIds = log.metadata['payment_ids'];
+      if (paymentIds is List && paymentIds.contains(payment.id)) return true;
       
       // 2. Fallback for older logs where payment_id is missing in metadata
       if (log.metadata['payment_id'] == null) {
@@ -8982,9 +8984,10 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
 
       // 1. Update rent payment with increased amount
+      final addedEntry = loc.maintenanceAddedToRentNote(req.displayId, formattedOffsetAmount, req.title);
       final note = payment.ownerNote != null && payment.ownerNote!.isNotEmpty
-          ? '${payment.ownerNote} • ${req.displayId}: +$formattedOffsetAmount (${req.title}) kiraya eklendi'
-          : '${req.displayId}: +$formattedOffsetAmount (${req.title}) kiraya eklendi';
+          ? '${payment.ownerNote} • $addedEntry'
+          : addedEntry;
 
       await ref.read(propertyRepositoryProvider).setPaymentInvoice(
         payment.id,
@@ -9096,7 +9099,13 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
       final monthStr = DateFormat('MMMM yyyy', loc.localeName).format(payment.dueDate);
 
       // 1. Update rent payment
-      final note = '${CurrencyUtils.formatAmount(offsetAmount, payment.currency)} ${loc.maintenanceSettlementsHeader} (${req.title}) mahsubu';
+      final offsetEntry = loc.maintenanceOffsetFromRentNote(
+        CurrencyUtils.formatAmount(offsetAmount, payment.currency),
+        req.title,
+      );
+      final note = payment.ownerNote != null && payment.ownerNote!.isNotEmpty
+          ? '${payment.ownerNote} • $offsetEntry'
+          : offsetEntry;
       if (paymentNewAmount <= 0) {
         // Fully paid via offset: keep original payment.amount so it's not treated as unentered 0, mark as paid
         await ref.read(propertyRepositoryProvider).setPaymentInvoice(
@@ -9639,14 +9648,16 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
     final chargesLoaded = chargesAsync.hasValue;
 
     final bool isAgencyTenantDamage = isAgencyPaid && chargesLoaded &&
-        (matchingCharge != null && matchingCharge.chargeType == 'agency_advance' && matchingCharge.debtorId != property.landlordId);
+        (matchingCharge != null && matchingCharge.chargeType == 'agency_advance' && matchingCharge.debtorId != null && matchingCharge.debtorId != property.landlordId);
 
     // For non-agency payments, paidBy is enough. For agency-paid, we need matchingCharge.
+    // Note: if agency recorded a fixture_landlord charge before landlord accepted ownership invite,
+    // debtorId may be null; treat null debtorId on agency_advance as landlord debt (never tenant debt).
     final bool isLandlordDebtor = isAgencyPaid
-        ? (chargesLoaded && matchingCharge != null ? matchingCharge.debtorId == property.landlordId : true)
+        ? (chargesLoaded && matchingCharge != null ? (matchingCharge.debtorId == null || matchingCharge.debtorId == property.landlordId) : true)
         : (request.paidBy == 'tenant'); // tenant paid → landlord is debtor (reimbursement flow)
     final bool isTenantDebtor = isAgencyPaid
-        ? (chargesLoaded && matchingCharge != null && matchingCharge.debtorId != property.landlordId)
+        ? (chargesLoaded && matchingCharge != null && matchingCharge.debtorId != null && matchingCharge.debtorId != property.landlordId)
         : false;
 
     final bool hasPartial = request.settledAmount > 0 && request.remainingAmount > 0;
@@ -10620,8 +10631,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           // No charge record yet — show only to agency manager
           if (charge == null) return isAgencyManager;
 
-          final debtorIsLandlord = charge.debtorId == property.landlordId;
-          final debtorIsTenant = charge.debtorId != property.landlordId;
+          final debtorIsLandlord = charge.debtorId == null || charge.debtorId == property.landlordId;
+          final debtorIsTenant = charge.debtorId != null && charge.debtorId != property.landlordId;
 
           if (isAgencyManager) return true;
           // Tenant: only see agency-paid items where TENANT is the debtor
@@ -10670,8 +10681,8 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
           if (!chargesAsync.hasValue) return false;
           if (charge == null) return isAgencyManager;
 
-          final debtorIsLandlord = charge.debtorId == property.landlordId;
-          final debtorIsTenant = charge.debtorId == property.tenantId;
+          final debtorIsLandlord = charge.debtorId == null || charge.debtorId == property.landlordId;
+          final debtorIsTenant = charge.debtorId != null && charge.debtorId == property.tenantId;
 
           if (isAgencyManager) return true;
           if (isTenant) return debtorIsTenant;
@@ -11031,7 +11042,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               if (r.paymentStatus != 'pending_payment' && !(r.paidBy == 'agency' && r.paymentStatus == 'pending_review')) return false;
               if (r.paidBy == 'agency') {
                 final charge = allCharges.where((c) => c.maintenanceRequestId == r.id).firstOrNull;
-                return charge != null && charge.debtorId != property.landlordId;
+                return charge != null && charge.debtorId != null && charge.debtorId != property.landlordId;
               }
               if (r.paidBy == 'landlord') {
                 return true;
@@ -11044,7 +11055,7 @@ class _FinancialsTabState extends ConsumerState<_FinancialsTab> {
               if (r.paymentStatus != 'pending_payment') return false;
               if (r.paidBy == 'agency') {
                 final charge = allCharges.where((c) => c.maintenanceRequestId == r.id).firstOrNull;
-                return charge?.debtorId == property.landlordId;
+                return charge == null || charge.debtorId == null || charge.debtorId == property.landlordId;
               }
               if (r.paidBy == 'tenant') {
                 return true;
@@ -13090,7 +13101,9 @@ String formatActivityLogDescription({
       final note = log.metadata['note']?.toString() ?? '';
       return note.isNotEmpty ? note : loc.manualNoteBadge;
     default:
-      return log.type;
+      if (log.type.isEmpty) return log.type;
+      final clean = log.type.replaceAll('_', ' ');
+      return '${clean[0].toUpperCase()}${clean.substring(1)}';
   }
 }
 

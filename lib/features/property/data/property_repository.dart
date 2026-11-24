@@ -356,7 +356,26 @@ final pendingInvitesForUserProvider = StreamProvider.autoDispose<List<Map<String
     contractsStream,
     invitationsStream,
     (List<Map<String, dynamic>> contracts, List<Map<String, dynamic>> invites) {
-      return [...contracts, ...invites];
+      final contractTokens = contracts
+          .map((c) => (c['token'] as String?) ?? '')
+          .where((t) => t.isNotEmpty)
+          .toSet();
+      final contractIds = contracts
+          .map((c) => (c['id'] as String?) ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      final filteredInvites = invites.where((inv) {
+        final invToken = (inv['token'] as String?) ?? '';
+        final invContractId = (inv['contract_id'] as String?) ?? '';
+        final targetRole = (inv['target_role'] as String?) ?? 'tenant';
+        if (targetRole == 'tenant' &&
+            ((invToken.isNotEmpty && contractTokens.contains(invToken)) ||
+                (invContractId.isNotEmpty && contractIds.contains(invContractId)))) {
+          return false;
+        }
+        return true;
+      }).toList();
+      return [...contracts, ...filteredInvites];
     },
   );
 });
@@ -478,6 +497,14 @@ final profileProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?,
   final repo = ref.watch(propertyRepositoryProvider);
   return repo.getProfileStream(userId);
 });
+
+class InviteException implements Exception {
+  final String key;
+  const InviteException(this.key);
+
+  @override
+  String toString() => key;
+}
 
 class PropertyRepository {
   final SupabaseClient _client;
@@ -1225,7 +1252,7 @@ class PropertyRepository {
   Future<Map<String, dynamic>> getInviteByToken(String rawToken) async {
     final token = extractToken(rawToken);
     if (token.isEmpty) {
-      throw Exception('Geçersiz davet kodu veya bağlantısı.');
+      throw const InviteException('invalidInviteToken');
     }
 
     try {
@@ -1238,8 +1265,6 @@ class PropertyRepository {
         });
 
         if (rpcResult != null && rpcResult is Map<String, dynamic>) {
-          final propData = rpcResult['properties'] as Map<String, dynamic>?;
-          final existingTenantId = propData?['tenant_id'] as String?;
           final targetRole = rpcResult['target_role'] as String? ?? 'tenant';
           final inviteType = rpcResult['type'] as String? ?? 'contract';
 
@@ -1250,14 +1275,59 @@ class PropertyRepository {
             };
           }
 
-          if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
-            throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
+          // If get_invite_details returned an 'invitation' row without 'active_contract',
+          // resolve its linked contract by contract_id, token, or property_id so InvitationAcceptScreen never sees _contract == null
+          Map<String, dynamic> enrichedRpc = Map<String, dynamic>.from(rpcResult);
+          String resolvedType = inviteType;
+          if (resolvedType == 'invitation' && enrichedRpc['active_contract'] == null) {
+            try {
+              Map<String, dynamic>? linkedContract;
+              final linkedContractId = enrichedRpc['contract_id'] as String?;
+              if (linkedContractId != null && linkedContractId.isNotEmpty) {
+                linkedContract = await _client
+                    .from('contracts')
+                    .select('*, properties(*)')
+                    .eq('id', linkedContractId)
+                    .maybeSingle();
+              }
+              linkedContract ??= await _client
+                  .from('contracts')
+                  .select('*, properties(*)')
+                  .eq('token', token)
+                  .maybeSingle();
+              final propId = enrichedRpc['property_id'] as String?;
+              if (linkedContract == null && propId != null) {
+                linkedContract = await _client
+                    .from('contracts')
+                    .select('*, properties(*)')
+                    .eq('property_id', propId)
+                    .inFilter('status', ['pending', 'negotiating', 'active'])
+                    .order('created_at', ascending: false)
+                    .limit(1)
+                    .maybeSingle();
+              }
+              if (linkedContract != null) {
+                enrichedRpc = {
+                  ...linkedContract,
+                  'active_contract': linkedContract,
+                  'properties': linkedContract['properties'] ?? enrichedRpc['properties'],
+                };
+                resolvedType = 'contract';
+              }
+            } catch (e) {
+              print('DEBUG [getInviteByToken]: Could not enrich invitation with contract: $e');
+            }
+          }
+
+          final contractTenantId = enrichedRpc['tenant_id'] as String?;
+          if (contractTenantId != null && currentUser != null && contractTenantId != currentUser.id) {
+            throw const InviteException('inviteAlreadyClaimed');
           }
 
           return {
-            ...rpcResult,
-            'tenant_id': currentUser?.id ?? rpcResult['tenant_id'],
-            'type': inviteType,
+            ...enrichedRpc,
+            'tenant_id': currentUser?.id ?? enrichedRpc['tenant_id'],
+            'type': resolvedType,
           };
         }
       } catch (rpcErr) {
@@ -1272,7 +1342,7 @@ class PropertyRepository {
               .update({'tenant_id': currentUser.id})
               .eq('token', token)
               .isFilter('tenant_id', null)
-              .inFilter('status', ['pending', 'negotiating']);
+              .inFilter('status', ['pending', 'negotiating', 'active']);
         } catch (e) {
           print('DEBUG [getInviteByToken]: tenant_id pre-claim failed silently: $e');
         }
@@ -1285,12 +1355,10 @@ class PropertyRepository {
           .maybeSingle();
 
       if (contractResponse != null) {
-        final currentTenantId = contractResponse['tenant_id'];
-        final propData = contractResponse['properties'] as Map<String, dynamic>?;
-        final existingTenantId = propData?['tenant_id'] as String?;
+        final currentTenantId = contractResponse['tenant_id'] as String?;
 
-        if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
-          throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
+        if (currentTenantId != null && currentUser != null && currentTenantId != currentUser.id) {
+          throw const InviteException('inviteAlreadyClaimed');
         }
 
         return {
@@ -1316,11 +1384,42 @@ class PropertyRepository {
           };
         }
 
-        final propData = inviteResponse['properties'] as Map<String, dynamic>?;
-        final existingTenantId = propData?['tenant_id'] as String?;
+        final inviteStatus = inviteResponse['status'] as String?;
+        if (inviteStatus != null && inviteStatus != 'pending') {
+          throw const InviteException('inviteAlreadyClaimed');
+        }
 
-        if (existingTenantId != null && currentUser != null && existingTenantId != currentUser.id) {
-          throw Exception('Bu eve daha önce başka bir kiracı dahil olmuş.');
+        // Also resolve linked contract for direct invitation fallback
+        Map<String, dynamic>? linkedContract;
+        try {
+          final linkedContractId = inviteResponse['contract_id'] as String?;
+          if (linkedContractId != null && linkedContractId.isNotEmpty) {
+            linkedContract = await _client
+                .from('contracts')
+                .select('*, properties(*)')
+                .eq('id', linkedContractId)
+                .maybeSingle();
+          }
+          final propId = inviteResponse['property_id'] as String?;
+          if (linkedContract == null && propId != null) {
+            linkedContract = await _client
+                .from('contracts')
+                .select('*, properties(*)')
+                .eq('property_id', propId)
+                .inFilter('status', ['pending', 'negotiating', 'active'])
+                .order('created_at', ascending: false)
+                .limit(1)
+                .maybeSingle();
+          }
+        } catch (_) {}
+
+        if (linkedContract != null) {
+          return {
+            ...linkedContract,
+            'active_contract': linkedContract,
+            'properties': linkedContract['properties'] ?? inviteResponse['properties'],
+            'type': 'contract',
+          };
         }
 
         return {
@@ -1329,7 +1428,7 @@ class PropertyRepository {
         };
       }
 
-      throw Exception('Davet bulunamadı veya süresi dolmuş.');
+      throw const InviteException('inviteNotFound');
     } catch (e) {
       rethrow;
     }

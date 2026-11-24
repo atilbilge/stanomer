@@ -17,6 +17,11 @@
 --      for active demo agencies.
 -- ==============================================================================
 
+-- Ensure demo columns exist on public.profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_demo BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS demo_expires_at TIMESTAMPTZ DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS website_url TEXT DEFAULT NULL;
+
 CREATE OR REPLACE FUNCTION public.generate_agency_demo_data(p_agency_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -98,7 +103,7 @@ BEGIN
     -- Mark agency profile as active demo
     UPDATE public.profiles
     SET is_demo = TRUE,
-        demo_expires_at = (now() + interval '3 days'),
+        demo_expires_at = (now() + interval '7 days'),
         updated_at = now()
     WHERE id = p_agency_id;
 

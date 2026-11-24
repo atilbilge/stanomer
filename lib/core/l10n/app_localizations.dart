@@ -565,6 +565,18 @@ abstract class AppLocalizations {
   /// **'Poziv nije pronađen ili je istekao'**
   String get inviteNotFound;
 
+  /// No description provided for @invalidInviteToken.
+  ///
+  /// In sr, this message translates to:
+  /// **'Nevažeći kod ili link za pozivnicu.'**
+  String get invalidInviteToken;
+
+  /// No description provided for @inviteAlreadyClaimed.
+  ///
+  /// In sr, this message translates to:
+  /// **'Ovaj ugovor ili pozivnicu je već prihvatio drugi stanar.'**
+  String get inviteAlreadyClaimed;
+
   /// No description provided for @invitationAcceptedSuccess.
   ///
   /// In sr, this message translates to:
@@ -3346,7 +3358,7 @@ abstract class AppLocalizations {
   /// No description provided for @changeLandlord.
   ///
   /// In sr, this message translates to:
-  /// **'Promeni vlasnika'**
+  /// **'Ažuriraj podatke vlasnika'**
   String get changeLandlord;
 
   /// No description provided for @pendingDebtWarning.
@@ -7341,6 +7353,42 @@ abstract class AppLocalizations {
   /// In sr, this message translates to:
   /// **'Predstojeće obaveze'**
   String get subLabelUpcomingRecords;
+
+  /// No description provided for @maintenanceAddedToRentNote.
+  ///
+  /// In sr, this message translates to:
+  /// **'{ticket}: +{amount} ({title}) dodato na kiriju'**
+  String maintenanceAddedToRentNote(Object amount, Object ticket, Object title);
+
+  /// No description provided for @maintenanceOffsetFromRentNote.
+  ///
+  /// In sr, this message translates to:
+  /// **'{amount} ({title}) prebijeno od kirije'**
+  String maintenanceOffsetFromRentNote(Object amount, Object title);
+
+  /// No description provided for @agencyWebPanelBannerBadge.
+  ///
+  /// In sr, this message translates to:
+  /// **'NOVI WEB PANEL'**
+  String get agencyWebPanelBannerBadge;
+
+  /// No description provided for @agencyWebPanelBannerTitle.
+  ///
+  /// In sr, this message translates to:
+  /// **'Napredni Web Panel za Agencije je spreman!'**
+  String get agencyWebPanelBannerTitle;
+
+  /// No description provided for @agencyWebPanelBannerDesc.
+  ///
+  /// In sr, this message translates to:
+  /// **'Pripremili smo napredniji web panel posvećen agencijama. Od sada možete nastaviti upravljanje agencijom putem web panela.'**
+  String get agencyWebPanelBannerDesc;
+
+  /// No description provided for @agencyWebPanelBannerCta.
+  ///
+  /// In sr, this message translates to:
+  /// **'Otvori Web Panel'**
+  String get agencyWebPanelBannerCta;
 }
 
 class _AppLocalizationsDelegate

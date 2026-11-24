@@ -247,6 +247,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get inviteNotFound => 'Davet bulunamadı veya süresi dolmuş.';
 
   @override
+  String get invalidInviteToken => 'Geçersiz davet kodu veya bağlantısı.';
+
+  @override
+  String get inviteAlreadyClaimed =>
+      'Bu sözleşme veya davet daha önce başka bir kiracı tarafından kabul edilmiş.';
+
+  @override
   String get invitationAcceptedSuccess =>
       'Eve hoş geldiniz! Daveti kabul ettiniz.';
 
@@ -1765,7 +1772,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ownershipQrOrLink => 'Sahiplik QR / Linki';
 
   @override
-  String get changeLandlord => 'Ev Sahibini Değiştir';
+  String get changeLandlord => 'Ev Sahibi Bilgilerini Güncelle';
 
   @override
   String get pendingDebtWarning =>
@@ -4097,4 +4104,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get subLabelUpcomingRecords => 'Gelecek vadeli kayıtlar';
+
+  @override
+  String maintenanceAddedToRentNote(
+    Object amount,
+    Object ticket,
+    Object title,
+  ) {
+    return '$ticket: +$amount ($title) kiraya eklendi';
+  }
+
+  @override
+  String maintenanceOffsetFromRentNote(Object amount, Object title) {
+    return '$amount ($title) kiradan mahsup edildi';
+  }
+
+  @override
+  String get agencyWebPanelBannerBadge => 'YENİ WEB PANELİ';
+
+  @override
+  String get agencyWebPanelBannerTitle => 'Gelişmiş Acente Web Paneli Hazır!';
+
+  @override
+  String get agencyWebPanelBannerDesc =>
+      'Acente operasyonlarınız için web\'te çok daha gelişmiş bir yönetim paneli hazırladık. Bundan sonra acente yönetimine web panelinden devam edebilirsiniz.';
+
+  @override
+  String get agencyWebPanelBannerCta => 'Web Panelini Aç';
 }

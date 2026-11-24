@@ -1427,10 +1427,10 @@ export function AgencyAppWalkthroughStack() {
         <p className="mt-2.5 text-xs sm:text-sm text-slate-500 font-medium flex items-center justify-center gap-2">
           <span>
             {isTR
-              ? "3 günlük ücretsiz sandbox ortamı • Logonuz ve renklerinizle hazır gelir"
+              ? "7 günlük ücretsiz sandbox ortamı • Logonuz ve renklerinizle hazır gelir"
               : isSR
-              ? "3-dnevni besplatan sandbox nalog • Sa vašim logotipom i bojama"
-              : "3-day free sandbox • Pre-configured with your logo and colors"}
+              ? "7-dnevni besplatan sandbox nalog • Sa vašim logotipom i bojama"
+              : "7-day free sandbox • Pre-configured with your logo and colors"}
           </span>
         </p>
       </div>

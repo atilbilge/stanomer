@@ -626,7 +626,7 @@ class _AgencyDemoSandboxBannerState
     );
 
     if (shouldOpen == true) {
-      final uri = Uri.parse(kIsWeb ? '/agency-demo' : 'https://stanomer.online/agency-demo');
+      final uri = Uri.parse('https://www.stanomer.online/agency-panel');
       try {
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -634,7 +634,7 @@ class _AgencyDemoSandboxBannerState
           await launchUrl(uri, mode: LaunchMode.platformDefault);
         }
       } catch (e) {
-        debugPrint('Launch agency-demo error: $e');
+        debugPrint('Launch agency-panel error: $e');
       }
     }
   }
@@ -660,12 +660,12 @@ class _AgencyDemoSandboxBannerState
 
     final subLabel = widget.hasProperties
         ? (isSR
-            ? (isCyrl ? '3-дневно тест окружење' : '3-dnevno test okruženje')
+            ? (isCyrl ? '7-дневно тест окружење' : '7-dnevno test okruženje')
             : isEN
-            ? '3-day test sandbox'
+            ? '7-day test sandbox'
             : isRU
-            ? '3-дневная песочница'
-            : '3 günlük test ortamı')
+            ? '7-дневная песочница'
+            : '7 günlük test ortamı')
         : (isSR
             ? (isCyrl ? 'Очекује се портфолио' : 'Očekuje se portfolio')
             : isEN
