@@ -1876,3 +1876,54 @@ $$;
 | `agency_referral_partners` | `ReferralPartner` | [agency-referral/page.tsx](file:///Users/atilbilgeorum/projects/stanomer/website/app/agency-referral/page.tsx) |
 | `agency_otp_codes` | `AgencyOtpCode` | [api/agency-stats](file:///Users/atilbilgeorum/projects/stanomer/website/app/api/agency-stats) |
 
+
+---
+
+### `public.agency_members` (Agency Team Management v0)
+Bir acenteye bağlı alt operasyon kullanıcılarını (`agency_operation`) tutar. Mevcut `agency` hesapları doğal olarak **Agency Admin** kabul edilir ve yalnızca kendi `agency_id = auth.uid()` üyelerini ekleyip/güncelleyip/kaldırabilir.
+
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Üyelik kaydı kimliği |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Ana acente (Agency Admin) profil ID'si |
+| `user_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Alt kullanıcı (`auth.users` / `profiles`) ID'si |
+| `email` | `TEXT` | **NO** | - | - | Üye e-posta adresi |
+| `full_name` | `TEXT` | YES | `NULL` | - | Üye ad soyad |
+| `phone_number` | `TEXT` | YES | `NULL` | - | Üye telefon numarası |
+| `member_role` | `TEXT` | **NO** | `'agency_operation'` | `CHECK (member_role IN ('agency_operation'))` | Ekip içi rol |
+| `status` | `TEXT` | **NO** | `'active'` | `CHECK (status IN ('active', 'suspended', 'revoked'))` | Üyelik durumu |
+| `invited_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE SET NULL` | Ekleyen Agency Admin ID'si |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
+
+- **Yardımcı Fonksiyonlar:** `public.effective_agency_id(p_user_id UUID)`, `public.is_agency_member(p_agency_id UUID, p_user_id UUID)`.
+- **Migration:** `migrations/2026-11-25_agency_team_management_v0.sql`.
+
+---
+
+### `public.agency_tasks` (Modül Bağımsız Task Management v0)
+Acente içi tüm görevleri (sıfırdan, mülk, ilan, CRM talebi veya bakım kaydı kaynaklı) tek tabloda toplar.
+
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Görev kimliği |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Bağlı acente (Admin) ID |
+| `title` | `TEXT` | **NO** | - | - | Görev başlığı |
+| `description` | `TEXT` | YES | `NULL` | - | Görev açıklaması / notlar |
+| `status` | `TEXT` | **NO** | `'todo'` | `CHECK (status IN ('todo', 'in_progress', 'done', 'cancelled'))` | Görev durumu |
+| `priority` | `TEXT` | **NO** | `'medium'` | `CHECK (priority IN ('low', 'medium', 'high', 'urgent'))` | Öncelik seviyesi |
+| `due_date` | `DATE` | YES | `NULL` | - | Hedef bitiş tarihi |
+| `source_type` | `TEXT` | **NO** | `'manual'` | `CHECK (source_type IN ('manual', 'property', 'listing', 'lead', 'maintenance'))` | Görev kaynağı |
+| `property_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES properties(id) ON DELETE SET NULL` | İlişkili mülk |
+| `listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | İlişkili ilan |
+| `lead_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES agency_leads(id) ON DELETE SET NULL` | İlişkili CRM talebi |
+| `maintenance_request_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES maintenance_requests(id) ON DELETE SET NULL` | İlişkili bakım talebi |
+| `assigned_to` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE SET NULL` | Atanan kullanıcı (`agency_admin` veya `agency_operation`) |
+| `created_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE SET NULL` | Oluşturan kullanıcı |
+| `comments` | `JSONB` | **NO** | `'[]'::jsonb` | - | Görev yorumları (`[{ id, author_id, author_name, text, created_at, updated_at }]`) |
+| `completed_at` | `TIMESTAMPTZ` | YES | `NULL` | - | Tamamlanma zamanı |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
+
+- **RLS:** Tüm aktif acente üyeleri görevleri görür ve yorum ekleyebilir/düzenleyebilir; herkes kendine görev yaratabilir ve atanmamış görevleri üzerine alabilir; yalnızca Agency Admin (`agency_id = auth.uid()`) başkasına görev atayabilir/yeniden atayabilir.
+- **Migration:** `migrations/2026-11-25_agency_tasks_v0.sql`, `migrations/2026-11-25_agency_tasks_comments.sql`.

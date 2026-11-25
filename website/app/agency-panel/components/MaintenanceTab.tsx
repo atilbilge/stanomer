@@ -7,6 +7,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  CheckSquare,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -27,9 +28,13 @@ import {
   X,
 } from "lucide-react";
 import {
+  AgencyAssigneeOption,
   AgencyMaintenanceRequest,
   AgencyManagedProperty,
   AgencyMaintStatusFilter,
+  AgencyTask,
+  AgencyTaskPrefill,
+  AgencyTaskStatus,
 } from "../types";
 import MaintenanceDetailView from "./MaintenanceDetailView";
 import {
@@ -62,6 +67,10 @@ export interface MaintenanceTabProps {
   onBackFromDetail?: () => void;
   onUpdateRequest?: (updated: AgencyMaintenanceRequest) => void;
   onNavigateToProperty?: (propertyId: string) => void;
+  onCreateTask?: (prefill: AgencyTaskPrefill) => void;
+  tasks?: AgencyTask[];
+  assignees?: AgencyAssigneeOption[];
+  onQuickTaskStatus?: (task: AgencyTask, status: AgencyTaskStatus) => Promise<void>;
   userId?: string | null;
   isDemoMode?: boolean;
   isDemoVerified?: boolean;
@@ -88,6 +97,10 @@ export default function MaintenanceTab({
   onBackFromDetail,
   onUpdateRequest,
   onNavigateToProperty,
+  onCreateTask,
+  tasks = [],
+  assignees = [],
+  onQuickTaskStatus,
   userId = null,
   isDemoMode = false,
   isDemoVerified,
@@ -101,6 +114,33 @@ export default function MaintenanceTab({
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("all");
   const [selectedLandlord, setSelectedLandlord] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [expandedMaintTaskIds, setExpandedMaintTaskIds] = useState<Set<string>>(new Set());
+
+  const tasksByMaintId = useMemo(() => {
+    const map = new Map<string, AgencyTask[]>();
+    for (const tk of tasks) {
+      if (tk.maintenance_request_id) {
+        const list = map.get(tk.maintenance_request_id) || [];
+        list.push(tk);
+        map.set(tk.maintenance_request_id, list);
+      }
+    }
+    return map;
+  }, [tasks]);
+
+  const assigneeMap = useMemo(
+    () => new Map(assignees.map((a) => [a.id, a])),
+    [assignees]
+  );
+
+  const toggleMaintTasks = (maintId: string) => {
+    setExpandedMaintTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(maintId)) next.delete(maintId);
+      else next.add(maintId);
+      return next;
+    });
+  };
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
   const [selectedExpenseStatus, setSelectedExpenseStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priority_desc" | "cost_desc" | "cost_asc">("newest");
@@ -829,9 +869,12 @@ export default function MaintenanceTab({
                           ? t("agency_maint_payer_agency")
                           : "-";
 
+                  const linkedTasks = tasksByMaintId.get(m.id) || [];
+                  const isTasksExpanded = expandedMaintTaskIds.has(m.id);
+
                   return (
+                    <React.Fragment key={m.id}>
                     <tr
-                      key={m.id}
                       onClick={() => onSelectRequest(m)}
                       className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
@@ -844,6 +887,24 @@ export default function MaintenanceTab({
                           label={catLabel}
                           className="mt-1"
                         />
+                        {linkedTasks.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleMaintTasks(m.id);
+                            }}
+                            className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E5EEF6] hover:bg-[#1B5888] text-[#1B5888] hover:text-white text-[10px] font-bold transition-colors cursor-pointer"
+                          >
+                            <CheckSquare className="w-3 h-3" />
+                            <span>{linkedTasks.length}</span>
+                            {isTasksExpanded ? (
+                              <ChevronUp className="w-3 h-3" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-[#1A1A1A]">
@@ -976,8 +1037,35 @@ export default function MaintenanceTab({
                           );
                         })()}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="py-3.5 px-3 text-right">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                          {onCreateTask && (
+                            <button
+                              type="button"
+                              title={t("agency_tasks_quick_assign_btn")}
+                              aria-label={t("agency_tasks_quick_assign_btn")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCreateTask({
+                                  source_type: "maintenance",
+                                  maintenance_request_id: m.id,
+                                  property_id: m.property_id,
+                                  title: m.title,
+                                  description: m.description || undefined,
+                                  priority:
+                                    m.priority === "urgent"
+                                      ? "urgent"
+                                      : m.priority === "high"
+                                        ? "high"
+                                        : "medium",
+                                });
+                              }}
+                              className="p-1.5 rounded-lg border border-[#E5E3DF] bg-white text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer shrink-0"
+                            >
+                              <CheckSquare className="w-4 h-4" />
+                            </button>
+                          )}
+
                           {m.reporter_phone && (
                             <a
                               href={`https://wa.me/${m.reporter_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
@@ -1037,6 +1125,63 @@ export default function MaintenanceTab({
                         </div>
                       </td>
                     </tr>
+                    {isTasksExpanded && linkedTasks.length > 0 && (
+                      <tr className="bg-[#F8F7F5]/80">
+                        <td colSpan={8} className="py-2.5 pl-10 pr-4">
+                          <div className="border-l-2 border-[#1B5888]/30 pl-3 space-y-2">
+                            {linkedTasks.map((tk) => {
+                              const assignee = tk.assigned_to ? assigneeMap.get(tk.assigned_to) : null;
+                              return (
+                                <div
+                                  key={tk.id}
+                                  className="flex items-center justify-between gap-3 bg-white rounded-[8px] border border-[#E5E3DF] px-3 py-2"
+                                >
+                                  <div className="min-w-0 flex-1 flex items-center gap-2.5 flex-wrap">
+                                    <CheckSquare className="w-3.5 h-3.5 text-[#1B5888] shrink-0" />
+                                    <span
+                                      className={`text-xs font-semibold truncate ${
+                                        tk.status === "done" ? "line-through text-[#8A8A8A]" : "text-[#1A1A1A]"
+                                      }`}
+                                    >
+                                      {tk.title}
+                                    </span>
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                                      {t(`agency_tasks_priority_${tk.priority}`)}
+                                    </span>
+                                    {tk.due_date && (
+                                      <span className="text-[10px] text-[#666666] inline-flex items-center gap-1">
+                                        <Calendar className="w-3 h-3" />
+                                        {tk.due_date}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-[#666666] inline-flex items-center gap-1">
+                                      <UserCheck className="w-3 h-3" />
+                                      {assignee ? assignee.name : t("agency_tasks_unassigned")}
+                                    </span>
+                                  </div>
+
+                                  {onQuickTaskStatus && (
+                                    <select
+                                      value={tk.status}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) =>
+                                        onQuickTaskStatus(tk, e.target.value as AgencyTaskStatus)
+                                      }
+                                      className="px-2 py-1 rounded-md border border-[#E5E3DF] text-[11px] font-semibold bg-white shrink-0"
+                                    >
+                                      <option value="todo">{t("agency_tasks_status_todo")}</option>
+                                      <option value="in_progress">{t("agency_tasks_status_in_progress")}</option>
+                                      <option value="done">{t("agency_tasks_status_done")}</option>
+                                    </select>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

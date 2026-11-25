@@ -43,15 +43,19 @@ import {
   Share2,
   ArrowRight,
   Plus,
+  Users,
 } from "lucide-react";
 import { AgencyPanelTab } from "../types";
 import { supabase } from "../../../lib/supabaseClient";
+import TeamManagementSection from "./TeamManagementSection";
 
 export interface AccountSettingsTabProps {
   user: any;
   userId: string | null;
   agencyName: string;
   agencyEmail: string;
+  agencyRole?: "agency_admin" | "agency_operation";
+  isAgencyAdmin?: boolean;
   isDemoMode: boolean;
   lang: string;
   setLang: (l: any) => void;
@@ -187,6 +191,8 @@ export default function AccountSettingsTab({
   userId,
   agencyName,
   agencyEmail,
+  agencyRole = "agency_admin",
+  isAgencyAdmin = true,
   isDemoMode,
   lang,
   setLang,
@@ -199,8 +205,8 @@ export default function AccountSettingsTab({
   moduleUpgradeRequested = false,
   handleRequestModuleUpgrade,
 }: AccountSettingsTabProps) {
-  // Sub-tab state: "account" (Packages & Invoices) vs "profile" (Profile, Security & Preferences)
-  const [activeSubTab, setActiveSubTab] = useState<"account" | "profile">("account");
+  // Sub-tab state: "account" (Packages & Invoices) vs "profile" (Profile, Security & Preferences) vs "team" (Admin only)
+  const [activeSubTab, setActiveSubTab] = useState<"account" | "profile" | "team">("account");
 
   // Profile update state
   const [fullName, setFullName] = useState<string>(
@@ -574,7 +580,11 @@ export default function AccountSettingsTab({
                   {fullName || agencyName || "Stanomer Agencija"}
                 </h2>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-[6px] bg-[#1B5888]/10 text-[#1B5888] border border-[#1B5888]/20 shrink-0">
-                  {isDemoMode ? t("agency_panel_demo_mode_label") : "Acente"}
+                  {isDemoMode
+                    ? t("agency_panel_demo_mode_label")
+                    : agencyRole === "agency_operation"
+                      ? t("agency_role_operation")
+                      : t("agency_role_admin")}
                 </span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-[6px] bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -625,8 +635,29 @@ export default function AccountSettingsTab({
             <User className={`w-4 h-4 shrink-0 ${activeSubTab === "profile" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
             <span>{t("agency_panel_tab_profile_security")}</span>
           </button>
+
+          {isAgencyAdmin && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSubTab === "team"}
+              onClick={() => setActiveSubTab("team")}
+              className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${
+                activeSubTab === "team"
+                  ? "border-[#1B5888] text-[#1B5888]"
+                  : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+              }`}
+            >
+              <Users className={`w-4 h-4 shrink-0 ${activeSubTab === "team" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
+              <span>{t("agency_panel_tab_team_management")}</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {activeSubTab === "team" && isAgencyAdmin && (
+        <TeamManagementSection agencyId={userId} isDemoMode={isDemoMode} t={t} />
+      )}
 
       {/* ========================================================================= */}
       {/* SUBTAB 1: ACCOUNT SETTINGS (PORTFOLIO & DISTRIBUTION / PROPERTY & LEASE)  */}

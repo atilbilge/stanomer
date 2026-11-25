@@ -16,6 +16,7 @@ import {
   Check,
   CheckCheck,
   CheckCircle2,
+  CheckSquare,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -82,6 +83,8 @@ import {
   AgencyManagedProperty,
   AgencyPanelTab,
   AgencyRentPayment,
+  AgencyTask,
+  AgencyTaskPrefill,
   ContractAdditionalDocument,
   ContractExpenseItem,
   TenantSecondaryContact,
@@ -144,6 +147,9 @@ export interface ManagedPropertiesTabProps {
   activeModules?: string[];
   setActiveTab?: (tab: AgencyPanelTab) => void;
   onOpenMaintenanceRequest?: (req: AgencyMaintenanceRequest) => void;
+  onCreateTask?: (prefill: AgencyTaskPrefill) => void;
+  tasks?: AgencyTask[];
+  onViewPropertyTasks?: (propertyId: string) => void;
   onQuickRelistProperty?: (params: {
     property: AgencyManagedProperty;
     linkedListing: AgencyListingRow | null;
@@ -196,6 +202,9 @@ export default function ManagedPropertiesTab({
   activeModules = ["portfolio_distribution", "property_lease_management"],
   setActiveTab,
   onOpenMaintenanceRequest,
+  onCreateTask,
+  tasks = [],
+  onViewPropertyTasks,
   onQuickRelistProperty,
 }: ManagedPropertiesTabProps) {
   const { lang } = useLanguage();
@@ -4750,6 +4759,22 @@ export default function ManagedPropertiesTab({
               </div>
 
               <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+                {onCreateTask && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onCreateTask({
+                        source_type: "property",
+                        property_id: p.id,
+                        title: p.title || p.address || "",
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl border border-[#1B5888]/30 text-xs font-semibold text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer bg-white"
+                  >
+                    {t("agency_tasks_quick_btn")}
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
@@ -9030,11 +9055,35 @@ export default function ManagedPropertiesTab({
                             </td>
 
                             <td
-                              className={`py-3.5 px-3 text-right sticky right-0 bg-white group-hover:bg-[#F8FAFC] border-l border-slate-100 shadow-[-6px_0_10px_rgba(0,0,0,0.04)] w-14 min-w-[56px] transition-colors ${actionMenuPropId === p.id ? "z-30" : "z-10"
+                              className={`py-3.5 px-3 text-right sticky right-0 bg-white group-hover:bg-[#F8FAFC] border-l border-slate-100 shadow-[-6px_0_10px_rgba(0,0,0,0.04)] transition-colors ${actionMenuPropId === p.id ? "z-30" : "z-10"
                                 }`}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="relative inline-block text-left">
+                              <div className="relative inline-flex items-center justify-end gap-1 text-left">
+                                {onViewPropertyTasks && (() => {
+                                  const propTaskCount = tasks.filter(
+                                    (tk) => tk.property_id === p.id && tk.status !== "done" && tk.status !== "cancelled"
+                                  ).length;
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onViewPropertyTasks(p.id);
+                                      }}
+                                      title={t("agency_tasks_view_property_tasks")}
+                                      aria-label={t("agency_tasks_view_property_tasks")}
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                                        propTaskCount > 0
+                                          ? "bg-[#E5EEF6] text-[#1B5888] hover:bg-[#1B5888] hover:text-white"
+                                          : "text-slate-400 hover:text-[#1B5888] hover:bg-slate-100"
+                                      }`}
+                                    >
+                                      <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+                                      {propTaskCount > 0 && <span>{propTaskCount}</span>}
+                                    </button>
+                                  );
+                                })()}
                                 <button
                                   type="button"
                                   onClick={(e) => {

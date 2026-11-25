@@ -619,7 +619,7 @@ BEGIN
   EXECUTE 'SELECT EXISTS (
     SELECT 1 FROM public.properties
     WHERE id = $1
-      AND agency_id = $2
+      AND public.is_agency_member(agency_id, $2)
   )' INTO v_result USING check_property_id, check_user_id;
   RETURN v_result;
 END;
@@ -3521,3 +3521,165 @@ GRANT SELECT ON public.view_agency_financial_ledger TO service_role;
 
 
 
+
+-- =============================================================================
+-- AGENCY TEAM MANAGEMENT v0 (agency_members + helper functions + RLS)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.agency_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    full_name TEXT,
+    phone_number TEXT,
+    member_role TEXT NOT NULL DEFAULT 'agency_operation' CHECK (member_role IN ('agency_operation')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'revoked')),
+    invited_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (agency_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agency_members_agency_id ON public.agency_members(agency_id);
+CREATE INDEX IF NOT EXISTS idx_agency_members_user_id ON public.agency_members(user_id);
+
+ALTER TABLE public.agency_members ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Agency admins and members can view memberships" ON public.agency_members;
+CREATE POLICY "Agency admins and members can view memberships" ON public.agency_members
+    FOR SELECT TO authenticated
+    USING (agency_id = auth.uid() OR user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Agency admins can insert team members" ON public.agency_members;
+CREATE POLICY "Agency admins can insert team members" ON public.agency_members
+    FOR INSERT TO authenticated
+    WITH CHECK (agency_id = auth.uid());
+
+DROP POLICY IF EXISTS "Agency admins can update team members" ON public.agency_members;
+CREATE POLICY "Agency admins can update team members" ON public.agency_members
+    FOR UPDATE TO authenticated
+    USING (agency_id = auth.uid())
+    WITH CHECK (agency_id = auth.uid());
+
+DROP POLICY IF EXISTS "Agency admins can delete team members" ON public.agency_members;
+CREATE POLICY "Agency admins can delete team members" ON public.agency_members
+    FOR DELETE TO authenticated
+    USING (agency_id = auth.uid());
+
+CREATE OR REPLACE FUNCTION public.effective_agency_id(p_user_id UUID DEFAULT auth.uid())
+RETURNS UUID
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT COALESCE(
+    (
+      SELECT am.agency_id
+      FROM public.agency_members am
+      WHERE am.user_id = p_user_id
+        AND am.status = 'active'
+      ORDER BY am.created_at ASC
+      LIMIT 1
+    ),
+    p_user_id
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_agency_member(p_agency_id UUID, p_user_id UUID DEFAULT auth.uid())
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT p_agency_id IS NOT NULL AND (
+    p_agency_id = p_user_id
+    OR EXISTS (
+      SELECT 1
+      FROM public.agency_members am
+      WHERE am.agency_id = p_agency_id
+        AND am.user_id = p_user_id
+        AND am.status = 'active'
+    )
+  );
+$$;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.agency_members TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.effective_agency_id(UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_agency_member(UUID, UUID) TO authenticated, service_role;
+
+-- =============================================================================
+-- MODULE-INDEPENDENT AGENCY TASK MANAGEMENT v0 (public.agency_tasks)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.agency_tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done', 'cancelled')),
+    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+    due_date DATE,
+    source_type TEXT NOT NULL DEFAULT 'manual' CHECK (source_type IN ('manual', 'property', 'listing', 'lead', 'maintenance')),
+    property_id UUID REFERENCES public.properties(id) ON DELETE SET NULL,
+    listing_id UUID REFERENCES public.listings(id) ON DELETE SET NULL,
+    lead_id UUID REFERENCES public.agency_leads(id) ON DELETE SET NULL,
+    maintenance_request_id UUID REFERENCES public.maintenance_requests(id) ON DELETE SET NULL,
+    assigned_to UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    comments JSONB NOT NULL DEFAULT '[]'::jsonb,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agency_tasks_agency_id ON public.agency_tasks(agency_id);
+CREATE INDEX IF NOT EXISTS idx_agency_tasks_assigned_to ON public.agency_tasks(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_agency_tasks_status ON public.agency_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_agency_tasks_source_type ON public.agency_tasks(source_type);
+
+ALTER TABLE public.agency_tasks ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Agency members can view agency tasks" ON public.agency_tasks;
+CREATE POLICY "Agency members can view agency tasks" ON public.agency_tasks
+    FOR SELECT TO authenticated
+    USING (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency members can insert agency tasks" ON public.agency_tasks;
+CREATE POLICY "Agency members can insert agency tasks" ON public.agency_tasks
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        public.is_agency_member(agency_id, auth.uid())
+        AND (agency_id = auth.uid() OR assigned_to IS NULL OR assigned_to = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Agency members can update agency tasks" ON public.agency_tasks;
+CREATE POLICY "Agency members can update agency tasks" ON public.agency_tasks
+    FOR UPDATE TO authenticated
+    USING (
+        public.is_agency_member(agency_id, auth.uid())
+    )
+    WITH CHECK (
+        public.is_agency_member(agency_id, auth.uid())
+        AND (
+            agency_id = auth.uid()
+            OR assigned_to IS NULL
+            OR assigned_to = auth.uid()
+            OR EXISTS (
+                SELECT 1
+                FROM public.agency_tasks orig
+                WHERE orig.id = agency_tasks.id
+                  AND orig.assigned_to IS NOT DISTINCT FROM agency_tasks.assigned_to
+            )
+        )
+    );
+
+DROP POLICY IF EXISTS "Agency admins and creators can delete agency tasks" ON public.agency_tasks;
+CREATE POLICY "Agency admins and creators can delete agency tasks" ON public.agency_tasks
+    FOR DELETE TO authenticated
+    USING (
+        public.is_agency_member(agency_id, auth.uid())
+        AND (agency_id = auth.uid() OR created_by = auth.uid())
+    );
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.agency_tasks TO authenticated, service_role;

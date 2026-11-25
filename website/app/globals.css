@@ -125,3 +125,107 @@ body {
   align-items: center;
   letter-spacing: 0.02em;
 }
+
+/* Agency Auth Hero Subtle Motion */
+@keyframes st-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes st-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.st-flow {
+  stroke-dasharray: 6 6;
+  animation: st-flow 1.8s linear infinite;
+}
+
+.st-bob-1 {
+  animation: st-bob 5s ease-in-out infinite;
+}
+
+.st-bob-2 {
+  animation: st-bob 6s ease-in-out infinite 0.8s;
+}
+
+.st-bob-3 {
+  animation: st-bob 5.5s ease-in-out infinite 1.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-flow,
+  .st-bob-1,
+  .st-bob-2,
+  .st-bob-3 {
+    animation: none;
+  }
+}
+
+/* Cursor-reactive brand shimmer for Launch Interactive Demo CTA */
+.st-demo-glow-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, #ffffff 0%, #eef5fb 100%);
+  box-shadow:
+    0 0 0 1px rgba(27, 88, 136, calc(0.15 + var(--demo-glow, 0.25) * 0.35)),
+    0 4px 16px rgba(27, 88, 136, calc(0.12 + var(--demo-glow, 0.25) * 0.34)),
+    0 0 26px rgba(42, 110, 67, calc(var(--demo-glow, 0.25) * 0.28));
+  transition: box-shadow 220ms ease, border-color 180ms ease, transform 160ms ease, background-color 180ms ease;
+}
+
+.st-demo-glow-btn::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    220px circle at var(--demo-mx, 50%) var(--demo-my, 50%),
+    rgba(27, 88, 136, 0.28) 0%,
+    rgba(42, 110, 67, 0.20) 42%,
+    rgba(229, 238, 246, 0.12) 68%,
+    transparent 85%
+  );
+  opacity: calc(0.25 + var(--demo-glow, 0.25) * 0.75);
+  transition: opacity 240ms ease;
+}
+
+.st-demo-glow-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  left: calc(var(--demo-mx-pct, 50%) - 19%);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.85) 45%,
+    rgba(229, 238, 246, 0.7) 58%,
+    transparent 100%
+  );
+  opacity: calc(var(--demo-glow, 0.25) * 0.95);
+  transition: opacity 240ms ease;
+}
+
+.st-demo-glow-btn:hover {
+  border-color: #12406A;
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-demo-glow-btn::before,
+  .st-demo-glow-btn::after {
+    display: none;
+  }
+}

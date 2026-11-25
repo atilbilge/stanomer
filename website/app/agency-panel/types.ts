@@ -350,8 +350,67 @@ export interface MaintenanceChargeItem {
   contractor_payment_date?: string | null;
 }
 
+export type AgencyTaskSourceType =
+  | "manual"
+  | "property"
+  | "listing"
+  | "lead"
+  | "maintenance";
+
+export type AgencyTaskStatus = "todo" | "in_progress" | "done" | "cancelled";
+export type AgencyTaskPriority = "low" | "medium" | "high" | "urgent";
+
+export interface AgencyAssigneeOption {
+  id: string;
+  name: string;
+  email: string;
+  role: "agency_admin" | "agency_operation";
+}
+
+export interface AgencyTaskComment {
+  id: string;
+  author_id?: string | null;
+  author_name: string;
+  text: string;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface AgencyTask {
+  id: string;
+  agency_id: string;
+  title: string;
+  description?: string | null;
+  status: AgencyTaskStatus;
+  priority: AgencyTaskPriority;
+  due_date?: string | null;
+  source_type: AgencyTaskSourceType;
+  property_id?: string | null;
+  listing_id?: string | null;
+  lead_id?: string | null;
+  maintenance_request_id?: string | null;
+  assigned_to?: string | null;
+  created_by?: string | null;
+  comments?: AgencyTaskComment[] | null;
+  completed_at?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface AgencyTaskPrefill {
+  source_type: AgencyTaskSourceType;
+  title?: string;
+  description?: string;
+  property_id?: string | null;
+  listing_id?: string | null;
+  lead_id?: string | null;
+  maintenance_request_id?: string | null;
+  priority?: AgencyTaskPriority;
+}
+
 export type AgencyPanelTab =
   | "welcome"
+  | "tasks"
   | "listings"
   | "leads"
   | "form"

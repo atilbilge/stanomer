@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   ArrowUpRight,
   Building2,
   Calendar,
   Check,
+  CheckSquare,
   ChevronDown,
   ChevronUp,
   Clock,
-  Columns3,
   Globe,
   Inbox,
-  LayoutGrid,
-  List,
   Mail,
   MapPin,
   MessageCircle,
@@ -25,15 +23,21 @@ import {
   Send,
   SlidersHorizontal,
   User,
+  UserCheck,
   X,
 } from "lucide-react";
-import { AgencyLead, KanbanColId, LeadStatus } from "../types";
 import {
-  KANBAN_COLUMNS,
+  AgencyAssigneeOption,
+  AgencyLead,
+  AgencyTask,
+  AgencyTaskPrefill,
+  AgencyTaskStatus,
+  LeadStatus,
+} from "../types";
+import {
   STATUS_TRANSLATION_KEYS,
   STATUS_TOOLTIP_KEYS,
   STATUS_STYLES,
-  getKanbanColumnForStatus,
   getAllowedStatusesForType,
 } from "../constants";
 
@@ -51,16 +55,16 @@ export interface LeadsTabProps {
   setLeadStatusFilter: (status: any) => void;
   leadSearchQuery: string;
   setLeadSearchQuery: (q: string) => void;
-  leadsViewMode: "kanban" | "list";
-  setLeadsViewMode: (mode: "kanban" | "list") => void;
-  activeKanbanCol: KanbanColId;
-  setActiveKanbanCol: (col: KanbanColId) => void;
   filteredLeads: AgencyLead[];
   newCommentText: Record<string, string>;
   setNewCommentText: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   handleAddLeadComment: (leadId: string) => void;
   handleConvertLeadToListing: (lead: AgencyLead) => void;
   handleUpdateLeadStatus: (leadId: string, newStatus: LeadStatus) => void;
+  onCreateTask?: (prefill: AgencyTaskPrefill) => void;
+  tasks?: AgencyTask[];
+  assignees?: AgencyAssigneeOption[];
+  onQuickTaskStatus?: (task: AgencyTask, status: AgencyTaskStatus) => Promise<void>;
   activeLocale: string;
   t: (key: string) => string;
 }
@@ -74,19 +78,123 @@ export default function LeadsTab({
   setLeadStatusFilter,
   leadSearchQuery,
   setLeadSearchQuery,
-  leadsViewMode,
-  setLeadsViewMode,
-  activeKanbanCol,
-  setActiveKanbanCol,
   filteredLeads,
   newCommentText,
   setNewCommentText,
   handleAddLeadComment,
   handleConvertLeadToListing,
   handleUpdateLeadStatus,
+  onCreateTask,
+  tasks = [],
+  assignees = [],
+  onQuickTaskStatus,
   activeLocale,
   t,
 }: LeadsTabProps) {
+  const [expandedLeadTaskIds, setExpandedLeadTaskIds] = useState<Set<string>>(new Set());
+
+  const tasksByLeadId = useMemo(() => {
+    const map = new Map<string, AgencyTask[]>();
+    for (const tk of tasks) {
+      if (tk.lead_id) {
+        const list = map.get(tk.lead_id) || [];
+        list.push(tk);
+        map.set(tk.lead_id, list);
+      }
+    }
+    return map;
+  }, [tasks]);
+
+  const assigneeMap = useMemo(
+    () => new Map(assignees.map((a) => [a.id, a])),
+    [assignees]
+  );
+
+  const toggleLeadTasks = (leadId: string) => {
+    setExpandedLeadTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId);
+      else next.add(leadId);
+      return next;
+    });
+  };
+
+  const renderLeadTasksExpandButton = (leadId: string) => {
+    const linked = tasksByLeadId.get(leadId) || [];
+    if (linked.length === 0) return null;
+    const isExpanded = expandedLeadTaskIds.has(leadId);
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleLeadTasks(leadId);
+        }}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E5EEF6] hover:bg-[#1B5888] text-[#1B5888] hover:text-white text-[10px] font-bold transition-colors cursor-pointer"
+      >
+        <CheckSquare className="w-3 h-3" />
+        <span>{linked.length}</span>
+        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+    );
+  };
+
+  const renderExpandedLeadTasks = (leadId: string) => {
+    if (!expandedLeadTaskIds.has(leadId)) return null;
+    const linked = tasksByLeadId.get(leadId) || [];
+    if (linked.length === 0) return null;
+    return (
+      <div className="mt-2.5 pt-2 border-t border-slate-100">
+        <div className="border-l-2 border-[#1B5888]/30 pl-2.5 space-y-1.5">
+          {linked.map((tk) => {
+            const assignee = tk.assigned_to ? assigneeMap.get(tk.assigned_to) : null;
+            return (
+              <div
+                key={tk.id}
+                className="flex items-center justify-between gap-2 bg-[#F8F7F5] rounded-[8px] border border-[#E5E3DF] px-2.5 py-1.5"
+              >
+                <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                  <CheckSquare className="w-3 h-3 text-[#1B5888] shrink-0" />
+                  <span
+                    className={`text-[11px] font-semibold truncate ${
+                      tk.status === "done" ? "line-through text-[#8A8A8A]" : "text-[#1A1A1A]"
+                    }`}
+                  >
+                    {tk.title}
+                  </span>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white text-slate-600 border border-slate-200">
+                    {t(`agency_tasks_priority_${tk.priority}`)}
+                  </span>
+                  {tk.due_date && (
+                    <span className="text-[10px] text-[#666666] inline-flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {tk.due_date}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-[#666666] inline-flex items-center gap-1">
+                    <UserCheck className="w-3 h-3" />
+                    {assignee ? assignee.name : t("agency_tasks_unassigned")}
+                  </span>
+                </div>
+                {onQuickTaskStatus && (
+                  <select
+                    value={tk.status}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => onQuickTaskStatus(tk, e.target.value as AgencyTaskStatus)}
+                    className="px-1.5 py-0.5 rounded border border-[#E5E3DF] text-[10px] font-semibold bg-white shrink-0"
+                  >
+                    <option value="todo">{t("agency_tasks_status_todo")}</option>
+                    <option value="in_progress">{t("agency_tasks_status_in_progress")}</option>
+                    <option value="done">{t("agency_tasks_status_done")}</option>
+                  </select>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(true);
   const hasActiveFilters = leadSearchQuery.trim().length > 0 || leadStatusFilter !== "all";
 
@@ -217,103 +325,88 @@ export default function LeadsTab({
                     {isFilterExpanded && (
                       <div className="space-y-3 pt-1 text-xs">
                         {/* Status Pills: Balanced Equal-Width Grid (No horizontal scroll, zero jagged teeth) */}
-                        {leadsViewMode === "list" && (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 pt-0.5">
-                            {(() => {
-                              const relevantStatuses: { id: string; label: string; desc: string; count: number }[] = [
-                                {
-                                  id: "all",
-                                  label: t("agency_panel_filter_status_all"),
-                                  desc: t(STATUS_TOOLTIP_KEYS.all),
-                                  count:
-                                    leadPoolFilter === "all"
-                                      ? leads.length
-                                      : leads.filter((l) => l.lead_type === leadPoolFilter).length,
-                                },
-                              ];
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 pt-0.5">
+                          {(() => {
+                            const relevantStatuses: { id: string; label: string; desc: string; count: number }[] = [
+                              {
+                                id: "all",
+                                label: t("agency_panel_filter_status_all"),
+                                desc: t(STATUS_TOOLTIP_KEYS.all),
+                                count:
+                                  leadPoolFilter === "all"
+                                    ? leads.length
+                                    : leads.filter((l) => l.lead_type === leadPoolFilter).length,
+                              },
+                            ];
 
-                              const statusList: LeadStatus[] =
-                                leadPoolFilter === "all"
-                                  ? [
-                                    "new",
-                                    "contacted",
-                                    "evaluation",
-                                    "viewing_scheduled",
-                                    "offer_made",
-                                    "contract_signed",
-                                    "converted",
-                                    "archived",
-                                  ]
-                                  : getAllowedStatusesForType(leadPoolFilter);
+                            const statusList: LeadStatus[] =
+                              leadPoolFilter === "all"
+                                ? [
+                                  "new",
+                                  "contacted",
+                                  "evaluation",
+                                  "viewing_scheduled",
+                                  "offer_made",
+                                  "contract_signed",
+                                  "converted",
+                                  "archived",
+                                ]
+                                : getAllowedStatusesForType(leadPoolFilter);
 
-                              for (const st of statusList) {
-                                const count = leads.filter((l) => {
-                                  if (leadPoolFilter !== "all" && l.lead_type !== leadPoolFilter) {
-                                    return false;
-                                  }
-                                  return l.status === st;
-                                }).length;
-                                relevantStatuses.push({
-                                  id: st,
-                                  label: t(STATUS_TRANSLATION_KEYS[st]),
-                                  desc: t(STATUS_TOOLTIP_KEYS[st]),
-                                  count,
-                                });
-                              }
+                            for (const st of statusList) {
+                              const count = leads.filter((l) => {
+                                if (leadPoolFilter !== "all" && l.lead_type !== leadPoolFilter) {
+                                  return false;
+                                }
+                                return l.status === st;
+                              }).length;
+                              relevantStatuses.push({
+                                id: st,
+                                label: t(STATUS_TRANSLATION_KEYS[st]),
+                                desc: t(STATUS_TOOLTIP_KEYS[st]),
+                                count,
+                              });
+                            }
 
-                              return relevantStatuses.map((tab) => {
-                                const isSelected = leadStatusFilter === tab.id;
-                                return (
-                                  <button
-                                    key={tab.id}
-                                    type="button"
-                                    onClick={() => setLeadStatusFilter(tab.id)}
-                                    aria-label={`${tab.label}: ${tab.desc}`}
-                                    className={`flex items-center justify-between gap-2 px-3 py-2 rounded-[10px] text-xs font-semibold transition-all cursor-pointer relative group hover:z-50 ${isSelected
-                                      ? "bg-[#1B5888] text-white shadow-xs"
-                                      : "bg-white hover:bg-slate-100 text-[#4A4A4A] border border-[#E5E3DF]"
+                            return relevantStatuses.map((tab) => {
+                              const isSelected = leadStatusFilter === tab.id;
+                              return (
+                                <button
+                                  key={tab.id}
+                                  type="button"
+                                  onClick={() => setLeadStatusFilter(tab.id)}
+                                  aria-label={`${tab.label}: ${tab.desc}`}
+                                  className={`flex items-center justify-between gap-2 px-3 py-2 rounded-[10px] text-xs font-semibold transition-all cursor-pointer relative group hover:z-50 ${isSelected
+                                    ? "bg-[#1B5888] text-white shadow-xs"
+                                    : "bg-white hover:bg-slate-100 text-[#4A4A4A] border border-[#E5E3DF]"
+                                    }`}
+                                >
+                                  <span className="truncate">{tab.label}</span>
+                                  <span
+                                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${isSelected
+                                      ? "bg-white/20 text-white"
+                                      : "bg-slate-100 text-[#4A4A4A]"
                                       }`}
                                   >
-                                    <span className="truncate">{tab.label}</span>
-                                    <span
-                                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-slate-100 text-[#4A4A4A]"
-                                        }`}
-                                    >
-                                      {tab.count}
-                                    </span>
+                                    {tab.count}
+                                  </span>
 
-                                    {/* Fast Floating Tooltip on Hover */}
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-normal leading-snug rounded-lg shadow-2xl whitespace-normal w-52 max-w-[85vw] text-center opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-[9999]">
-                                      <div className="font-bold text-white text-xs mb-0.5">{tab.label}</div>
-                                      <div className="text-slate-300 text-[11px] leading-tight mb-1.5">{tab.desc}</div>
-                                      <div className={`pt-1 border-t border-slate-700/80 text-[10px] font-semibold flex items-center justify-center gap-1 ${
-                                        isSelected ? "text-emerald-400" : "text-amber-300"
-                                      }`}>
-                                        <span>{isSelected ? t("agency_panel_status_active_hint") : t("agency_panel_status_filter_hint")}</span>
-                                      </div>
-                                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900" />
+                                  {/* Fast Floating Tooltip on Hover */}
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-normal leading-snug rounded-lg shadow-2xl whitespace-normal w-52 max-w-[85vw] text-center opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-[9999]">
+                                    <div className="font-bold text-white text-xs mb-0.5">{tab.label}</div>
+                                    <div className="text-slate-300 text-[11px] leading-tight mb-1.5">{tab.desc}</div>
+                                    <div className={`pt-1 border-t border-slate-700/80 text-[10px] font-semibold flex items-center justify-center gap-1 ${
+                                      isSelected ? "text-emerald-400" : "text-amber-300"
+                                    }`}>
+                                      <span>{isSelected ? t("agency_panel_status_active_hint") : t("agency_panel_status_filter_hint")}</span>
                                     </div>
-                                  </button>
-                                );
-                              });
-                            })()}
-                          </div>
-                        )}
-
-                        {/* In Kanban view: Informative stage hint bar */}
-                        {leadsViewMode === "kanban" && (
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#4A4A4A] bg-white p-2.5 rounded-[10px] border border-[#E5E3DF]">
-                            <div className="flex items-center gap-2">
-                              <Columns3 className="w-4 h-4 text-[#666666] shrink-0" />
-                              <span>{t("agency_panel_kanban_scroll_hint")}</span>
-                            </div>
-                            <span className="text-[11px] font-semibold text-[#4A4A4A] bg-slate-50 px-2 py-0.5 rounded-md border border-[#E5E3DF] shrink-0">
-                              5 {t("agency_panel_leads_status_label")}
-                            </span>
-                          </div>
-                        )}
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900" />
+                                  </div>
+                                </button>
+                              );
+                            });
+                          })()}
+                        </div>
 
                         {/* Live Search Input */}
                         <div className="relative bg-white rounded-[8px] border border-[#E2E8F0] shadow-2xs">
@@ -372,257 +465,6 @@ export default function LeadsTab({
                       <p className="text-xs text-[#666666] max-w-md mx-auto mt-1 leading-relaxed">
                         {t("agency_panel_leads_empty_desc")}
                       </p>
-                    </div>
-                  ) : leadsViewMode === "kanban" ? (
-                    /* ========================================================== */
-                    /* KANBAN BOARD VIEW (ACCORDION EXPAND ON HOVER / FOCUS)       */
-                    /* Zero horizontal scroll, cursor-focused column expansion    */
-                    /* ========================================================== */
-                    <div className="w-full flex items-start gap-2.5 sm:gap-3 py-1 relative">
-                      {KANBAN_COLUMNS.map((col) => {
-                        const colLeads = filteredLeads.filter(
-                          (l) => getKanbanColumnForStatus(l.status) === col.id
-                        );
-                        const isFocused = activeKanbanCol === col.id;
-
-                        return (
-                          <div
-                            key={col.id}
-                            onMouseEnter={() => setActiveKanbanCol(col.id)}
-                            onClick={() => setActiveKanbanCol(col.id)}
-                            className={`rounded-[10px] border transition-all duration-300 ease-out flex flex-col ${isFocused
-                              ? `flex-[3.5] min-w-[300px] z-20 shadow-xl ring-2 ring-slate-900/10 ${col.color} p-3.5 space-y-3`
-                              : `flex-1 min-w-[85px] max-w-[150px] z-10 opacity-75 hover:opacity-100 bg-slate-50/90 border-[#E5E3DF] p-2.5 space-y-2 cursor-pointer shadow-2xs`
-                              }`}
-                          >
-                            {/* Column Header */}
-                            <div
-                              className={`flex items-center justify-between gap-1.5 pb-2 border-b border-[#E5E3DF] ${!isFocused ? "flex-col sm:flex-row items-center text-center sm:text-left" : ""
-                                }`}
-                            >
-                              <h3
-                                className={`font-bold text-[#1A1A1A] line-clamp-1 ${isFocused ? "text-xs" : "text-[11px] truncate"
-                                  }`}
-                                title={t(col.titleKey)}
-                              >
-                                {t(col.titleKey)}
-                              </h3>
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${col.badgeColor}`}
-                              >
-                                {colLeads.length}
-                              </span>
-                            </div>
-
-                            {/* Column Cards */}
-                            {colLeads.length === 0 ? (
-                              <div className="p-4 rounded-[10px] border border-dashed border-[#E5E3DF] text-center text-[11px] text-[#666666]">
-                                -
-                              </div>
-                            ) : isFocused ? (
-                              /* FULL DETAIL CARDS (FOCUSED COLUMN) */
-                              <div className="space-y-3">
-                                {colLeads.map((lead) => {
-                                  const allowedStatuses = getAllowedStatusesForType(lead.lead_type);
-                                  const isOwnerConsignment = lead.lead_type === "owner_consignment";
-                                  const isViewing = lead.lead_type === "viewing_request";
-                                  const commentsCount = (lead.comments || []).length;
-                                  const cleanPhoneDigits = (lead.client_phone || "")
-                                    .replace(/[^\d+]/g, "")
-                                    .replace(/^\+/, "");
-
-                                  return (
-                                    <div
-                                      key={lead.id}
-                                      className="bg-white rounded-[10px] border border-[#E5E3DF] p-3 shadow-xs hover:border-[#8A8A8A] hover:shadow-md transition-all space-y-2.5 text-xs"
-                                    >
-                                      {/* Card Header: Type badge & Date */}
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span
-                                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${isOwnerConsignment
-                                            ? "bg-[#FBF1DC] text-[#8A5206] border border-[#8A5206]/20"
-                                            : isViewing
-                                              ? "bg-[#E5EEF6] text-blue-900 border border-[#1B5888]/20"
-                                              : "bg-slate-100 text-[#1A1A1A] border border-[#E5E3DF]"
-                                            }`}
-                                        >
-                                          {isOwnerConsignment
-                                            ? t("agency_panel_leads_type_owner")
-                                            : isViewing
-                                              ? t("agency_panel_leads_type_viewing")
-                                              : t("agency_panel_leads_type_general")}
-                                        </span>
-
-                                        <span className="text-[10px] text-[#666666]">
-                                          {new Date(lead.created_at).toLocaleDateString(activeLocale, {
-                                            day: "numeric",
-                                            month: "short",
-                                          })}
-                                        </span>
-                                      </div>
-
-                                      {/* Client Details */}
-                                      <div>
-                                        <h4 className="font-bold text-[#1A1A1A] text-sm leading-tight">
-                                          {lead.client_name}
-                                        </h4>
-                                        <p className="text-[11px] text-[#666666] font-mono mt-0.5">
-                                          {lead.client_phone}
-                                        </p>
-                                      </div>
-
-                                      {/* Linked Listing if viewing request */}
-                                      {lead.listing_title && (
-                                        <div className="p-1.5 rounded-lg bg-[#E5EEF6]/70 border border-blue-100 text-[11px] text-blue-900 font-medium line-clamp-2">
-                                          <span className="font-bold text-[#12406A]">
-                                            {t("agency_panel_leads_tbl_property")}:
-                                          </span>{" "}
-                                          {lead.listing_title}
-                                        </div>
-                                      )}
-
-                                      {/* Specs / Location */}
-                                      {(lead.location || lead.expected_price || lead.area_sqm) && (
-                                        <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 text-[11px] space-y-1">
-                                          {lead.location && (
-                                            <div className="flex items-center gap-1 text-[#4A4A4A] line-clamp-1">
-                                              <MapPin className="w-3 h-3 text-[#666666] shrink-0" />
-                                              <span>{lead.location}</span>
-                                            </div>
-                                          )}
-                                          <div className="flex items-center gap-2 font-medium">
-                                            {lead.expected_price && (
-                                              <span className="text-[#2A6E43] font-bold">
-                                                €{Number(lead.expected_price).toLocaleString()}
-                                              </span>
-                                            )}
-                                            {lead.area_sqm && (
-                                              <span className="text-[#666666]">
-                                                {lead.area_sqm} m²
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Move Status Dropdown */}
-                                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                                        <label
-                                          htmlFor={`status-select-kanban-${lead.id}`}
-                                          className="text-[10px] font-semibold text-[#666666] shrink-0"
-                                        >
-                                          {t("agency_panel_leads_tbl_stage")}:
-                                        </label>
-                                        <select
-                                          id={`status-select-kanban-${lead.id}`}
-                                          value={lead.status}
-                                          onChange={(e) =>
-                                            handleUpdateLeadStatus(
-                                              lead.id,
-                                              e.target.value as AgencyLead["status"]
-                                            )
-                                          }
-                                          className="w-full text-[11px] font-bold px-2 py-1 rounded-lg border border-[#E5E3DF] bg-white text-[#4A4A4A] focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                                        >
-                                          {allowedStatuses.map((st) => (
-                                            <option key={st} value={st}>
-                                              {t(STATUS_TRANSLATION_KEYS[st])}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-
-                                      {/* Card Actions */}
-                                      <div className="pt-1.5 flex items-center justify-between gap-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                          <a
-                                            href={`tel:${cleanPhoneDigits}`}
-                                            className="p-1 rounded bg-slate-100 text-[#4A4A4A] hover:bg-slate-200"
-                                            title="Call"
-                                          >
-                                            <Phone className="w-3 h-3" />
-                                          </a>
-
-                                          {cleanPhoneDigits && (
-                                            <a
-                                              href={`https://wa.me/${cleanPhoneDigits}`}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="p-1 rounded bg-[#E6F3EA] text-[#2A6E43] hover:bg-[#E6F3EA]"
-                                              title="WhatsApp"
-                                            >
-                                              <MessageCircle className="w-3 h-3" />
-                                            </a>
-                                          )}
-                                        </div>
-
-                                        {isOwnerConsignment && lead.status !== "converted" && (
-                                          <button
-                                            type="button"
-                                            onClick={() => handleConvertLeadToListing(lead)}
-                                            className="text-[10px] font-bold text-[#12406A] hover:text-blue-900 hover:underline cursor-pointer flex items-center gap-0.5"
-                                          >
-                                            <span>{t("agency_panel_leads_act_convert")}</span>
-                                            <ArrowUpRight className="w-3 h-3" />
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              /* COMPACT PREVIEW CARDS (UNFOCUSED COLUMN) */
-                              <div className="space-y-2">
-                                {colLeads.map((lead) => {
-                                  const isOwnerConsignment = lead.lead_type === "owner_consignment";
-                                  const isViewing = lead.lead_type === "viewing_request";
-
-                                  return (
-                                    <div
-                                      key={lead.id}
-                                      className="bg-white/95 rounded-[10px] border border-[#E5E3DF] p-2 shadow-2xs hover:border-[#8A8A8A] space-y-1 transition-all"
-                                    >
-                                      <div className="flex items-center justify-between gap-1">
-                                        <span
-                                          className={`w-2 h-2 rounded-full shrink-0 ${isOwnerConsignment
-                                            ? "bg-amber-500"
-                                            : isViewing
-                                              ? "bg-blue-500"
-                                              : "bg-slate-400"
-                                            }`}
-                                        />
-                                        <span className="text-[9px] text-[#666666] font-mono">
-                                          {new Date(lead.created_at).toLocaleDateString(activeLocale, {
-                                            day: "numeric",
-                                            month: "numeric",
-                                          })}
-                                        </span>
-                                      </div>
-                                      <p className="font-bold text-[11px] text-[#1A1A1A] truncate leading-tight">
-                                        {lead.client_name}
-                                      </p>
-                                      {lead.expected_price ? (
-                                        <p className="text-[10px] text-[#2A6E43] font-bold truncate">
-                                          €{Number(lead.expected_price).toLocaleString()}
-                                        </p>
-                                      ) : lead.listing_title ? (
-                                        <p className="text-[9px] text-[#12406A] truncate font-medium">
-                                          {lead.listing_title}
-                                        </p>
-                                      ) : lead.location ? (
-                                        <p className="text-[9px] text-[#666666] truncate">
-                                          {lead.location.split(",")[0]}
-                                        </p>
-                                      ) : null}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
                     </div>
                   ) : (
                     /* ========================================================== */
@@ -952,6 +794,24 @@ export default function LeadsTab({
                               </div>
 
                               {/* Convert to Listing Action */}
+                              {renderLeadTasksExpandButton(lead.id)}
+                              {onCreateTask && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onCreateTask({
+                                      source_type: "lead",
+                                      lead_id: lead.id,
+                                      title: `${lead.client_name}${lead.listing_title ? ` • ${lead.listing_title}` : ""}`,
+                                      description: lead.notes || undefined,
+                                    })
+                                  }
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border border-[#E5E3DF] bg-white hover:bg-slate-50 text-[#1A1A1A] text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  <span>{t("agency_tasks_quick_assign_btn")}</span>
+                                </button>
+                              )}
+
                               {isOwnerConsignment && (
                                 <div>
                                   {lead.status === "converted" ? (
@@ -972,6 +832,7 @@ export default function LeadsTab({
                                 </div>
                               )}
                             </div>
+                            {renderExpandedLeadTasks(lead.id)}
                           </div>
                         );
                       })}

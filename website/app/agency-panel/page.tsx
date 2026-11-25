@@ -9,6 +9,12 @@ import {
   ContactChannels,
   ShowcaseCurrency,
   AgencyMaintStatusFilter,
+  AgencyTask,
+  AgencyTaskPrefill,
+  AgencyTaskPriority,
+  AgencyTaskSourceType,
+  AgencyTaskStatus,
+  AgencyAssigneeOption,
 } from "./types";
 import ManagedPropertiesTab from "./components/ManagedPropertiesTab";
 import SettingsTab from "./components/SettingsTab";
@@ -21,6 +27,7 @@ import PaymentsTab from "./components/PaymentsTab";
 import XmlFeedsTab from "./components/XmlFeedsTab";
 import WelcomeTab from "./components/WelcomeTab";
 import AccountSettingsTab from "./components/AccountSettingsTab";
+import TasksTab, { TaskFormModal } from "./components/TasksTab";
 import DemoVerificationModal from "./components/DemoVerificationModal";
 import DemoFloatingNudge from "./components/DemoFloatingNudge";
 import { MAINTENANCE_CATEGORIES } from "./categoryAndPaymentIcons";
@@ -176,6 +183,15 @@ export default function AgencyPanelPage() {
 
   // Auth & Mode State
   const [userId, setUserId] = useState<string | null>(null);
+  const [agencyRole, setAgencyRole] = useState<"agency_admin" | "agency_operation">("agency_admin");
+  const [agencyTasks, setAgencyTasks] = useState<AgencyTask[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [teamAssignees, setTeamAssignees] = useState<AgencyAssigneeOption[]>([]);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<AgencyTask | null>(null);
+  const [taskPrefill, setTaskPrefill] = useState<AgencyTaskPrefill | null>(null);
+  const [taskPropertyFilter, setTaskPropertyFilter] = useState<string | null>(null);
+  const [taskListingFilter, setTaskListingFilter] = useState<string | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeModules, setActiveModules] = useState<string[]>([
     "portfolio_distribution",
@@ -563,6 +579,7 @@ export default function AgencyPanelPage() {
   // Tab & Filter State
   type AgencyPanelTab =
     | "welcome"
+    | "tasks"
     | "listings"
     | "form"
     | "leads"
@@ -1026,12 +1043,39 @@ export default function AgencyPanelPage() {
   }, [maintenanceRequests, maintStatusFilter, maintSearchQuery]);
 
   // Leads & CRM State
+  const demoBtnRef = useRef<HTMLButtonElement | null>(null);
   const [leads, setListingsLeads] = useState<AgencyLead[]>([]);
+
+  useEffect(() => {
+    if (userId) return;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      const btn = demoBtnRef.current;
+      if (!btn) return;
+      const vw = Math.max(1, window.innerWidth);
+      const vh = Math.max(1, window.innerHeight);
+      const pctX = Math.max(0, Math.min(100, (e.clientX / vw) * 100));
+      const pctY = Math.max(0, Math.min(100, (e.clientY / vh) * 100));
+      btn.style.setProperty("--demo-mx", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-my", `${pctY.toFixed(1)}%`);
+      btn.style.setProperty("--demo-mx-pct", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-glow", "1");
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (demoBtnRef.current) {
+          demoBtnRef.current.style.setProperty("--demo-glow", "0.25");
+        }
+      }, 450);
+    };
+    window.addEventListener("mousemove", handleWindowMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      if (idleTimer) clearTimeout(idleTimer);
+    };
+  }, [userId]);
   const [leadPoolFilter, setLeadPoolFilter] = useState<"all" | LeadType>("all");
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [leadSearchQuery, setLeadSearchQuery] = useState<string>("");
-  const [leadsViewMode, setLeadsViewMode] = useState<"list" | "kanban">("list");
-  const [activeKanbanCol, setActiveKanbanCol] = useState<KanbanColId>("incoming");
   const [convertingLeadId, setConvertingLeadId] = useState<string | null>(null);
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
 
@@ -1157,6 +1201,281 @@ export default function AgencyPanelPage() {
 
     return false;
   }
+
+  async function resolveAgencyAccess(
+    uid: string,
+    userMetadata?: any
+  ): Promise<{
+    allowed: boolean;
+    effectiveAgencyId: string | null;
+    role: "agency_admin" | "agency_operation";
+  }> {
+    try {
+      const { data: membership } = await supabase
+        .from("agency_members")
+        .select("agency_id, member_role, status")
+        .eq("user_id", uid)
+        .eq("status", "active")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (membership?.agency_id) {
+        return {
+          allowed: true,
+          effectiveAgencyId: membership.agency_id,
+          role: "agency_operation",
+        };
+      }
+    } catch (err) {
+      console.warn("Could not check agency_members in resolveAgencyAccess:", err);
+    }
+
+    const isAgency = await verifyAgencyRole(uid, userMetadata);
+    if (isAgency) {
+      return {
+        allowed: true,
+        effectiveAgencyId: uid,
+        role: "agency_admin",
+      };
+    }
+
+    return {
+      allowed: false,
+      effectiveAgencyId: null,
+      role: "agency_admin",
+    };
+  }
+
+  async function loadAgencyTasks(effectiveAgencyId: string) {
+    if (!effectiveAgencyId || effectiveAgencyId === "demo") {
+      setAgencyTasks([]);
+      return;
+    }
+    setLoadingTasks(true);
+    try {
+      const { data, error } = await supabase
+        .from("agency_tasks")
+        .select("*")
+        .eq("agency_id", effectiveAgencyId)
+        .order("created_at", { ascending: false });
+      if (!error && Array.isArray(data)) {
+        setAgencyTasks(data as AgencyTask[]);
+      }
+    } catch (err) {
+      console.warn("Could not load agency_tasks:", err);
+    } finally {
+      setLoadingTasks(false);
+    }
+  }
+
+  async function loadTeamAssignees(effectiveAgencyId: string, authUser?: any) {
+    if (!effectiveAgencyId || effectiveAgencyId === "demo") {
+      setTeamAssignees([
+        {
+          id: "demo",
+          name: agencyName || "Demo Admin",
+          email: agencyEmail || "demo@stanomer.online",
+          role: "agency_admin",
+        },
+      ]);
+      return;
+    }
+    try {
+      const list: AgencyAssigneeOption[] = [];
+      const { data: adminProf } = await supabase
+        .from("profiles")
+        .select("id, full_name, company_name, email")
+        .eq("id", effectiveAgencyId)
+        .maybeSingle();
+
+      list.push({
+        id: effectiveAgencyId,
+        name: adminProf?.full_name || adminProf?.company_name || adminProf?.email || "Agency Admin",
+        email: adminProf?.email || "",
+        role: "agency_admin",
+      });
+
+      const { data: members } = await supabase
+        .from("agency_members")
+        .select("user_id, full_name, email, status")
+        .eq("agency_id", effectiveAgencyId)
+        .eq("status", "active")
+        .order("created_at", { ascending: true });
+
+      if (Array.isArray(members)) {
+        for (const m of members) {
+          if (m.user_id && !list.some((x) => x.id === m.user_id)) {
+            list.push({
+              id: m.user_id,
+              name: m.full_name || m.email || "Operations",
+              email: m.email || "",
+              role: "agency_operation",
+            });
+          }
+        }
+      }
+
+      if (authUser?.id && !list.some((x) => x.id === authUser.id)) {
+        list.push({
+          id: authUser.id,
+          name: authUser.user_metadata?.full_name || authUser.email || "User",
+          email: authUser.email || "",
+          role: authUser.id === effectiveAgencyId ? "agency_admin" : "agency_operation",
+        });
+      }
+
+      setTeamAssignees(list);
+    } catch (err) {
+      console.warn("Could not load team assignees:", err);
+    }
+  }
+
+  const handleOpenCreateTask = (prefill?: AgencyTaskPrefill) => {
+    setEditingTask(null);
+    setTaskPrefill(prefill || { source_type: "manual" });
+    setIsTaskModalOpen(true);
+  };
+
+  const handleSaveTask = async (payload: {
+    id?: string;
+    title: string;
+    description: string | null;
+    status: AgencyTaskStatus;
+    priority: AgencyTaskPriority;
+    due_date: string | null;
+    source_type: AgencyTaskSourceType;
+    property_id: string | null;
+    listing_id: string | null;
+    lead_id: string | null;
+    maintenance_request_id: string | null;
+    assigned_to: string | null;
+  }) => {
+    const actorId = currentUser?.id || userId || "demo";
+    const effectiveAgencyId = userId || "demo";
+    const completedAt = payload.status === "done" ? new Date().toISOString() : null;
+
+    if (isDemoMode && (!userId || userId === "demo")) {
+      if (payload.id) {
+        setAgencyTasks((prev) =>
+          prev.map((tk) =>
+            tk.id === payload.id
+              ? { ...tk, ...payload, completed_at: completedAt, updated_at: new Date().toISOString() }
+              : tk
+          )
+        );
+      } else {
+        const newDemo: AgencyTask = {
+          id: `demo-task-${Date.now()}`,
+          agency_id: "demo",
+          ...payload,
+          created_by: actorId,
+          completed_at: completedAt,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setAgencyTasks((prev) => [newDemo, ...prev]);
+      }
+      return;
+    }
+
+    if (payload.id) {
+      const { data, error } = await supabase
+        .from("agency_tasks")
+        .update({
+          title: payload.title,
+          description: payload.description,
+          status: payload.status,
+          priority: payload.priority,
+          due_date: payload.due_date,
+          source_type: payload.source_type,
+          property_id: payload.property_id,
+          listing_id: payload.listing_id,
+          lead_id: payload.lead_id,
+          maintenance_request_id: payload.maintenance_request_id,
+          assigned_to: payload.assigned_to,
+          completed_at: completedAt,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", payload.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        setAgencyTasks((prev) => prev.map((tk) => (tk.id === payload.id ? (data as AgencyTask) : tk)));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from("agency_tasks")
+        .insert({
+          agency_id: effectiveAgencyId,
+          title: payload.title,
+          description: payload.description,
+          status: payload.status,
+          priority: payload.priority,
+          due_date: payload.due_date,
+          source_type: payload.source_type,
+          property_id: payload.property_id,
+          listing_id: payload.listing_id,
+          lead_id: payload.lead_id,
+          maintenance_request_id: payload.maintenance_request_id,
+          assigned_to: payload.assigned_to,
+          created_by: actorId,
+          completed_at: completedAt,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        setAgencyTasks((prev) => [data as AgencyTask, ...prev]);
+      }
+    }
+  };
+
+  const handleQuickTaskStatus = async (task: AgencyTask, status: AgencyTaskStatus) => {
+    const completedAt = status === "done" ? new Date().toISOString() : null;
+    setAgencyTasks((prev) =>
+      prev.map((tk) => (tk.id === task.id ? { ...tk, status, completed_at: completedAt } : tk))
+    );
+    if (userId && userId !== "demo") {
+      await supabase
+        .from("agency_tasks")
+        .update({ status, completed_at: completedAt, updated_at: new Date().toISOString() })
+        .eq("id", task.id);
+    }
+  };
+
+  const handleQuickTaskAssign = async (task: AgencyTask, assigneeId: string | null) => {
+    setAgencyTasks((prev) =>
+      prev.map((tk) => (tk.id === task.id ? { ...tk, assigned_to: assigneeId } : tk))
+    );
+    if (userId && userId !== "demo") {
+      await supabase
+        .from("agency_tasks")
+        .update({ assigned_to: assigneeId, updated_at: new Date().toISOString() })
+        .eq("id", task.id);
+    }
+  };
+
+  const handleDeleteTask = async (task: AgencyTask) => {
+    if (typeof window !== "undefined" && !window.confirm(t("agency_tasks_confirm_delete"))) return;
+    setAgencyTasks((prev) => prev.filter((tk) => tk.id !== task.id));
+    if (userId && userId !== "demo") {
+      await supabase.from("agency_tasks").delete().eq("id", task.id);
+    }
+  };
+
+  const handleUpdateTaskComments = async (task: AgencyTask, comments: import("./types").AgencyTaskComment[]) => {
+    setAgencyTasks((prev) =>
+      prev.map((tk) => (tk.id === task.id ? { ...tk, comments } : tk))
+    );
+    if (userId && userId !== "demo") {
+      await supabase
+        .from("agency_tasks")
+        .update({ comments, updated_at: new Date().toISOString() })
+        .eq("id", task.id);
+    }
+  };
 
   async function loadAgencyProfile(uid: string, fallbackEmail?: string) {
     const { data: prof } = await supabase
@@ -1299,7 +1618,6 @@ export default function AgencyPanelPage() {
       currentBreakpointRef.current = bp;
 
       if (bp === "mobile") {
-        setLeadsViewMode("list");
         return;
       }
 
@@ -1506,271 +1824,276 @@ export default function AgencyPanelPage() {
     let mounted = true;
     async function checkSession() {
       try {
-      // 1. Check if ?demo_token=xyz or ?tab=xyz in URL
-      if (typeof window !== "undefined") {
-        const searchParams = new URLSearchParams(window.location.search);
-        const urlTab = searchParams.get("tab") as AgencyPanelTab | null;
-        if (
-          urlTab &&
-          [
-            "welcome",
-            "listings",
-            "leads",
-            "form",
-            "xml",
-            "settings",
-            "payments",
-            "pm_dashboard",
-            "managed_properties",
-            "contracts",
-            "maintenance",
-            "account_settings",
-          ].includes(urlTab)
-        ) {
-          setActiveTab(urlTab);
-        }
-
-        const resetToken = searchParams.get("reset_token");
-        const resetEmailParam = searchParams.get("reset_email");
-        if (resetToken) {
-          setAuthTab("reset");
-          setResetStep(2);
-          setResetCode(resetToken);
-          if (resetEmailParam) setAuthEmail(resetEmailParam);
-          try {
-            const cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete("reset_token");
-            cleanUrl.searchParams.delete("reset_email");
-            window.history.replaceState({}, "", cleanUrl.toString());
-          } catch { }
-        }
-
-        const demoToken = searchParams.get("demo_token");
-        const isVerifiedDemoRedirect = searchParams.get("verified_demo") === "1";
-        if (demoToken && !isVerifiedDemoRedirect) {
-          try {
-            const res = await fetch(`/api/agency-demo?token=${encodeURIComponent(demoToken)}`);
-            const data = await res.json();
-            if (data.valid && data.session && mounted) {
-              const sessionLocale = data.session.locale || searchParams.get("lang");
-              let sessionModules = data.session.active_modules || (
-                data.session.focus === "presales"
-                  ? ["portfolio_distribution"]
-                  : data.session.focus === "aftersales"
-                    ? ["property_lease_management"]
-                    : ["portfolio_distribution", "property_lease_management"]
-              );
-
-              // Merge any module already activated in localStorage
-              try {
-                const s = localStorage.getItem("stanomer_agency_demo");
-                if (s) {
-                  const p = JSON.parse(s);
-                  if (p.active_modules && Array.isArray(p.active_modules) && p.active_modules.length > 0) {
-                    sessionModules = Array.from(new Set([...sessionModules, ...p.active_modules]));
-                  }
-                }
-              } catch { }
-
-              setIsDemoVerified(true);
-              activatePersonalDemoSandbox({
-                agencyName: data.session.agencyName,
-                email: data.session.email,
-                phone: data.session.phone,
-                city: data.session.city,
-                expiresAt: data.session.expiresAt,
-                focus: sessionModules.length > 1 ? "both" : sessionModules[0] === "portfolio_distribution" ? "presales" : "aftersales",
-                active_modules: sessionModules,
-                token: demoToken,
-                locale: sessionLocale,
-              });
-              const cleanSlug = (data.session.agencyName || "demo")
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "") || "demo";
-              localStorage.setItem(
-                "stanomer_agency_demo",
-                JSON.stringify({
-                  token: demoToken,
-                  isVerified: true,
-                  slug: cleanSlug,
-                  focus: sessionModules.length > 1 ? "both" : sessionModules[0] === "portfolio_distribution" ? "presales" : "aftersales",
-                  active_modules: sessionModules,
-                  locale: sessionLocale,
-                  ...data.session,
-                })
-              );
-
-              // Clean up demo_token from URL query so page refreshes don't re-trigger and overwrite state
-              try {
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.delete("demo_token");
-                window.history.replaceState({}, "", currentUrl.pathname + (currentUrl.search ? currentUrl.search : ""));
-              } catch { }
-              return;
-            } else if (data.expired && mounted) {
-              if (typeof window !== "undefined") {
-                localStorage.removeItem("stanomer_agency_demo");
-              }
-              setDemoExpiredAlert({ expired: true, agencyName: data.agencyName });
-            }
-          } catch (e) {
-            console.warn("Could not verify demo token:", e);
-          }
-        }
-      }
-
-      const { data } = await supabase.auth.getSession();
-      const sessionUser = data.session?.user;
-      if (sessionUser && mounted) {
-        const isAgency = await verifyAgencyRole(sessionUser.id, sessionUser.user_metadata);
-        if (!isAgency) {
-          console.warn("Session user does not have agency role. Signing out of agency-panel.");
-          await supabase.auth.signOut();
-          if (mounted) {
-            setUserId(null);
-            setCurrentUser(null);
-            setIsRoleError(true);
-            setAuthError(t("agency_panel_err_only_agency_allowed"));
-          }
-          return;
-        }
-
-        setUserId(sessionUser.id);
-        setCurrentUser(sessionUser);
-        const isDemoProfile = await loadAgencyProfile(sessionUser.id, sessionUser.email);
-        fetchAgencyListings(sessionUser.id, isDemoProfile);
-        loadAgencyLeads(sessionUser.id, isDemoProfile);
-        loadAgencyPayments(sessionUser.id);
-        loadAgencyManagedProperties(sessionUser.id);
-        loadAgencyContracts(sessionUser.id);
-        loadAgencyMaintenance(sessionUser.id);
-      } else if (mounted) {
-        // 2. Check localStorage for active unexpired demo
+        // 1. Check if ?demo_token=xyz or ?tab=xyz in URL
         if (typeof window !== "undefined") {
-          try {
-            const savedDemo = localStorage.getItem("stanomer_agency_demo");
-            if (savedDemo) {
-              const parsed = JSON.parse(savedDemo);
-              if (parsed && parsed.expiresAt && new Date(parsed.expiresAt) > new Date()) {
-                if (parsed.isVerified === true) {
-                  setIsDemoVerified(true);
-                } else {
-                  setIsDemoVerified(false);
-                }
-                const savedModules = parsed.active_modules || (
-                  parsed.focus === "presales"
+          const searchParams = new URLSearchParams(window.location.search);
+          const urlTab = searchParams.get("tab") as AgencyPanelTab | null;
+          if (
+            urlTab &&
+            [
+              "welcome",
+              "listings",
+              "leads",
+              "form",
+              "xml",
+              "settings",
+              "payments",
+              "pm_dashboard",
+              "managed_properties",
+              "contracts",
+              "maintenance",
+              "account_settings",
+            ].includes(urlTab)
+          ) {
+            setActiveTab(urlTab);
+          }
+
+          const resetToken = searchParams.get("reset_token");
+          const resetEmailParam = searchParams.get("reset_email");
+          if (resetToken) {
+            setAuthTab("reset");
+            setResetStep(2);
+            setResetCode(resetToken);
+            if (resetEmailParam) setAuthEmail(resetEmailParam);
+            try {
+              const cleanUrl = new URL(window.location.href);
+              cleanUrl.searchParams.delete("reset_token");
+              cleanUrl.searchParams.delete("reset_email");
+              window.history.replaceState({}, "", cleanUrl.toString());
+            } catch { }
+          }
+
+          const demoToken = searchParams.get("demo_token");
+          const isVerifiedDemoRedirect = searchParams.get("verified_demo") === "1";
+          if (demoToken && !isVerifiedDemoRedirect) {
+            try {
+              const res = await fetch(`/api/agency-demo?token=${encodeURIComponent(demoToken)}`);
+              const data = await res.json();
+              if (data.valid && data.session && mounted) {
+                const sessionLocale = data.session.locale || searchParams.get("lang");
+                let sessionModules = data.session.active_modules || (
+                  data.session.focus === "presales"
                     ? ["portfolio_distribution"]
-                    : parsed.focus === "aftersales"
+                    : data.session.focus === "aftersales"
                       ? ["property_lease_management"]
                       : ["portfolio_distribution", "property_lease_management"]
                 );
-                parsed.active_modules = savedModules;
-                activatePersonalDemoSandbox(parsed);
-                return;
-              } else if (parsed && parsed.expiresAt) {
-                localStorage.removeItem("stanomer_agency_demo");
-                setDemoExpiredAlert({ expired: true, agencyName: parsed.agencyName });
-              }
-            }
-          } catch { }
-        }
 
-        // Check if returning from email verification redirect
-        if (typeof window !== "undefined") {
-          const sp = new URLSearchParams(window.location.search);
-          if (sp.get("verified_demo") === "1") {
-            setIsDemoVerified(true);
+                // Merge any module already activated in localStorage
+                try {
+                  const s = localStorage.getItem("stanomer_agency_demo");
+                  if (s) {
+                    const p = JSON.parse(s);
+                    if (p.active_modules && Array.isArray(p.active_modules) && p.active_modules.length > 0) {
+                      sessionModules = Array.from(new Set([...sessionModules, ...p.active_modules]));
+                    }
+                  }
+                } catch { }
+
+                setIsDemoVerified(true);
+                activatePersonalDemoSandbox({
+                  agencyName: data.session.agencyName,
+                  email: data.session.email,
+                  phone: data.session.phone,
+                  city: data.session.city,
+                  expiresAt: data.session.expiresAt,
+                  focus: sessionModules.length > 1 ? "both" : sessionModules[0] === "portfolio_distribution" ? "presales" : "aftersales",
+                  active_modules: sessionModules,
+                  token: demoToken,
+                  locale: sessionLocale,
+                });
+                const cleanSlug = (data.session.agencyName || "demo")
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-|-$/g, "") || "demo";
+                localStorage.setItem(
+                  "stanomer_agency_demo",
+                  JSON.stringify({
+                    token: demoToken,
+                    isVerified: true,
+                    slug: cleanSlug,
+                    focus: sessionModules.length > 1 ? "both" : sessionModules[0] === "portfolio_distribution" ? "presales" : "aftersales",
+                    active_modules: sessionModules,
+                    locale: sessionLocale,
+                    ...data.session,
+                  })
+                );
+
+                // Clean up demo_token from URL query so page refreshes don't re-trigger and overwrite state
+                try {
+                  const currentUrl = new URL(window.location.href);
+                  currentUrl.searchParams.delete("demo_token");
+                  window.history.replaceState({}, "", currentUrl.pathname + (currentUrl.search ? currentUrl.search : ""));
+                } catch { }
+                return;
+              } else if (data.expired && mounted) {
+                if (typeof window !== "undefined") {
+                  localStorage.removeItem("stanomer_agency_demo");
+                }
+                setDemoExpiredAlert({ expired: true, agencyName: data.agencyName });
+              }
+            } catch (e) {
+              console.warn("Could not verify demo token:", e);
+            }
           }
         }
 
-        loadAgencyLeads("demo");
-        loadAgencyPayments("demo");
-        loadAgencyManagedProperties("demo");
-        loadAgencyContracts("demo");
-        loadAgencyMaintenance("demo");
-        if (typeof window !== "undefined") {
-          try {
-            const savedListings = localStorage.getItem("stanomer_agency_listings_demo");
-            if (savedListings) {
-              const parsedL = JSON.parse(savedListings);
-              if (Array.isArray(parsedL) && parsedL.length > 0) {
-                setListings(parsedL);
+        const { data } = await supabase.auth.getSession();
+        const sessionUser = data.session?.user;
+        if (sessionUser && mounted) {
+          const access = await resolveAgencyAccess(sessionUser.id, sessionUser.user_metadata);
+          if (!access.allowed || !access.effectiveAgencyId) {
+            console.warn("Session user does not have agency role. Signing out of agency-panel.");
+            await supabase.auth.signOut();
+            if (mounted) {
+              setUserId(null);
+              setCurrentUser(null);
+              setAgencyRole("agency_admin");
+              setIsRoleError(true);
+              setAuthError(t("agency_panel_err_only_agency_allowed"));
+            }
+            return;
+          }
+
+          const effectiveId = access.effectiveAgencyId;
+          setAgencyRole(access.role);
+          setUserId(effectiveId);
+          setCurrentUser(sessionUser);
+          const isDemoProfile = await loadAgencyProfile(effectiveId, sessionUser.email);
+          fetchAgencyListings(effectiveId, isDemoProfile);
+          loadAgencyLeads(effectiveId, isDemoProfile);
+          loadAgencyPayments(effectiveId);
+          loadAgencyManagedProperties(effectiveId);
+          loadAgencyContracts(effectiveId);
+          loadAgencyMaintenance(effectiveId);
+          loadAgencyTasks(effectiveId);
+          loadTeamAssignees(effectiveId, sessionUser);
+        } else if (mounted) {
+          // 2. Check localStorage for active unexpired demo
+          if (typeof window !== "undefined") {
+            try {
+              const savedDemo = localStorage.getItem("stanomer_agency_demo");
+              if (savedDemo) {
+                const parsed = JSON.parse(savedDemo);
+                if (parsed && parsed.expiresAt && new Date(parsed.expiresAt) > new Date()) {
+                  if (parsed.isVerified === true) {
+                    setIsDemoVerified(true);
+                  } else {
+                    setIsDemoVerified(false);
+                  }
+                  const savedModules = parsed.active_modules || (
+                    parsed.focus === "presales"
+                      ? ["portfolio_distribution"]
+                      : parsed.focus === "aftersales"
+                        ? ["property_lease_management"]
+                        : ["portfolio_distribution", "property_lease_management"]
+                  );
+                  parsed.active_modules = savedModules;
+                  activatePersonalDemoSandbox(parsed);
+                  return;
+                } else if (parsed && parsed.expiresAt) {
+                  localStorage.removeItem("stanomer_agency_demo");
+                  setDemoExpiredAlert({ expired: true, agencyName: parsed.agencyName });
+                }
+              }
+            } catch { }
+          }
+
+          // Check if returning from email verification redirect
+          if (typeof window !== "undefined") {
+            const sp = new URLSearchParams(window.location.search);
+            if (sp.get("verified_demo") === "1") {
+              setIsDemoVerified(true);
+            }
+          }
+
+          loadAgencyLeads("demo");
+          loadAgencyPayments("demo");
+          loadAgencyManagedProperties("demo");
+          loadAgencyContracts("demo");
+          loadAgencyMaintenance("demo");
+          if (typeof window !== "undefined") {
+            try {
+              const savedListings = localStorage.getItem("stanomer_agency_listings_demo");
+              if (savedListings) {
+                const parsedL = JSON.parse(savedListings);
+                if (Array.isArray(parsedL) && parsedL.length > 0) {
+                  setListings(parsedL);
+                } else {
+                  setListings(DEMO_AGENCY_LISTINGS);
+                  localStorage.setItem("stanomer_agency_listings_demo", JSON.stringify(DEMO_AGENCY_LISTINGS));
+                }
               } else {
                 setListings(DEMO_AGENCY_LISTINGS);
                 localStorage.setItem("stanomer_agency_listings_demo", JSON.stringify(DEMO_AGENCY_LISTINGS));
               }
-            } else {
+            } catch {
               setListings(DEMO_AGENCY_LISTINGS);
-              localStorage.setItem("stanomer_agency_listings_demo", JSON.stringify(DEMO_AGENCY_LISTINGS));
             }
-          } catch {
+          } else {
             setListings(DEMO_AGENCY_LISTINGS);
           }
-        } else {
-          setListings(DEMO_AGENCY_LISTINGS);
+          try {
+            const saved = localStorage.getItem("stanomer_showcase_theme");
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (parsed.custom_domain) setAgencyCustomDomain(parsed.custom_domain);
+              if (parsed.slug) setAgencySlug(parsed.slug);
+              if (
+                parsed.contactChannels === "both" ||
+                parsed.contactChannels === "whatsapp" ||
+                parsed.contactChannels === "viber" ||
+                parsed.contactChannels === "none"
+              ) {
+                setContactChannels(parsed.contactChannels);
+              }
+              const validTemplates: ShowcaseTemplate[] = [
+                "stanomer_modern",
+                "quiet_luxury",
+                "minimal_light",
+                "kolm_dark",
+                "lumira",
+                "aldervik",
+                "sage",
+                "onyx_dark",
+              ];
+              if (validTemplates.includes(parsed.template)) {
+                setShowcaseTemplate(parsed.template);
+              }
+              const validPalettes: ShowcasePalette[] = [
+                "royal_blue",
+                "champagne_gold",
+                "emerald_prestige",
+                "burgundy_classic",
+                "kolm_mint",
+                "lumira_coral",
+                "aldervik_amber",
+                "sage_terracotta",
+                "onyx_brass",
+              ];
+              if (validPalettes.includes(parsed.palette)) {
+                setShowcasePalette(parsed.palette);
+              }
+              if (
+                parsed.radius === "sharp" ||
+                parsed.radius === "subtle" ||
+                parsed.radius === "rounded" ||
+                parsed.radius === "pill"
+              ) {
+                setShowcaseRadius(parsed.radius);
+              }
+              if (Array.isArray(parsed.languages) && parsed.languages.length > 0) {
+                setShowcaseLanguages(parsed.languages);
+              }
+              if (Array.isArray(parsed.currencies) && parsed.currencies.length > 0) {
+                setShowcaseCurrencies(parsed.currencies);
+              }
+              if (parsed.default_currency && (["EUR", "RSD", "USD"] as ShowcaseCurrency[]).includes(parsed.default_currency)) {
+                setShowcaseDefaultCurrency(parsed.default_currency as ShowcaseCurrency);
+              }
+            }
+          } catch { }
         }
-        try {
-          const saved = localStorage.getItem("stanomer_showcase_theme");
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (parsed.custom_domain) setAgencyCustomDomain(parsed.custom_domain);
-            if (parsed.slug) setAgencySlug(parsed.slug);
-            if (
-              parsed.contactChannels === "both" ||
-              parsed.contactChannels === "whatsapp" ||
-              parsed.contactChannels === "viber" ||
-              parsed.contactChannels === "none"
-            ) {
-              setContactChannels(parsed.contactChannels);
-            }
-            const validTemplates: ShowcaseTemplate[] = [
-              "stanomer_modern",
-              "quiet_luxury",
-              "minimal_light",
-              "kolm_dark",
-              "lumira",
-              "aldervik",
-              "sage",
-              "onyx_dark",
-            ];
-            if (validTemplates.includes(parsed.template)) {
-              setShowcaseTemplate(parsed.template);
-            }
-            const validPalettes: ShowcasePalette[] = [
-              "royal_blue",
-              "champagne_gold",
-              "emerald_prestige",
-              "burgundy_classic",
-              "kolm_mint",
-              "lumira_coral",
-              "aldervik_amber",
-              "sage_terracotta",
-              "onyx_brass",
-            ];
-            if (validPalettes.includes(parsed.palette)) {
-              setShowcasePalette(parsed.palette);
-            }
-            if (
-              parsed.radius === "sharp" ||
-              parsed.radius === "subtle" ||
-              parsed.radius === "rounded" ||
-              parsed.radius === "pill"
-            ) {
-              setShowcaseRadius(parsed.radius);
-            }
-            if (Array.isArray(parsed.languages) && parsed.languages.length > 0) {
-              setShowcaseLanguages(parsed.languages);
-            }
-            if (Array.isArray(parsed.currencies) && parsed.currencies.length > 0) {
-              setShowcaseCurrencies(parsed.currencies);
-            }
-            if (parsed.default_currency && (["EUR", "RSD", "USD"] as ShowcaseCurrency[]).includes(parsed.default_currency)) {
-              setShowcaseDefaultCurrency(parsed.default_currency as ShowcaseCurrency);
-            }
-          }
-        } catch { }
-      }
       } finally {
         if (mounted) {
           setIsCheckingSession(false);
@@ -3340,13 +3663,13 @@ export default function AgencyPanelPage() {
       Array.isArray(listings) && listings.length > 0
         ? listings
         : (() => {
-            try {
-              const saved = JSON.parse(localStorage.getItem("stanomer_agency_listings_demo") || "[]");
-              return Array.isArray(saved) && saved.length > 0 ? saved : DEMO_AGENCY_LISTINGS;
-            } catch {
-              return DEMO_AGENCY_LISTINGS;
-            }
-          })();
+          try {
+            const saved = JSON.parse(localStorage.getItem("stanomer_agency_listings_demo") || "[]");
+            return Array.isArray(saved) && saved.length > 0 ? saved : DEMO_AGENCY_LISTINGS;
+          } catch {
+            return DEMO_AGENCY_LISTINGS;
+          }
+        })();
 
     const nextListings = currentListings.map((row) =>
       row.id === listing.id ? updatedListing : row
@@ -3425,23 +3748,23 @@ export default function AgencyPanelPage() {
         nextListings = listings.map((row) =>
           row.id === linkedListing.id
             ? {
-                ...row,
-                title: newTitle,
-                price: newPrice,
-                currency: newCur,
-                property_type: property.property_type || row.property_type || "apartment",
-                area_sqm: property.area_sqm ?? row.area_sqm,
-                room_count: property.room_count || row.room_count || "2.0",
-                floor: property.floor || row.floor,
-                total_floors: property.total_floors ?? row.total_floors,
-                heating_type: property.heating_type || row.heating_type || "cg",
-                furnishing: property.furnishing || row.furnishing || "furnished",
-                amenities: Array.isArray(property.amenities) && property.amenities.length > 0 ? property.amenities : row.amenities,
-                description: property.description || row.description,
-                managed_property_id: property.id,
-                is_published: true,
-                listing_status: "active",
-              }
+              ...row,
+              title: newTitle,
+              price: newPrice,
+              currency: newCur,
+              property_type: property.property_type || row.property_type || "apartment",
+              area_sqm: property.area_sqm ?? row.area_sqm,
+              room_count: property.room_count || row.room_count || "2.0",
+              floor: property.floor || row.floor,
+              total_floors: property.total_floors ?? row.total_floors,
+              heating_type: property.heating_type || row.heating_type || "cg",
+              furnishing: property.furnishing || row.furnishing || "furnished",
+              amenities: Array.isArray(property.amenities) && property.amenities.length > 0 ? property.amenities : row.amenities,
+              description: property.description || row.description,
+              managed_property_id: property.id,
+              is_published: true,
+              listing_status: "active",
+            }
             : row
         );
       } else {
@@ -4185,25 +4508,30 @@ export default function AgencyPanelPage() {
       });
       if (error) throw error;
       if (data.user) {
-        const isAgency = await verifyAgencyRole(data.user.id, data.user.user_metadata);
-        if (!isAgency) {
+        const access = await resolveAgencyAccess(data.user.id, data.user.user_metadata);
+        if (!access.allowed || !access.effectiveAgencyId) {
           await supabase.auth.signOut();
           setUserId(null);
           setCurrentUser(null);
+          setAgencyRole("agency_admin");
           setIsRoleError(true);
           throw new Error(t("agency_panel_err_only_agency_allowed"));
         }
 
+        const effectiveId = access.effectiveAgencyId;
         setIsDemoMode(false);
-        setUserId(data.user.id);
+        setAgencyRole(access.role);
+        setUserId(effectiveId);
         setCurrentUser(data.user);
-        await loadAgencyProfile(data.user.id, data.user.email);
-        await fetchAgencyListings(data.user.id);
-        await loadAgencyLeads(data.user.id);
-        await loadAgencyPayments(data.user.id);
-        await loadAgencyManagedProperties(data.user.id);
-        await loadAgencyContracts(data.user.id);
-        await loadAgencyMaintenance(data.user.id);
+        await loadAgencyProfile(effectiveId, data.user.email);
+        await fetchAgencyListings(effectiveId);
+        await loadAgencyLeads(effectiveId);
+        await loadAgencyPayments(effectiveId);
+        await loadAgencyManagedProperties(effectiveId);
+        await loadAgencyContracts(effectiveId);
+        await loadAgencyMaintenance(effectiveId);
+        await loadAgencyTasks(effectiveId);
+        await loadTeamAssignees(effectiveId, data.user);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t("agency_panel_msg_auth_error");
@@ -5125,7 +5453,9 @@ export default function AgencyPanelPage() {
                         ? t("agency_panel_menu_maintenance")
                         : activeTab === "account_settings"
                           ? t("agency_panel_menu_account_settings")
-                          : t("agency_panel_menu_settings");
+                          : activeTab === "tasks"
+                            ? t("agency_tasks_page_title")
+                            : t("agency_panel_menu_settings");
 
   const activeTabDescription =
     activeTab === "welcome"
@@ -5150,7 +5480,9 @@ export default function AgencyPanelPage() {
                         ? t("agency_page_desc_maintenance")
                         : activeTab === "account_settings"
                           ? t("agency_page_desc_account_settings")
-                          : t("agency_page_desc_settings");
+                          : activeTab === "tasks"
+                            ? t("agency_tasks_page_subtitle")
+                            : t("agency_page_desc_settings");
 
   const isPortfolioLocked = !activeModules.includes("portfolio_distribution");
   const isPropertyLeaseLocked = !activeModules.includes("property_lease_management");
@@ -5520,7 +5852,11 @@ export default function AgencyPanelPage() {
                       {agencyName || "Agencija"}
                     </p>
                     <p className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5">
-                      {isDemoMode ? t("agency_panel_demo_mode_label") : t("agency_panel_active_agency_label")}
+                      {isDemoMode
+                        ? t("agency_panel_demo_mode_label")
+                        : agencyRole === "agency_operation"
+                          ? t("agency_role_operation")
+                          : t("agency_role_admin")}
                     </p>
                   </div>
                   <ChevronDown
@@ -5557,7 +5893,11 @@ export default function AgencyPanelPage() {
                           {agencyName || "Agencija"}
                         </p>
                         <p className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5">
-                          {isDemoMode ? t("agency_panel_demo_mode_label") : t("agency_panel_active_agency_label")}
+                          {isDemoMode
+                            ? t("agency_panel_demo_mode_label")
+                            : agencyRole === "agency_operation"
+                              ? t("agency_role_operation")
+                              : t("agency_role_admin")}
                         </p>
                       </div>
                     </div>
@@ -5725,23 +6065,7 @@ export default function AgencyPanelPage() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        {/* Workspace Top Header (Only shown when not signed in, not in demo, and session check finished) */}
-        {!userId && !isDemoMode && !isCheckingSession && (
-          <div className="pb-6 border-b border-[#E5E3DF] mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E5EEF6] border border-[#1B5888]/20 text-[#12406A] text-xs font-semibold mb-2">
-              <Building2 className="w-3.5 h-3.5" />
-              <span>{t("agency_panel_badge")}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
-              {t("agency_panel_title")}
-            </h1>
-            <p className="text-sm text-[#4A4A4A] mt-1">
-              {t("agency_panel_subtitle")}
-            </p>
-          </div>
-        )}
-
+      <main className={`max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 ${!userId ? "py-3 sm:py-4" : "py-6 sm:py-8"}`}>
         {/* 1. AUTH GATE OR DEMO ENTRY */}
         {!userId && isCheckingSession ? (
           <div
@@ -5762,569 +6086,739 @@ export default function AgencyPanelPage() {
             </div>
           </div>
         ) : !userId ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-start">
-            <div className="lg:col-span-6 bg-white rounded-[10px] border border-[#E5E3DF] p-6 sm:p-8 shadow-xs">
-              {/* Auth Mode Tabs */}
-              <div className="flex gap-1.5 p-1 bg-slate-100 rounded-[10px] mb-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthTab("signin");
-                    setAuthError(null);
-                    setIsRoleError(false);
-                    setShowRoleErrorDetails(false);
-                    setAuthSuccess(null);
-                  }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "signin"
-                    ? "bg-white text-[#1A1A1A] shadow-xs"
-                    : "text-[#4A4A4A] hover:text-[#1A1A1A]"
-                    }`}
-                >
-                  {t("agency_panel_tab_signin")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthTab("signup");
-                    setAuthError(null);
-                    setIsRoleError(false);
-                    setShowRoleErrorDetails(false);
-                    setAuthSuccess(null);
-                  }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "signup"
-                    ? "bg-white text-[#1A1A1A] shadow-xs"
-                    : "text-[#4A4A4A] hover:text-[#1A1A1A]"
-                    }`}
-                >
-                  {t("agency_panel_tab_signup")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthTab("reset");
-                    setAuthError(null);
-                    setIsRoleError(false);
-                    setShowRoleErrorDetails(false);
-                    setAuthSuccess(null);
-                  }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "reset"
-                    ? "bg-white text-[#1A1A1A] shadow-xs"
-                    : "text-[#4A4A4A] hover:text-[#1A1A1A]"
-                    }`}
-                >
-                  {t("agency_panel_tab_reset")}
-                </button>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 rounded-[16px] overflow-hidden border border-[#E5E3DF] bg-white shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_36px_rgba(18,64,106,0.08)] lg:min-h-[610px]">
+            {/* LEFT: Brand Identity Hero & End-to-End Lifecycle Visual */}
+            <section className="lg:col-span-6 relative overflow-hidden bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-6 sm:p-7 lg:p-8 flex flex-col justify-between gap-5">
+              {/* Subtle Stanomer architectural grid & ambient radial light */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-60"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(rgba(229, 238, 246, 0.16) 1px, transparent 1px)",
+                  backgroundSize: "24px 24px",
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-28 top-12 w-[340px] h-[340px] rounded-full bg-[#2A6E43]/30 blur-3xl"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-24 -bottom-24 w-[280px] h-[280px] rounded-full bg-[#E5EEF6]/10 blur-3xl"
+              />
+
+              {/* Top Brand Row */}
+              <div className="relative z-10 space-y-2.5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-white/12 backdrop-blur-xs border border-white/20 text-[#E5EEF6] text-[11px] font-bold tracking-wide">
+                    <Sparkles className="w-3 h-3 text-[#FBF1DC]" />
+                    <span>{t("agency_panel_badge")}</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#C8DDF0]">
+                    {t("agency_panel_demo_badge")}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h1 className="font-[family-name:var(--font-outfit)] text-xl sm:text-2xl xl:text-[27px] font-bold text-white leading-[1.15] tracking-tight">
+                    {t("agency_panel_demo_title")}
+                  </h1>
+                  <p className="text-xs text-[#D8E7F5] leading-relaxed">
+                    {t("agency_panel_demo_desc")}
+                  </p>
+                </div>
               </div>
 
-              <h2
-                id="agency-signin-heading"
-                className="text-xl font-bold text-[#1A1A1A] mb-2"
-              >
-                {authTab === "signin"
-                  ? t("agency_panel_signin_title")
-                  : authTab === "signup"
-                    ? t("agency_panel_signup_title")
-                    : t("agency_panel_reset_title")}
-              </h2>
-              <p className="text-sm text-[#4A4A4A] mb-6">
-                {authTab === "signin"
-                  ? t("agency_panel_signin_desc")
-                  : authTab === "signup"
-                    ? t("agency_panel_signup_desc")
-                    : t("agency_panel_reset_desc")}
-              </p>
+              {/* Centerpiece Animated Listing-to-Lifecycle Visual (Stanomer v4 Palette) */}
+              <div className="relative z-10 w-full max-w-[390px] mx-auto hidden sm:block">
+                <div className="relative h-[212px]">
+                  <svg
+                    viewBox="0 0 390 212"
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    aria-hidden="true"
+                  >
+                    {/* Right portal syndication flows (Stanomer Success Green) */}
+                    <path
+                      className="st-flow"
+                      d="M279 72 C308 72 306 32 322 28"
+                      fill="none"
+                      stroke="#6EE7B7"
+                      strokeWidth="1.8"
+                    />
+                    <path
+                      className="st-flow"
+                      d="M279 124 C308 124 306 162 322 166"
+                      fill="none"
+                      stroke="#6EE7B7"
+                      strokeWidth="1.8"
+                    />
+                    {/* Left & bottom operational lifecycle flows (Stanomer Soft Blue) */}
+                    <path
+                      className="st-flow"
+                      d="M111 70 C86 64 80 35 66 28"
+                      fill="none"
+                      stroke="#93C5FD"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      className="st-flow"
+                      d="M111 128 C86 134 80 164 64 172"
+                      fill="none"
+                      stroke="#93C5FD"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
 
-              {authError && (
-                <div
-                  role="alert"
-                  className="mb-4 p-4 rounded-[12px] bg-[#FBEAE6] border border-[#B5432E]/25 text-[#A33C29] text-sm space-y-3"
-                >
-                  <div className="flex items-start gap-2.5">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#B5432E]" />
-                    <div className="flex-1 text-xs sm:text-sm font-medium leading-relaxed">
-                      {authError}
+                  {/* Center Property Card */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[14px] w-[168px] bg-white rounded-[9px] border border-[#E5E3DF] text-[#1A1A1A] shadow-[0_12px_26px_rgba(8,24,44,0.34)] overflow-hidden">
+                    <svg
+                      viewBox="0 0 224 62"
+                      className="w-full h-[62px] block"
+                      role="img"
+                      aria-label="Stanomer property preview"
+                    >
+                      <rect width="224" height="62" fill="#E5EEF6" />
+                      <circle cx="184" cy="17" r="8.5" fill="#A33C29" opacity="0.88" />
+                      <rect x="28" y="22" width="54" height="40" rx="2" fill="#1B5888" />
+                      <rect x="84" y="11" width="52" height="51" rx="2" fill="#12406A" />
+                      <rect x="138" y="28" width="54" height="34" rx="2" fill="#2A6E43" />
+                      <g fill="#E5EEF6" opacity="0.92">
+                        <rect x="38" y="29" width="9" height="7.5" rx="1.5" />
+                        <rect x="58" y="29" width="9" height="7.5" rx="1.5" />
+                        <rect x="38" y="43" width="9" height="7.5" rx="1.5" />
+                        <rect x="58" y="43" width="9" height="7.5" rx="1.5" />
+                        <rect x="95" y="20" width="9" height="7.5" rx="1.5" />
+                        <rect x="114" y="20" width="9" height="7.5" rx="1.5" />
+                        <rect x="95" y="34" width="9" height="7.5" rx="1.5" />
+                        <rect x="114" y="34" width="9" height="7.5" rx="1.5" />
+                        <rect x="149" y="37" width="9" height="7.5" rx="1.5" />
+                        <rect x="168" y="37" width="9" height="7.5" rx="1.5" />
+                      </g>
+                    </svg>
+                    <div className="p-2">
+                      <div className="font-[family-name:var(--font-outfit)] font-bold text-[10.5px] text-[#1A1A1A] leading-tight truncate">
+                        Njegoševa 24, Novi Sad
+                      </div>
+                      <div className="text-[9.5px] text-[#666666] mt-0.5 mb-1.5">
+                        2.0 · 54 m² · 3F
+                      </div>
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-mono font-medium text-[11px] text-[#1B5888]">
+                          €650/mo
+                        </span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-[#E6F3EA] text-[#2A6E43] text-[9px] font-bold">
+                          {t("agency_panel_demo_pill_published")}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {isRoleError && (
-                    <div className="pt-2 border-t border-[#B5432E]/15">
-                      <button
-                        type="button"
-                        onClick={() => setShowRoleErrorDetails((prev) => !prev)}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8A2B18] hover:text-[#5E1A0C] transition-colors cursor-pointer"
-                      >
-                        <span>
-                          {showRoleErrorDetails
-                            ? t("agency_panel_role_err_hide_details")
-                            : t("agency_panel_role_err_show_details")}
-                        </span>
-                        {showRoleErrorDetails ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </button>
+                  {/* Right Portal Badges */}
+                  <div className="absolute right-0 top-[12px] bg-white text-[#1A1A1A] rounded-[7px] px-2 py-1 shadow-[0_6px_16px_rgba(8,24,44,0.26)] border border-[#E5E3DF] flex items-center gap-1.5 text-[10px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2A6E43] shrink-0" />
+                    <span>4zida.rs</span>
+                  </div>
+                  <div className="absolute right-0 top-[148px] bg-white text-[#1A1A1A] rounded-[7px] px-2 py-1 shadow-[0_6px_16px_rgba(8,24,44,0.26)] border border-[#E5E3DF] flex items-center gap-1.5 text-[10px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2A6E43] shrink-0" />
+                    <span>Halo Oglasi</span>
+                  </div>
 
-                      {showRoleErrorDetails && (
-                        <div className="mt-2.5 p-3.5 bg-white/95 rounded-xl border border-[#B5432E]/20 space-y-2.5 text-xs text-[#2A2A2A] animate-in fade-in duration-200 shadow-2xs">
-                          <p className="font-semibold text-[#4A4A4A] leading-relaxed">
-                            {t("agency_panel_role_err_app_prompt")}
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                            {/* iOS App Store */}
-                            <a
-                              href="https://apps.apple.com/us/app/stanomer/id6762311157"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-black text-white hover:bg-slate-800 transition-colors text-center font-semibold text-xs shadow-xs"
-                            >
-                              <Smartphone className="w-3.5 h-3.5 shrink-0" />
-                              <span>{t("agency_panel_role_err_ios")}</span>
-                            </a>
-                            {/* Android Google Play */}
-                            <a
-                              href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#0F5132] text-white hover:bg-[#0b3c25] transition-colors text-center font-semibold text-xs shadow-xs"
-                            >
-                              <Smartphone className="w-3.5 h-3.5 shrink-0" />
-                              <span>{t("agency_panel_role_err_android")}</span>
-                            </a>
-                            {/* Web App */}
-                            <a
-                              href="/app"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#1B5888] text-white hover:bg-blue-700 transition-colors text-center font-semibold text-xs shadow-xs"
-                            >
-                              <Globe className="w-3.5 h-3.5 shrink-0" />
-                              <span>{t("agency_panel_role_err_web")}</span>
-                            </a>
+                  {/* Floating Lifecycle Pills */}
+                  <div className="st-bob-1 absolute left-0 top-[10px] bg-[#0E3152]/90 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[7px] px-2 py-1 text-[9.5px] font-semibold text-white shadow-md flex items-center gap-1">
+                    <FileText className="w-2.5 h-2.5 text-[#E5EEF6] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_lease")}</span>
+                  </div>
+                  <div className="st-bob-2 absolute left-0 top-[152px] bg-[#0E3152]/90 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[7px] px-2 py-1 text-[9.5px] font-semibold text-white shadow-md flex items-center gap-1">
+                    <Wallet className="w-2.5 h-2.5 text-[#6EE7B7] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_rent")}</span>
+                    <span className="font-mono text-[#6EE7B7] font-medium">+€650</span>
+                  </div>
+                  <div className="st-bob-3 absolute left-1/2 -translate-x-1/2 bottom-0 bg-[#0E3152]/90 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[7px] px-2 py-1 text-[9.5px] font-semibold text-white shadow-md flex items-center gap-1 whitespace-nowrap">
+                    <CheckSquare className="w-2.5 h-2.5 text-[#FBF1DC] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_tasks")}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom 4-Pillar Compact Strip */}
+              <div className="relative z-10 pt-3 border-t border-white/15 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                <div className="flex items-start gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-[#A9CBE8] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-white text-[11px] leading-tight">{t("agency_panel_demo_feat1_title")}</p>
+                    <p className="text-[#C8DDF0]/85 text-[10px] leading-snug mt-0.5">{t("agency_panel_demo_feat1_desc")}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <Home className="w-3.5 h-3.5 text-[#A9CBE8] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-white text-[11px] leading-tight">{t("agency_panel_demo_feat2_title")}</p>
+                    <p className="text-[#C8DDF0]/85 text-[10px] leading-snug mt-0.5">{t("agency_panel_demo_feat2_desc")}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <Wallet className="w-3.5 h-3.5 text-[#A9CBE8] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-white text-[11px] leading-tight">{t("agency_panel_demo_feat3_title")}</p>
+                    <p className="text-[#C8DDF0]/85 text-[10px] leading-snug mt-0.5">{t("agency_panel_demo_feat3_desc")}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <CheckSquare className="w-3.5 h-3.5 text-[#A9CBE8] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-white text-[11px] leading-tight">{t("agency_panel_demo_feat4_title")}</p>
+                    <p className="text-[#C8DDF0]/85 text-[10px] leading-snug mt-0.5">{t("agency_panel_demo_feat4_desc")}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* RIGHT: Clean Stanomer Auth Panel + Interactive Demo CTA */}
+            <section className="lg:col-span-6 bg-white p-5 sm:p-7 flex flex-col justify-center">
+              <div className="w-full max-w-md mx-auto">
+                {/* Auth Mode Tabs */}
+                <div className="flex gap-1.5 p-1 bg-slate-100 rounded-[10px] mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthTab("signin");
+                      setAuthError(null);
+                      setIsRoleError(false);
+                      setShowRoleErrorDetails(false);
+                      setAuthSuccess(null);
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "signin"
+                      ? "bg-white text-[#1A1A1A] shadow-xs"
+                      : "text-[#4A4A4A] hover:text-[#1A1A1A]"
+                      }`}
+                  >
+                    {t("agency_panel_tab_signin")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthTab("signup");
+                      setAuthError(null);
+                      setIsRoleError(false);
+                      setShowRoleErrorDetails(false);
+                      setAuthSuccess(null);
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "signup"
+                      ? "bg-white text-[#1A1A1A] shadow-xs"
+                      : "text-[#4A4A4A] hover:text-[#1A1A1A]"
+                      }`}
+                  >
+                    {t("agency_panel_tab_signup")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthTab("reset");
+                      setAuthError(null);
+                      setIsRoleError(false);
+                      setShowRoleErrorDetails(false);
+                      setAuthSuccess(null);
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${authTab === "reset"
+                      ? "bg-white text-[#1A1A1A] shadow-xs"
+                      : "text-[#4A4A4A] hover:text-[#1A1A1A]"
+                      }`}
+                  >
+                    {t("agency_panel_tab_reset")}
+                  </button>
+                </div>
+
+                <h2
+                  id="agency-signin-heading"
+                  className="text-xl font-bold text-[#1A1A1A] mb-2"
+                >
+                  {authTab === "signin"
+                    ? t("agency_panel_signin_title")
+                    : authTab === "signup"
+                      ? t("agency_panel_signup_title")
+                      : t("agency_panel_reset_title")}
+                </h2>
+                <p className="text-sm text-[#4A4A4A] mb-6">
+                  {authTab === "signin"
+                    ? t("agency_panel_signin_desc")
+                    : authTab === "signup"
+                      ? t("agency_panel_signup_desc")
+                      : t("agency_panel_reset_desc")}
+                </p>
+
+                {authError && (
+                  <div
+                    role="alert"
+                    className="mb-4 p-4 rounded-[12px] bg-[#FBEAE6] border border-[#B5432E]/25 text-[#A33C29] text-sm space-y-3"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#B5432E]" />
+                      <div className="flex-1 text-xs sm:text-sm font-medium leading-relaxed">
+                        {authError}
+                      </div>
+                    </div>
+
+                    {isRoleError && (
+                      <div className="pt-2 border-t border-[#B5432E]/15">
+                        <button
+                          type="button"
+                          onClick={() => setShowRoleErrorDetails((prev) => !prev)}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8A2B18] hover:text-[#5E1A0C] transition-colors cursor-pointer"
+                        >
+                          <span>
+                            {showRoleErrorDetails
+                              ? t("agency_panel_role_err_hide_details")
+                              : t("agency_panel_role_err_show_details")}
+                          </span>
+                          {showRoleErrorDetails ? (
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+
+                        {showRoleErrorDetails && (
+                          <div className="mt-2.5 p-3.5 bg-white/95 rounded-xl border border-[#B5432E]/20 space-y-2.5 text-xs text-[#2A2A2A] animate-in fade-in duration-200 shadow-2xs">
+                            <p className="font-semibold text-[#4A4A4A] leading-relaxed">
+                              {t("agency_panel_role_err_app_prompt")}
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                              {/* iOS App Store */}
+                              <a
+                                href="https://apps.apple.com/us/app/stanomer/id6762311157"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-black text-white hover:bg-slate-800 transition-colors text-center font-semibold text-xs shadow-xs"
+                              >
+                                <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                                <span>{t("agency_panel_role_err_ios")}</span>
+                              </a>
+                              {/* Android Google Play */}
+                              <a
+                                href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#0F5132] text-white hover:bg-[#0b3c25] transition-colors text-center font-semibold text-xs shadow-xs"
+                              >
+                                <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                                <span>{t("agency_panel_role_err_android")}</span>
+                              </a>
+                              {/* Web App */}
+                              <a
+                                href="/app"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#1B5888] text-white hover:bg-blue-700 transition-colors text-center font-semibold text-xs shadow-xs"
+                              >
+                                <Globe className="w-3.5 h-3.5 shrink-0" />
+                                <span>{t("agency_panel_role_err_web")}</span>
+                              </a>
+                            </div>
                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {authSuccess && (
+                  <div
+                    role="status"
+                    className="mb-4 p-3.5 rounded-[10px] bg-[#E6F3EA] border border-[#2A6E43]/20 text-[#2A6E43] text-sm flex items-center gap-2.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{authSuccess}</span>
+                  </div>
+                )}
+
+                {authTab === "signin" && (
+                  <form
+                    onSubmit={handleSignIn}
+                    aria-labelledby="agency-signin-heading"
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label
+                        htmlFor="agency-email"
+                        className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                      >
+                        {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        id="agency-email"
+                        name="email"
+                        type="email"
+                        autoComplete="username"
+                        spellCheck={false}
+                        required
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
+                        placeholder="agencija@primer.rs"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label
+                          htmlFor="agency-password"
+                          className="block text-sm font-semibold text-[#4A4A4A]"
+                        >
+                          {t("agency_panel_password_label")} <span aria-hidden="true">*</span>
+                        </label>
+                        <button
+                          type="button"
+                          aria-pressed={showPassword}
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="text-xs font-medium text-[#1B5888] hover:text-blue-800"
+                        >
+                          {showPassword
+                            ? t("agency_panel_hide_password")
+                            : t("agency_panel_show_password")}
+                        </button>
+                      </div>
+                      <input
+                        id="agency-password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="current-password"
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
+                    >
+                      {authLoading
+                        ? t("agency_panel_signing_in")
+                        : t("agency_panel_signin_btn")}
+                    </button>
+                  </form>
+                )}
+
+                {authTab === "signup" && (
+                  <form
+                    onSubmit={handleSignUp}
+                    aria-labelledby="agency-signin-heading"
+                    className="space-y-4"
+                  >
+                    {/* Directory Agency Autocomplete */}
+                    <div className="relative p-3.5 rounded-[10px] bg-slate-50 border border-[#E5E3DF]">
+                      <label
+                        htmlFor="dir-agency-search"
+                        className="block text-xs font-semibold text-[#4A4A4A] mb-1.5 flex items-center gap-1.5"
+                      >
+                        <Search className="w-3.5 h-3.5 text-[#1B5888]" />
+                        <span>{t("agency_panel_dir_search_label")}</span>
+                      </label>
+                      <input
+                        id="dir-agency-search"
+                        type="text"
+                        value={dirSearchQuery}
+                        onChange={(e) => setDirSearchQuery(e.target.value)}
+                        placeholder={t("agency_panel_dir_search_placeholder")}
+                        className="w-full px-3 py-2 rounded-lg border border-[#8A8A8A] text-sm bg-white"
+                      />
+                      {selectedDirAgency && (
+                        <p className="mt-1.5 text-xs font-semibold text-[#2A6E43] flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>
+                            {t("agency_panel_dir_matched")} {selectedDirAgency.acente_adi} (#{selectedDirAgency.id})
+                          </span>
+                        </p>
+                      )}
+                      {dirMatches.length > 0 && (
+                        <div className="mt-2 bg-white rounded-[10px] border border-[#E5E3DF] shadow-md divide-y divide-slate-100 max-h-48 overflow-y-auto">
+                          {dirMatches.map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => handleSelectDirAgency(m)}
+                              className="w-full text-left px-3 py-2 hover:bg-[#E5EEF6] text-xs flex items-center justify-between cursor-pointer"
+                            >
+                              <span className="font-semibold text-[#1A1A1A]">{m.acente_adi}</span>
+                              <span className="text-[#666666]">{m.sehir || ""}</span>
+                            </button>
+                          ))}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              )}
 
-              {authSuccess && (
-                <div
-                  role="status"
-                  className="mb-4 p-3.5 rounded-[10px] bg-[#E6F3EA] border border-[#2A6E43]/20 text-[#2A6E43] text-sm flex items-center gap-2.5"
-                >
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{authSuccess}</span>
-                </div>
-              )}
-
-              {authTab === "signin" && (
-                <form
-                  onSubmit={handleSignIn}
-                  aria-labelledby="agency-signin-heading"
-                  className="space-y-4"
-                >
-                  <div>
-                    <label
-                      htmlFor="agency-email"
-                      className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                    >
-                      {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
-                    </label>
-                    <input
-                      id="agency-email"
-                      name="email"
-                      type="email"
-                      autoComplete="username"
-                      spellCheck={false}
-                      required
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
-                      placeholder="agencija@primer.rs"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label
-                        htmlFor="agency-password"
-                        className="block text-sm font-semibold text-[#4A4A4A]"
-                      >
-                        {t("agency_panel_password_label")} <span aria-hidden="true">*</span>
-                      </label>
-                      <button
-                        type="button"
-                        aria-pressed={showPassword}
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="text-xs font-medium text-[#1B5888] hover:text-blue-800"
-                      >
-                        {showPassword
-                          ? t("agency_panel_hide_password")
-                          : t("agency_panel_show_password")}
-                      </button>
-                    </div>
-                    <input
-                      id="agency-password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      required
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={authLoading}
-                    className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
-                  >
-                    {authLoading
-                      ? t("agency_panel_signing_in")
-                      : t("agency_panel_signin_btn")}
-                  </button>
-                </form>
-              )}
-
-              {authTab === "signup" && (
-                <form
-                  onSubmit={handleSignUp}
-                  aria-labelledby="agency-signin-heading"
-                  className="space-y-4"
-                >
-                  {/* Directory Agency Autocomplete */}
-                  <div className="relative p-3.5 rounded-[10px] bg-slate-50 border border-[#E5E3DF]">
-                    <label
-                      htmlFor="dir-agency-search"
-                      className="block text-xs font-semibold text-[#4A4A4A] mb-1.5 flex items-center gap-1.5"
-                    >
-                      <Search className="w-3.5 h-3.5 text-[#1B5888]" />
-                      <span>{t("agency_panel_dir_search_label")}</span>
-                    </label>
-                    <input
-                      id="dir-agency-search"
-                      type="text"
-                      value={dirSearchQuery}
-                      onChange={(e) => setDirSearchQuery(e.target.value)}
-                      placeholder={t("agency_panel_dir_search_placeholder")}
-                      className="w-full px-3 py-2 rounded-lg border border-[#8A8A8A] text-sm bg-white"
-                    />
-                    {selectedDirAgency && (
-                      <p className="mt-1.5 text-xs font-semibold text-[#2A6E43] flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>
-                          {t("agency_panel_dir_matched")} {selectedDirAgency.acente_adi} (#{selectedDirAgency.id})
-                        </span>
-                      </p>
-                    )}
-                    {dirMatches.length > 0 && (
-                      <div className="mt-2 bg-white rounded-[10px] border border-[#E5E3DF] shadow-md divide-y divide-slate-100 max-h-48 overflow-y-auto">
-                        {dirMatches.map((m) => (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() => handleSelectDirAgency(m)}
-                            className="w-full text-left px-3 py-2 hover:bg-[#E5EEF6] text-xs flex items-center justify-between cursor-pointer"
-                          >
-                            <span className="font-semibold text-[#1A1A1A]">{m.acente_adi}</span>
-                            <span className="text-[#666666]">{m.sehir || ""}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="signup-company"
-                      className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                    >
-                      {t("agency_panel_company_label")} <span aria-hidden="true">*</span>
-                    </label>
-                    <input
-                      id="signup-company"
-                      name="organization"
-                      type="text"
-                      autoComplete="organization"
-                      required
-                      value={signupCompany}
-                      onChange={(e) => setSignupCompany(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
-                      placeholder="Alfa Nekretnine Beograd"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label
-                        htmlFor="signup-phone"
+                        htmlFor="signup-company"
                         className="block text-sm font-semibold text-[#4A4A4A] mb-1"
                       >
-                        {t("agency_panel_phone_label")} <span aria-hidden="true">*</span>
+                        {t("agency_panel_company_label")} <span aria-hidden="true">*</span>
                       </label>
                       <input
-                        id="signup-phone"
-                        name="phone"
-                        type="tel"
-                        autoComplete="tel"
+                        id="signup-company"
+                        name="organization"
+                        type="text"
+                        autoComplete="organization"
                         required
-                        value={signupPhone}
-                        onChange={(e) => setSignupPhone(e.target.value)}
+                        value={signupCompany}
+                        onChange={(e) => setSignupCompany(e.target.value)}
                         className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
-                        placeholder="+381 64 123 4567"
+                        placeholder="Alfa Nekretnine Beograd"
                       />
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label
+                          htmlFor="signup-phone"
+                          className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                        >
+                          {t("agency_panel_phone_label")} <span aria-hidden="true">*</span>
+                        </label>
+                        <input
+                          id="signup-phone"
+                          name="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          required
+                          value={signupPhone}
+                          onChange={(e) => setSignupPhone(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
+                          placeholder="+381 64 123 4567"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="signup-website"
+                          className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                        >
+                          {t("agency_panel_website_label")}
+                        </label>
+                        <input
+                          id="signup-website"
+                          name="website"
+                          type="url"
+                          autoComplete="url"
+                          value={signupWebsite}
+                          onChange={(e) => setSignupWebsite(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label
-                        htmlFor="signup-website"
+                        htmlFor="signup-email"
                         className="block text-sm font-semibold text-[#4A4A4A] mb-1"
                       >
-                        {t("agency_panel_website_label")}
+                        {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
                       </label>
                       <input
-                        id="signup-website"
-                        name="website"
-                        type="url"
-                        autoComplete="url"
-                        value={signupWebsite}
-                        onChange={(e) => setSignupWebsite(e.target.value)}
+                        id="signup-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        spellCheck={false}
+                        required
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
                         className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
-                        placeholder="https://..."
+                        placeholder="kontakt@agencija.rs"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label
-                      htmlFor="signup-email"
-                      className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label
+                          htmlFor="signup-password"
+                          className="block text-sm font-semibold text-[#4A4A4A]"
+                        >
+                          {t("agency_panel_password_label")} <span aria-hidden="true">*</span>
+                        </label>
+                        <button
+                          type="button"
+                          aria-pressed={showPassword}
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="text-xs font-medium text-[#1B5888] hover:text-blue-800"
+                        >
+                          {showPassword
+                            ? t("agency_panel_hide_password")
+                            : t("agency_panel_show_password")}
+                        </button>
+                      </div>
+                      <input
+                        id="signup-password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        minLength={6}
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
                     >
-                      {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
-                    </label>
-                    <input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      spellCheck={false}
-                      required
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
-                      placeholder="kontakt@agencija.rs"
-                    />
-                  </div>
+                      {authLoading
+                        ? t("agency_panel_signing_up")
+                        : t("agency_panel_signup_btn")}
+                    </button>
+                  </form>
+                )}
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
+                {authTab === "reset" && (
+                  <form
+                    onSubmit={handleResetPassword}
+                    aria-labelledby="agency-signin-heading"
+                    className="space-y-4"
+                  >
+                    <div>
                       <label
-                        htmlFor="signup-password"
-                        className="block text-sm font-semibold text-[#4A4A4A]"
+                        htmlFor="reset-email"
+                        className="block text-sm font-semibold text-[#4A4A4A] mb-1"
                       >
-                        {t("agency_panel_password_label")} <span aria-hidden="true">*</span>
+                        {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
                       </label>
+                      <input
+                        id="reset-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        spellCheck={false}
+                        required
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
+                        placeholder="agencija@primer.rs"
+                      />
+                    </div>
+
+                    {resetStep === 2 && (
+                      <>
+                        <div>
+                          <label
+                            htmlFor="reset-code"
+                            className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                          >
+                            {t("agency_panel_reset_code_label")} <span aria-hidden="true">*</span>
+                          </label>
+                          <input
+                            id="reset-code"
+                            name="reset-code"
+                            type="text"
+                            required
+                            value={resetCode}
+                            onChange={(e) => setResetCode(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base font-mono tracking-widest focus:outline-2 focus:outline-[#1B5888]"
+                            placeholder={t("agency_panel_reset_code_placeholder")}
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="reset-new-password"
+                            className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                          >
+                            {t("agency_panel_new_password")} <span aria-hidden="true">*</span>
+                          </label>
+                          <input
+                            id="reset-new-password"
+                            name="new-password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            value={resetNewPassword}
+                            onChange={(e) => setResetNewPassword(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
+                            placeholder="••••••••"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="reset-confirm-password"
+                            className="block text-sm font-semibold text-[#4A4A4A] mb-1"
+                          >
+                            {t("agency_panel_confirm_password")} <span aria-hidden="true">*</span>
+                          </label>
+                          <input
+                            id="reset-confirm-password"
+                            name="confirm-password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            value={resetConfirmPassword}
+                            onChange={(e) => setResetConfirmPassword(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
+                            placeholder="••••••••"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
+                    >
+                      {resetStep === 1
+                        ? t("agency_panel_reset_btn")
+                        : t("agency_panel_reset_confirm_btn")}
+                    </button>
+
+                    {resetStep === 2 && (
                       <button
                         type="button"
-                        aria-pressed={showPassword}
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="text-xs font-medium text-[#1B5888] hover:text-blue-800"
+                        onClick={() => {
+                          setResetStep(1);
+                          setResetCode("");
+                          setResetNewPassword("");
+                          setResetConfirmPassword("");
+                          setAuthError(null);
+                          setAuthSuccess(null);
+                        }}
+                        className="w-full py-2 text-xs font-semibold text-[#666666] hover:text-[#1B5888] transition-colors cursor-pointer"
                       >
-                        {showPassword
-                          ? t("agency_panel_hide_password")
-                          : t("agency_panel_show_password")}
+                        {t("agency_panel_reset_btn")}
                       </button>
-                    </div>
-                    <input
-                      id="signup-password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      minLength={6}
-                      required
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-sm"
-                    />
-                  </div>
+                    )}
+                  </form>
+                )}
 
-                  <button
-                    type="submit"
-                    disabled={authLoading}
-                    className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
-                  >
-                    {authLoading
-                      ? t("agency_panel_signing_up")
-                      : t("agency_panel_signup_btn")}
-                  </button>
-                </form>
-              )}
+                {/* Divider + Interactive Demo CTA */}
+                <div className="flex items-center gap-3 my-4 text-xs text-[#666666]">
+                  <div className="flex-1 h-px bg-[#E5E3DF]" />
+                  <span className="font-semibold">{t("agency_panel_demo_or")}</span>
+                  <div className="flex-1 h-px bg-[#E5E3DF]" />
+                </div>
 
-              {authTab === "reset" && (
-                <form
-                  onSubmit={handleResetPassword}
-                  aria-labelledby="agency-signin-heading"
-                  className="space-y-4"
+                <button
+                  ref={demoBtnRef}
+                  type="button"
+                  onClick={() => {
+                    setDemoFormAgencyName("");
+                    setDemoFormEmail("");
+                    setDemoFormPhone(agencyPhone || "");
+                    setDemoFormCity(agencyCity || "Beograd");
+                    setIsDemoModalOpen(true);
+                  }}
+                  className="st-demo-glow-btn w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-[10px] border-[1.5px] border-[#1B5888] text-[#1B5888] font-bold text-sm cursor-pointer"
                 >
-                  <div>
-                    <label
-                      htmlFor="reset-email"
-                      className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                    >
-                      {t("agency_panel_email_label")} <span aria-hidden="true">*</span>
-                    </label>
-                    <input
-                      id="reset-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      spellCheck={false}
-                      required
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
-                      placeholder="agencija@primer.rs"
-                    />
-                  </div>
-
-                  {resetStep === 2 && (
-                    <>
-                      <div>
-                        <label
-                          htmlFor="reset-code"
-                          className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                        >
-                          {t("agency_panel_reset_code_label")} <span aria-hidden="true">*</span>
-                        </label>
-                        <input
-                          id="reset-code"
-                          name="reset-code"
-                          type="text"
-                          required
-                          value={resetCode}
-                          onChange={(e) => setResetCode(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base font-mono tracking-widest focus:outline-2 focus:outline-[#1B5888]"
-                          placeholder={t("agency_panel_reset_code_placeholder")}
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="reset-new-password"
-                          className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                        >
-                          {t("agency_panel_new_password")} <span aria-hidden="true">*</span>
-                        </label>
-                        <input
-                          id="reset-new-password"
-                          name="new-password"
-                          type="password"
-                          autoComplete="new-password"
-                          required
-                          value={resetNewPassword}
-                          onChange={(e) => setResetNewPassword(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
-                          placeholder="••••••••"
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="reset-confirm-password"
-                          className="block text-sm font-semibold text-[#4A4A4A] mb-1"
-                        >
-                          {t("agency_panel_confirm_password")} <span aria-hidden="true">*</span>
-                        </label>
-                        <input
-                          id="reset-confirm-password"
-                          name="confirm-password"
-                          type="password"
-                          autoComplete="new-password"
-                          required
-                          value={resetConfirmPassword}
-                          onChange={(e) => setResetConfirmPassword(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#8A8A8A] text-base focus:outline-2 focus:outline-[#1B5888]"
-                          placeholder="••••••••"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={authLoading}
-                    className="w-full py-3 px-5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-semibold text-sm transition-colors cursor-pointer"
-                  >
-                    {resetStep === 1
-                      ? t("agency_panel_reset_btn")
-                      : t("agency_panel_reset_confirm_btn")}
-                  </button>
-
-                  {resetStep === 2 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setResetStep(1);
-                        setResetCode("");
-                        setResetNewPassword("");
-                        setResetConfirmPassword("");
-                        setAuthError(null);
-                        setAuthSuccess(null);
-                      }}
-                      className="w-full py-2 text-xs font-semibold text-[#666666] hover:text-[#1B5888] transition-colors cursor-pointer"
-                    >
-                      {t("agency_panel_reset_btn")}
-                    </button>
-                  )}
-                </form>
-              )}
-            </div>
-
-            {/* Instant Demo Sandbox Card */}
-            <div className="lg:col-span-6 bg-slate-900 text-white rounded-[10px] p-6 sm:p-8 border border-slate-800 shadow-sm">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-blue-200 text-xs font-semibold mb-4">
-                <Building2 className="w-3.5 h-3.5 text-blue-400" />
-                <span>{t("agency_panel_demo_badge")}</span>
+                  <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+                  <span>{t("agency_panel_demo_btn")}</span>
+                  <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+                </button>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 tracking-tight">
-                {t("agency_panel_demo_title")}
-              </h2>
-              <p className="text-sm text-slate-300 leading-relaxed mb-6">
-                {t("agency_panel_demo_desc")}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setDemoFormAgencyName("");
-                  setDemoFormEmail("");
-                  setDemoFormPhone(agencyPhone || "");
-                  setDemoFormCity(agencyCity || "Beograd");
-                  setIsDemoModalOpen(true);
-                }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-[10px] bg-white text-[#1A1A1A] hover:bg-slate-100 font-semibold text-sm transition-colors cursor-pointer shadow-xs"
-              >
-                <Play className="w-4 h-4 text-[#1B5888] fill-blue-600" />
-                <span>{t("agency_panel_demo_btn")}</span>
-              </button>
-
-              <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-2 gap-4 text-xs text-slate-300">
-                <div>
-                  <p className="font-semibold text-white mb-0.5">
-                    {t("agency_panel_demo_feat1_title")}
-                  </p>
-                  <p className="text-[#666666] leading-relaxed">{t("agency_panel_demo_feat1_desc")}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-white mb-0.5">
-                    {t("agency_panel_demo_feat2_title")}
-                  </p>
-                  <p className="text-[#666666] leading-relaxed">{t("agency_panel_demo_feat2_desc")}</p>
-                </div>
-              </div>
-            </div>
+            </section>
           </div>
         ) : (
           <div className={`flex flex-col lg:flex-row items-start transition-all duration-300 ${isSidebarCollapsed ? "gap-4 lg:gap-6" : "gap-6 lg:gap-8"
@@ -6387,6 +6881,47 @@ export default function AgencyPanelPage() {
                     </>
                   ) : (
                     <PanelLeftClose className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Module-Independent Task Management Button (Right after Welcome, before Portfolio & Distribution) */}
+              <div className="bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-1.5 transition-all duration-200">
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-tasks"
+                  aria-controls="tabpanel-tasks"
+                  aria-selected={activeTab === "tasks"}
+                  onClick={() => setActiveTab("tasks")}
+                  title={isSidebarCollapsed ? undefined : t("agency_tasks_menu_label")}
+                  aria-label={t("agency_tasks_menu_label")}
+                  className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                    } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "tasks"
+                      ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
+                      : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
+                    }`}
+                >
+                  <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
+                    <CheckSquare className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && (
+                      <span className="truncate">{t("agency_tasks_menu_label")}</span>
+                    )}
+                  </div>
+                  {!isSidebarCollapsed ? (
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 tabular-nums ${activeTab === "tasks"
+                        ? "bg-[#1B5888] text-white"
+                        : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
+                        }`}
+                    >
+                      {agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length}
+                    </span>
+                  ) : (
+                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                      {t("agency_tasks_menu_label")}
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                    </div>
                   )}
                 </button>
               </div>
@@ -6939,34 +7474,6 @@ export default function AgencyPanelPage() {
                     <span>{t("agency_panel_go_to_listings")}</span>
                   </button>
                 )}
-                {activeTab === "leads" && (
-                  <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-[10px] border border-[#E5E3DF] shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setLeadsViewMode("list")}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                        leadsViewMode === "list"
-                          ? "bg-white text-[#1A1A1A] shadow-xs"
-                          : "text-[#4A4A4A] hover:text-[#1A1A1A]"
-                      }`}
-                    >
-                      <List className="w-4 h-4" />
-                      <span>{t("agency_panel_view_list")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLeadsViewMode("kanban")}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                        leadsViewMode === "kanban"
-                          ? "bg-white text-[#1A1A1A] shadow-xs"
-                          : "text-[#4A4A4A] hover:text-[#1A1A1A]"
-                      }`}
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                      <span>{t("agency_panel_view_kanban")}</span>
-                    </button>
-                  </div>
-                )}
                 {activeTab === "settings" && userId && (
                   <Link
                     href={showcaseUrl}
@@ -7063,12 +7570,23 @@ export default function AgencyPanelPage() {
                   managedProperties={managedProperties}
                   onCloseAndHandoverListing={handleCloseAndHandoverListing}
                   onInspectManagedProperty={handleInspectManagedPropertyById}
+                  onCreateTask={handleOpenCreateTask}
+                  tasks={agencyTasks}
+                  onViewListingTasks={(listingId) => {
+                    setTaskPropertyFilter(null);
+                    setTaskListingFilter(listingId);
+                    setActiveTab("tasks");
+                  }}
                 />
               ))}
 
               {activeTab === "leads" && renderTabWithLockCheck("portfolio", (
                 <LeadsTab
                   leads={leads}
+                  onCreateTask={handleOpenCreateTask}
+                  tasks={agencyTasks}
+                  assignees={teamAssignees}
+                  onQuickTaskStatus={handleQuickTaskStatus}
                   leadPoolFilter={leadPoolFilter}
                   setLeadPoolFilter={setLeadPoolFilter}
                   leadPoolCounts={leadPoolCounts}
@@ -7076,10 +7594,6 @@ export default function AgencyPanelPage() {
                   setLeadStatusFilter={setLeadStatusFilter}
                   leadSearchQuery={leadSearchQuery}
                   setLeadSearchQuery={setLeadSearchQuery}
-                  leadsViewMode={leadsViewMode}
-                  setLeadsViewMode={setLeadsViewMode}
-                  activeKanbanCol={activeKanbanCol}
-                  setActiveKanbanCol={setActiveKanbanCol}
                   filteredLeads={filteredLeads}
                   newCommentText={newCommentText}
                   setNewCommentText={setNewCommentText}
@@ -7227,6 +7741,65 @@ export default function AgencyPanelPage() {
                 />
               ))}
 
+              {/* TAB 4.4: MODULE-INDEPENDENT TASK MANAGEMENT */}
+              {activeTab === "tasks" && (
+                <TasksTab
+                  tasks={agencyTasks}
+                  loading={loadingTasks}
+                  isAgencyAdmin={agencyRole === "agency_admin"}
+                  currentUserId={currentUser?.id || userId}
+                  assignees={teamAssignees}
+                  properties={managedProperties}
+                  listings={listings}
+                  leads={leads}
+                  maintenanceRequests={maintenanceRequests}
+                  onOpenCreateModal={handleOpenCreateTask}
+                  onOpenEditModal={(tk) => {
+                    setEditingTask(tk);
+                    setTaskPrefill(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  onQuickStatusChange={handleQuickTaskStatus}
+                  onQuickAssign={handleQuickTaskAssign}
+                  onUpdateComments={handleUpdateTaskComments}
+                  onDeleteTask={handleDeleteTask}
+                  currentUserName={
+                    teamAssignees.find((a) => a.id === (currentUser?.id || userId))?.name ||
+                    currentUser?.email ||
+                    agencyName ||
+                    "User"
+                  }
+                  activeLocale={activeLocale}
+                  onNavigateTab={setActiveTab}
+                  initialPropertyFilter={taskPropertyFilter}
+                  onClearPropertyFilter={() => setTaskPropertyFilter(null)}
+                  initialListingFilter={taskListingFilter}
+                  onClearListingFilter={() => setTaskListingFilter(null)}
+                  t={t}
+                />
+              )}
+
+              {/* Global Create / Edit Task Modal (usable from Tasks, Leads, Maintenance, Properties, Listings) */}
+              <TaskFormModal
+                isOpen={isTaskModalOpen}
+                onClose={() => {
+                  setIsTaskModalOpen(false);
+                  setEditingTask(null);
+                  setTaskPrefill(null);
+                }}
+                editingTask={editingTask}
+                prefill={taskPrefill}
+                isAgencyAdmin={agencyRole === "agency_admin"}
+                currentUserId={currentUser?.id || userId}
+                assignees={teamAssignees}
+                properties={managedProperties}
+                listings={listings}
+                leads={leads}
+                maintenanceRequests={maintenanceRequests}
+                onSave={handleSaveTask}
+                t={t}
+              />
+
               {/* TAB 4.5: ACCOUNT & APP SETTINGS (MODULE-INDEPENDENT) */}
               {activeTab === "account_settings" && (
                 <AccountSettingsTab
@@ -7234,6 +7807,8 @@ export default function AgencyPanelPage() {
                   userId={userId}
                   agencyName={agencyName}
                   agencyEmail={agencyEmail}
+                  agencyRole={agencyRole}
+                  isAgencyAdmin={agencyRole === "agency_admin"}
                   isDemoMode={isDemoMode}
                   lang={lang}
                   setLang={setLang}
@@ -7326,6 +7901,13 @@ export default function AgencyPanelPage() {
                     setActiveTab("maintenance");
                   }}
                   onQuickRelistProperty={handleQuickRelistProperty}
+                  onCreateTask={handleOpenCreateTask}
+                  tasks={agencyTasks}
+                  onViewPropertyTasks={(propId) => {
+                    setTaskListingFilter(null);
+                    setTaskPropertyFilter(propId);
+                    setActiveTab("tasks");
+                  }}
                 />
               ))}
 
@@ -7370,6 +7952,10 @@ export default function AgencyPanelPage() {
                   selectedRequest={selectedMaintRequest}
                   onBackFromDetail={() => setSelectedMaintRequest(null)}
                   onNavigateToProperty={handleInspectProperty}
+                  onCreateTask={handleOpenCreateTask}
+                  tasks={agencyTasks}
+                  assignees={teamAssignees}
+                  onQuickTaskStatus={handleQuickTaskStatus}
                   onUpdateRequest={(updated) => {
                     setMaintenanceRequests((prev) =>
                       prev.map((m) => (m.id === updated.id ? updated : m))

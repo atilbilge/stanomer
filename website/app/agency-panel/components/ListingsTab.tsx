@@ -8,6 +8,7 @@ import {
   Building2,
   Check,
   CheckCircle2,
+  CheckSquare,
   ChevronDown,
   ChevronUp,
   Edit3,
@@ -31,7 +32,7 @@ import {
   UserCheck,
   X,
 } from "lucide-react";
-import { AgencyListingRow, AgencyManagedProperty, AgencyPanelTab } from "../types";
+import { AgencyListingRow, AgencyManagedProperty, AgencyPanelTab, AgencyTask, AgencyTaskPrefill } from "../types";
 import { PORTAL_LIST } from "../constants";
 import { TRANSACTION_TYPES, PROPERTY_TYPES, getDictLabel } from "../../../lib/serbianRealEstateDict";
 import { validate4ZidaListing, validateHaloOglasiListing } from "../../../lib/portalValidators";
@@ -75,6 +76,9 @@ export interface ListingsTabProps {
   managedProperties?: AgencyManagedProperty[];
   onCloseAndHandoverListing?: (params: CloseAndHandoverParams) => Promise<void>;
   onInspectManagedProperty?: (propertyId: string) => void;
+  onCreateTask?: (prefill: AgencyTaskPrefill) => void;
+  tasks?: AgencyTask[];
+  onViewListingTasks?: (listingId: string) => void;
 }
 
 export default function ListingsTab({
@@ -95,6 +99,9 @@ export default function ListingsTab({
   managedProperties = [],
   onCloseAndHandoverListing,
   onInspectManagedProperty,
+  onCreateTask,
+  tasks = [],
+  onViewListingTasks,
 }: ListingsTabProps) {
   const [portfolioTxFilter, setPortfolioTxFilter] = useState<string>("all");
   const [portfolioStatusFilter, setPortfolioStatusFilter] = useState<string>("all");
@@ -737,6 +744,47 @@ export default function ListingsTab({
                                     <Edit3 className="w-3.5 h-3.5" />
                                     <span>{t("agency_panel_edit_btn")}</span>
                                   </button>
+
+                                  {onCreateTask && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onCreateTask({
+                                          source_type: "listing",
+                                          listing_id: item.id,
+                                          title: item.title || item.address || "",
+                                        })
+                                      }
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E5E3DF] bg-white hover:bg-slate-50 text-xs font-semibold text-[#1A1A1A] cursor-pointer transition-colors"
+                                    >
+                                      <span>{t("agency_tasks_quick_btn")}</span>
+                                    </button>
+                                  )}
+
+                                  {onViewListingTasks && (() => {
+                                    const listingTaskCount = tasks.filter(
+                                      (tk) => tk.listing_id === item.id && tk.status !== "done" && tk.status !== "cancelled"
+                                    ).length;
+                                    return (
+                                      <button
+                                        type="button"
+                                        onClick={() => onViewListingTasks(item.id)}
+                                        title={t("agency_tasks_view_listing_tasks")}
+                                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                                          listingTaskCount > 0
+                                            ? "bg-[#E5EEF6] text-[#1B5888] hover:bg-[#1B5888] hover:text-white"
+                                            : "text-[#666666] hover:text-[#1B5888] hover:bg-slate-100"
+                                        }`}
+                                      >
+                                        <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+                                        <span>
+                                          {listingTaskCount > 0
+                                            ? `${t("agency_tasks_menu_label")} (${listingTaskCount})`
+                                            : t("agency_tasks_view_listing_tasks")}
+                                        </span>
+                                      </button>
+                                    );
+                                  })()}
 
                                   <button
                                     type="button"
