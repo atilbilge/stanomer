@@ -5848,16 +5848,36 @@ export default function AgencyPanelPage() {
                     <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-xs font-bold text-[#1A1A1A] leading-none truncate max-w-[110px] xl:max-w-[140px]">
-                      {agencyName || "Agencija"}
-                    </p>
-                    <p className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5">
-                      {isDemoMode
-                        ? t("agency_panel_demo_mode_label")
-                        : agencyRole === "agency_operation"
-                          ? t("agency_role_operation")
-                          : t("agency_role_admin")}
-                    </p>
+                    {(() => {
+                      const activeMember = teamAssignees.find(
+                        (a) => a.id === (currentUser?.id || userId)
+                      );
+                      const displayUserName =
+                        activeMember?.name ||
+                        currentUser?.user_metadata?.full_name ||
+                        agencyName ||
+                        "Agencija";
+                      const displayUserEmail = currentUser?.email || agencyEmail || "";
+                      return (
+                        <>
+                          <p className="text-xs font-bold text-[#1A1A1A] leading-none truncate max-w-[150px] xl:max-w-[200px]">
+                            {displayUserName}
+                          </p>
+                          <p
+                            className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5 truncate max-w-[150px] xl:max-w-[200px]"
+                            title={displayUserEmail || undefined}
+                          >
+                            {displayUserEmail
+                              ? displayUserEmail
+                              : isDemoMode
+                                ? t("agency_panel_demo_mode_label")
+                                : agencyRole === "agency_operation"
+                                  ? t("agency_role_operation")
+                                  : t("agency_role_admin")}
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
                   <ChevronDown
                     className={`w-3.5 h-3.5 text-[#8A8A8A] transition-transform sm:hidden ${isProfileMenuOpen ? "rotate-180" : ""
@@ -5890,9 +5910,17 @@ export default function AgencyPanelPage() {
                       </div>
                       <div className="min-w-0 flex-1 text-left">
                         <p className="text-xs font-bold text-[#1A1A1A] truncate">
-                          {agencyName || "Agencija"}
+                          {teamAssignees.find((a) => a.id === (currentUser?.id || userId))?.name ||
+                            currentUser?.user_metadata?.full_name ||
+                            agencyName ||
+                            "Agencija"}
                         </p>
-                        <p className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5">
+                        {(currentUser?.email || agencyEmail) && (
+                          <p className="text-[10px] text-[#666666] font-medium leading-tight mt-0.5 truncate">
+                            {currentUser?.email || agencyEmail}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-[#1B5888] font-semibold leading-tight mt-0.5">
                           {isDemoMode
                             ? t("agency_panel_demo_mode_label")
                             : agencyRole === "agency_operation"

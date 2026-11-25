@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useLanguage, Language } from "./LanguageProvider";
-import { Sparkles, HelpCircle, CheckCircle2, ArrowRight, Calculator } from "lucide-react";
+import { useLanguage } from "./LanguageProvider";
+import { Sparkles, HelpCircle, CheckCircle2, ArrowRight, Calculator, Globe, Home, Check, Tag } from "lucide-react";
 
 interface AgencyPricingSectionProps {
   onOpenSimulation?: () => void;
@@ -15,11 +15,28 @@ const BRACKETS = [
   { max: 1e9, price: 1.5 },
 ];
 
+const BUNDLE_DISCOUNT_RATE = 0.2;
+
 interface TranslationBundle {
   badge: string;
   h1: string;
   lead: string;
-  count: string;
+  selectModules: string;
+  modPortfolio: string;
+  modPortfolioSub: string;
+  modProperty: string;
+  modPropertySub: string;
+  bundleBadge: string;
+  bundleActiveNote: string;
+  bundleUpsellNote: string;
+  listingsLabel: string;
+  propertiesLabel: string;
+  listingsUnit: string;
+  propertiesUnit: string;
+  totalUnitsLabel: string;
+  totalUnitsUnit: string;
+  beforeBundle: string;
+  bundleSavings: string;
   std: string;
   fnd: string;
   pm: string;
@@ -27,6 +44,7 @@ interface TranslationBundle {
   th1: string;
   th2: string;
   ex: string;
+  exBundle: string;
   h2f: string;
   fintro: string;
   get: string;
@@ -64,22 +82,40 @@ interface TranslationBundle {
   s5: string;
   r4: string;
   rows: [string, string, string, string];
-  lg: string;
+  details: string;
+  goToCalc: string;
+  calcAbove: string;
 }
 
 const T: Record<string, TranslationBundle> = {
   en: {
     badge: "Transparent Agency Pricing",
-    h1: "Pay only for the properties you manage",
-    lead: "Price depends on the number of properties and is calculated in brackets. Each bracket applies only to the properties inside it, so adding properties never lowers your total bill.",
-    count: "Properties you manage",
+    h1: "Pay only for the modules and units you use",
+    lead: "Pick Portfolio & Distribution, Property & Lease Management, or both. Pricing is calculated in progressive brackets — and combining both modules pools your units with an extra 20% bundle discount.",
+    selectModules: "Choose your modules",
+    modPortfolio: "Portfolio & Distribution",
+    modPortfolioSub: "Billed by active listings",
+    modProperty: "Property & Lease Management",
+    modPropertySub: "Billed by managed properties",
+    bundleBadge: "-20% Bundle",
+    bundleActiveNote: "Both modules active: listings + managed properties are combined into one bracket total with an extra 20% bundle discount applied.",
+    bundleUpsellNote: "Select both modules together to pool your units and unlock 20% off your total.",
+    listingsLabel: "Active listings",
+    propertiesLabel: "Managed properties",
+    listingsUnit: "listings",
+    propertiesUnit: "properties",
+    totalUnitsLabel: "Combined billable volume",
+    totalUnitsUnit: "total units",
+    beforeBundle: "Before 20% bundle discount",
+    bundleSavings: "20% bundle savings",
     std: "Standard price",
     fnd: "Founding partner, months 2 to 12",
     pm: "EUR per month",
-    h2std: "Standard price",
-    th1: "Properties",
-    th2: "Price per property per month (EUR)",
-    ex: "Example: 20 properties = (10 × 6.00) + (10 × 3.50) = 95.00 EUR per month.",
+    h2std: "Standard progressive brackets",
+    th1: "Units (Listings / Managed Properties)",
+    th2: "Price per unit per month (EUR)",
+    ex: "Example (single module): 20 units = (10 × 6.00) + (10 × 3.50) = 95.00 EUR per month.",
+    exBundle: "Example (both modules): 15 listings + 15 managed properties = 30 combined units (130.00 EUR) − 20% bundle discount = 104.00 EUR per month.",
     h2f: "Founding feedback partners",
     fintro: "Agencies that sign up by December 31, 2026 receive:",
     get: "What you get",
@@ -97,8 +133,8 @@ const T: Record<string, TranslationBundle> = {
     h2q: "Frequently Asked Questions",
     q1: "What does a normal month look like for my agency?",
     r1: "You add a property and its contract, then invite the owner and tenant or add them yourself. The owner uploads a utility bill, you check it and approve it with a due date, and only then does the tenant see it. If the tenant has a complaint, it comes to you instead of going to the owner. Everything runs on web, Android and iOS under your logo and colors.",
-    q2: "Does the price drop when I add properties?",
-    r2: "No. Each bracket applies only to the properties inside it, so your total only grows as your portfolio grows, and the price per additional property gets lower.",
+    q2: "Does the price drop when I add units?",
+    r2: "No. Each bracket applies only to the units inside it, so your total only grows as your portfolio grows, and the price per additional unit gets lower.",
     q3: "What does the pilot month include?",
     r3: "Full access under your own brand, with no obligations. We can import your existing property Excel files.",
     h2c: "See your own-branded agency panel in 2 minutes",
@@ -117,20 +153,38 @@ const T: Record<string, TranslationBundle> = {
     s5: "Standard price",
     r4: "76 and above",
     rows: ["1 to 10", "11 to 30", "31 to 75", "76 and above"],
-    lg: "properties",
+    details: "Details",
+    goToCalc: "Go to Price Calculator ↑",
+    calcAbove: "Calculate pricing for your portfolio above ↑",
   },
   sr_lat: {
     badge: "Transparentan cenovnik za agencije",
-    h1: "Plaćate samo nekretnine koje vodite",
-    lead: "Cena zavisi od broja nekretnina i računa se po stepenima. Svaki stepen se odnosi samo na nekretnine unutar njega, tako da dodavanje nekretnina nikada ne smanjuje Vaš ukupni račun.",
-    count: "Broj nekretnina koje vodite",
+    h1: "Plaćate samo module i jedinice koje koristite",
+    lead: "Izaberite Portfelj i distribuciju, Upravljanje nekretninama i zakupom ili oba modula. Cena se računa po stepenima — a uz oba modula zajedno dobijate zbirni obračun i dodatnih 20% paketnog popusta.",
+    selectModules: "Izaberite module",
+    modPortfolio: "Portfelj i distribucija",
+    modPortfolioSub: "Obračun po broju aktivnih oglasa",
+    modProperty: "Upravljanje nekretninama i zakupom",
+    modPropertySub: "Obračun po broju upravljanih nekretnina",
+    bundleBadge: "-20% Paket",
+    bundleActiveNote: "Oba modula aktivna: oglasi + upravljane nekretnine se sabiraju u jedinstven stepenasti obračun uz dodatnih 20% popusta.",
+    bundleUpsellNote: "Izaberite oba modula zajedno za zbirni obračun i 20% paketnog popusta na ukupan iznos.",
+    listingsLabel: "Aktivni oglasi",
+    propertiesLabel: "Upravljane nekretnine",
+    listingsUnit: "oglasa",
+    propertiesUnit: "nekretnina",
+    totalUnitsLabel: "Ukupan obim za obračun",
+    totalUnitsUnit: "jedinica ukupno",
+    beforeBundle: "Pre 20% paketnog popusta",
+    bundleSavings: "Ušteda paketom (20%)",
     std: "Standardna cena",
     fnd: "Osnivač partner, 2. do 12. meseca",
     pm: "EUR mesečno",
-    h2std: "Standardna cena",
-    th1: "Broj nekretnina",
-    th2: "Cena po nekretnini mesečno (EUR)",
-    ex: "Primer: 20 nekretnina = (10 × 6,00) + (10 × 3,50) = 95,00 EUR mesečno.",
+    h2std: "Standardna stepenasta tarifa",
+    th1: "Jedinice (Oglasi / Upravljane nekretnine)",
+    th2: "Cena po jedinici mesečno (EUR)",
+    ex: "Primer (jedan modul): 20 jedinica = (10 × 6,00) + (10 × 3,50) = 95,00 EUR mesečno.",
+    exBundle: "Primer (oba modula): 15 oglasa + 15 upravljanih nekretnina = 30 jedinica (130,00 EUR) − 20% popusta = 104,00 EUR mesečno.",
     h2f: "Osnivači partneri (povratne informacije)",
     fintro: "Agencije koje se pridruže do 31. decembra 2026. dobijaju:",
     get: "Šta dobijate",
@@ -148,8 +202,8 @@ const T: Record<string, TranslationBundle> = {
     h2q: "Često postavljana pitanja",
     q1: "Kako izgleda običan mesec za moju agenciju?",
     r1: "Dodate nekretninu i ugovor, pa pozovete vlasnika i zakupca ili ih dodate sami. Vlasnik otpremi račun za režije, Vi ga proverite i odobrite sa rokom plaćanja, i tek tada ga zakupac vidi. Ako zakupac ima primedbu, ona stiže Vama, a ne vlasniku. Sve radi na webu, Androidu i iOS-u pod Vašim logom i bojama.",
-    q2: "Da li cena pada kada dodam nekretnine?",
-    r2: "Ne. Svaki stepen se odnosi samo na nekretnine unutar njega, pa Vaš ukupni račun samo raste kako raste portfelj, dok cena po dodatnoj nekretnini postaje niža.",
+    q2: "Da li cena pada kada dodam jedinice?",
+    r2: "Ne. Svaki stepen se odnosi samo na jedinice unutar njega, pa Vaš ukupni račun samo raste kako raste portfelj, dok cena po dodatnoj jedinici postaje niža.",
     q3: "Šta uključuje probni mesec?",
     r3: "Potpun pristup pod Vašim brendom, bez obaveza. Možemo uvesti Vaše postojeće Excel fajlove sa nekretninama.",
     h2c: "Pogledajte panel pod Vašim brendom za 2 minuta",
@@ -168,20 +222,38 @@ const T: Record<string, TranslationBundle> = {
     s5: "Standardna cena",
     r4: "76 i više",
     rows: ["1 do 10", "11 do 30", "31 do 75", "76 i više"],
-    lg: "nekretnina",
+    details: "Detalji",
+    goToCalc: "Idi na kalkulator cena ↑",
+    calcAbove: "Izračunajte cenu za Vaš portfelj iznad ↑",
   },
   sr_cyr: {
     badge: "Транспарентан ценовник за агенције",
-    h1: "Плаћате само некретнине које водите",
-    lead: "Цена зависи од броја некретнина и рачуна се по степенима. Сваки степен се односи само на некретнине унутар њега, тако да додавање некретнина никада не смањује Ваш укупни рачун.",
-    count: "Број некретнина које водите",
+    h1: "Плаћате само модуле и јединице које користите",
+    lead: "Изаберите Портфељ и дистрибуцију, Управљање некретнинама и закупом или оба модула. Цена се рачуна по степенима — а уз оба модула заједно добијате збирни обрачун и додатних 20% пакетног попуста.",
+    selectModules: "Изаберите модуле",
+    modPortfolio: "Портфељ и дистрибуција",
+    modPortfolioSub: "Обрачун по броју активних огласа",
+    modProperty: "Управљање некретнинама и закупом",
+    modPropertySub: "Обрачун по броју управљаних некретнина",
+    bundleBadge: "-20% Пакет",
+    bundleActiveNote: "Оба модула активна: огласи + управљане некретнине се сабирају у јединствен степенасти обрачун уз додатних 20% попуста.",
+    bundleUpsellNote: "Изаберите оба модула заједно за збирни обрачун и 20% пакетног попуста на укупан износ.",
+    listingsLabel: "Активни огласи",
+    propertiesLabel: "Управљане некретнине",
+    listingsUnit: "огласа",
+    propertiesUnit: "некретнина",
+    totalUnitsLabel: "Укупан обим за обрачун",
+    totalUnitsUnit: "јединица укупно",
+    beforeBundle: "Пре 20% пакетног попуста",
+    bundleSavings: "Уштеда пакетом (20%)",
     std: "Стандардна цена",
     fnd: "Оснивач партнер, 2. до 12. месеца",
     pm: "EUR месечно",
-    h2std: "Стандардна цена",
-    th1: "Број некретнина",
-    th2: "Цена по некретнини месечно (EUR)",
-    ex: "Пример: 20 некретнина = (10 × 6,00) + (10 × 3,50) = 95,00 EUR месечно.",
+    h2std: "Стандардна степенаста тарифа",
+    th1: "Јединице (Огласи / Управљане некретнине)",
+    th2: "Цена по јединици месечно (EUR)",
+    ex: "Пример (један модул): 20 јединица = (10 × 6,00) + (10 × 3,50) = 95,00 EUR месечно.",
+    exBundle: "Пример (оба модула): 15 огласа + 15 управљаних некретнина = 30 јединица (130,00 EUR) − 20% попуста = 104,00 EUR месечно.",
     h2f: "Оснивачи партнери (повратне информације)",
     fintro: "Агенције које се придруже до 31. децембра 2026. добијају:",
     get: "Шта добијате",
@@ -199,8 +271,8 @@ const T: Record<string, TranslationBundle> = {
     h2q: "Често постављана питања",
     q1: "Како изгледа обичан месец за моју агенцију?",
     r1: "Додате некретнину и уговор, па позовете власника и закупца или их додате сами. Власник отпреми рачун за режије, Ви га проверите и одобрите са роком плаћања, и тек тада га закупац види. Ако закупац има примедбу, она стиже Вама, а не власнику. Све ради на вебу, Андроиду и иОС-у под Вашим логом и бојама.",
-    q2: "Да ли цена пада када додам некретнине?",
-    r2: "Не. Сваки степен се односи само на некретнине унутар њега, па Ваш укупни рачун само расте како расте портфељ, док цена по додатној некретнини постаје нижа.",
+    q2: "Да ли цена пада када додам јединице?",
+    r2: "Не. Сваки степен се односи само на јединице унутар њега, па Ваш укупни рачун само расте како расте портфељ, док цена по додатној јединици постаје нижа.",
     q3: "Шта укључује пробни месец?",
     r3: "Потпун приступ под Вашим брендом, без обавеза. Можемо увести Ваше постојеће Екцел фајлове са некретнинама.",
     h2c: "Погледајте панел под Вашим брендом за 2 минута",
@@ -219,20 +291,38 @@ const T: Record<string, TranslationBundle> = {
     s5: "Стандардна цена",
     r4: "76 и више",
     rows: ["1 до 10", "11 до 30", "31 до 75", "76 и више"],
-    lg: "некретнина",
+    details: "Детаљи",
+    goToCalc: "Иди на калкулатор цена ↑",
+    calcAbove: "Израчунајте цену за Ваш портфељ изнад ↑",
   },
   tr: {
     badge: "Şeffaf Acente Fiyatlandırması",
-    h1: "Yalnızca yönettiğiniz mülkler için ödeyin",
-    lead: "Fiyat, yönettiğiniz mülk sayısına göre dilimler halinde hesaplanır. Her dilim yalnızca kendi aralığındaki mülklere uygulanır; bu sayede mülk portföyünüz büyüdükçe birim mülk maliyetiniz kademeli olarak düşer.",
-    count: "Yönettiğiniz mülk sayısı",
+    h1: "Yalnızca kullandığınız modül ve hacim için ödeyin",
+    lead: "Portföy & Dağıtım, Mülk & Kira Yönetimi veya her ikisini birden seçin. Fiyat kademeli dilimlerle hesaplanır — iki modülü birlikte aldığınızda hacimleriniz birleşir ve toplam tutara ekstra %20 paket indirimi uygulanır.",
+    selectModules: "Modüllerinizi seçin",
+    modPortfolio: "Portföy & Dağıtım",
+    modPortfolioSub: "Aktif ilan sayısına göre hesaplanır",
+    modProperty: "Mülk & Kira Yönetimi",
+    modPropertySub: "Yönetilen mülk sayısına göre hesaplanır",
+    bundleBadge: "%20 Paket İndirimi",
+    bundleActiveNote: "İki modül birlikte seçili: ilan + yönetilen mülk sayısı toplanarak tek dilimden hesaplanır ve çıkan ana sonuca %20 paket indirimi uygulanır.",
+    bundleUpsellNote: "İki modülü birlikte seçerek hacminizi birleştirin ve toplam tutarda %20 paket indirimi kazanın.",
+    listingsLabel: "Aktif ilan sayısı",
+    propertiesLabel: "Yönetilen mülk sayısı",
+    listingsUnit: "ilan",
+    propertiesUnit: "mülk",
+    totalUnitsLabel: "Toplam hesaplama hacmi",
+    totalUnitsUnit: "toplam birim",
+    beforeBundle: "%20 paket indirimi öncesi",
+    bundleSavings: "%20 paket kazancı",
     std: "Standart fiyat",
     fnd: "Kurucu ortak, 2 - 12. aylar",
     pm: "EUR / ay",
-    h2std: "Standart fiyat tarifesi",
-    th1: "Mülk Dilimi",
-    th2: "Mülk başına aylık ücret (EUR)",
-    ex: "Örnek: 20 mülk = (10 × 6,00) + (10 × 3,50) = 95,00 EUR / ay.",
+    h2std: "Standart kademeli fiyat tarifesi",
+    th1: "Birim Dilimi (İlan / Yönetilen Mülk)",
+    th2: "Birim başına aylık ücret (EUR)",
+    ex: "Örnek (tek modül): 20 birim = (10 × 6,00) + (10 × 3,50) = 95,00 EUR / ay.",
+    exBundle: "Örnek (iki modül birlikte): 15 ilan + 15 yönetilen mülk = 30 toplam birim (130,00 EUR) − %20 paket indirimi = 104,00 EUR / ay.",
     h2f: "Kurucu geri bildirim ortaklığı",
     fintro: "31 Aralık 2026 tarihine kadar kaydolan acentelerin kazandıkları:",
     get: "Ne kazanıyorsunuz?",
@@ -250,8 +340,8 @@ const T: Record<string, TranslationBundle> = {
     h2q: "Sıkça Sorulan Sorular",
     q1: "Acentem için normal bir ay nasıl işler?",
     r1: "Bir mülk ve sözleşmesini eklersiniz, ardından ev sahibi ve kiracıyı davet eder veya kendiniz eklersiniz. Ev sahibi fatura yükler, siz kontrol edip son ödeme tarihiyle onaylarsınız ve kiracı ancak o zaman görür. Kiracının bir şikayeti/talebi olursa doğrudan ev sahibine gitmek yerine size gelir. Her şey web, Android ve iOS üzerinde kendi logonuz ve renklerinizle çalışır.",
-    q2: "Mülk eklediğimde fiyat düşer mi?",
-    r2: "Hayır. Her dilim yalnızca kendi içindeki mülklere uygulanır; portföyünüz büyüdükçe toplam faturanız kontrollü artar ancak eklenen her yeni mülkün birim maliyeti kademeli olarak ucuzlar.",
+    q2: "Birim eklediğimde fiyat düşer mi?",
+    r2: "Hayır. Her dilim yalnızca kendi içindeki birimlere uygulanır; portföyünüz büyüdükçe toplam faturanız kontrollü artar ancak eklenen her yeni birimin maliyeti kademeli olarak ucuzlar.",
     q3: "Pilot ay neleri kapsar?",
     r3: "Kendi markanız altında hiçbir taahhüt olmadan tam erişim. Mevcut mülk Excel tablolarınızı sisteme ücretsiz aktarabiliriz.",
     h2c: "Kendi markalı acente panelinizi 2 dakikada görün",
@@ -270,20 +360,38 @@ const T: Record<string, TranslationBundle> = {
     s5: "Standart fiyat",
     r4: "76 ve üzeri",
     rows: ["1 - 10", "11 - 30", "31 - 75", "76 ve üzeri"],
-    lg: "mülk",
+    details: "Detaylar",
+    goToCalc: "Fiyat Hesabına Git ↑",
+    calcAbove: "Yukarı çıkıp portföyünüze göre fiyatı hesaplayın ↑",
   },
   ru: {
     badge: "Прозрачные тарифы для агентств",
-    h1: "Оплата только за управляемые объекты",
-    lead: "Цена зависит от количества объектов и рассчитывается по ступеням. Каждая ступень применяется только к объектам внутри неё, поэтому добавление объектов снижает среднюю стоимость за единицу.",
-    count: "Объектов под управлением",
+    h1: "Платите только за нужные модули и объём",
+    lead: "Выберите «Портфель и дистрибуция», «Управление объектами и арендой» или оба модуля сразу. При выборе обоих модулей объём суммируется, а к итоговой сумме применяется дополнительная скидка 20%.",
+    selectModules: "Выберите модули",
+    modPortfolio: "Портфель и дистрибуция",
+    modPortfolioSub: "Расчёт по числу активных объявлений",
+    modProperty: "Управление объектами и арендой",
+    modPropertySub: "Расчёт по числу управляемых объектов",
+    bundleBadge: "-20% Комплект",
+    bundleActiveNote: "Выбраны оба модуля: объявления + управляемые объекты суммируются в единую шкалу со скидкой 20% на итог.",
+    bundleUpsellNote: "Выберите оба модуля вместе, чтобы объединить объём и получить скидку 20% на итоговую сумму.",
+    listingsLabel: "Активные объявления",
+    propertiesLabel: "Управляемые объекты",
+    listingsUnit: "объявлений",
+    propertiesUnit: "объектов",
+    totalUnitsLabel: "Общий расчётный объём",
+    totalUnitsUnit: "единиц всего",
+    beforeBundle: "До скидки 20% за комплект",
+    bundleSavings: "Экономия за комплект (20%)",
     std: "Стандартная цена",
     fnd: "Партнёр-основатель, месяцы 2–12",
     pm: "EUR в месяц",
-    h2std: "Стандартный тариф",
-    th1: "Количество объектов",
-    th2: "Цена за объект в месяц (EUR)",
-    ex: "Пример: 20 объектов = (10 × 6,00) + (10 × 3,50) = 95,00 EUR в месяц.",
+    h2std: "Стандартный ступенчатый тариф",
+    th1: "Единицы (Объявления / Объекты)",
+    th2: "Цена за единицу в месяц (EUR)",
+    ex: "Пример (один модуль): 20 единиц = (10 × 6,00) + (10 × 3,50) = 95,00 EUR в месяц.",
+    exBundle: "Пример (оба модуля): 15 объявлений + 15 объектов = 30 единиц (130,00 EUR) − скидка 20% = 104,00 EUR в месяц.",
     h2f: "Партнёры-основатели (обратная связь)",
     fintro: "Агентства, подключившиеся до 31 декабря 2026 года, получают:",
     get: "Что вы получаете",
@@ -301,8 +409,8 @@ const T: Record<string, TranslationBundle> = {
     h2q: "Часто задаваемые вопросы",
     q1: "Как выглядит обычный месяц для моего агентства?",
     r1: "Вы добавляете объект и договор, приглашаете собственника и жильца. Собственник загружает счета, вы проверяете и утверждаете их, и только тогда жилец видит оплату. Все вопросы жильца поступают вам, а не собственнику. Всё работает на web, Android и iOS под вашим логотипом.",
-    q2: "Снижается ли общая цена при добавлении объектов?",
-    r2: "Нет. Ступени применяются последовательно: общая сумма растет с портфелем, но стоимость каждого нового добавленного объекта становится ниже.",
+    q2: "Снижается ли общая цена при добавлении единиц?",
+    r2: "Нет. Ступени применяются последовательно: общая сумма растет с портфелем, но стоимость каждой новой добавленной единицы становится ниже.",
     q3: "Что включает пилотный месяц?",
     r3: "Полный доступ под вашим брендом без обязательств. Мы можем бесплатно импортировать ваши текущие таблицы Excel.",
     h2c: "Увидьте панель вашего агентства за 2 минуты",
@@ -321,13 +429,28 @@ const T: Record<string, TranslationBundle> = {
     s5: "Стандартный тариф",
     r4: "76 и более",
     rows: ["1 до 10", "11 до 30", "31 до 75", "76 и более"],
-    lg: "объектов",
+    details: "Подробнее",
+    goToCalc: "Перейти к калькулятору тарифа ↑",
+    calcAbove: "Рассчитать стоимость для вашего портфеля выше ↑",
   },
 };
 
 export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionProps) {
   const { lang } = useLanguage();
-  const [count, setCount] = useState<number>(20);
+  const [hasPortfolio, setHasPortfolio] = useState<boolean>(true);
+  const [hasProperty, setHasProperty] = useState<boolean>(true);
+  const [listingCount, setListingCount] = useState<number>(15);
+  const [propertyCount, setPropertyCount] = useState<number>(15);
+
+  const togglePortfolio = () => {
+    if (hasPortfolio && !hasProperty) return;
+    setHasPortfolio((prev) => !prev);
+  };
+
+  const toggleProperty = () => {
+    if (hasProperty && !hasPortfolio) return;
+    setHasProperty((prev) => !prev);
+  };
 
   // Map Language context to dictionary key
   const tKey = useMemo(() => {
@@ -355,9 +478,12 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
     return formatted.replace(".", ",");
   };
 
+  const isBundle = hasPortfolio && hasProperty;
+  const effectiveUnits = (hasPortfolio ? listingCount : 0) + (hasProperty ? propertyCount : 0);
+
   // Tier calculation
-  const { totalStd, totalFnd, bracketCounts, stepsValues } = useMemo(() => {
-    let remainder = count;
+  const { rawTotal, bundleSavings, totalStd, totalFnd, bracketCounts } = useMemo(() => {
+    let remainder = effectiveUnits;
     let sum = 0;
     const counts: number[] = [];
 
@@ -368,13 +494,17 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
       remainder -= c;
     });
 
+    const savings = isBundle ? sum * BUNDLE_DISCOUNT_RATE : 0;
+    const finalStd = sum - savings;
+
     return {
-      totalStd: sum,
-      totalFnd: sum * 0.6,
+      rawTotal: sum,
+      bundleSavings: savings,
+      totalStd: finalStd,
+      totalFnd: finalStd * 0.6,
       bracketCounts: counts,
-      stepsValues: [0, sum * 0.6, sum * 0.8, sum * 0.9, sum],
     };
-  }, [count]);
+  }, [effectiveUnits, isBundle]);
 
   const isFoundingActive = useMemo(() => {
     return new Date() < new Date("2027-01-01T00:00:00");
@@ -389,70 +519,204 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
 
   return (
     <section
-      id="pricing"
-      className="relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-slate-50 border-t border-slate-200/80 scroll-mt-24"
+      id="section-pricing"
+      className="relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-[#F8F7F5] border-t border-[#E5E3DF] scroll-mt-24"
     >
       {/* Anchor alias */}
-      <span id="section-pricing" className="sr-only" />
-
-      {/* Background gradients */}
+      <span id="pricing" className="sr-only" />
 
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs sm:text-sm font-bold shadow-sm">
-            <Calculator className="w-4 h-4 text-blue-600" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5EEF6] text-[#1B5888] text-xs sm:text-sm font-bold shadow-xs">
+            <Calculator className="w-4 h-4 text-[#1B5888]" />
             <span>{texts.badge}</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
+          <h2 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#1A1A1A] tracking-tight leading-[1.15]">
             {texts.h1}
           </h2>
 
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-[#4A4A4A] leading-relaxed max-w-2xl mx-auto">
             {texts.lead}
           </p>
         </div>
 
         {/* Interactive Calculator Card */}
-        <div id="pricing-calculator" className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-9 shadow-md shadow-slate-200/50 space-y-6 scroll-mt-28">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-            <label htmlFor="property-range-input" className="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <span>{texts.count}</span>
-            </label>
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-3xl sm:text-4xl font-semibold text-blue-600">
-                {count}
+        <div id="pricing-calculator" className="bg-white border border-[#E5E3DF] rounded-3xl p-6 sm:p-9 shadow-md shadow-slate-200/40 space-y-6 scroll-mt-28">
+          {/* Module Selector */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider">
+                {texts.selectModules}
               </span>
-              <span className="text-sm font-semibold text-slate-500">{texts.lg}</span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
+                  isBundle
+                    ? "bg-[#E6F3EA] text-[#2A6E43] border border-[#2A6E43]/30"
+                    : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>{texts.bundleBadge}</span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={togglePortfolio}
+                aria-pressed={hasPortfolio}
+                className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                  hasPortfolio
+                    ? "border-[#1B5888] bg-[#E5EEF6]/45 shadow-xs"
+                    : "border-[#E5E3DF] bg-white hover:border-[#1B5888]/40"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      hasPortfolio ? "bg-[#1B5888] text-white" : "bg-[#F8F7F5] text-[#666666]"
+                    }`}
+                  >
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block text-sm font-bold text-[#1A1A1A]">{texts.modPortfolio}</span>
+                    <span className="block text-xs text-[#666666] mt-0.5">{texts.modPortfolioSub}</span>
+                  </div>
+                </div>
+                <span
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${
+                    hasPortfolio ? "bg-[#1B5888] border-[#1B5888] text-white" : "border-slate-300 bg-white"
+                  }`}
+                >
+                  {hasPortfolio && <Check className="w-3.5 h-3.5" />}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleProperty}
+                aria-pressed={hasProperty}
+                className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                  hasProperty
+                    ? "border-[#2A6E43] bg-[#E6F3EA]/55 shadow-xs"
+                    : "border-[#E5E3DF] bg-white hover:border-[#2A6E43]/40"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      hasProperty ? "bg-[#2A6E43] text-white" : "bg-[#F8F7F5] text-[#666666]"
+                    }`}
+                  >
+                    <Home className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block text-sm font-bold text-[#1A1A1A]">{texts.modProperty}</span>
+                    <span className="block text-xs text-[#666666] mt-0.5">{texts.modPropertySub}</span>
+                  </div>
+                </div>
+                <span
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${
+                    hasProperty ? "bg-[#2A6E43] border-[#2A6E43] text-white" : "border-slate-300 bg-white"
+                  }`}
+                >
+                  {hasProperty && <Check className="w-3.5 h-3.5" />}
+                </span>
+              </button>
+            </div>
+
+            <div
+              className={`rounded-xl px-3.5 py-2.5 text-xs font-medium flex items-center gap-2 ${
+                isBundle
+                  ? "bg-[#E6F3EA] text-[#2A6E43] border border-[#2A6E43]/20"
+                  : "bg-[#F8F7F5] text-[#4A4A4A] border border-[#E5E3DF]"
+              }`}
+            >
+              <Sparkles className={`w-4 h-4 shrink-0 ${isBundle ? "text-[#2A6E43]" : "text-[#1B5888]"}`} />
+              <span>{isBundle ? texts.bundleActiveNote : texts.bundleUpsellNote}</span>
             </div>
           </div>
 
-          {/* Range Slider */}
-          <div className="space-y-3">
-            <input
-              id="property-range-input"
-              type="range"
-              min="1"
-              max="150"
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              aria-label={texts.count}
-              className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 transition"
-            />
+          {/* Sliders based on active modules */}
+          <div className={`grid grid-cols-1 ${isBundle ? "sm:grid-cols-2" : ""} gap-5 pt-2`}>
+            {hasPortfolio && (
+              <div className="rounded-2xl bg-[#F8F7F5] border border-[#E5E3DF] p-4 space-y-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <label htmlFor="listings-range-input" className="text-sm font-bold text-[#1A1A1A]">
+                    {texts.listingsLabel}
+                  </label>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-mono text-2xl sm:text-3xl font-semibold text-[#1B5888]">
+                      {listingCount}
+                    </span>
+                    <span className="text-xs font-semibold text-[#666666]">{texts.listingsUnit}</span>
+                  </div>
+                </div>
+                <input
+                  id="listings-range-input"
+                  type="range"
+                  min="1"
+                  max="150"
+                  value={listingCount}
+                  onChange={(e) => setListingCount(Number(e.target.value))}
+                  aria-label={texts.listingsLabel}
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1B5888] transition"
+                />
+              </div>
+            )}
 
-            {/* Segmented Color Bar */}
+            {hasProperty && (
+              <div className="rounded-2xl bg-[#F8F7F5] border border-[#E5E3DF] p-4 space-y-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <label htmlFor="property-range-input" className="text-sm font-bold text-[#1A1A1A]">
+                    {texts.propertiesLabel}
+                  </label>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-mono text-2xl sm:text-3xl font-semibold text-[#2A6E43]">
+                      {propertyCount}
+                    </span>
+                    <span className="text-xs font-semibold text-[#666666]">{texts.propertiesUnit}</span>
+                  </div>
+                </div>
+                <input
+                  id="property-range-input"
+                  type="range"
+                  min="1"
+                  max="150"
+                  value={propertyCount}
+                  onChange={(e) => setPropertyCount(Number(e.target.value))}
+                  aria-label={texts.propertiesLabel}
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2A6E43] transition"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Combined Volume & Segmented Bracket Bar */}
+          <div className="space-y-2.5">
+            {isBundle && (
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-semibold text-[#4A4A4A]">
+                <span>{texts.totalUnitsLabel}</span>
+                <span className="font-mono font-bold text-[#1A1A1A]">
+                  {listingCount} + {propertyCount} = {effectiveUnits} {texts.totalUnitsUnit}
+                </span>
+              </div>
+            )}
+
             <div
               className="flex h-3.5 rounded-full overflow-hidden bg-slate-200 shadow-inner"
               aria-hidden="true"
             >
               {bracketCounts.map((c, i) => {
-                const widthPercent = (c / count) * 100;
+                const widthPercent = effectiveUnits > 0 ? (c / effectiveUnits) * 100 : 0;
                 const colors = [
                   "bg-[#7fa8dc]",
                   "bg-[#4d83cb]",
-                  "bg-[#1a5eb8]",
-                  "bg-[#0f3d7a]",
+                  "bg-[#1B5888]",
+                  "bg-[#12406A]",
                 ];
                 return (
                   <div
@@ -471,8 +735,8 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                 const dotColors = [
                   "bg-[#7fa8dc]",
                   "bg-[#4d83cb]",
-                  "bg-[#1a5eb8]",
-                  "bg-[#0f3d7a]",
+                  "bg-[#1B5888]",
+                  "bg-[#12406A]",
                 ];
                 return (
                   <span key={i} className="inline-flex items-center gap-1.5">
@@ -488,16 +752,33 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
 
           {/* Totals Summary */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60">
-              <span className="block text-xs sm:text-sm font-bold text-slate-500 mb-1">
-                {texts.std}
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-3xl sm:text-4xl font-semibold text-slate-900">
+            <div className="p-4 rounded-2xl bg-[#F8F7F5] border border-[#E5E3DF] space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-bold text-[#4A4A4A]">
+                  {texts.std}
+                </span>
+                {isBundle && (
+                  <span className="text-[11px] font-bold text-[#2A6E43] bg-[#E6F3EA] px-2 py-0.5 rounded-full">
+                    {texts.bundleBadge}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                {isBundle && (
+                  <span className="font-mono text-lg font-medium text-slate-400 line-through">
+                    €{money(rawTotal)}
+                  </span>
+                )}
+                <span className="font-mono text-3xl sm:text-4xl font-semibold text-[#1A1A1A]">
                   €{money(totalStd)}
                 </span>
-                <span className="text-xs text-slate-500">{texts.pm}</span>
+                <span className="text-xs text-[#666666]">{texts.pm}</span>
               </div>
+              {isBundle && (
+                <p className="text-xs font-semibold text-[#2A6E43]">
+                  {texts.bundleSavings}: −€{money(bundleSavings)}
+                </p>
+              )}
             </div>
 
             {isFoundingActive && (
@@ -511,33 +792,23 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                     window.history.pushState(null, "", "#founding-partners");
                   }
                 }}
-                className="group/fnd p-4 rounded-2xl bg-emerald-50/80 border-2 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-100/40 hover:shadow-lg transition-all cursor-pointer block text-left"
+                className="group/fnd p-4 rounded-2xl bg-[#E6F3EA]/75 border-2 border-[#2A6E43]/30 hover:border-[#2A6E43] hover:bg-[#E6F3EA] hover:shadow-md transition-all cursor-pointer block text-left"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs sm:text-sm font-bold text-emerald-800 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 group-hover/fnd:scale-110 transition-transform" />
+                  <span className="text-xs sm:text-sm font-bold text-[#2A6E43] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#2A6E43] group-hover/fnd:scale-110 transition-transform" />
                     {texts.fnd}
                   </span>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full group-hover/fnd:bg-emerald-600 group-hover/fnd:text-white transition-colors flex items-center gap-1">
-                    <span>
-                      {tKey === "tr"
-                        ? "Detaylar"
-                        : tKey === "sr_lat"
-                        ? "Detalji"
-                        : tKey === "sr_cyr"
-                        ? "Детаљи"
-                        : tKey === "ru"
-                        ? "Подробнее"
-                        : "Details"}
-                    </span>
+                  <span className="text-[11px] font-bold text-[#2A6E43] bg-white/90 px-2 py-0.5 rounded-full group-hover/fnd:bg-[#2A6E43] group-hover/fnd:text-white transition-colors flex items-center gap-1">
+                    <span>{texts.details}</span>
                     <ArrowRight className="w-3 h-3 group-hover/fnd:translate-x-0.5 transition-transform" />
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-mono text-3xl sm:text-4xl font-semibold text-emerald-700">
+                  <span className="font-mono text-3xl sm:text-4xl font-semibold text-[#2A6E43]">
                     €{money(totalFnd)}
                   </span>
-                  <span className="text-xs text-emerald-700 font-semibold">{texts.pm}</span>
+                  <span className="text-xs text-[#2A6E43] font-semibold">{texts.pm}</span>
                 </div>
               </a>
             )}
@@ -545,22 +816,22 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
         </div>
 
         {/* Standard Brackets Table */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
-          <h3 className="text-xl font-bold text-slate-900">{texts.h2std}</h3>
+        <div className="bg-white border border-[#E5E3DF] rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+          <h3 className="font-[family-name:var(--font-outfit)] text-xl font-bold text-[#1A1A1A]">{texts.h2std}</h3>
           
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <div className="overflow-x-auto rounded-2xl border border-[#E5E3DF]">
             <table className="w-full text-sm sm:text-base border-collapse">
               <thead>
-                <tr className="bg-slate-100/80 text-slate-800 font-semibold border-b border-slate-200">
+                <tr className="bg-[#F8F7F5] text-[#1A1A1A] font-semibold border-b border-[#E5E3DF]">
                   <th className="py-3 px-4 text-left font-bold">{texts.th1}</th>
                   <th className="py-3 px-4 text-right font-bold">{texts.th2}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {texts.rows.map((rowName, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={idx} className="hover:bg-[#F8F7F5]/80 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-slate-700">{rowName}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-blue-600">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#1B5888]">
                       €{money(BRACKETS[idx].price)}
                     </td>
                   </tr>
@@ -569,7 +840,10 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
             </table>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-500 italic pt-1">{texts.ex}</p>
+          <div className="space-y-1 pt-1">
+            <p className="text-xs sm:text-sm text-[#666666] italic">{texts.ex}</p>
+            <p className="text-xs sm:text-sm text-[#2A6E43] font-medium">{texts.exBundle}</p>
+          </div>
         </div>
 
         {/* Founding Partners Section */}
@@ -606,17 +880,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                 className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto flex-shrink-0"
               >
                 <Calculator className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
-                <span>
-                  {tKey === "tr"
-                    ? "Fiyat Hesabına Git ↑"
-                    : tKey === "sr_lat"
-                    ? "Idi na kalkulator cena ↑"
-                    : tKey === "sr_cyr"
-                    ? "Иди на калкулатор цена ↑"
-                    : tKey === "ru"
-                    ? "Перейти к калькулятору тарифа ↑"
-                    : "Go to Price Calculator ↑"}
-                </span>
+                <span>{texts.goToCalc}</span>
               </a>
             </div>
 
@@ -736,17 +1000,7 @@ export function AgencyPricingSection({ onOpenSimulation }: AgencyPricingSectionP
                 className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900 underline underline-offset-4 decoration-emerald-300 hover:decoration-emerald-600 transition-colors cursor-pointer"
               >
                 <Calculator className="w-4 h-4 text-emerald-600" />
-                <span>
-                  {tKey === "tr"
-                    ? "Yukarı çıkıp portföyünüze göre fiyatı hesaplayın ↑"
-                    : tKey === "sr_lat"
-                    ? "Izračunajte cenu za Vaš portfelj iznad ↑"
-                    : tKey === "sr_cyr"
-                    ? "Израчунајте цену за Ваш портфељ изнад ↑"
-                    : tKey === "ru"
-                    ? "Рассчитать стоимость для вашего портфеля выше ↑"
-                    : "Calculate pricing for your portfolio above ↑"}
-                </span>
+                <span>{texts.calcAbove}</span>
               </a>
             </div>
           </div>

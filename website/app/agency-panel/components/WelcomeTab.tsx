@@ -323,27 +323,8 @@ export default function WelcomeTab({
         </div>
       </div>
 
-      {/* Section 2: Onboarding Setup Guide (Dynamic Checklist) or 100% Completed Banner */}
-      {allSetupStepsDone ? (
-        <div className="bg-[#E6F3EA] border border-[#2A6E43]/20 rounded-[10px] p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#2A6E43] text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <Check className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-bold text-[#2A6E43]">
-                {t("agency_welcome_step_done_badge")}
-              </p>
-              <p className="text-[11px] sm:text-xs text-[#4A4A4A] mt-0.5 leading-relaxed">
-                {t("agency_welcome_step_done_desc")}
-              </p>
-            </div>
-          </div>
-          <span className="self-start sm:self-auto text-xs font-mono font-bold text-[#2A6E43] px-3 py-1 bg-white rounded-md border border-[#2A6E43]/20 shadow-2xs">
-            100%
-          </span>
-        </div>
-      ) : (
+      {/* Section 2: Onboarding Setup Guide (Hidden once 100% completed) */}
+      {!allSetupStepsDone && (
         <div className="bg-white rounded-[10px] border border-[#E5E3DF] p-5 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

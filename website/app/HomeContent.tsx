@@ -1,680 +1,825 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "../components/LanguageProvider";
-import { InteractiveFlow } from "../components/InteractiveFlow";
 import {
-  Shield,
-  Cloud,
-  Heart,
-  ClipboardList,
-  FileText,
-  Bell,
-  Wrench,
-  Globe,
-  Sparkles,
   ArrowRight,
-  CheckCircle2,
-  Check,
   Building2,
-  Calendar,
-  AlertCircle,
+  Check,
+  CheckCircle2,
+  CheckSquare,
+  ChevronDown,
+  FileText,
+  Globe,
   Home,
-  Key,
-  MessageSquare,
-  Search
+  Inbox,
+  MessageCircle,
+  Play,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Users,
+  Wallet,
+  Wrench,
+  X,
 } from "lucide-react";
+
+type ModuleKey = "portfolio" | "crm" | "properties" | "finance" | "tasks";
 
 export function HomeContent() {
   const { t } = useLanguage();
-  const [deviceOS, setDeviceOS] = useState<string | null>(null);
+  const [activeModule, setActiveModule] = useState<ModuleKey>("portfolio");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const heroDemoBtnRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
-    const userAgent = window.navigator.userAgent || window.navigator.vendor;
-    const isIOS =
-      /iPad|iPhone|iPod/.test(userAgent) ||
-      (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
-    const isAndroid = /android/i.test(userAgent);
-
-    if (isIOS) {
-      setDeviceOS("ios");
-    } else if (isAndroid) {
-      setDeviceOS("android");
-    } else {
-      setDeviceOS("desktop");
-    }
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      const btn = heroDemoBtnRef.current;
+      if (!btn) return;
+      const vw = Math.max(1, window.innerWidth);
+      const vh = Math.max(1, window.innerHeight);
+      const pctX = Math.max(0, Math.min(100, (e.clientX / vw) * 100));
+      const pctY = Math.max(0, Math.min(100, (e.clientY / vh) * 100));
+      btn.style.setProperty("--demo-mx", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-my", `${pctY.toFixed(1)}%`);
+      btn.style.setProperty("--demo-mx-pct", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-glow", "1");
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (heroDemoBtnRef.current) {
+          heroDemoBtnRef.current.style.setProperty("--demo-glow", "0.25");
+        }
+      }, 450);
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (idleTimer) clearTimeout(idleTimer);
+    };
   }, []);
 
-  return (
-    <div className="min-h-screen flex flex-col font-sans bg-transparent text-slate-900 overflow-x-hidden">
+  const modules: {
+    id: ModuleKey;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    desc: string;
+    bullets: string[];
+  }[] = [
+    {
+      id: "portfolio",
+      label: t("lp_mod_tab_portfolio"),
+      icon: Globe,
+      title: t("lp_mod_portfolio_title"),
+      desc: t("lp_mod_portfolio_desc"),
+      bullets: [
+        t("lp_mod_portfolio_b1"),
+        t("lp_mod_portfolio_b2"),
+        t("lp_mod_portfolio_b3"),
+      ],
+    },
+    {
+      id: "crm",
+      label: t("lp_mod_tab_crm"),
+      icon: Inbox,
+      title: t("lp_mod_crm_title"),
+      desc: t("lp_mod_crm_desc"),
+      bullets: [t("lp_mod_crm_b1"), t("lp_mod_crm_b2"), t("lp_mod_crm_b3")],
+    },
+    {
+      id: "properties",
+      label: t("lp_mod_tab_properties"),
+      icon: Home,
+      title: t("lp_mod_properties_title"),
+      desc: t("lp_mod_properties_desc"),
+      bullets: [
+        t("lp_mod_properties_b1"),
+        t("lp_mod_properties_b2"),
+        t("lp_mod_properties_b3"),
+      ],
+    },
+    {
+      id: "finance",
+      label: t("lp_mod_tab_finance"),
+      icon: Wallet,
+      title: t("lp_mod_finance_title"),
+      desc: t("lp_mod_finance_desc"),
+      bullets: [
+        t("lp_mod_finance_b1"),
+        t("lp_mod_finance_b2"),
+        t("lp_mod_finance_b3"),
+      ],
+    },
+    {
+      id: "tasks",
+      label: t("lp_mod_tab_tasks"),
+      icon: CheckSquare,
+      title: t("lp_mod_tasks_title"),
+      desc: t("lp_mod_tasks_desc"),
+      bullets: [
+        t("lp_mod_tasks_b1"),
+        t("lp_mod_tasks_b2"),
+        t("lp_mod_tasks_b3"),
+      ],
+    },
+  ];
 
-      {/* ========================================================================= */}
-      {/* SECTION 1: HERO SECTION (Left-Aligned 2-Column + Realistic Mockup)        */}
-      {/* ========================================================================= */}
-      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-          {/* Left Side: Headline & CTAs */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <h1
-              className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]"
-              dangerouslySetInnerHTML={{ __html: t("hero_title") }}
-            />
+  const currentModule = modules.find((m) => m.id === activeModule) || modules[0];
 
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
-              {t("hero_desc")}
-            </p>
+  const faqs = [
+    { q: t("lp_faq_q1"), a: t("lp_faq_a1") },
+    { q: t("lp_faq_q2"), a: t("lp_faq_a2") },
+    { q: t("lp_faq_q3"), a: t("lp_faq_a3") },
+    { q: t("lp_faq_q4"), a: t("lp_faq_a4") },
+    { q: t("lp_faq_q5"), a: t("lp_faq_a5") },
+  ];
 
-            {/* Store & Web Buttons */}
-            <div className="pt-2 space-y-3">
-              {deviceOS === null || deviceOS === "desktop" ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <a
-                    href="https://apps.apple.com/us/app/stanomer/id6762311157"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg"
-                      alt="Download on the App Store"
-                      className="h-10 w-[135px] block"
-                    />
-                  </a>
-                  <a
-                    href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                      alt="Get it on Google Play"
-                      className="h-10 w-[135px] block"
-                    />
-                  </a>
-                  <a
-                    href="/app"
-                    className="h-10 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white active:scale-[0.98] font-semibold text-xs tracking-wide px-5 rounded-xl border border-slate-900 shadow-md transition-all"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
-                    <span>{t("btn_web_app")}</span>
-                  </a>
-                </div>
-              ) : deviceOS === "ios" ? (
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href="https://apps.apple.com/us/app/stanomer/id6762311157"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg"
-                      alt="Download on the App Store"
-                      className="h-10 w-[135px] block"
-                    />
-                  </a>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                      alt="Get it on Google Play"
-                      className="h-10 w-[135px] block"
-                    />
-                  </a>
-                </div>
-              )}
-
-              <p className="text-xs text-slate-500 font-medium">
-                {t("hero_note")}
-              </p>
+  const renderModulePreview = (modId: ModuleKey) => {
+    if (modId === "portfolio") {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#E5E3DF]">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#1B5888]" />
+              <span className="text-xs font-bold text-[#1A1A1A]">{t("lp_mod_tab_portfolio")}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+                4zida.rs XML ✓
+              </span>
+              <span className="px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+                Halo Oglasi ✓
+              </span>
             </div>
           </div>
-
-          {/* Right Side: Clean Card Container with Realistic Property Mockup */}
-          <div className="lg:col-span-5 relative flex justify-center items-center">
-            {/* Background Glow */}
-
-            {/* Product Card Container */}
-            <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl p-5 border border-slate-200/90 shadow-md space-y-4 transform hover:scale-[1.01] transition duration-300">
-              
-              {/* Card Header: Property Identity */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
-                    <Building2 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">{t("hero_mockup_title")}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{t("hero_mockup_subtitle")}</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-200/80 inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {t("hero_mockup_contract_badge")}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#1A1A1A]">BW Terraces 207</span>
+                <span className="font-mono text-xs font-bold text-[#1B5888]">€1,450/mo</span>
+              </div>
+              <p className="text-[11px] text-[#666666]">Beograd · 2.5 · 74 m² · 8F</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2 py-0.5 rounded-[5px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+                  {t("agency_panel_demo_pill_published")}
+                </span>
+                <span className="px-2 py-0.5 rounded-[5px] bg-[#E5EEF6] text-[#1B5888] text-[10px] font-bold">
+                  2 {t("agency_tasks_page_title")}
                 </span>
               </div>
-
-              {/* Property Stats & Status */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-[10px] text-slate-500 font-semibold">{t("hero_mockup_monthly_rent")}</p>
-                  <p className="text-base font-semibold text-slate-900">€650 <span className="text-[10px] text-emerald-600 font-bold ml-1">{t("hero_mockup_paid")}</span></p>
-                </div>
-                <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100">
-                  <p className="text-[10px] text-blue-600 font-semibold">{t("hero_mockup_duration_label")}</p>
-                  <p className="text-base font-semibold text-blue-700">{t("hero_mockup_days_left")}</p>
-                </div>
+            </div>
+            <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#1A1A1A]">Njegoševa 24</span>
+                <span className="font-mono text-xs font-bold text-[#1B5888]">€650/mo</span>
               </div>
-
-              {/* Live Rent Notification Box */}
-              <div className="bg-slate-900 text-white rounded-xl p-3.5 shadow-lg space-y-2 border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-200">{t("hero_mockup_payment_title")}</span>
-                  </div>
-                  <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">
-                    {t("hero_mockup_confirmed")}
-                  </span>
-                </div>
-                <div className="bg-slate-800/90 p-2.5 rounded-lg text-xs space-y-1">
-                  <div className="flex justify-between text-[10px] text-slate-300">
-                    <span>{t("hero_mockup_receipt_no")}</span>
-                    <span>{t("hero_mockup_date")}</span>
-                  </div>
-                  <p className="text-[11px] font-semibold text-emerald-300">{t("hero_mockup_transfer_confirmed")}</p>
-                </div>
-              </div>
-
-              {/* Maintenance Ticket Status */}
-              <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-md bg-amber-200 text-amber-800 flex items-center justify-center text-xs font-bold">
-                    <Wrench className="w-3.5 h-3.5 text-amber-800" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-amber-950">{t("hero_mockup_maint_title")}</p>
-                    <p className="text-[10px] text-amber-700">{t("hero_mockup_maint_desc")}</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                  {t("hero_mockup_completed")}
+              <p className="text-[11px] text-[#666666]">Novi Sad · 2.0 · 54 m² · 3F</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2 py-0.5 rounded-[5px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+                  {t("agency_panel_demo_pill_published")}
+                </span>
+                <span className="px-2 py-0.5 rounded-[5px] bg-white border border-[#E5E3DF] text-[#4A4A4A] text-[10px] font-mono">
+                  /agencija/demo
                 </span>
               </div>
-
             </div>
           </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 2: SORUN ANLATIMI ("Tanıdık Geliyor Mu?" - 3 Bullets Format)       */}
-      {/* ========================================================================= */}
-      <section className="py-12 md:py-16 bg-white/70 backdrop-blur-md border-y border-slate-200/80 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-8">
-          
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("pain_strip_title")}
-            </h2>
-            <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full" />
-          </div>
-
-          {/* 3 Pain Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-lg">
-                <FileText className="w-5 h-5 text-red-600" />
-              </div>
-              <p className="text-sm font-semibold text-slate-800 leading-relaxed">
-                {t("pain_strip_1")}
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg">
-                <MessageSquare className="w-5 h-5 text-amber-600" />
-              </div>
-              <p className="text-sm font-semibold text-slate-800 leading-relaxed">
-                {t("pain_strip_2")}
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                <Search className="w-5 h-5 text-blue-600" />
-              </div>
-              <p className="text-sm font-semibold text-slate-800 leading-relaxed">
-                {t("pain_strip_3")}
-              </p>
-            </div>
-
-          </div>
-
-          {/* Summary Banner */}
-          <div className="bg-blue-50/90 border border-blue-200/80 rounded-2xl p-4 text-center">
-            <p className="text-sm sm:text-base font-bold text-blue-900 flex items-center justify-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span>{t("pain_strip_summary")}</span>
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 3: EV SAHİBİ / KİRACI SEGMENT KARTLARI + ACENTE TEASER           */}
-      {/* ========================================================================= */}
-      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        <div className="text-center mb-8">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">
-            {t("roles_label")}
+          <div className="rounded-[8px] bg-[#0E3152] text-[#C8DDF0] font-mono text-[11px] p-3 overflow-x-auto">
+            <code>
+              &lt;listing id=&quot;ST-207&quot; portal=&quot;4zida,halo&quot; status=&quot;validated&quot;&gt;€1,450&lt;/listing&gt;
+            </code>
           </div>
         </div>
+      );
+    }
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Landlord Card */}
-          <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-7 shadow-sm hover:shadow-md transition space-y-5">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl">
-                <Home className="w-5 h-5 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{t("roles_landlord")}</h3>
+    if (modId === "crm") {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#E5E3DF]">
+            <div className="flex items-center gap-2">
+              <Inbox className="w-4 h-4 text-[#1B5888]" />
+              <span className="text-xs font-bold text-[#1A1A1A]">{t("lp_mod_tab_crm")}</span>
             </div>
-            
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                  <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
-                  <span className="font-medium">{t(`roles_landlord_${i}`)}</span>
-                </div>
-              ))}
-            </div>
+            <span className="px-2 py-0.5 rounded-[6px] bg-[#FBF1DC] text-[#8A5206] text-[10px] font-bold">
+              3 Active Leads
+            </span>
           </div>
-
-          {/* Tenant Card */}
-          <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-7 shadow-sm hover:shadow-md transition space-y-5">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl">
-                <Key className="w-5 h-5 text-emerald-600" />
+          {[
+            { name: "Marko Petrović", prop: "BW Terraces 207", badge: "Viewing", tasks: 2, cls: "bg-[#E5EEF6] text-[#1B5888]" },
+            { name: "Ana Nikolić", prop: "Vračar 3.0 · 82 m²", badge: "Owner", tasks: 1, cls: "bg-[#FBF1DC] text-[#8A5206]" },
+            { name: "Dmitry Volkov", prop: "Njegoševa 24", badge: "Viewing", tasks: 1, cls: "bg-[#E6F3EA] text-[#2A6E43]" },
+          ].map((lead) => (
+            <div
+              key={lead.name}
+              className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-3 flex items-center justify-between gap-2"
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-[#1A1A1A] truncate">{lead.name}</p>
+                <p className="text-[11px] text-[#666666] truncate">{lead.prop}</p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">{t("roles_tenant")}</h3>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`px-2 py-0.5 rounded-[5px] text-[10px] font-bold ${lead.cls}`}>
+                  {lead.badge}
+                </span>
+                <span className="px-2 py-0.5 rounded-[5px] bg-white border border-[#E5E3DF] text-[#1B5888] text-[10px] font-bold inline-flex items-center gap-1">
+                  <CheckSquare className="w-3 h-3" />
+                  {lead.tasks}
+                </span>
+              </div>
             </div>
-
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                  <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
-                  <span className="font-medium">{t(`roles_tenant_${i}`)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+          ))}
         </div>
+      );
+    }
 
-        {/* Light Agency Teaser Bar (Link to /agencies) */}
-        <div className="mt-8 bg-blue-50/90 backdrop-blur-md border border-blue-200/80 rounded-2xl p-5 text-center text-sm text-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="font-medium text-slate-700">
-            {t("agency_teaser_text")}
+    if (modId === "properties") {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#E5E3DF]">
+            <div className="flex items-center gap-2">
+              <Home className="w-4 h-4 text-[#1B5888]" />
+              <span className="text-xs font-bold text-[#1A1A1A]">{t("lp_mod_tab_properties")}</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+              94% Occupied
+            </span>
+          </div>
+          <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-[#1A1A1A]">BW Terraces 207</p>
+                <p className="text-[11px] text-[#666666]">Hercegovačka 16, Beograd</p>
+              </div>
+              <span className="px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[10px] font-bold">
+                {t("agency_panel_demo_pill_lease")}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E3DF] text-[11px]">
+              <div>
+                <span className="text-[#666666] block">Rent</span>
+                <span className="font-mono font-bold text-[#1A1A1A]">€1,450</span>
+              </div>
+              <div>
+                <span className="text-[#666666] block">Deposit</span>
+                <span className="font-mono font-bold text-[#1A1A1A]">€1,450</span>
+              </div>
+              <div>
+                <span className="text-[#666666] block">Portal</span>
+                <span className="font-bold text-[#2A6E43]">Connected ✓</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-[#1B5888] font-semibold bg-[#E5EEF6] rounded-[8px] px-3 py-2">
+            <FileText className="w-3.5 h-3.5 shrink-0" />
+            <span>{t("lp_mod_properties_b2")}</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (modId === "finance") {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#E5E3DF]">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-[#1B5888]" />
+              <span className="text-xs font-bold text-[#1A1A1A]">{t("lp_mod_tab_finance")}</span>
+            </div>
+            <span className="font-mono text-[11px] font-bold text-[#2A6E43]">EUR · RSD</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="rounded-[10px] border border-[#E5E3DF] bg-[#E6F3EA]/60 p-3">
+              <span className="text-[10px] font-semibold text-[#2A6E43] block">Collected (EUR)</span>
+              <span className="font-mono text-lg font-bold text-[#2A6E43]">€18,450</span>
+            </div>
+            <div className="rounded-[10px] border border-[#E5E3DF] bg-[#E5EEF6]/70 p-3">
+              <span className="text-[10px] font-semibold text-[#1B5888] block">Utilities (RSD)</span>
+              <span className="font-mono text-lg font-bold text-[#1B5888]">142,800 RSD</span>
+            </div>
+          </div>
+          <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] divide-y divide-[#E5E3DF] text-xs">
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="font-semibold text-[#1A1A1A]">BW Terraces 207 · Rent</span>
+              <span className="font-mono font-bold text-[#2A6E43]">+€1,450</span>
+            </div>
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="font-semibold text-[#1A1A1A]">Infostan & Struja</span>
+              <span className="font-mono font-bold text-[#1B5888]">14,200 RSD</span>
+            </div>
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="font-semibold text-[#1A1A1A]">Maintenance Offset</span>
+              <span className="font-mono font-bold text-[#8A5206]">-€85</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#E5E3DF]">
+          <div className="flex items-center gap-2">
+            <CheckSquare className="w-4 h-4 text-[#1B5888]" />
+            <span className="text-xs font-bold text-[#1A1A1A]">{t("lp_mod_tab_tasks")}</span>
+          </div>
+          <span className="px-2 py-0.5 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-[10px] font-bold">
+            Kanban · List
           </span>
-          <Link
-            href="/agencies"
-            className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-sm whitespace-nowrap flex-shrink-0"
-          >
-            {t("agency_teaser_link")}
-          </Link>
         </div>
-
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 4: NASIL ÇALIŞIR — BİREYSEL İNTERAKTİF AKIŞ                         */}
-      {/* ========================================================================= */}
-      <section className="py-8">
-        <InteractiveFlow />
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 5: NELER YAPABİLİRSİNİZ (3-Column Feature Cards Grid)              */}
-      {/* ========================================================================= */}
-      <section className="py-16 md:py-24 bg-white border-y border-slate-200/80 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-16">
-          
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">
-              {t("features_label")}
+        <div className="grid grid-cols-3 gap-2 text-[11px]">
+          <div className="rounded-[8px] bg-[#F8F7F5] border border-[#E5E3DF] p-2 space-y-1.5">
+            <div className="font-bold text-[#4A4A4A] flex items-center justify-between">
+              <span>{t("agency_tasks_status_todo")}</span>
+              <span className="font-mono text-[10px]">2</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("features_title")}
-            </h2>
-            <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
+            <div className="rounded-[6px] bg-white border border-[#E5E3DF] p-2 space-y-1">
+              <p className="font-bold text-[#1A1A1A] leading-tight">Key handover</p>
+              <span className="inline-block px-1.5 py-0.5 rounded bg-[#E5EEF6] text-[#1B5888] text-[9px] font-bold">
+                Property
+              </span>
+            </div>
           </div>
-
-          {/* 3-Column Feature Grid (Matching Agencies Style) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Feature 1 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ClipboardList className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_1_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_1_desc")}
-              </p>
+          <div className="rounded-[8px] bg-[#E5EEF6]/40 border border-[#1B5888]/20 p-2 space-y-1.5">
+            <div className="font-bold text-[#1B5888] flex items-center justify-between">
+              <span>{t("agency_tasks_status_in_progress")}</span>
+              <span className="font-mono text-[10px]">1</span>
             </div>
-
-            {/* Feature 2 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <FileText className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_2_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_2_desc")}
-              </p>
+            <div className="rounded-[6px] bg-white border border-[#E5E3DF] p-2 space-y-1">
+              <p className="font-bold text-[#1A1A1A] leading-tight">AC service</p>
+              <span className="inline-block px-1.5 py-0.5 rounded bg-[#FBEAE6] text-[#A33C29] text-[9px] font-bold">
+                Maintenance
+              </span>
             </div>
-
-            {/* Feature 3 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Bell className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_3_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_3_desc")}
-              </p>
+          </div>
+          <div className="rounded-[8px] bg-[#E6F3EA]/50 border border-[#2A6E43]/20 p-2 space-y-1.5">
+            <div className="font-bold text-[#2A6E43] flex items-center justify-between">
+              <span>{t("agency_tasks_status_done")}</span>
+              <span className="font-mono text-[10px]">4</span>
             </div>
-
-            {/* Feature 4 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Wrench className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_4_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_4_desc")}
-              </p>
+            <div className="rounded-[6px] bg-white border border-[#E5E3DF] p-2 space-y-1">
+              <p className="font-bold text-[#8A8A8A] line-through leading-tight">XML audit</p>
+              <span className="inline-block px-1.5 py-0.5 rounded bg-[#E6F3EA] text-[#2A6E43] text-[9px] font-bold">
+                Listing
+              </span>
             </div>
-
-            {/* Feature 5 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Globe className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_5_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_5_desc")}
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Shield className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                {t("feature_6_title")}
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {t("feature_6_desc")}
-              </p>
-            </div>
-
           </div>
         </div>
-      </section>
+      </div>
+    );
+  };
 
+  return (
+    <div className="min-h-screen flex flex-col font-sans bg-[#F8F7F5] text-[#1A1A1A] overflow-x-hidden">
       {/* ========================================================================= */}
-      {/* SECTION 6: GÜVENLİK VE KOLAYLIK (3-Column Trust Cards Grid)              */}
+      {/* SECTION 1: HERO — END-TO-END AGENCY OPERATING SYSTEM                      */}
       {/* ========================================================================= */}
-      <section className="py-16 md:py-24 bg-slate-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-12">
-          
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-              {t("trust_label")}
+      <section className="relative pt-10 pb-14 lg:pt-16 lg:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+          {/* Left Copy & CTAs */}
+          <div className="lg:col-span-6 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-[#E5EEF6] border border-[#1B5888]/20 text-[#12406A] text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-[#1B5888]" />
+              <span>{t("lp_hero_badge")}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("trust_title")}
-            </h2>
-            <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
+
+            <h1 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-[46px] font-bold text-[#1A1A1A] tracking-tight leading-[1.08]">
+              {t("lp_hero_title")}
+            </h1>
+
+            <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed max-w-xl">
+              {t("lp_hero_desc")}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Link
+                ref={heroDemoBtnRef}
+                href="/agency-panel"
+                className="st-demo-glow-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] border-[1.5px] border-[#1B5888] text-[#12406A] font-bold text-sm cursor-pointer"
+              >
+                <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+                <span>{t("lp_hero_cta_demo")}</span>
+                <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+              </Link>
+
+              <Link
+                href="/agency-panel"
+                className="st-btn-primary px-6 py-3.5 text-sm gap-2"
+              >
+                <span>{t("lp_hero_cta_login")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <p className="text-xs text-[#666666] font-semibold flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0" />
+              <span>{t("lp_hero_note")}</span>
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition text-center space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
-                <Shield className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{t("trust_1_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("trust_1_desc")}</p>
-            </div>
+          {/* Right Branded Animated Agency Suite Hero Canvas */}
+          <div className="lg:col-span-6">
+            <div className="relative overflow-hidden rounded-[16px] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-6 sm:p-8 border border-[#3B82B8]/40 shadow-[0_18px_48px_rgba(18,64,106,0.22)]">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-55"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(rgba(229, 238, 246, 0.16) 1px, transparent 1px)",
+                  backgroundSize: "24px 24px",
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-24 top-10 w-80 h-80 rounded-full bg-[#2A6E43]/30 blur-3xl"
+              />
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition text-center space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
-                <Cloud className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{t("trust_2_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("trust_2_desc")}</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition text-center space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <Heart className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{t("trust_3_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("trust_3_desc")}</p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 7: FİYATLANDIRMA / PRICING (2-Column Table)                        */}
-      {/* ========================================================================= */}
-      <section className="py-16 md:py-24 bg-white border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-12">
-          
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">
-              {t("pricing_label")}
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("pricing_title")}
-            </h2>
-            <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            
-            {/* Free Plan Card */}
-            <div className="bg-slate-50/90 border border-slate-200 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition space-y-6 relative overflow-hidden">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full uppercase tracking-wider">
-                    {t("pricing_free_badge")}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900">{t("pricing_free_title")}</h3>
-                  <p className="text-sm text-slate-600 mt-1">{t("pricing_free_desc")}</p>
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold text-slate-900">{t("pricing_free_price")}</span>
-                  <span className="text-slate-500 text-sm font-medium">{t("pricing_free_period")}</span>
-                </div>
-
-                <div className="pt-4 border-t border-slate-200/80 space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm text-slate-700">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      </div>
-                      <span>{t(`pricing_free_feat_${i}`)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6">
-                <a
-                  href="/app"
-                  className="w-full inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-md transition"
-                >
-                  <span>{t("pricing_free_btn")}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Pro / Agency Plan Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between text-white shadow-md space-y-6 relative overflow-hidden">
-              {/* Background Glow */}
-
-              <div className="space-y-5 relative z-10">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 px-3 py-1 rounded-full uppercase tracking-wider">
-                    {t("pricing_pro_badge")}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-bold text-white">{t("pricing_pro_title")}</h3>
-                  <p className="text-sm text-slate-300 mt-1">{t("pricing_pro_desc")}</p>
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold text-white">{t("pricing_pro_price")}</span>
-                  <span className="text-slate-400 text-sm font-medium">{t("pricing_pro_period")}</span>
-                </div>
-
-                <div className="pt-4 border-t border-slate-800 space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm text-slate-200">
-                      <div className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      </div>
-                      <span>{t(`pricing_pro_feat_${i}`)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6 relative z-10">
-                <Link
-                  href="/agencies"
-                  className="w-full inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl text-slate-900 bg-white hover:bg-slate-100 font-bold text-sm shadow-md transition"
-                >
-                  <span>{t("pricing_pro_btn")}</span>
-                </Link>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 8: KAPANIŞ CTA BANDI (Agencies Dark Navy Banner Style)           */}
-      {/* ========================================================================= */}
-      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-12">
-        <div className="bg-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-md relative overflow-hidden">
-          
-          {/* Background Glow Overlay */}
-
-          <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
-              {t("footer_cta_title")}
-            </h2>
-
-            <p
-              className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto"
-              dangerouslySetInnerHTML={{ __html: t("footer_cta_desc") }}
-            />
-
-            {/* CTAs */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              {deviceOS === null || deviceOS === "desktop" ? (
-                <>
-                  <a
-                    href="https://apps.apple.com/us/app/stanomer/id6762311157"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
+              {/* Animated Lifecycle Diagram */}
+              <div className="relative z-10 w-full max-w-[440px] mx-auto">
+                <div className="relative h-[238px]">
+                  <svg
+                    viewBox="0 0 440 238"
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    aria-hidden="true"
                   >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg"
-                      alt="Download on the App Store"
-                      className="h-11 w-[145px] block invert"
+                    <path
+                      className="st-flow"
+                      d="M312 80 C346 80 342 36 360 32"
+                      fill="none"
+                      stroke="#6EE7B7"
+                      strokeWidth="2"
                     />
-                  </a>
-                  <a
-                    href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex transition-opacity hover:opacity-85"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                      alt="Get it on Google Play"
-                      className="h-11 w-[145px] block"
+                    <path
+                      className="st-flow"
+                      d="M312 138 C346 138 342 182 360 186"
+                      fill="none"
+                      stroke="#6EE7B7"
+                      strokeWidth="2"
                     />
-                  </a>
-                  <a
-                    href="/app"
-                    className="h-11 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-6 rounded-xl shadow-lg transition"
-                  >
-                    <span>{t("btn_web_app")}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </a>
-                </>
-              ) : deviceOS === "ios" ? (
+                    <path
+                      className="st-flow"
+                      d="M128 78 C98 72 90 40 74 32"
+                      fill="none"
+                      stroke="#93C5FD"
+                      strokeWidth="1.7"
+                    />
+                    <path
+                      className="st-flow"
+                      d="M128 144 C98 152 90 184 72 194"
+                      fill="none"
+                      stroke="#93C5FD"
+                      strokeWidth="1.7"
+                    />
+                  </svg>
+
+                  {/* Center Property Card */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[16px] w-[188px] bg-white rounded-[10px] border border-[#E5E3DF] text-[#1A1A1A] shadow-[0_16px_36px_rgba(8,24,44,0.36)] overflow-hidden">
+                    <svg
+                      viewBox="0 0 224 68"
+                      className="w-full h-[68px] block"
+                      role="img"
+                      aria-label="Stanomer property card"
+                    >
+                      <rect width="224" height="68" fill="#E5EEF6" />
+                      <circle cx="184" cy="18" r="9" fill="#A33C29" opacity="0.88" />
+                      <rect x="28" y="24" width="54" height="44" rx="2" fill="#1B5888" />
+                      <rect x="84" y="12" width="52" height="56" rx="2" fill="#12406A" />
+                      <rect x="138" y="32" width="54" height="36" rx="2" fill="#2A6E43" />
+                      <g fill="#E5EEF6" opacity="0.92">
+                        <rect x="38" y="33" width="9" height="8" rx="1.5" />
+                        <rect x="58" y="33" width="9" height="8" rx="1.5" />
+                        <rect x="38" y="47" width="9" height="8" rx="1.5" />
+                        <rect x="58" y="47" width="9" height="8" rx="1.5" />
+                        <rect x="95" y="22" width="9" height="8" rx="1.5" />
+                        <rect x="114" y="22" width="9" height="8" rx="1.5" />
+                        <rect x="95" y="36" width="9" height="8" rx="1.5" />
+                        <rect x="114" y="36" width="9" height="8" rx="1.5" />
+                        <rect x="149" y="41" width="9" height="8" rx="1.5" />
+                        <rect x="168" y="41" width="9" height="8" rx="1.5" />
+                      </g>
+                    </svg>
+                    <div className="p-2.5">
+                      <div className="font-[family-name:var(--font-outfit)] font-bold text-xs text-[#1A1A1A] leading-tight truncate">
+                        Njegoševa 24, Novi Sad
+                      </div>
+                      <div className="text-[10px] text-[#666666] mt-0.5 mb-1.5">
+                        2.0 · 54 m² · 3F
+                      </div>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="font-mono font-medium text-xs text-[#1B5888]">
+                          €650/mo
+                        </span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-[5px] bg-[#E6F3EA] text-[#2A6E43] text-[9.5px] font-bold">
+                          {t("agency_panel_demo_pill_published")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Portal Pills */}
+                  <div className="absolute right-0 top-[14px] bg-white text-[#1A1A1A] rounded-[8px] px-2.5 py-1.5 shadow-lg border border-[#E5E3DF] flex items-center gap-1.5 text-[10.5px] font-bold">
+                    <span className="w-2 h-2 rounded-full bg-[#2A6E43] shrink-0" />
+                    <span>4zida.rs</span>
+                  </div>
+                  <div className="absolute right-0 top-[168px] bg-white text-[#1A1A1A] rounded-[8px] px-2.5 py-1.5 shadow-lg border border-[#E5E3DF] flex items-center gap-1.5 text-[10.5px] font-bold">
+                    <span className="w-2 h-2 rounded-full bg-[#2A6E43] shrink-0" />
+                    <span>Halo Oglasi</span>
+                  </div>
+
+                  {/* Floating Lifecycle Pills */}
+                  <div className="st-bob-1 absolute left-0 top-[10px] bg-[#0E3152]/92 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[8px] px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-md flex items-center gap-1.5">
+                    <FileText className="w-3 h-3 text-[#E5EEF6] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_lease")}</span>
+                  </div>
+                  <div className="st-bob-2 absolute left-0 top-[172px] bg-[#0E3152]/92 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[8px] px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-md flex items-center gap-1.5">
+                    <Wallet className="w-3 h-3 text-[#6EE7B7] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_rent")}</span>
+                    <span className="font-mono text-[#6EE7B7] font-medium">+€650</span>
+                  </div>
+                  <div className="st-bob-3 absolute left-1/2 -translate-x-1/2 bottom-0 bg-[#0E3152]/92 backdrop-blur-xs border border-[#4D8DC0]/40 rounded-[8px] px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-md flex items-center gap-1.5 whitespace-nowrap">
+                    <CheckSquare className="w-3 h-3 text-[#FBF1DC] shrink-0" />
+                    <span>{t("agency_panel_demo_pill_tasks")}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mini KPI Strip inside Hero Visual */}
+              <div className="relative z-10 mt-5 pt-4 border-t border-white/15 grid grid-cols-3 gap-2.5 text-center">
+                <div className="rounded-[8px] bg-white/10 border border-white/15 py-2 px-2">
+                  <div className="font-mono text-sm sm:text-base font-bold text-white">2x XML</div>
+                  <div className="text-[10px] text-[#C8DDF0]">4zida · Halo</div>
+                </div>
+                <div className="rounded-[8px] bg-white/10 border border-white/15 py-2 px-2">
+                  <div className="font-mono text-sm sm:text-base font-bold text-[#6EE7B7]">EUR · RSD</div>
+                  <div className="text-[10px] text-[#C8DDF0]">{t("lp_mod_tab_finance")}</div>
+                </div>
+                <div className="rounded-[8px] bg-white/10 border border-white/15 py-2 px-2">
+                  <div className="font-mono text-sm sm:text-base font-bold text-white">Kanban</div>
+                  <div className="text-[10px] text-[#C8DDF0]">{t("lp_mod_tab_tasks")}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Capabilities Strip */}
+        <div className="mt-10 pt-6 border-t border-[#E5E3DF] flex flex-wrap items-center justify-between gap-3">
+          {[
+            { icon: Globe, text: t("lp_trust_xml") },
+            { icon: Wallet, text: t("lp_trust_currency") },
+            { icon: Smartphone, text: t("lp_trust_mobile") },
+            { icon: Users, text: t("lp_trust_roles") },
+            { icon: ShieldCheck, text: t("lp_trust_langs") },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.text}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white border border-[#E5E3DF] text-xs font-semibold text-[#4A4A4A]"
+              >
+                <Icon className="w-3.5 h-3.5 text-[#1B5888] shrink-0" />
+                <span>{item.text}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 2: PROBLEM VS SOLUTION COMPARISON                                 */}
+      {/* ========================================================================= */}
+      <section className="py-14 lg:py-18 px-4 sm:px-6 lg:px-8 bg-white border-y border-[#E5E3DF]">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="max-w-2xl space-y-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              {t("lp_compare_badge")}
+            </span>
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("lp_compare_title")}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Before */}
+            <div className="rounded-[12px] border border-[#E5E3DF] bg-[#F8F7F5] p-6 space-y-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#A33C29]">
+                <span className="w-6 h-6 rounded-full bg-[#FBEAE6] flex items-center justify-center">
+                  <X className="w-3.5 h-3.5 text-[#A33C29]" />
+                </span>
+                <span>{t("lp_compare_before_title")}</span>
+              </div>
+              <ul className="space-y-3 text-sm text-[#4A4A4A]">
+                {[
+                  t("lp_compare_before_1"),
+                  t("lp_compare_before_2"),
+                  t("lp_compare_before_3"),
+                  t("lp_compare_before_4"),
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <X className="w-4 h-4 text-[#A33C29] shrink-0 mt-0.5" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* After */}
+            <div className="rounded-[12px] border border-[#1B5888]/30 bg-gradient-to-br from-[#FFFFFF] to-[#E5EEF6]/45 p-6 space-y-4 shadow-[0_2px_12px_rgba(27,88,136,0.08)]">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#2A6E43]">
+                <span className="w-6 h-6 rounded-full bg-[#E6F3EA] flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5 text-[#2A6E43]" />
+                </span>
+                <span>{t("lp_compare_after_title")}</span>
+              </div>
+              <ul className="space-y-3 text-sm text-[#1A1A1A] font-medium">
+                {[
+                  t("lp_compare_after_1"),
+                  t("lp_compare_after_2"),
+                  t("lp_compare_after_3"),
+                  t("lp_compare_after_4"),
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#2A6E43] shrink-0 mt-0.5" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 3: INTERACTIVE 5-MODULE SUITE SHOWCASE                            */}
+      {/* ========================================================================= */}
+      <section className="py-14 lg:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
+        <div className="max-w-3xl space-y-2">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+            {t("lp_modules_badge")}
+          </span>
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+            {t("lp_modules_title")}
+          </h2>
+          <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+            {t("lp_modules_subtitle")}
+          </p>
+        </div>
+
+        {/* Module Selector Pills */}
+        <div className="flex flex-wrap gap-2">
+          {modules.map((mod) => {
+            const Icon = mod.icon;
+            const isActive = mod.id === activeModule;
+            return (
+              <button
+                key={mod.id}
+                type="button"
+                onClick={() => setActiveModule(mod.id)}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                  isActive
+                    ? "bg-[#1B5888] text-white border-[#1B5888] shadow-xs"
+                    : "bg-white text-[#4A4A4A] border-[#E5E3DF] hover:border-[#1B5888]/40 hover:text-[#1A1A1A]"
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{mod.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Module Detail + Live UI Preview */}
+        <div className="st-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-6 space-y-4">
+            <h3 className="font-[family-name:var(--font-outfit)] text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-snug">
+              {currentModule.title}
+            </h3>
+            <p className="text-sm text-[#4A4A4A] leading-relaxed">
+              {currentModule.desc}
+            </p>
+            <ul className="space-y-2.5 pt-1">
+              {currentModule.bullets.map((b) => (
+                <li key={b} className="flex items-start gap-2.5 text-sm text-[#1A1A1A] font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-[#2A6E43] shrink-0 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="pt-2">
+              <Link
+                href="/agency-panel"
+                className="inline-flex items-center gap-2 text-sm font-bold text-[#1B5888] hover:text-[#12406A]"
+              >
+                <span>{t("lp_hero_cta_demo")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="rounded-[12px] border border-[#E5E3DF] bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(18,64,106,0.07)]">
+              {renderModulePreview(activeModule)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 4: 4-STAGE END-TO-END LIFECYCLE                                   */}
+      {/* ========================================================================= */}
+      <section className="py-14 lg:py-18 px-4 sm:px-6 lg:px-8 bg-white border-y border-[#E5E3DF]">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="max-w-2xl space-y-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              {t("lp_flow_badge")}
+            </span>
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("lp_flow_title")}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { num: "01", icon: Globe, title: t("lp_flow_s1_title"), desc: t("lp_flow_s1_desc") },
+              { num: "02", icon: FileText, title: t("lp_flow_s2_title"), desc: t("lp_flow_s2_desc") },
+              { num: "03", icon: Wallet, title: t("lp_flow_s3_title"), desc: t("lp_flow_s3_desc") },
+              { num: "04", icon: Wrench, title: t("lp_flow_s4_title"), desc: t("lp_flow_s4_desc") },
+            ].map((step) => {
+              const Icon = step.icon;
+              return (
+                <div
+                  key={step.num}
+                  className="rounded-[12px] border border-[#E5E3DF] bg-[#F8F7F5] p-5 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-[6px] bg-[#E5EEF6] text-[#1B5888]">
+                      {step.num}
+                    </span>
+                    <Icon className="w-4 h-4 text-[#1B5888]" />
+                  </div>
+                  <h3 className="font-[family-name:var(--font-outfit)] text-base font-bold text-[#1A1A1A]">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-[#4A4A4A] leading-relaxed">{step.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 5: BUILT FOR SERBIA + CLIENT MOBILE APP ADVANTAGE                 */}
+      {/* ========================================================================= */}
+      <section className="py-14 lg:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Local Market Readiness */}
+          <div className="lg:col-span-7 st-card p-6 sm:p-8 flex flex-col justify-between space-y-5">
+            <div className="space-y-3">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+                {t("lp_region_badge")}
+              </span>
+              <h2 className="font-[family-name:var(--font-outfit)] text-2xl font-bold text-[#1A1A1A] tracking-tight">
+                {t("lp_region_title")}
+              </h2>
+              <p className="text-sm text-[#4A4A4A] leading-relaxed">{t("lp_region_desc")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {[
+                t("lp_region_p1"),
+                t("lp_region_p2"),
+                t("lp_region_p3"),
+                t("lp_region_p4"),
+              ].map((pt) => (
+                <div
+                  key={pt}
+                  className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-3.5 flex items-start gap-2.5 text-xs font-semibold text-[#1A1A1A]"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-[#2A6E43] shrink-0 mt-0.5" />
+                  <span>{pt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile App Client Portal Card */}
+          <div className="lg:col-span-5 rounded-[12px] bg-gradient-to-br from-[#0E3152] to-[#1B5888] text-white p-6 sm:p-8 border border-[#3B82B8]/40 flex flex-col justify-between space-y-6">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-white/15 border border-white/20 text-[#E5EEF6] text-xs font-bold">
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>{t("lp_mobile_badge")}</span>
+              </span>
+              <h2 className="font-[family-name:var(--font-outfit)] text-2xl font-bold text-white tracking-tight">
+                {t("lp_mobile_title")}
+              </h2>
+              <p className="text-sm text-[#D8E7F5] leading-relaxed">{t("lp_mobile_desc")}</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <a
                   href="https://apps.apple.com/us/app/stanomer/id6762311157"
                   target="_blank"
@@ -683,11 +828,10 @@ export function HomeContent() {
                 >
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg"
-                    alt="Download on the App Store"
-                    className="h-11 w-[145px] block invert"
+                    alt="App Store"
+                    className="h-10 w-[132px] block invert"
                   />
                 </a>
-              ) : (
                 <a
                   href="https://play.google.com/store/apps/details?id=com.aboptima.stanomer"
                   target="_blank"
@@ -696,13 +840,95 @@ export function HomeContent() {
                 >
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                    alt="Get it on Google Play"
-                    className="h-11 w-[145px] block"
+                    alt="Google Play"
+                    className="h-10 w-[132px] block"
                   />
                 </a>
-              )}
+              </div>
+              <a
+                href="/app"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E5EEF6] hover:text-white underline underline-offset-4"
+              >
+                <span>{t("lp_mobile_web_btn")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
             </div>
+          </div>
+        </div>
+      </section>
 
+      {/* ========================================================================= */}
+      {/* SECTION 6: FAQ ACCORDION                                                  */}
+      {/* ========================================================================= */}
+      <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white border-t border-[#E5E3DF]">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="space-y-2 text-center">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              {t("lp_faq_badge")}
+            </span>
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("lp_faq_title")}
+            </h2>
+          </div>
+
+          <div className="divide-y divide-[#E5E3DF] border border-[#E5E3DF] rounded-[12px] bg-[#F8F7F5] overflow-hidden">
+            {faqs.map((item, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div key={item.q} className="bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-[#F8F7F5]/60 transition-colors"
+                  >
+                    <span className="text-sm font-bold text-[#1A1A1A]">{item.q}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#666666] shrink-0 transition-transform ${
+                        isOpen ? "rotate-180 text-[#1B5888]" : ""
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-5 pb-4 text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">
+                      {item.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 7: FINAL CONVERSION BANNER                                        */}
+      {/* ========================================================================= */}
+      <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="relative overflow-hidden rounded-[16px] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-8 sm:p-12 text-center space-y-5 shadow-[0_14px_36px_rgba(18,64,106,0.2)]">
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight max-w-2xl mx-auto">
+            {t("lp_cta_title")}
+          </h2>
+          <p className="text-sm sm:text-base text-[#D8E7F5] max-w-xl mx-auto leading-relaxed">
+            {t("lp_cta_desc")}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/agency-panel"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white text-[#0E3152] hover:bg-[#E5EEF6] font-bold text-sm transition-colors shadow-lg"
+            >
+              <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+              <span>{t("lp_hero_cta_demo")}</span>
+              <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+            </Link>
+            <a
+              href="https://wa.me/381616036556"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white/12 hover:bg-white/20 border border-white/25 text-white font-bold text-sm transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{t("lp_cta_whatsapp")}</span>
+            </a>
           </div>
         </div>
       </section>
@@ -710,27 +936,39 @@ export function HomeContent() {
       {/* ========================================================================= */}
       {/* FOOTER                                                                    */}
       {/* ========================================================================= */}
-      <footer className="py-12 border-t border-slate-200/80 bg-white w-full">
+      <footer className="py-10 border-t border-[#E5E3DF] bg-white w-full mt-auto">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center gap-2 opacity-60 mb-6">
+          <div className="flex items-center justify-center gap-2 opacity-75 mb-5">
             <img src="/assets/logo.png" alt="Stanomer Logo" className="w-6 h-6 object-contain" />
-            <span className="font-bold text-sm tracking-tight text-slate-900">Stanomer</span>
-          </div>
-          
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-xs font-medium text-slate-600">
-            <a href="/guide" className="hover:text-blue-600 transition-colors font-bold text-blue-600">{t("footer_guide")}</a>
-            <a href="/privacy" className="hover:text-blue-600 transition-colors">{t("footer_privacy")}</a>
-            <a href="/terms" className="hover:text-blue-600 transition-colors">{t("footer_terms")}</a>
-            <a href="/changelog" className="hover:text-blue-600 transition-colors">{t("footer_changelog")}</a>
-            <a href="/support" className="hover:text-blue-600 transition-colors">{t("footer_support")}</a>
+            <span className="font-[family-name:var(--font-outfit)] font-bold text-sm tracking-tight text-[#1A1A1A]">
+              Stanomer
+            </span>
           </div>
 
-          <p className="text-slate-400 text-xs">
-            © 2026 Stanomer. {t("footer_rights")}
-          </p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-5 text-xs font-medium text-[#4A4A4A]">
+            <Link href="/agency-panel" className="hover:text-[#1B5888] transition-colors font-bold text-[#1B5888]">
+              {t("lp_hero_cta_login")}
+            </Link>
+            <a href="/guide" className="hover:text-[#1B5888] transition-colors font-semibold">
+              {t("footer_guide")}
+            </a>
+            <a href="/privacy" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_privacy")}
+            </a>
+            <a href="/terms" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_terms")}
+            </a>
+            <a href="/changelog" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_changelog")}
+            </a>
+            <a href="/support" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_support")}
+            </a>
+          </div>
+
+          <p className="text-[#666666] text-xs">© 2026 Stanomer. {t("footer_rights")}</p>
         </div>
       </footer>
-
     </div>
   );
 }

@@ -13,9 +13,9 @@ import {
   Users,
   BookOpen,
   Building2,
-  Layers,
-  QrCode,
-  TrendingUp,
+  Home,
+  CheckSquare,
+  Calculator,
   Sparkles,
   Globe,
   MapPin,
@@ -195,25 +195,27 @@ export function Navbar() {
     pathname?.startsWith("/real-estate-agencies") ||
     pathname?.startsWith("/acente-bul") ||
     pathname?.startsWith("/find-agency");
-  const isIndividualsActive = !isDirectoryActive && (pathname === "/" || pathname?.startsWith("/guide"));
+  const isIndividualsActive = !isDirectoryActive && (pathname?.startsWith("/individuals") || pathname?.startsWith("/guide"));
   const isAgenciesActive = pathname?.startsWith("/agencies") || pathname?.startsWith("/agency-") || pathname?.startsWith("/agency_");
 
   const currentLangConfig = languages.find((l) => l.code === lang) || languages[0];
   const guideLabels = quickGuideLabels[lang] || quickGuideLabels.EN;
 
-  const menus: Record<"individuals" | "agencies", { href: string; icon: LucideIcon; color: string; title: string; desc: string }[]> = {
+  const menus: Record<"individuals" | "agencies", { href: string; icon: LucideIcon; color: string; title: string; desc?: string; badge?: string }[]> = {
     individuals: [
-      { href: "/#features", icon: Users, color: "text-blue-600", title: t("nav_ind_overview_title"), desc: t("nav_ind_overview_desc") },
+      { href: "/individuals", icon: Users, color: "text-blue-600", title: t("nav_ind_overview_title"), desc: t("nav_ind_overview_desc") },
       { href: "/guide", icon: BookOpen, color: "text-indigo-600", title: t("nav_ind_guides_title"), desc: t("nav_ind_guides_desc") }
     ],
     agencies: [
-      { href: "/agencies", icon: Building2, color: "text-purple-600", title: t("nav_agency_overview_title"), desc: t("nav_agency_overview_desc") },
-      { href: "/agencies#section-whitelabel", icon: Layers, color: "text-violet-600", title: t("nav_agency_whitelabel_title"), desc: t("nav_agency_whitelabel_desc") },
-      { href: "/agency-referral", icon: QrCode, color: "text-indigo-600", title: t("nav_agency_referral_title"), desc: t("nav_agency_referral_desc") },
-      { href: "/agency-stats", icon: TrendingUp, color: "text-emerald-600", title: t("nav_agency_stats_title"), desc: t("nav_agency_stats_desc") },
-      { href: "/agency-demo", icon: Sparkles, color: "text-amber-500", title: t("nav_agency_demo_title"), desc: t("nav_agency_demo_desc") }
+      { href: "/agencies", icon: Building2, color: "text-[#1B5888]", title: t("nav_agency_overview_title"), desc: t("nav_agency_overview_desc") }
     ]
   };
+  const agencyAnchorLinks = [
+    { href: "/agencies#section-portfolio", icon: Globe, color: "text-[#1B5888]", label: t("nav_agency_mod_portfolio"), badge: t("nav_agency_optional_badge") },
+    { href: "/agencies#section-property-lease", icon: Home, color: "text-[#2A6E43]", label: t("nav_agency_mod_property"), badge: t("nav_agency_optional_badge") },
+    { href: "/agencies#section-tasks", icon: CheckSquare, color: "text-indigo-600", label: t("nav_agency_mod_tasks") },
+    { href: "/agencies#section-pricing", icon: Calculator, color: "text-amber-600", label: t("nav_agency_pricing") }
+  ];
   const guideLinks = [
     { href: belgradeGuideRoutes[lang] || belgradeGuideRoutes.EN, icon: MapPin, color: "text-rose-500", label: guideLabels.belgrade },
     { href: noviSadGuideRoutes[lang] || noviSadGuideRoutes.EN, icon: MapPin, color: "text-rose-500", label: guideLabels.noviSad },
@@ -244,18 +246,53 @@ export function Navbar() {
       {openDropdown === key && (
         <div id={`nav-${key}-menu`} className={`${panel} left-0 w-80`}>
           {menus[key].map((m) => (
-            <Link key={m.href} href={m.href} aria-current={pathname === m.href ? "page" : undefined} className={`${itemCls} flex items-start gap-3`}>
+            <Link
+              key={m.href}
+              href={m.href}
+              onClick={() => setOpenDropdown(null)}
+              aria-current={pathname === m.href ? "page" : undefined}
+              className={`${itemCls} flex items-start gap-3`}
+            >
               <m.icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${m.color}`} aria-hidden="true" />
               <span>
                 <span className="block text-sm font-medium text-slate-900">{m.title}</span>
-                <span className="block text-xs text-slate-500 mt-0.5">{m.desc}</span>
+                {m.desc && <span className="block text-xs text-slate-500 mt-0.5">{m.desc}</span>}
               </span>
             </Link>
           ))}
+          {key === "agencies" && (
+            <div className="mt-1.5 pt-1.5 border-t border-slate-100 space-y-0.5">
+              {agencyAnchorLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => {
+                    setOpenDropdown(null);
+                    const hash = item.href.split("#")[1];
+                    if (pathname === "/agencies" && hash) {
+                      const el = document.getElementById(hash);
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className={`${itemCls} text-sm text-slate-700 hover:text-slate-900 py-1.5 flex items-center gap-2.5`}
+                >
+                  <item.icon className={`w-4 h-4 flex-shrink-0 ${item.color}`} aria-hidden="true" />
+                  <span className="min-w-0 leading-snug">
+                    <span className="font-medium">{item.label}</span>
+                    {item.badge && (
+                      <span className="ml-1.5 inline-block text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
           {withGuides && (
             <div className="mt-1.5 pt-1.5 border-t border-slate-100">
               {guideLinks.map((g) => (
-                <Link key={g.href} href={g.href} className={`${itemCls} text-sm text-slate-600 hover:text-slate-900 py-1.5 flex items-center gap-3`}>
+                <Link key={g.href} href={g.href} onClick={() => setOpenDropdown(null)} className={`${itemCls} text-sm text-slate-600 hover:text-slate-900 py-1.5 flex items-center gap-3`}>
                   <g.icon className={`w-4 h-4 flex-shrink-0 ${g.color}`} aria-hidden="true" />
                   {g.label}
                 </Link>
@@ -400,6 +437,22 @@ export function Navbar() {
                   {m.title}
                 </Link>
               ))}
+              {key === "agencies" &&
+                agencyAnchorLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-1.5 pl-3 text-sm text-slate-600"
+                  >
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
               {key === "individuals" &&
                 guideLinks.map((g) => (
                   <Link key={g.href} href={g.href} onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-600">

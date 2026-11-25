@@ -3,8 +3,9 @@ import { Navbar } from "../components/Navbar";
 import { HomeContent } from "./HomeContent";
 
 export const metadata: Metadata = {
-  title: "Stanomer | Nova generacija transparentnosti u upravljanju nekretninama",
-  description: "Digitalni most za stanodavce i stanare. Upravljajte ugovorima, plaćanjima i održavanjem u jednoj aplikaciji.",
+  title: "Stanomer | End-to-End Operating System for Real Estate Agencies",
+  description:
+    "Publish listings to 4zida.rs and Halo Oglasi via live XML, manage CRM leads, digital leases, EUR/RSD rent & expenses, maintenance, and team tasks in one unified suite.",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.ico",

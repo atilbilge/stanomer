@@ -1,54 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "../../components/Navbar";
 import { useLanguage } from "../../components/LanguageProvider";
-import { AgencyAppWalkthroughStack } from "../../components/AgencyAppWalkthroughStack";
-import { AgencyDemoModal } from "../../components/AgencyDemoModal";
 import { AgencyPricingSection } from "../../components/AgencyPricingSection";
 import {
-  Palette,
-  ShieldCheck,
-  UserCheck,
-  CheckCircle2,
   ArrowRight,
-  Sparkles,
   Building2,
+  CheckCircle2,
+  CheckSquare,
+  FileText,
+  Globe,
+  Home,
+  Inbox,
+  MessageCircle,
+  Play,
   QrCode,
-  Clock,
-  Eye,
-  BarChart3,
-  ChevronDown,
-  Calculator,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Users,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 
 export default function AgenciesPage() {
-  const { t, lang } = useLanguage();
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [isHeroPillOpen, setIsHeroPillOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isHeroPillOpen) return;
-    const handleWindowClick = () => {
-      setIsHeroPillOpen(false);
-    };
-    window.addEventListener("click", handleWindowClick);
-    return () => window.removeEventListener("click", handleWindowClick);
-  }, [isHeroPillOpen]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (
-        params.get("open_demo") === "true" ||
-        params.get("demo") === "1" ||
-        params.get("demo") === "true"
-      ) {
-        setIsDemoModalOpen(true);
-      }
-    }
-  }, []);
+  const { t } = useLanguage();
+  const router = useRouter();
+  const demoBtnRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -65,596 +46,547 @@ export default function AgenciesPage() {
     }
   }, []);
 
-  const comparisonRows = [
+  useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      const btn = demoBtnRef.current;
+      if (!btn) return;
+      const vw = Math.max(1, window.innerWidth);
+      const vh = Math.max(1, window.innerHeight);
+      const pctX = Math.max(0, Math.min(100, (e.clientX / vw) * 100));
+      const pctY = Math.max(0, Math.min(100, (e.clientY / vh) * 100));
+      btn.style.setProperty("--demo-mx", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-my", `${pctY.toFixed(1)}%`);
+      btn.style.setProperty("--demo-mx-pct", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-glow", "1");
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (demoBtnRef.current) {
+          demoBtnRef.current.style.setProperty("--demo-glow", "0.25");
+        }
+      }, 450);
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (idleTimer) clearTimeout(idleTimer);
+    };
+  }, []);
+
+  const portfolioCards = [
     {
-      label: t("agencies_cmp_row1_label"),
-      v1: t("agencies_cmp_row1_v1"),
-      v2: t("agencies_cmp_row1_v2"),
+      icon: Globe,
+      tag: t("lp_mod_tab_portfolio"),
+      title: t("lp_mod_portfolio_title"),
+      desc: t("lp_mod_portfolio_desc"),
+      bullets: [
+        t("lp_mod_portfolio_b1"),
+        t("lp_mod_portfolio_b2"),
+        t("lp_mod_portfolio_b3"),
+      ],
     },
     {
-      label: t("agencies_cmp_row2_label"),
-      v1: t("agencies_cmp_row2_v1"),
-      v2: t("agencies_cmp_row2_v2"),
-    },
-    {
-      label: t("agencies_cmp_row3_label"),
-      v1: t("agencies_cmp_row3_v1"),
-      v2: t("agencies_cmp_row3_v2"),
-    },
-    {
-      label: t("agencies_cmp_row4_label"),
-      v1: t("agencies_cmp_row4_v1"),
-      v2: t("agencies_cmp_row4_v2"),
+      icon: Inbox,
+      tag: t("lp_mod_tab_crm"),
+      title: t("lp_mod_crm_title"),
+      desc: t("lp_mod_crm_desc"),
+      bullets: [t("lp_mod_crm_b1"), t("lp_mod_crm_b2"), t("lp_mod_crm_b3")],
     },
   ];
 
-  const referralReasons = [
-    { icon: Clock, text: t("agencies_ref_why_1"), color: "bg-violet-100 text-violet-600" },
-    { icon: Eye, text: t("agencies_ref_why_2"), color: "bg-emerald-100 text-emerald-600" },
-    { icon: BarChart3, text: t("agencies_ref_why_3"), color: "bg-amber-100 text-amber-600" },
-    { icon: BarChart3, text: t("agencies_ref_why_4"), color: "bg-blue-100 text-blue-600" },
+  const propertyLeaseCards = [
+    {
+      icon: Home,
+      tag: t("lp_mod_tab_properties"),
+      title: t("lp_mod_properties_title"),
+      desc: t("lp_mod_properties_desc"),
+      bullets: [
+        t("lp_mod_properties_b1"),
+        t("lp_mod_properties_b2"),
+        t("lp_mod_properties_b3"),
+      ],
+    },
+    {
+      icon: Wallet,
+      tag: t("lp_mod_tab_finance"),
+      title: t("lp_mod_finance_title"),
+      desc: t("lp_mod_finance_desc"),
+      bullets: [
+        t("lp_mod_finance_b1"),
+        t("lp_mod_finance_b2"),
+        t("lp_mod_finance_b3"),
+      ],
+    },
   ];
+
+  const tasksCard = {
+    icon: CheckSquare,
+    tag: t("lp_mod_tab_tasks"),
+    title: t("lp_mod_tasks_title"),
+    desc: t("lp_mod_tasks_desc"),
+    bullets: [
+      t("lp_mod_tasks_b1"),
+      t("lp_mod_tasks_b2"),
+      t("lp_mod_tasks_b3"),
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-x-clip">
+    <div className="min-h-screen bg-[#F8F7F5] flex flex-col font-sans text-[#1A1A1A] overflow-x-clip">
       <Navbar />
-
-      {/* Spacer for fixed Navbar */}
       <div className="h-[80px]" />
 
-      {/* ═══════════════════════════════════════════
-          HERO — CHOICE SECTION
-      ═══════════════════════════════════════════ */}
-      <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full text-center">
+      {/* ===================================================================== */}
+      {/* SECTION 1: AGENCY SUITE HERO                                          */}
+      {/* ===================================================================== */}
+      <section className="pt-10 pb-14 lg:pt-16 lg:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="rounded-[16px] overflow-hidden border border-[#E5E3DF] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-7 sm:p-10 lg:p-12 shadow-[0_18px_48px_rgba(18,64,106,0.18)] relative">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-55"
+            style={{
+              backgroundImage:
+                "radial-gradient(rgba(229, 238, 246, 0.16) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-24 -top-20 w-96 h-96 rounded-full bg-[#2A6E43]/30 blur-3xl"
+          />
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15] mb-5">
-          {t("agencies_hero_select_title")}
-        </h1>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-white/15 border border-white/20 text-[#E5EEF6] text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-[#FBF1DC]" />
+                <span>{t("lp_hero_badge")}</span>
+              </div>
 
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto mb-10">
-          {t("agencies_hero_select_subtitle")}
-        </p>
+              <h1 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-[44px] font-bold text-white leading-[1.08] tracking-tight">
+                {t("lp_hero_title")}
+              </h1>
 
-        {/* Two choice cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
-          <a
-            href="#section-whitelabel"
-            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-500 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer text-left"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Building2 className="w-7 h-7" />
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900 text-base sm:text-lg leading-tight mb-1">
-                {t("agencies_hero_option1_label")}
+              <p className="text-sm sm:text-base text-[#D8E7F5] leading-relaxed max-w-2xl">
+                {t("lp_hero_desc")}
               </p>
-              <p className="text-xs text-slate-500 leading-relaxed">White-Label Partner Panel</p>
-            </div>
-            <div className="mt-auto flex items-center gap-1.5 text-blue-600 text-sm font-semibold">
-              <span>{t("agencies_hero_option1_label")}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </a>
 
-          <a
-            href="#section-referral"
-            className="group flex flex-col items-center gap-4 p-7 rounded-2xl bg-white border-2 border-violet-200 hover:border-violet-500 hover:shadow-md hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer text-left"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <QrCode className="w-7 h-7" />
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900 text-base sm:text-lg leading-tight mb-1">
-                {t("agencies_hero_option2_label")}
-              </p>
-              <p className="text-xs text-slate-500 leading-relaxed">Referral Partner</p>
-            </div>
-            <div className="mt-auto flex items-center gap-1.5 text-violet-600 text-sm font-semibold">
-              <span>{t("agencies_hero_option2_label")}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </a>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 1 — WHITE-LABEL (OPTION 1)
-      ═══════════════════════════════════════════ */}
-      <section
-        id="section-whitelabel"
-        className="relative pt-12 pb-20 md:pt-20 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full scroll-mt-24"
-      >
-        <div className="mb-8 flex justify-center lg:justify-start">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-bold tracking-wide shadow-md">
-            <Building2 className="w-4 h-4" />
-            {t("agencies_wl_section_title")}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-
-          {/* Left Side: Copy & CTAs */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
-              {t("agencies_hero_title")}
-            </h2>
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
-              {t("agencies_hero_subtitle")}
-            </p>
-            <div className="pt-4 flex flex-col sm:flex-row gap-3.5 sm:items-center">
-              {/* Main CTA: Simulate for Your Agency */}
-              <button
-                type="button"
-                onClick={() => setIsDemoModalOpen(true)}
-                className="group h-14 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold text-base shadow-md shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
-              >
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-white text-[10px] font-bold tracking-wide">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
-                  <span>
-                    {lang === "TR"
-                      ? "SİMÜLASYON"
-                      : lang === "SR_LAT" || lang === "SR_CYR"
-                      ? "SIMULACIJA"
-                      : "SIMULATION"}
-                  </span>
-                </span>
-                <span>
-                  {lang === "TR"
-                    ? "Acentenizi Simüle Edin"
-                    : lang === "SR_LAT" || lang === "SR_CYR"
-                    ? "Simulirajte za Vašu Agenciju"
-                    : "Simulate for Your Agency"}
-                </span>
-                <ArrowRight className="w-5 h-5 text-blue-200 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-
-              {/* Secondary CTA: Request Demo Now */}
-              <Link
-                href="/agency-demo"
-                className="h-14 px-6 rounded-xl text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-slate-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2.5 box-border"
-              >
-                <Building2 className="w-5 h-5 text-blue-600" />
-                <span>{t("agencies_cta_demo")}</span>
-              </Link>
-
-              {/* Pricing Anchor Link */}
-              <a
-                href="#pricing"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const el = document.getElementById("pricing");
-                  if (el) {
-                    el.scrollIntoView({ behavior: "smooth" });
-                    window.history.pushState(null, "", "#pricing");
-                  }
-                }}
-                className="h-14 px-5 rounded-xl text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 font-bold text-base shadow-md border-2 border-slate-200 hover:border-blue-300 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center justify-center gap-2 box-border"
-              >
-                <Calculator className="w-5 h-5 text-blue-600" />
-                <span>
-                  {lang === "TR"
-                    ? "Fiyatlandırma"
-                    : lang === "SR_LAT" || lang === "SR_CYR"
-                    ? "Cenovnik"
-                    : lang === "RU"
-                    ? "Тарифы"
-                    : "Pricing"}
-                </span>
-              </a>
-            </div>
-          </div>
-
-          {/* Right Side: White-Label Product Mockup */}
-          <div className="lg:col-span-5 relative flex justify-center items-center">
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsHeroPillOpen((prev) => !prev);
-              }}
-              className="group relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-md space-y-4 transform -rotate-1 hover:rotate-0 transition duration-500 overflow-hidden cursor-pointer"
-            >
-
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold text-xs">
-                    <Building2 className="w-4 h-4 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">ABC REAL ESTATE</p>
-                    <p className="text-[10px] text-slate-400">White-Label Partner Panel</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">
-                  {t("agencies_mockup_active_agency")}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-[10px] text-slate-500 font-medium">{t("agencies_mockup_active_portfolio")}</p>
-                  <p className="text-lg font-semibold text-slate-900">{t("agencies_mockup_apartments_count")}</p>
-                </div>
-                <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                  <p className="text-[10px] text-blue-600 font-medium">{t("agencies_mockup_monthly_collected")}</p>
-                  <p className="text-lg font-semibold text-blue-700">€28,500</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-900 text-white rounded-xl p-4 shadow-lg space-y-2.5 border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-amber-500 flex items-center justify-center font-bold text-[10px] text-slate-950">
-                      ABC
-                    </div>
-                    <span className="text-xs font-semibold text-slate-200">{t("agencies_mockup_mobile_ui")}</span>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                </div>
-                <div className="bg-slate-800/90 p-2.5 rounded-lg text-xs space-y-1">
-                  <p className="text-slate-400 text-[10px]">{t("agencies_mockup_tenant_notif")}</p>
-                  <p className="font-semibold text-emerald-400">{t("agencies_mockup_rent_collected")}</p>
-                  <p className="text-[10px] text-slate-300">{t("agencies_mockup_auto_notif_sent")}</p>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-3 -left-3 bg-white text-slate-800 px-3.5 py-2 rounded-xl shadow-lg border border-slate-200 text-xs font-bold flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <span>{t("agencies_mockup_white_label_badge")}</span>
-              </div>
-
-              {/* Modern SaaS Floating CTA on Preview Card (shown on click) */}
-              {isHeroPillOpen && (
-                <div
-                  className="absolute inset-x-0 bottom-4 z-30 flex justify-center transition-all duration-200"
-                  onClick={(e) => e.stopPropagation()}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  ref={demoBtnRef}
+                  href="/agency-panel"
+                  className="st-demo-glow-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] border-[1.5px] border-white/80 text-[#0E3152] font-bold text-sm cursor-pointer"
                 >
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsDemoModalOpen(true);
-                    }}
-                    className="group/pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/95 hover:bg-slate-900 text-white text-xs font-semibold shadow-md shadow-slate-950/30 border border-white/20 backdrop-blur-md hover:border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+                  <span>{t("lp_hero_cta_demo")}</span>
+                  <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+                </Link>
+
+                <Link
+                  href="/agency-panel"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white/12 hover:bg-white/20 border border-white/25 text-white font-bold text-sm transition-colors"
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span>{t("lp_hero_cta_login")}</span>
+                </Link>
+              </div>
+
+              <p className="text-xs text-[#C8DDF0] font-semibold flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6EE7B7] shrink-0" />
+                <span>{t("lp_hero_note")}</span>
+              </p>
+            </div>
+
+            <div className="lg:col-span-5 grid grid-cols-2 gap-3 text-xs">
+              {[
+                { icon: Globe, title: t("agency_panel_demo_feat1_title"), desc: t("agency_panel_demo_feat1_desc") },
+                { icon: Home, title: t("agency_panel_demo_feat2_title"), desc: t("agency_panel_demo_feat2_desc") },
+                { icon: Wallet, title: t("agency_panel_demo_feat3_title"), desc: t("agency_panel_demo_feat3_desc") },
+                { icon: CheckSquare, title: t("agency_panel_demo_feat4_title"), desc: t("agency_panel_demo_feat4_desc") },
+              ].map((card) => {
+                const Icon = card.icon;
+                return (
+                  <div
+                    key={card.title}
+                    className="rounded-[12px] bg-white/10 backdrop-blur-xs border border-white/15 p-4 space-y-2"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                    <span>
-                      {lang === "TR"
-                        ? "Acentenizi Simüle Edin"
-                        : lang === "SR_LAT" || lang === "SR_CYR"
-                        ? "Simulirajte za Vašu Agenciju"
-                        : "Simulate for Your Agency"}
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover/pill:text-white group-hover/pill:translate-x-0.5 transition-all" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 6-Stage Interactive App Walkthrough Stack */}
-        <AgencyAppWalkthroughStack />
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 2 — VALUE PROPOSITION
-      ═══════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 bg-white border-y border-slate-200/80 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-16">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("agencies_val_title")}
-            </h2>
-            <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Palette className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t("agencies_val_1_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("agencies_val_1_desc")}</p>
-            </div>
-
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t("agencies_val_2_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("agencies_val_2_desc")}</p>
-            </div>
-
-            <div className="bg-slate-50/80 p-8 rounded-2xl border border-slate-200/80 hover:shadow-md hover:bg-white transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <UserCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t("agencies_val_3_title")}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{t("agencies_val_3_desc")}</p>
+                    <div className="w-8 h-8 rounded-[8px] bg-white/15 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-[#E5EEF6]" />
+                    </div>
+                    <p className="font-bold text-white text-xs leading-snug">{card.title}</p>
+                    <p className="text-[#D8E7F5]/85 text-[11px] leading-relaxed">{card.desc}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          SECTION 3 — HOW IT WORKS (Checklist)
-      ═══════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 bg-slate-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("agencies_how_title")}
-            </h2>
-            <p className="text-slate-600 text-base leading-relaxed">{t("agencies_how_intro")}</p>
-          </div>
-
-          <div className="space-y-4">
-            {[t("agencies_how_1"), t("agencies_how_2"), t("agencies_how_3")].map((item, idx) => (
-              <div key={idx} className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                </div>
-                <p className="text-base sm:text-lg font-bold text-slate-900">{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 3.5 — PRICING (WHITE-LABEL TIERS)
-      ═══════════════════════════════════════════ */}
-      <AgencyPricingSection onOpenSimulation={() => setIsDemoModalOpen(true)} />
-
-      {/* ═══════════════════════════════════════════
-          SECTION 4 — REFERRAL (OPTION 2)
-      ═══════════════════════════════════════════ */}
+      {/* ===================================================================== */}
+      {/* SECTION 2: #section-portfolio — PORTFOLIO & DISTRIBUTION              */}
+      {/* ===================================================================== */}
       <section
-        id="section-referral"
-        className="relative py-20 md:py-32 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-200/80 scroll-mt-24"
+        id="section-portfolio"
+        className="py-12 lg:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6 scroll-mt-24"
       >
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="mb-8 flex justify-center lg:justify-start">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-600 text-white text-sm font-bold tracking-wide shadow-md">
-              <QrCode className="w-4 h-4" />
-              {t("agencies_ref_section_title")}
+        <div className="max-w-3xl space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              <Globe className="w-3.5 h-3.5" />
+              <span>{t("nav_agency_mod_portfolio")}</span>
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-white border border-[#E5E3DF] text-[#666666] text-[11px] font-semibold">
+              {t("nav_agency_optional_badge")}
             </span>
           </div>
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+            {t("nav_agency_mod_portfolio")}
+          </h2>
+          <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+            {t("agencies_anchor_portfolio_desc")}
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-start">
-
-            {/* Left: QR Mockup Card */}
-            <div className="lg:col-span-5 relative flex justify-center items-center">
-              <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-5 border border-slate-200/80 shadow-md space-y-4 transform rotate-1 hover:rotate-0 transition duration-500">
-
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                      <Building2 className="w-4 h-4 text-violet-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">{t("agencies_ref_qr_card_agency").toUpperCase()}</p>
-                      <p className="text-[10px] text-slate-400">Referral Partner</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold bg-violet-50 text-violet-700 px-2 py-0.5 rounded-md border border-violet-200">
-                    {t("agencies_ref_qr_card_badge")}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {portfolioCards.map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <div
+                key={mod.tag}
+                className="st-card p-6 flex flex-col justify-between space-y-4 hover:border-[#1B5888]/40 transition-colors"
+              >
+                <div className="space-y-3">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{mod.tag}</span>
                   </span>
+                  <h3 className="font-[family-name:var(--font-outfit)] text-lg font-bold text-[#1A1A1A] leading-snug">
+                    {mod.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">{mod.desc}</p>
                 </div>
 
-                {/* QR code visual */}
-                <div className="flex flex-col items-center gap-3 py-2">
-                  <div className="relative w-36 h-36 bg-slate-900 rounded-xl p-3 shadow-inner flex items-center justify-center">
-                    <div className="grid grid-cols-7 gap-0.5 w-full h-full">
-                      {Array.from({ length: 49 }).map((_, i) => {
-                        const row = Math.floor(i / 7);
-                        const col = i % 7;
-                        const isCorner =
-                          (row < 2 && col < 2) ||
-                          (row < 2 && col > 4) ||
-                          (row > 4 && col < 2);
-                        const isRandom = Math.abs(Math.sin(i * 7.3 + 1.1)) > 0.52;
-                        const filled = isCorner || isRandom;
-                        return (
-                          <div
-                            key={i}
-                            className={`rounded-sm ${filled ? "bg-white" : "bg-transparent"}`}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-md bg-violet-600 flex items-center justify-center shadow-lg">
-                        <QrCode className="w-4 h-4 text-white" />
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs font-bold text-slate-700">{t("agencies_ref_qr_card_scan_label")}</p>
-                </div>
+                <ul className="space-y-2 pt-3 border-t border-[#E5E3DF] text-xs text-[#1A1A1A] font-medium">
+                  {mod.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0 mt-0.5" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[10px] text-slate-500 font-medium">{t("agencies_ref_qr_card_users")}</p>
-                    <p className="text-lg font-semibold text-violet-700">{t("agencies_ref_qr_card_count")}</p>
+      {/* ===================================================================== */}
+      {/* SECTION 3: #section-property-lease — PROPERTY & LEASE MANAGEMENT      */}
+      {/* ===================================================================== */}
+      <section
+        id="section-property-lease"
+        className="py-14 lg:py-18 px-4 sm:px-6 lg:px-8 bg-white border-y border-[#E5E3DF] scroll-mt-24"
+      >
+        <span id="section-whitelabel" className="sr-only" />
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="max-w-3xl space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-xs font-bold">
+                <Home className="w-3.5 h-3.5" />
+                <span>{t("nav_agency_mod_property")}</span>
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-[#F8F7F5] border border-[#E5E3DF] text-[#666666] text-[11px] font-semibold">
+                {t("nav_agency_optional_badge")}
+              </span>
+            </div>
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("nav_agency_mod_property")}
+            </h2>
+            <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+              {t("agencies_anchor_property_desc")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {propertyLeaseCards.map((mod) => {
+              const Icon = mod.icon;
+              return (
+                <div
+                  key={mod.tag}
+                  className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-6 flex flex-col justify-between space-y-4 hover:border-[#2A6E43]/40 transition-colors"
+                >
+                  <div className="space-y-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-xs font-bold">
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{mod.tag}</span>
+                    </span>
+                    <h3 className="font-[family-name:var(--font-outfit)] text-lg font-bold text-[#1A1A1A] leading-snug">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">{mod.desc}</p>
                   </div>
-                  <div className="bg-violet-50/60 p-3 rounded-xl border border-violet-100">
-                    <p className="text-[10px] text-violet-600 font-medium">{t("agencies_ref_qr_card_title")}</p>
-                    <p className="text-sm font-semibold text-violet-800 leading-tight mt-0.5">✓ Active</p>
+
+                  <ul className="space-y-2 pt-3 border-t border-[#E5E3DF] text-xs text-[#1A1A1A] font-medium">
+                    {mod.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0 mt-0.5" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile App & Live Lifecycle */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+            <div className="lg:col-span-7 space-y-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>{t("lp_mobile_badge")}</span>
+              </span>
+              <h3 className="font-[family-name:var(--font-outfit)] text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight">
+                {t("lp_mobile_title")}
+              </h3>
+              <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+                {t("lp_mobile_desc")}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-4 space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#1B5888]">
+                    <Globe className="w-4 h-4" />
+                    <span>{t("lp_mod_portfolio_b2")}</span>
                   </div>
                 </div>
-
-                <div className="absolute -bottom-3 -right-3 bg-white text-slate-800 px-3.5 py-2 rounded-xl shadow-lg border border-slate-200 text-xs font-bold flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-violet-600" />
-                  <span>{t("agencies_ref_qr_card_title")}</span>
+                <div className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-4 space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#2A6E43]">
+                    <Users className="w-4 h-4" />
+                    <span>{t("lp_mod_properties_b2")}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right: Copy + Reasons + CTA */}
-            <div className="lg:col-span-7 space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
-                  {t("agencies_ref_section_title")}
-                </h2>
-                <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-                  {t("agencies_ref_intro")}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 mb-4">{t("agencies_ref_why_title")}</h3>
-                <div className="space-y-3">
-                  {referralReasons.map((reason, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-slate-50 p-5 rounded-2xl border border-slate-200 hover:shadow-md hover:bg-white transition-all duration-300 flex items-start gap-4"
-                    >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${reason.color}`}>
-                        <CheckCircle2 className="w-5 h-5" />
+            <div className="lg:col-span-5">
+              <div className="rounded-[12px] bg-[#F8F7F5] border border-[#E5E3DF] p-6 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E5E3DF]">
+                  <span className="font-[family-name:var(--font-outfit)] font-bold text-sm text-[#1A1A1A]">
+                    {t("lp_flow_title")}
+                  </span>
+                  <span className="font-mono text-[11px] font-bold text-[#2A6E43] bg-[#E6F3EA] px-2 py-0.5 rounded-[6px]">
+                    Live Sync
+                  </span>
+                </div>
+                <div className="space-y-3 text-xs">
+                  {[
+                    { num: "01", icon: Globe, title: t("lp_flow_s1_title"), desc: t("lp_flow_s1_desc") },
+                    { num: "02", icon: FileText, title: t("lp_flow_s2_title"), desc: t("lp_flow_s2_desc") },
+                    { num: "03", icon: Wallet, title: t("lp_flow_s3_title"), desc: t("lp_flow_s3_desc") },
+                    { num: "04", icon: Wrench, title: t("lp_flow_s4_title"), desc: t("lp_flow_s4_desc") },
+                  ].map((s) => (
+                    <div key={s.num} className="flex items-start gap-3">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] shrink-0">
+                        {s.num}
+                      </span>
+                      <div>
+                        <p className="font-bold text-[#1A1A1A]">{s.title}</p>
+                        <p className="text-[#666666] mt-0.5">{s.desc}</p>
                       </div>
-                      <p className="text-sm sm:text-base font-semibold text-slate-800 leading-snug">
-                        {reason.text}
-                      </p>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <div className="pt-2 space-y-3">
-                <p className="text-slate-600 text-sm sm:text-base italic">{t("agencies_ref_cta_subtitle")}</p>
-                <Link
-                  href="/agency-referral"
-                  className="inline-flex justify-center items-center gap-2.5 px-7 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-700 font-bold text-base shadow-md shadow-violet-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>{t("agencies_ref_cta_btn")}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          SECTION 5 — COMPARISON TABLE
-      ═══════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-10">
-          <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-              {t("agencies_cmp_title")}
-            </h2>
-            <div className="w-16 h-1 bg-violet-500 mx-auto rounded-full" />
+      {/* ===================================================================== */}
+      {/* SECTION 4: #section-tasks — TASK MANAGEMENT & REPORTING               */}
+      {/* ===================================================================== */}
+      <section
+        id="section-tasks"
+        className="py-12 lg:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6 scroll-mt-24"
+      >
+        <div className="max-w-3xl space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              <CheckSquare className="w-3.5 h-3.5" />
+              <span>{t("nav_agency_mod_tasks")}</span>
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[11px] font-bold">
+              {t("nav_agency_included_badge")}
+            </span>
+          </div>
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+            {t("nav_agency_mod_tasks")}
+          </h2>
+          <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+            {t("agencies_anchor_tasks_desc")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="st-card p-6 flex flex-col justify-between space-y-4 hover:border-[#1B5888]/40 transition-colors">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+                <tasksCard.icon className="w-3.5 h-3.5" />
+                <span>{tasksCard.tag}</span>
+              </span>
+              <h3 className="font-[family-name:var(--font-outfit)] text-lg font-bold text-[#1A1A1A] leading-snug">
+                {tasksCard.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">{tasksCard.desc}</p>
+            </div>
+            <ul className="space-y-2 pt-3 border-t border-[#E5E3DF] text-xs text-[#1A1A1A] font-medium">
+              {tasksCard.bullets.map((b) => (
+                <li key={b} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-lg">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-900 text-white">
-                  <th className="px-5 py-4 text-left font-semibold text-slate-400 w-1/3 rounded-tl-2xl">&nbsp;</th>
-                  <th className="px-5 py-4 text-center font-semibold text-blue-300 w-1/3">
-                    <div className="flex items-center justify-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      <span>{t("agencies_cmp_col1")}</span>
-                    </div>
-                  </th>
-                  <th className="px-5 py-4 text-center font-semibold text-violet-300 w-1/3 rounded-tr-2xl">
-                    <div className="flex items-center justify-center gap-2">
-                      <QrCode className="w-4 h-4" />
-                      <span>{t("agencies_cmp_col2")}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonRows.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className={`border-t border-slate-200 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}
-                  >
-                    <td className="px-5 py-4 font-bold text-slate-700">{row.label}</td>
-                    <td className="px-5 py-4 text-center text-slate-600">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                        {row.v1}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-center text-slate-600">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
-                        {row.v2}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="rounded-[10px] border border-[#1B5888]/30 bg-gradient-to-br from-[#FFFFFF] to-[#E5EEF6]/60 p-6 flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#1B5888] text-white text-xs font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{t("lp_region_badge")}</span>
+              </span>
+              <h3 className="font-[family-name:var(--font-outfit)] text-lg font-bold text-[#1A1A1A] leading-snug">
+                {t("lp_region_title")}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">
+                {t("lp_region_desc")}
+              </p>
+            </div>
+            <ul className="space-y-2 pt-3 border-t border-[#1B5888]/15 text-xs text-[#1A1A1A] font-medium">
+              {[t("lp_region_p1"), t("lp_region_p2"), t("lp_region_p3"), t("lp_region_p4")].map((pt) => (
+                <li key={pt} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0 mt-0.5" />
+                  <span>{pt}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          SECTION 6 — BOTTOM CTA BAND
-      ═══════════════════════════════════════════ */}
-      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-12">
-        <div className="bg-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white border border-slate-800 shadow-md relative overflow-hidden">
+      {/* ===================================================================== */}
+      {/* SECTION 4: TRANSPARENT AGENCY PRICING CALCULATOR                      */}
+      {/* ===================================================================== */}
+      <AgencyPricingSection onOpenSimulation={() => router.push("/agency-panel")} />
 
-          <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
-              {t("agencies_bottom_title")}
-            </h2>
+      {/* ===================================================================== */}
+      {/* SECTION 5: #section-referral — PARTNER REFERRAL STRIP                 */}
+      {/* ===================================================================== */}
+      <section
+        id="section-referral"
+        className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full scroll-mt-24"
+      >
+        <div className="st-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+              <QrCode className="w-3.5 h-3.5" />
+              <span>{t("nav_agency_referral_title")}</span>
+            </span>
+            <h3 className="font-[family-name:var(--font-outfit)] text-xl font-bold text-[#1A1A1A]">
+              {t("agencies_ref_title")}
+            </h3>
+            <p className="text-sm text-[#4A4A4A] leading-relaxed">
+              {t("agencies_ref_subtitle")}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <Link
+              href="/agency-referral"
+              className="st-btn-secondary px-5 py-2.5 text-xs sm:text-sm gap-2"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>{t("agencies_ref_cta_btn")}</span>
+            </Link>
+            <Link
+              href="/agency-stats"
+              className="text-xs font-bold text-[#1B5888] hover:underline px-2 py-2"
+            >
+              {t("footer_already_partner")}
+            </Link>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/agency-demo"
-                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-blue-600 hover:bg-blue-500 font-bold text-base shadow-md shadow-blue-600/30 transition"
-              >
-                <Building2 className="w-5 h-5" />
-                <span>{t("agencies_cta_demo")}</span>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="/agency-referral"
-                className="inline-flex justify-center items-center gap-2 px-8 py-4 rounded-xl text-white bg-violet-600 hover:bg-violet-500 font-bold text-base shadow-md shadow-violet-600/30 transition"
-              >
-                <QrCode className="w-5 h-5" />
-                <span>{t("agencies_ref_cta_btn")}</span>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
+      {/* ===================================================================== */}
+      {/* SECTION 6: BOTTOM CONVERSION CTA                                      */}
+      {/* ===================================================================== */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-6">
+        <div className="rounded-[16px] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-8 sm:p-12 text-center space-y-5 shadow-[0_14px_36px_rgba(18,64,106,0.2)]">
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-white tracking-tight max-w-2xl mx-auto">
+            {t("lp_cta_title")}
+          </h2>
+          <p className="text-sm sm:text-base text-[#D8E7F5] max-w-xl mx-auto leading-relaxed">
+            {t("lp_cta_desc")}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/agency-panel"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white text-[#0E3152] hover:bg-[#E5EEF6] font-bold text-sm transition-colors shadow-lg"
+            >
+              <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+              <span>{t("lp_hero_cta_demo")}</span>
+              <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+            </Link>
+            <a
+              href="https://wa.me/381616036556"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white/12 hover:bg-white/20 border border-white/25 text-white font-bold text-sm transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{t("lp_cta_whatsapp")}</span>
+            </a>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="py-12 border-t border-slate-200/80 bg-white w-full mt-auto">
+      <footer className="py-10 border-t border-[#E5E3DF] bg-white w-full mt-auto">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center gap-2 opacity-60 mb-6">
+          <div className="flex items-center justify-center gap-2 opacity-75 mb-5">
             <img src="/assets/logo.png" alt="Stanomer Logo" className="w-6 h-6 object-contain" />
-            <span className="font-bold text-sm tracking-tight text-slate-900">Stanomer</span>
+            <span className="font-[family-name:var(--font-outfit)] font-bold text-sm tracking-tight text-[#1A1A1A]">
+              Stanomer
+            </span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-xs font-medium text-slate-600">
-            <a href="/agency-stats" className="hover:text-violet-600 transition-colors font-bold text-violet-600">{t("footer_already_partner")}</a>
-            <a href="/guide" className="hover:text-blue-600 transition-colors font-bold text-blue-600">{t("footer_guide")}</a>
-            <a href="/privacy" className="hover:text-blue-600 transition-colors">{t("footer_privacy")}</a>
-            <a href="/terms" className="hover:text-blue-600 transition-colors">{t("footer_terms")}</a>
-            <a href="/changelog" className="hover:text-blue-600 transition-colors">{t("footer_changelog")}</a>
-            <a href="/support" className="hover:text-blue-600 transition-colors">{t("footer_support")}</a>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-5 text-xs font-medium text-[#4A4A4A]">
+            <Link href="/agency-panel" className="hover:text-[#1B5888] transition-colors font-bold text-[#1B5888]">
+              {t("lp_hero_cta_login")}
+            </Link>
+            <a href="/agency-stats" className="hover:text-[#1B5888] transition-colors font-semibold">
+              {t("footer_already_partner")}
+            </a>
+            <a href="/guide" className="hover:text-[#1B5888] transition-colors font-semibold">
+              {t("footer_guide")}
+            </a>
+            <a href="/privacy" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_privacy")}
+            </a>
+            <a href="/terms" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_terms")}
+            </a>
+            <a href="/changelog" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_changelog")}
+            </a>
+            <a href="/support" className="hover:text-[#1B5888] transition-colors">
+              {t("footer_support")}
+            </a>
           </div>
 
-          <p className="text-slate-400 text-xs">
-            © 2026 Stanomer. {t("footer_rights")}
-          </p>
+          <p className="text-[#666666] text-xs">© 2026 Stanomer. {t("footer_rights")}</p>
         </div>
       </footer>
-
-      <AgencyDemoModal
-        isOpen={isDemoModalOpen}
-        onClose={() => setIsDemoModalOpen(false)}
-      />
     </div>
   );
 }
-

@@ -816,17 +816,20 @@ export default function MaintenanceTab({
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block bg-white rounded-[10px] border border-[#E5E3DF] shadow-xs overflow-hidden">
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[1040px] text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#E5E3DF] bg-slate-50/75 text-[11px] font-bold text-[#666666] uppercase tracking-wider">
-                  <th className="py-3 px-4">{t("agency_maint_col_ticket")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_property")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_issue")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_priority")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_status")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_cost")}</th>
-                  <th className="py-3 px-4">{t("agency_maint_col_expense_status")}</th>
-                  <th className="py-3 px-4 text-right">{t("agency_maint_col_actions")}</th>
+                <tr className="border-b border-[#E5E3DF] bg-slate-50 text-[11px] font-bold text-[#666666] uppercase tracking-wider">
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_ticket")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_property")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_issue")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_priority")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_status")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_cost")}</th>
+                  <th className="py-3 px-4 whitespace-nowrap">{t("agency_maint_col_expense_status")}</th>
+                  <th className="py-3 px-4 text-right sticky right-0 z-20 bg-slate-50 border-l border-[#E5E3DF] shadow-[-6px_0_12px_-6px_rgba(15,23,42,0.08)] whitespace-nowrap">
+                    {t("agency_maint_col_actions")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs text-[#4A4A4A]">
@@ -1037,91 +1040,97 @@ export default function MaintenanceTab({
                           );
                         })()}
                       </td>
-                      <td className="py-3.5 px-3 text-right">
-                        <div className="flex flex-wrap items-center justify-end gap-1.5">
-                          {onCreateTask && (
-                            <button
-                              type="button"
-                              title={t("agency_tasks_quick_assign_btn")}
-                              aria-label={t("agency_tasks_quick_assign_btn")}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onCreateTask({
-                                  source_type: "maintenance",
-                                  maintenance_request_id: m.id,
-                                  property_id: m.property_id,
-                                  title: m.title,
-                                  description: m.description || undefined,
-                                  priority:
-                                    m.priority === "urgent"
-                                      ? "urgent"
-                                      : m.priority === "high"
-                                        ? "high"
-                                        : "medium",
-                                });
-                              }}
-                              className="p-1.5 rounded-lg border border-[#E5E3DF] bg-white text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer shrink-0"
-                            >
-                              <CheckSquare className="w-4 h-4" />
-                            </button>
+                      <td className="py-3.5 px-3 text-right sticky right-0 z-10 bg-white group-hover:bg-slate-50 transition-colors border-l border-[#E5E3DF] shadow-[-6px_0_12px_-6px_rgba(15,23,42,0.08)] whitespace-nowrap align-top">
+                        <div className="inline-flex flex-col items-end gap-1.5 min-w-[104px]">
+                          {(onCreateTask || m.reporter_phone) && (
+                            <div className="flex items-center justify-end gap-1.5">
+                              {onCreateTask && (
+                                <button
+                                  type="button"
+                                  title={t("agency_tasks_quick_assign_btn")}
+                                  aria-label={t("agency_tasks_quick_assign_btn")}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCreateTask({
+                                      source_type: "maintenance",
+                                      maintenance_request_id: m.id,
+                                      property_id: m.property_id,
+                                      title: m.title,
+                                      description: m.description || undefined,
+                                      priority:
+                                        m.priority === "urgent"
+                                          ? "urgent"
+                                          : m.priority === "high"
+                                            ? "high"
+                                            : "medium",
+                                    });
+                                  }}
+                                  className="p-1.5 rounded-lg border border-[#E5E3DF] bg-white text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer shrink-0"
+                                >
+                                  <CheckSquare className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {m.reporter_phone && (
+                                <a
+                                  href={`https://wa.me/${m.reporter_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                                    t("agency_maint_whatsapp_msg", { ticketNumber: m.ticket_number || "" })
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="WhatsApp"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="p-1.5 rounded-lg bg-[#E6F3EA] text-[#2A6E43] hover:bg-[#d5ebd9] transition-colors shrink-0"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </a>
+                              )}
+                            </div>
                           )}
 
-                          {m.reporter_phone && (
-                            <a
-                              href={`https://wa.me/${m.reporter_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                                t("agency_maint_whatsapp_msg", { ticketNumber: m.ticket_number || "" })
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="WhatsApp"
-                              onClick={(e) => e.stopPropagation()}
-                              className="p-1.5 rounded-lg bg-[#E6F3EA] text-[#2A6E43] hover:bg-[#E6F3EA] transition-colors"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
-                          )}
+                          <div className="flex flex-col items-stretch gap-1 w-full">
+                            {!isResolved && !isInProgress && (
+                              <button
+                                type="button"
+                                disabled={updatingMaintId === m.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateMaintenanceStatus(m.id, "in_progress");
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-[8px] text-xs font-semibold bg-[#E5EEF6] text-[#12406A] hover:bg-[#d6e5f2] transition-colors cursor-pointer disabled:opacity-50 text-center"
+                              >
+                                {t("agency_maint_act_start")}
+                              </button>
+                            )}
 
-                          {!isResolved && !isInProgress && (
-                            <button
-                              type="button"
-                              disabled={updatingMaintId === m.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpdateMaintenanceStatus(m.id, "in_progress");
-                              }}
-                              className="px-2.5 py-1.5 rounded-[10px] text-xs font-semibold bg-[#E5EEF6] text-[#12406A] hover:bg-[#E5EEF6] transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                              {t("agency_maint_act_start")}
-                            </button>
-                          )}
+                            {!isResolved && (
+                              <button
+                                type="button"
+                                disabled={updatingMaintId === m.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateMaintenanceStatus(m.id, "resolved");
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-[8px] text-xs font-bold bg-[#1B5888] text-white hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer disabled:opacity-50 text-center"
+                              >
+                                {t("agency_maint_act_resolve")}
+                              </button>
+                            )}
 
-                          {!isResolved && (
-                            <button
-                              type="button"
-                              disabled={updatingMaintId === m.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpdateMaintenanceStatus(m.id, "resolved");
-                              }}
-                              className="px-2.5 py-1.5 rounded-[10px] text-xs font-bold bg-[#1B5888] text-white hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-                            >
-                              {t("agency_maint_act_resolve")}
-                            </button>
-                          )}
-
-                          {isResolved && (
-                            <button
-                              type="button"
-                              disabled={updatingMaintId === m.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpdateMaintenanceStatus(m.id, "open");
-                              }}
-                              className="px-2.5 py-1.5 rounded-[10px] text-xs font-semibold bg-slate-100 text-[#4A4A4A] hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                              {t("agency_maint_act_reopen")}
-                            </button>
-                          )}
+                            {isResolved && (
+                              <button
+                                type="button"
+                                disabled={updatingMaintId === m.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateMaintenanceStatus(m.id, "open");
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-[8px] text-xs font-semibold bg-slate-100 text-[#4A4A4A] hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-50 text-center"
+                              >
+                                {t("agency_maint_act_reopen")}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -1186,6 +1195,7 @@ export default function MaintenanceTab({
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Mobile Card View */}
