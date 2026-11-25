@@ -317,6 +317,20 @@ final agencyPropertiesProvider = StreamProvider<List<Property>>((ref) {
 List<Map<String, dynamic>> _processRentPayments(List<Map<String, dynamic>> rawRows) {
   final Map<String, List<Map<String, dynamic>>> groupedByMonth = {};
   for (final p in rawRows) {
+    final isMaintenance = p['is_maintenance'] == true;
+    final normTitle = (p['title'] as String? ?? '').trim().toLowerCase();
+    final pAmount = (p['amount'] as num?)?.toDouble() ?? 0.0;
+    final status = p['status'] as String? ?? '';
+    if (!isMaintenance &&
+        normTitle.contains('(kalan)') &&
+        pAmount == 0.0 &&
+        status != 'paid' &&
+        status != 'declared' &&
+        status != 'disputed' &&
+        p['declared_at'] == null &&
+        p['receipt_url'] == null) {
+      continue;
+    }
     final dueDateStr = p['due_date'] as String?;
     final dt = dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
     final key = dt != null ? '${dt.year}-${dt.month}' : 'unknown';

@@ -22,6 +22,21 @@ export function processRentPayments(rawRows: AgencyRentPayment[]): AgencyRentPay
   const regularRows: AgencyRentPayment[] = [];
 
   for (const p of rawRows) {
+    const normTitle = (p.title || "").trim().toLowerCase();
+    const pAmount = Number(p.amount) || 0;
+    if (
+      !p.is_maintenance &&
+      normTitle.includes("(kalan)") &&
+      pAmount === 0 &&
+      p.status !== "paid" &&
+      p.status !== "declared" &&
+      p.status !== "disputed" &&
+      !p.declared_at &&
+      !p.receipt_url
+    ) {
+      continue;
+    }
+
     if (p.is_maintenance) {
       maintenanceRows.push(p);
     } else {

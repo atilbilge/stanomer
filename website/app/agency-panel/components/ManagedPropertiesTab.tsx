@@ -2551,8 +2551,8 @@ export default function ManagedPropertiesTab({
           );
         } else {
           // Demo mode
-          setContracts((prev) =>
-            prev.map((c) =>
+          setContracts((prev) => {
+            const next = prev.map((c) =>
               c.id === existingContractTarget.id
                 ? {
                   ...c,
@@ -2575,13 +2575,19 @@ export default function ManagedPropertiesTab({
                   additional_documents: newContractAdditionalDocs,
                 }
                 : c
-            )
-          );
+            );
+            if (typeof window !== "undefined" && (isDemoMode || !hasSupabaseSession)) {
+              try {
+                localStorage.setItem("stanomer_agency_contracts_demo", JSON.stringify(next));
+              } catch { }
+            }
+            return next;
+          });
         }
 
         // Sync managed properties & active drawer & payments in memory so the updated tenant name/phone appear immediately
-        setManagedProperties((prev) =>
-          prev.map((item) =>
+        setManagedProperties((prev) => {
+          const next = prev.map((item) =>
             item.id === p.id
               ? {
                 ...item,
@@ -2596,8 +2602,14 @@ export default function ManagedPropertiesTab({
                 contract_end_date: newContractEndDate,
               }
               : item
-          )
-        );
+          );
+          if (typeof window !== "undefined" && (isDemoMode || !hasSupabaseSession)) {
+            try {
+              localStorage.setItem("stanomer_agency_managed_props_demo", JSON.stringify(next));
+            } catch { }
+          }
+          return next;
+        });
 
         setSelectedPropertyDrawer((prev) =>
           prev && prev.id === p.id
@@ -2690,15 +2702,29 @@ export default function ManagedPropertiesTab({
         if (error) throw error;
         createdContractData = data;
 
-        // Keep property tenant_name synced
+        // Keep property tenant_name synced (and clear old tenant_id if tenant changed)
         try {
           await supabase.from("properties").update({
             tenant_name: newContractTenantName.trim(),
+            ...(isTenantInfoChanged ? { tenant_id: null } : {}),
           }).eq("id", p.id);
         } catch (_) { }
 
-        // If tenant changed, cancel previous pending invitations for this property
+        // If tenant changed, supersede previous active/pending contracts and cancel pending invitations
         if (isTenantInfoChanged) {
+          try {
+            await supabase
+              .from("contracts")
+              .update({
+                status: "terminated",
+                termination_date: newContractStartDate,
+                termination_approved: true,
+              })
+              .eq("property_id", p.id)
+              .neq("id", data.id)
+              .in("status", ["active", "pending"]);
+          } catch (_) { }
+
           try {
             await supabase
               .from("invitations")
@@ -2800,7 +2826,23 @@ export default function ManagedPropertiesTab({
         } catch (_) { }
 
         if (data) {
-          setContracts((prev) => [data as AgencyContract, ...prev]);
+          setContracts((prev) => {
+            const updatedPrev = isTenantInfoChanged
+              ? prev.map((c) =>
+                  c.property_id === p.id &&
+                  c.id !== data.id &&
+                  (c.status === "active" || c.status === "pending")
+                    ? {
+                      ...c,
+                      status: "terminated" as const,
+                      termination_date: newContractStartDate,
+                      termination_approved: true,
+                    }
+                    : c
+                )
+              : prev;
+            return [data as AgencyContract, ...updatedPrev];
+          });
         }
       } else {
         const demoContract: AgencyContract = {
@@ -2829,13 +2871,31 @@ export default function ManagedPropertiesTab({
           additional_documents: newContractAdditionalDocs,
           created_at: new Date().toISOString(),
         };
-        setContracts((prev) => [demoContract, ...prev]);
+        setContracts((prev) => {
+          const updatedPrev = prev.map((c) =>
+            c.property_id === p.id && (c.status === "active" || c.status === "pending")
+              ? {
+                ...c,
+                status: "terminated" as const,
+                termination_date: newContractStartDate,
+                termination_approved: true,
+              }
+              : c
+          );
+          const next = [demoContract, ...updatedPrev];
+          if (typeof window !== "undefined" && (isDemoMode || !hasSupabaseSession)) {
+            try {
+              localStorage.setItem("stanomer_agency_contracts_demo", JSON.stringify(next));
+            } catch { }
+          }
+          return next;
+        });
       }
 
       const effectiveContractId = createdContractData ? createdContractData.id : newContractId;
 
-      setManagedProperties((prev) =>
-        prev.map((item) =>
+      setManagedProperties((prev) => {
+        const next = prev.map((item) =>
           item.id === p.id
             ? {
               ...item,
@@ -2846,8 +2906,14 @@ export default function ManagedPropertiesTab({
               contract_end_date: newContractEndDate,
             }
             : item
-        )
-      );
+        );
+        if (typeof window !== "undefined" && (isDemoMode || !hasSupabaseSession)) {
+          try {
+            localStorage.setItem("stanomer_agency_managed_props_demo", JSON.stringify(next));
+          } catch { }
+        }
+        return next;
+      });
 
       setSelectedPropertyDrawer((prev) =>
         prev && prev.id === p.id
