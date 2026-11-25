@@ -2273,18 +2273,27 @@ export default function AgencyPanelPage() {
     }
     setLoadingPayments(true);
     try {
-      // 1. Try querying the Unified Database SSOT View (view_agency_financial_ledger)
+      // 1. Try querying the Unified Database SSOT View (view_agency_financial_ledger) with pagination
       let ledgerRows: any[] = [];
       try {
-        const { data: batch, error: viewErr } = await supabase
-          .from("view_agency_financial_ledger")
-          .select("*")
-          .eq("agency_id", uid)
-          .order("due_date", { ascending: false })
-          .limit(250);
+        const PAGE_SIZE = 1000;
+        let from = 0;
+        while (true) {
+          const { data: batch, error: viewErr } = await supabase
+            .from("view_agency_financial_ledger")
+            .select("*")
+            .eq("agency_id", uid)
+            .order("due_date", { ascending: false })
+            .range(from, from + PAGE_SIZE - 1);
 
-        if (!viewErr && batch && batch.length > 0) {
-          ledgerRows = batch;
+          if (viewErr) {
+            ledgerRows = [];
+            break;
+          }
+          if (!batch || batch.length === 0) break;
+          ledgerRows.push(...batch);
+          if (batch.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
         }
       } catch {
         ledgerRows = [];
@@ -2362,15 +2371,24 @@ export default function AgencyPanelPage() {
         return;
       }
 
-      // 3. Fetch recent rent payments for these properties safely (capped at 250 rows to prevent high PostgREST egress)
-      const { data: allRawPays, error: paysErr } = await supabase
-        .from("rent_payments")
-        .select("*")
-        .in("property_id", propIds)
-        .order("due_date", { ascending: false })
-        .limit(250);
+      // 3. Fetch all rent payments for these properties with pagination (matching Flutter SSOT)
+      const allRawPays: any[] = [];
+      const PAGE_SIZE = 1000;
+      let from = 0;
+      while (true) {
+        const { data: payBatch, error: paysErr } = await supabase
+          .from("rent_payments")
+          .select("*")
+          .in("property_id", propIds)
+          .order("due_date", { ascending: false })
+          .range(from, from + PAGE_SIZE - 1);
 
-      if (paysErr) throw paysErr;
+        if (paysErr) throw paysErr;
+        if (!payBatch || payBatch.length === 0) break;
+        allRawPays.push(...payBatch);
+        if (payBatch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
 
       // 4. Map to AgencyRentPayment
       const formatted: AgencyRentPayment[] = (allRawPays || []).map((p: any) => {

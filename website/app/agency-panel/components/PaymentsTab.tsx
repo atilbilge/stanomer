@@ -371,14 +371,31 @@ export default function PaymentsTab({
   }, [scopedPayments]);
 
   const formatKpiAmount = (list: AgencyRentPayment[]) => {
-    const total = list.reduce((acc, p) => acc + (p.amount || 0), 0);
-    if (total === 0) return "0";
-    return (
-      total.toLocaleString("de-DE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }) + " €"
-    );
+    const totalsByCurrency = new Map<string, number>();
+    for (const p of list) {
+      const amt = Number(p.amount) || 0;
+      if (amt === 0) continue;
+      const cur = (p.currency || "EUR").toUpperCase();
+      totalsByCurrency.set(cur, (totalsByCurrency.get(cur) || 0) + amt);
+    }
+    if (totalsByCurrency.size === 0) return "0";
+
+    const orderedCurrencies = Array.from(totalsByCurrency.keys()).sort((a, b) => {
+      if (a === "EUR") return -1;
+      if (b === "EUR") return 1;
+      return a.localeCompare(b);
+    });
+
+    return orderedCurrencies
+      .map((cur) => {
+        const val = totalsByCurrency.get(cur) || 0;
+        const formatted = val.toLocaleString("de-DE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        return `${formatted} ${cur === "EUR" ? "€" : cur}`;
+      })
+      .join(" + ");
   };
 
   // Filtered List based on Sub-Tab and Segment

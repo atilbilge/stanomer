@@ -3314,7 +3314,7 @@ WITH deduplicated_rent_payments AS (
     EXTRACT(MONTH FROM rp.due_date),
     LOWER(TRIM(rp.title)),
     (CASE WHEN rp.amount > 0 THEN 1 ELSE 0 END) DESC,
-    (CASE WHEN rp.status IN ('declared', 'disputed') THEN 1 ELSE 0 END) DESC,
+    (CASE WHEN rp.status IN ('declared', 'disputed') THEN 2 WHEN rp.status IN ('overdue', 'pending') AND rp.amount > 0 THEN 1 ELSE 0 END) DESC,
     (CASE WHEN rp.receipt_url IS NOT NULL THEN 1 ELSE 0 END) DESC,
     rp.created_at ASC,
     rp.id ASC

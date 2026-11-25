@@ -402,16 +402,25 @@ final AutoDisposeFutureProvider<List<Map<String, dynamic>>> agencyAllPaymentsPro
   final client = Supabase.instance.client;
   final propertiesMap = {for (var p in properties) p.id: p};
 
-  // Batch fetch rent_payments for all agency properties in a SINGLE query
+  // Batch fetch all rent_payments for agency properties with pagination (avoids PostgREST 1000-row cap)
   final propertyIds = properties.map((p) => p.id).toList();
-  List<Map<String, dynamic>> rawRows = [];
+  final List<Map<String, dynamic>> rawRows = [];
   try {
-    final rows = await client
-        .from('rent_payments')
-        .select('*')
-        .inFilter('property_id', propertyIds)
-        .order('due_date', ascending: false);
-    rawRows = (rows as List).map((r) => Map<String, dynamic>.from(r as Map)).toList();
+    const int pageSize = 1000;
+    int offset = 0;
+    while (true) {
+      final rows = await client
+          .from('rent_payments')
+          .select('*')
+          .inFilter('property_id', propertyIds)
+          .order('due_date', ascending: false)
+          .range(offset, offset + pageSize - 1);
+      final batch = (rows as List).map((r) => Map<String, dynamic>.from(r as Map)).toList();
+      if (batch.isEmpty) break;
+      rawRows.addAll(batch);
+      if (batch.length < pageSize) break;
+      offset += pageSize;
+    }
   } catch (_) {}
 
   // Group raw rows by property_id
