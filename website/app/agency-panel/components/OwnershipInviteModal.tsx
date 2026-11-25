@@ -397,9 +397,16 @@ ${effectiveAgencyName} tim`;
         }),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: { success?: boolean; error?: string } = {};
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        throw new Error(`${t("inviteEmailSendError")} (HTTP ${res.status})`);
+      }
+
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to send email");
+        throw new Error(data.error || t("inviteEmailSendError"));
       }
 
       setInviteStatus("pending");
