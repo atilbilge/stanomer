@@ -74,13 +74,16 @@ export function processRentPayments(rawRows: AgencyRentPayment[]): AgencyRentPay
           const exAmount = Number(existing.amount) || 0;
           if (pAmount > 0 && exAmount === 0) {
             bestByTitle.set(title, p);
+          } else if (p.status === "paid" && existing.status !== "paid") {
+            bestByTitle.set(title, p);
           } else if (
+            existing.status !== "paid" &&
             (p.status === "declared" || p.status === "disputed") &&
             existing.status !== "declared" &&
             existing.status !== "disputed"
           ) {
             bestByTitle.set(title, p);
-          } else if (p.receipt_url && !existing.receipt_url) {
+          } else if (existing.status !== "paid" && p.receipt_url && !existing.receipt_url) {
             bestByTitle.set(title, p);
           }
         }

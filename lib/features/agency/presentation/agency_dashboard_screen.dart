@@ -336,9 +336,16 @@ List<Map<String, dynamic>> _processRentPayments(List<Map<String, dynamic>> rawRo
         final exAmount = (existing['amount'] as num?)?.toDouble() ?? 0.0;
         if (pAmount > 0 && exAmount == 0) {
           bestByTitle[title] = p;
-        } else if (p['status'] == 'declared' && existing['status'] != 'declared') {
+        } else if (p['status'] == 'paid' && existing['status'] != 'paid') {
           bestByTitle[title] = p;
-        } else if (p['receipt_url'] != null && existing['receipt_url'] == null) {
+        } else if (existing['status'] != 'paid' &&
+            (p['status'] == 'declared' || p['status'] == 'disputed') &&
+            existing['status'] != 'declared' &&
+            existing['status'] != 'disputed') {
+          bestByTitle[title] = p;
+        } else if (existing['status'] != 'paid' &&
+            p['receipt_url'] != null &&
+            existing['receipt_url'] == null) {
           bestByTitle[title] = p;
         }
       }
@@ -12011,4 +12018,125 @@ class _ChangeLandlordDialogState extends ConsumerState<_ChangeLandlordDialog> {
                   try {
                     final repo = ref.read(propertyRepositoryProvider);
                     final token = await repo.changePropertyLandlord(
-... [truncated for diff preview]
+                      propertyId: widget.property.id,
+                      newLandlordName: _nameController.text.trim(),
+                      newLandlordEmail: _emailController.text.trim(),
+                      newLandlordPhone: _phoneController.text.trim(),
+                    );
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ref.invalidate(agencyPropertiesProvider);
+                      OwnershipShareSheet.show(
+                        context,
+                        propertyId: widget.property.id,
+                        propertyAddress: widget.property.address,
+                        propertyName: widget.property.name,
+                        landlordName: _nameController.text.trim(),
+                        landlordEmail: _emailController.text.trim(),
+                        token: token,
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${loc.error}: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colors.primary,
+            foregroundColor: Colors.white,
+          ),
+          child: _isLoading
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Text(loc.changeAndGenerateQr),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  final AgencyColorScheme colors;
+
+  const _LoadingCard({required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colors.bgWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.12)),
+      ),
+      child: Center(
+        child: CircularProgressIndicator(color: colors.primary),
+      ),
+    );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  final String message;
+
+  const _ErrorCard({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(color: Colors.red.shade800, fontSize: 13),
+      ),
+    );
+  }
+}
+
+class _EmptyCard extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final AgencyColorScheme colors;
+
+  const _EmptyCard({
+    required this.icon,
+    required this.message,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colors.bgWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 36, color: colors.textPrimary.withValues(alpha: 0.3)),
+          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.textPrimary.withValues(alpha: 0.6),
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
