@@ -181,9 +181,17 @@ export async function POST(request: Request) {
     const senderEmail = process.env.BREVO_SENDER_EMAIL || "atilbilge@gmail.com";
     const senderName = process.env.BREVO_SENDER_NAME || "Stanomer";
 
-    // Determine host origin from request
-    const origin = request.headers.get("origin") || request.headers.get("referer") || "http://localhost:3000";
-    const verifyUrl = `${origin.replace(/\/$/, "")}/agency-demo/verify?token=${token}&lang=${encodeURIComponent(selectedLang)}`;
+    // Determine host origin from request safely (strip path if falling back to referer)
+    const rawOrigin = request.headers.get("origin") || request.headers.get("referer") || "";
+    let origin = "https://www.stanomer.online";
+    if (rawOrigin) {
+      try {
+        origin = new URL(rawOrigin).origin;
+      } catch {
+        origin = rawOrigin.replace(/\/$/, "");
+      }
+    }
+    const verifyUrl = `${origin}/agency-demo/verify?token=${encodeURIComponent(String(token))}&lang=${encodeURIComponent(selectedLang)}`;
 
     const htmlContent = `
       <!DOCTYPE html>

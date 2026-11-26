@@ -73,7 +73,13 @@ export default function DemoVerificationModal({
         }),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: { success?: boolean; message?: string } = {};
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        throw new Error(t("agency_demo_error_msg"));
+      }
       if (!res.ok || !data.success) {
         throw new Error(data.message || t("agency_demo_error_msg"));
       }

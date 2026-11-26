@@ -396,7 +396,7 @@ export function HomeContent() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
                 ref={heroDemoBtnRef}
-                href="/agency-panel"
+                href="/agency-panel?launch_demo=1"
                 className="st-demo-glow-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] border-[1.5px] border-[#1B5888] text-[#12406A] font-bold text-sm cursor-pointer"
               >
                 <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
@@ -913,7 +913,7 @@ export function HomeContent() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
-              href="/agency-panel"
+              href="/agency-panel?launch_demo=1"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white text-[#0E3152] hover:bg-[#E5EEF6] font-bold text-sm transition-colors shadow-lg"
             >
               <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />

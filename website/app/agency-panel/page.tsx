@@ -1863,6 +1863,17 @@ export default function AgencyPanelPage() {
             } catch { }
           }
 
+          const launchDemoParam = searchParams.get("launch_demo") === "1" || searchParams.get("demo") === "1";
+          if (launchDemoParam && !searchParams.get("demo_token")) {
+            setIsDemoModalOpen(true);
+            try {
+              const cleanUrl = new URL(window.location.href);
+              cleanUrl.searchParams.delete("launch_demo");
+              cleanUrl.searchParams.delete("demo");
+              window.history.replaceState({}, "", cleanUrl.toString());
+            } catch { }
+          }
+
           const demoToken = searchParams.get("demo_token");
           const isVerifiedDemoRedirect = searchParams.get("verified_demo") === "1";
           if (demoToken && !isVerifiedDemoRedirect) {
