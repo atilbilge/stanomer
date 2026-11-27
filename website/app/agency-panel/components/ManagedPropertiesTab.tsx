@@ -155,6 +155,7 @@ export interface ManagedPropertiesTabProps {
   agencyClients?: import("../types").AgencyClient[];
   onOpenEopModal?: (prefill: import("../types").EopPrefill) => void;
   onViewPropertyEop?: (propertyId: string) => void;
+  autoPromptEop?: boolean;
   amlRecords?: import("../types").AmlRecord[];
   onOpenAmlModal?: (prefill: import("../types").AmlPrefill) => void;
   onQuickRelistProperty?: (params: {
@@ -216,6 +217,7 @@ export default function ManagedPropertiesTab({
   agencyClients = [],
   onOpenEopModal,
   onViewPropertyEop,
+  autoPromptEop = false,
   amlRecords = [],
   onOpenAmlModal,
   onQuickRelistProperty,
@@ -3039,8 +3041,8 @@ export default function ManagedPropertiesTab({
         text: t("agency_contract_created_success"),
       });
 
-      // Lifecycle Scenario #11: New lease contract (Scenario A) -> realize active EOP or offer new realized EOP
-      if (onOpenEopModal) {
+      // Lifecycle Scenario #11: New lease contract -> only auto-prompt EOP when enabled in Account Settings (default OFF)
+      if (autoPromptEop && onOpenEopModal) {
         const activePropEop = eopRecords.find(
           (r) =>
             (r.property_id === p.id || (p.last_listing_id && r.listing_id === p.last_listing_id)) &&

@@ -216,6 +216,7 @@ export default function AgencyPanelPage() {
   const [isAmlModalOpen, setIsAmlModalOpen] = useState(false);
   const [amlPrefill, setAmlPrefill] = useState<AmlPrefill | null>(null);
   const [agencyRegistryInfo, setAgencyRegistryInfo] = useState<AgencyRegistryInfo>({});
+  const [autoPromptEop, setAutoPromptEop] = useState<boolean>(false);
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeModules, setActiveModules] = useState<string[]>([
     "property_lease_management",
@@ -1511,6 +1512,29 @@ export default function AgencyPanelPage() {
     }
   };
 
+  const handleToggleAutoPromptEop = async (enabled: boolean) => {
+    setAutoPromptEop(enabled);
+    if (userId && userId !== "demo" && isValidUuid(userId)) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("color_scheme")
+        .eq("id", userId)
+        .maybeSingle();
+      const existingScheme = (prof?.color_scheme as Record<string, any> | null) || {};
+      const { error } = await supabase
+        .from("profiles")
+        .update({ color_scheme: { ...existingScheme, auto_prompt_eop: enabled } })
+        .eq("id", userId);
+      if (error) {
+        console.warn("Error updating auto_prompt_eop:", error);
+      }
+    } else if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("stanomer_auto_prompt_eop_demo", enabled ? "true" : "false");
+      } catch { }
+    }
+  };
+
   const handleSaveRegistryInfo = async (info: AgencyRegistryInfo) => {
     if (userId && userId !== "demo" && isValidUuid(userId)) {
       const { error } = await supabase
@@ -2219,6 +2243,7 @@ export default function AgencyPanelPage() {
     setAgencyWebsite(prof?.website_url || "");
     setAgencyLogoUrl(prof?.logo_url || "");
     const scheme = (prof?.color_scheme as Record<string, any> | null) || {};
+    setAutoPromptEop(Boolean(scheme.auto_prompt_eop));
     const validTemplates: ShowcaseTemplate[] = [
       "stanomer_modern",
       "quiet_luxury",
@@ -4394,8 +4419,8 @@ export default function AgencyPanelPage() {
       }
     }
 
-    // Lifecycle EOP check: only on realized deals (rented / sold), never on reserved
-    if (closingStatus === "rented" || closingStatus === "sold") {
+    // Lifecycle EOP check: only when autoPromptEop is enabled in Account Settings (default OFF)
+    if (autoPromptEop && (closingStatus === "rented" || closingStatus === "sold")) {
       const activeListingEops = eopRecords.filter(
         (r) => r.listing_id === listing.id && r.status === "active"
       );
@@ -8888,6 +8913,8 @@ export default function AgencyPanelPage() {
                   }}
                   registryInfo={agencyRegistryInfo}
                   onSaveRegistryInfo={handleSaveRegistryInfo}
+                  autoPromptEop={autoPromptEop}
+                  onToggleAutoPromptEop={handleToggleAutoPromptEop}
                 />
               )}
 
@@ -8958,6 +8985,7 @@ export default function AgencyPanelPage() {
                   agencyName={agencyName}
                   agencyEmail={agencyEmail}
                   isDemoVerified={isDemoVerified}
+                  autoPromptEop={autoPromptEop}
                   onRequestVerification={() => setIsGatekeeperModalOpen(true)}
                   listings={listings}
                   activeModules={activeModules}

@@ -69,6 +69,8 @@ export interface AccountSettingsTabProps {
   handleRequestModuleUpgrade?: () => void;
   registryInfo?: AgencyRegistryInfo;
   onSaveRegistryInfo?: (info: AgencyRegistryInfo) => Promise<void>;
+  autoPromptEop?: boolean;
+  onToggleAutoPromptEop?: (enabled: boolean) => Promise<void> | void;
 }
 
 export interface AgencyInvoice {
@@ -208,6 +210,8 @@ export default function AccountSettingsTab({
   handleRequestModuleUpgrade,
   registryInfo,
   onSaveRegistryInfo,
+  autoPromptEop = false,
+  onToggleAutoPromptEop,
 }: AccountSettingsTabProps) {
   const [regNo, setRegNo] = useState(registryInfo?.registar_posrednika_no || "");
   const [regPib, setRegPib] = useState(registryInfo?.pib || "");
@@ -805,13 +809,40 @@ export default function AccountSettingsTab({
                   />
                 </div>
               </div>
+              {onToggleAutoPromptEop && (
+                <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-800">
+                      {t("eop_auto_prompt_toggle_title")}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                      {t("eop_auto_prompt_toggle_desc")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(autoPromptEop)}
+                    onClick={() => onToggleAutoPromptEop(!autoPromptEop)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+                      autoPromptEop ? "bg-[#1B5888]" : "bg-slate-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform ${
+                        autoPromptEop ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={savingRegistry}
                   className="px-4 py-2 rounded-xl bg-[#1B5888] hover:bg-[#12406A] text-xs font-semibold text-white disabled:opacity-50 cursor-pointer"
                 >
-                  {savingRegistry ? t("eop_btn_saving") : t("eop_btn_save")}
+                  {savingRegistry ? t("eop_btn_saving") : t("agency_panel_save_changes")}
                 </button>
               </div>
             </form>
