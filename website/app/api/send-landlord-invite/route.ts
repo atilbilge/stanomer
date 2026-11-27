@@ -497,36 +497,49 @@ export async function POST(request: Request) {
         ? clientToken.trim()
         : `landlord_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
 
-    // 1. Ensure invitation record exists in Supabase (fail-fast: never email a phantom invite!)
+    // 1. Ensure invitation record exists in Supabase (idempotent + fail-fast: never duplicate or email a phantom invite!)
     if (!invitationCreatedByClient) {
-      await supabase
+      const { data: existingInv } = await supabase
         .from("invitations")
-        .update({ status: "cancelled" })
+        .select("id, token")
         .eq("property_id", propertyId)
         .eq("target_role", "landlord")
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .ilike("invitee_email", trimmedEmail)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      const { error: insertErr } = await supabase.from("invitations").insert({
-        property_id: propertyId,
-        inviter_id: inviterId || null,
-        agency_id: inviterId || null,
-        inviter_name: agencyName,
-        invitee_email: trimmedEmail,
-        token: token,
-        target_role: "landlord",
-        status: "pending",
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
+      if (!existingInv?.id) {
+        await supabase
+          .from("invitations")
+          .update({ status: "cancelled" })
+          .eq("property_id", propertyId)
+          .eq("target_role", "landlord")
+          .eq("status", "pending");
 
-      if (insertErr) {
-        console.error("Failed to create landlord invitation in Supabase:", insertErr);
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Could not persist invitation record (${insertErr.message || insertErr.code})`,
-          },
-          { status: 500 }
-        );
+        const { error: insertErr } = await supabase.from("invitations").insert({
+          property_id: propertyId,
+          inviter_id: inviterId || null,
+          agency_id: inviterId || null,
+          inviter_name: agencyName,
+          invitee_email: trimmedEmail,
+          token: token,
+          target_role: "landlord",
+          status: "pending",
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        });
+
+        if (insertErr) {
+          console.error("Failed to create landlord invitation in Supabase:", insertErr);
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Could not persist invitation record (${insertErr.message || insertErr.code})`,
+            },
+            { status: 500 }
+          );
+        }
       }
     }
 

@@ -738,6 +738,24 @@ class PropertyRepository {
 
     final emailToUse = (landlordEmail != null && landlordEmail.trim().isNotEmpty) ? landlordEmail.trim().toLowerCase() : null;
 
+    // Idempotent: reuse existing pending landlord invite for the same email to prevent duplicate invites
+    if (emailToUse != null) {
+      final existing = await _client
+          .from('invitations')
+          .select('id, token')
+          .eq('property_id', propertyId)
+          .eq('target_role', 'landlord')
+          .eq('status', 'pending')
+          .ilike('invitee_email', emailToUse)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (existing != null && existing['token'] != null) {
+        return existing['token'] as String;
+      }
+    }
+
     await _client.from('invitations').insert({
       'property_id': propertyId,
       'inviter_id': user.id,

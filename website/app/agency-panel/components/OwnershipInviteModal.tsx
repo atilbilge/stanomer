@@ -381,34 +381,51 @@ ${effectiveAgencyName} tim`;
 
     try {
       const normalizedEmail = effectiveLandlordEmail.trim().toLowerCase();
-      const generatedToken = `landlord_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
+      let generatedToken = `landlord_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
       let invitationCreatedByClient = false;
 
       // Persist invitation under the agency's authenticated browser session first
       // so it works reliably even without a server-side service role key.
+      // Idempotent: reuse existing pending landlord invite for the same email instead of duplicating.
       if (userId && userId !== "demo") {
-        await supabase
+        const { data: existingInv } = await supabase
           .from("invitations")
-          .update({ status: "cancelled" })
+          .select("id, token")
           .eq("property_id", property.id)
           .eq("target_role", "landlord")
-          .eq("status", "pending");
+          .eq("status", "pending")
+          .ilike("invitee_email", normalizedEmail)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        const { error: invErr } = await supabase.from("invitations").insert({
-          property_id: property.id,
-          inviter_id: userId,
-          agency_id: userId,
-          inviter_name: effectiveAgencyName,
-          invitee_email: normalizedEmail,
-          token: generatedToken,
-          target_role: "landlord",
-          status: "pending",
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-        if (!invErr) {
+        if (existingInv?.id) {
+          if (existingInv.token) generatedToken = existingInv.token;
           invitationCreatedByClient = true;
         } else {
-          console.warn("Client-side invitation insert failed, delegating to server API:", invErr.message);
+          await supabase
+            .from("invitations")
+            .update({ status: "cancelled" })
+            .eq("property_id", property.id)
+            .eq("target_role", "landlord")
+            .eq("status", "pending");
+
+          const { error: invErr } = await supabase.from("invitations").insert({
+            property_id: property.id,
+            inviter_id: userId,
+            agency_id: userId,
+            inviter_name: effectiveAgencyName,
+            invitee_email: normalizedEmail,
+            token: generatedToken,
+            target_role: "landlord",
+            status: "pending",
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+          if (!invErr) {
+            invitationCreatedByClient = true;
+          } else {
+            console.warn("Client-side invitation insert failed, delegating to server API:", invErr.message);
+          }
         }
       }
 
