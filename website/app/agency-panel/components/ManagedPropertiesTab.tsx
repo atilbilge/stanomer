@@ -90,7 +90,7 @@ import {
   ContractExpenseItem,
   TenantSecondaryContact,
 } from "../types";
-import { processRentPayments } from "../utils";
+import { processRentPayments, isInvoiceAwaitingAgencyApproval, getUtcMonthDateRange } from "../utils";
 import { PaymentTypeIconBadge, formatCurrencyAmount } from "../categoryAndPaymentIcons";
 import { SERBIAN_CITIES } from "../constants";
 import {
@@ -3285,6 +3285,7 @@ export default function ManagedPropertiesTab({
             paid_at: markPaidDate || new Date().toISOString(),
             payment_method: markPaidMethod,
             owner_note: markPaidNote.trim() || null,
+            dispute_reason: null,
           })
           .eq("id", markPaidPayment.id);
         if (error) throw error;
@@ -3347,6 +3348,8 @@ export default function ManagedPropertiesTab({
               payment_method: markPaidMethod,
               owner_note: markPaidNote.trim() || null,
               dispute_reason: null,
+              is_pending_approval: false,
+              is_overdue: false,
             }
             : item
         )
@@ -3390,32 +3393,66 @@ export default function ManagedPropertiesTab({
       return;
     }
     if (selectedList.length === 0) return;
-    const paymentIds = selectedList.map((p) => p.id);
+    const invoiceItems = selectedList.filter((p) => isInvoiceAwaitingAgencyApproval(p));
+    const paymentItems = selectedList.filter((p) => !isInvoiceAwaitingAgencyApproval(p));
+    const invoiceIds = invoiceItems.map((p) => p.id);
+    const paymentIds = paymentItems.map((p) => p.id);
     try {
       if (hasSupabaseSession) {
-        const { error } = await supabase
-          .from("rent_payments")
-          .update({
-            status: "paid",
-            paid_at: new Date().toISOString(),
-          })
-          .in("id", paymentIds);
-        if (error) throw error;
+        if (invoiceIds.length > 0) {
+          const { error: invErr } = await supabase
+            .from("rent_payments")
+            .update({
+              status: "pending",
+              declared_at: null,
+              dispute_reason: null,
+            })
+            .in("id", invoiceIds);
+          if (invErr) throw invErr;
+
+          for (const inv of invoiceItems) {
+            if (inv.title && inv.title.trim() && inv.due_date) {
+              const range = getUtcMonthDateRange(inv.due_date);
+              if (range) {
+                await supabase
+                  .from("rent_payments")
+                  .update({ status: "pending", declared_at: null, dispute_reason: null })
+                  .eq("property_id", inv.property_id)
+                  .ilike("title", inv.title.trim())
+                  .gte("due_date", range.startOfMonth)
+                  .lte("due_date", range.endOfMonth);
+              }
+            }
+          }
+        }
+
+        if (paymentIds.length > 0) {
+          const { error } = await supabase
+            .from("rent_payments")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              dispute_reason: null,
+            })
+            .in("id", paymentIds);
+          if (error) throw error;
+        }
 
         try {
           const logsToInsert = selectedList.map((p) => {
+            const isInv = isInvoiceAwaitingAgencyApproval(p);
             const isRent = (p.title || "").toLowerCase().includes("kira") || (p.title || "").toLowerCase().includes("rent") || (p.title || "").toLowerCase().includes("kirij");
             return {
               property_id: p.property_id,
               user_id: userId,
-              type: isRent ? "rent_approved" : "payment_toggle",
+              type: isInv ? "invoice_approved" : isRent ? "rent_approved" : "payment_toggle",
               metadata: {
                 payment_id: p.id,
                 title: p.title,
                 amount: p.amount,
                 currency: p.currency,
                 due_date: p.due_date,
-                paid: true,
+                ...(isInv ? {} : { paid: true }),
               },
             };
           });
@@ -3432,17 +3469,34 @@ export default function ManagedPropertiesTab({
       }
 
       setPayments((prev) =>
-        prev.map((item) =>
-          paymentIds.includes(item.id)
-            ? { ...item, status: "paid", paid_at: new Date().toISOString(), dispute_reason: null }
-            : item
-        )
+        prev.map((item) => {
+          if (invoiceIds.includes(item.id)) {
+            return {
+              ...item,
+              status: "pending",
+              declared_at: null,
+              dispute_reason: null,
+              is_pending_approval: false,
+            };
+          }
+          if (paymentIds.includes(item.id)) {
+            return {
+              ...item,
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              dispute_reason: null,
+              is_pending_approval: false,
+              is_overdue: false,
+            };
+          }
+          return item;
+        })
       );
 
       clearSelectedPayments();
       setStatusMessage({
         type: "success",
-        text: t("agency_bulk_approved_success", { count: String(paymentIds.length) }),
+        text: t("agency_bulk_approved_success", { count: String(selectedList.length) }),
       });
     } catch (err: any) {
       console.error("Bulk approve error:", err);
@@ -3494,6 +3548,7 @@ export default function ManagedPropertiesTab({
         status: "paid",
         paid_at: bulkMarkPaidDate || new Date().toISOString(),
         payment_method: bulkMarkPaidMethod,
+        dispute_reason: null,
       };
       if (bulkMarkPaidNote.trim()) {
         updatePayload.owner_note = bulkMarkPaidNote.trim();
@@ -3549,6 +3604,8 @@ export default function ManagedPropertiesTab({
               ...item,
               ...updatePayload,
               dispute_reason: null,
+              is_pending_approval: false,
+              is_overdue: false,
             }
             : item
         )
@@ -3585,16 +3642,27 @@ export default function ManagedPropertiesTab({
     if (!disputePayment) return;
     if (!disputeReason.trim()) return;
 
+    const isInvoiceApproval = isInvoiceAwaitingAgencyApproval(disputePayment);
     setIsSubmittingDispute(true);
     try {
       if (hasSupabaseSession) {
-        const { error } = await supabase
-          .from("rent_payments")
-          .update({
+        const updatePayload = isInvoiceApproval
+          ? {
+            amount: 0,
+            invoice_url: null,
             status: "pending",
             declared_at: null,
             dispute_reason: disputeReason.trim(),
-          })
+            owner_note: null,
+          }
+          : {
+            status: "pending",
+            declared_at: null,
+            dispute_reason: disputeReason.trim(),
+          };
+        const { error } = await supabase
+          .from("rent_payments")
+          .update(updatePayload)
           .eq("id", disputePayment.id);
         if (error) throw error;
 
@@ -3604,7 +3672,7 @@ export default function ManagedPropertiesTab({
             .insert({
               property_id: disputePayment.property_id,
               user_id: userId,
-              type: "rent_rejected",
+              type: isInvoiceApproval ? "invoice_rejected" : "rent_rejected",
               metadata: {
                 payment_id: disputePayment.id,
                 title: disputePayment.title,
@@ -3625,7 +3693,7 @@ export default function ManagedPropertiesTab({
           id: `log-${Date.now()}`,
           property_id: disputePayment.property_id,
           user_id: userId || "demo",
-          type: "rent_rejected",
+          type: isInvoiceApproval ? "invoice_rejected" : "rent_rejected",
           metadata: {
             payment_id: disputePayment.id,
             title: disputePayment.title,
@@ -3642,7 +3710,25 @@ export default function ManagedPropertiesTab({
       setPayments((prev) =>
         prev.map((item) =>
           item.id === disputePayment.id
-            ? { ...item, status: "pending", declared_at: null, dispute_reason: disputeReason.trim() }
+            ? isInvoiceApproval
+              ? {
+                  ...item,
+                  amount: 0,
+                  invoice_url: null,
+                  status: "pending",
+                  declared_at: null,
+                  dispute_reason: disputeReason.trim(),
+                  owner_note: undefined,
+                  is_pending_approval: false,
+                  is_unentered_bill: true,
+                }
+              : {
+                  ...item,
+                  status: "pending",
+                  declared_at: null,
+                  dispute_reason: disputeReason.trim(),
+                  is_pending_approval: false,
+                }
             : item
         )
       );
@@ -3654,7 +3740,7 @@ export default function ManagedPropertiesTab({
       setIsDisputeModalOpen(false);
       setStatusMessage({
         type: "success",
-        text: t("agency_payments_rejected_success"),
+        text: isInvoiceApproval ? t("agency_invoice_rejected_success") : t("agency_payments_rejected_success"),
       });
     } catch (err) {
       console.error("Dispute payment error:", err);
@@ -3715,19 +3801,34 @@ export default function ManagedPropertiesTab({
       const targetPropId = invoicePayment.property_id || p.id;
 
       if (activeUserId && activeUserId !== "demo") {
+        const invoicePayload = {
+          amount: amountNum,
+          currency: invoiceCurrency,
+          due_date: invoiceDueDate,
+          owner_note: invoiceNote.trim() || null,
+          invoice_url: invoiceFileUrl,
+          dispute_reason: null,
+          status: amountNum === 0 ? "paid" : "pending",
+        };
         const { error } = await supabase
           .from("rent_payments")
-          .update({
-            amount: amountNum,
-            currency: invoiceCurrency,
-            due_date: invoiceDueDate,
-            owner_note: invoiceNote.trim() || null,
-            invoice_url: invoiceFileUrl,
-            dispute_reason: null,
-            status: amountNum === 0 ? "paid" : "pending",
-          })
+          .update(invoicePayload)
           .eq("id", invoicePayment.id);
         if (error) throw error;
+
+        // Exact Flutter SSOT (setPaymentInvoice): sync any duplicate same-property, same-title, same-month rows
+        if (invoicePayment.title && invoicePayment.title.trim() && (invoicePayment.due_date || invoiceDueDate)) {
+          const range = getUtcMonthDateRange(invoicePayment.due_date || invoiceDueDate);
+          if (range) {
+            await supabase
+              .from("rent_payments")
+              .update(invoicePayload)
+              .eq("property_id", targetPropId)
+              .ilike("title", invoicePayment.title.trim())
+              .gte("due_date", range.startOfMonth)
+              .lte("due_date", range.endOfMonth);
+          }
+        }
 
         try {
           const logPayload = {
@@ -4877,8 +4978,8 @@ export default function ManagedPropertiesTab({
             {/* 2. Sticky Unified Property Header + Action Bar + Tabs */}
             <div
               className={`sticky top-14 sm:top-16 z-30 bg-white/95 backdrop-blur-md border border-slate-200/80 transition-all duration-200 ${isDetailHeaderCompact
-                  ? "rounded-xl px-4 py-2.5 shadow-md"
-                  : "rounded-2xl px-5 sm:px-6 pt-5 sm:pt-6 pb-0 shadow-xs"
+                ? "rounded-xl px-4 py-2.5 shadow-md"
+                : "rounded-2xl px-5 sm:px-6 pt-5 sm:pt-6 pb-0 shadow-xs"
                 }`}
             >
               {isDetailHeaderCompact ? (
@@ -4905,8 +5006,8 @@ export default function ManagedPropertiesTab({
                     </h2>
                     <span
                       className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${p.is_occupied && propContract && !isActivelyListedInPortfolio
-                          ? "bg-[#EAF5EE] text-[#2A6E43] border border-[#2A6E43]/20"
-                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                        ? "bg-[#EAF5EE] text-[#2A6E43] border border-[#2A6E43]/20"
+                        : "bg-slate-100 text-slate-600 border border-slate-200"
                         }`}
                     >
                       {p.is_occupied && propContract && !isActivelyListedInPortfolio
@@ -4923,8 +5024,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "overview"}
                       onClick={() => setPropertyDrawerTab("overview")}
                       className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "overview"
-                          ? "bg-[#E5EEF6] text-[#1B5888]"
-                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        ? "bg-[#E5EEF6] text-[#1B5888]"
+                        : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
                         }`}
                     >
                       <Home className="w-3.5 h-3.5 shrink-0" />
@@ -4936,8 +5037,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "payments"}
                       onClick={() => setPropertyDrawerTab("payments")}
                       className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "payments"
-                          ? "bg-[#E5EEF6] text-[#1B5888]"
-                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        ? "bg-[#E5EEF6] text-[#1B5888]"
+                        : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
                         }`}
                     >
                       <Receipt className="w-3.5 h-3.5 shrink-0" />
@@ -4952,8 +5053,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "maintenance"}
                       onClick={() => setPropertyDrawerTab("maintenance")}
                       className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "maintenance"
-                          ? "bg-[#E5EEF6] text-[#1B5888]"
-                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        ? "bg-[#E5EEF6] text-[#1B5888]"
+                        : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
                         }`}
                     >
                       <Wrench className="w-3.5 h-3.5 shrink-0" />
@@ -4968,8 +5069,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "audit"}
                       onClick={() => setPropertyDrawerTab("audit")}
                       className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "audit"
-                          ? "bg-[#E5EEF6] text-[#1B5888]"
-                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        ? "bg-[#E5EEF6] text-[#1B5888]"
+                        : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
                         }`}
                     >
                       <Clock className="w-3.5 h-3.5 shrink-0" />
@@ -5269,8 +5370,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "overview"}
                       onClick={() => setPropertyDrawerTab("overview")}
                       className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "overview"
-                          ? "border-[#1B5888] text-[#1B5888]"
-                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        ? "border-[#1B5888] text-[#1B5888]"
+                        : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
                         }`}
                     >
                       <Home className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "overview" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
@@ -5282,8 +5383,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "payments"}
                       onClick={() => setPropertyDrawerTab("payments")}
                       className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "payments"
-                          ? "border-[#1B5888] text-[#1B5888]"
-                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        ? "border-[#1B5888] text-[#1B5888]"
+                        : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
                         }`}
                     >
                       <Receipt className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "payments" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
@@ -5299,8 +5400,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "maintenance"}
                       onClick={() => setPropertyDrawerTab("maintenance")}
                       className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "maintenance"
-                          ? "border-[#1B5888] text-[#1B5888]"
-                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        ? "border-[#1B5888] text-[#1B5888]"
+                        : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
                         }`}
                     >
                       <Wrench className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "maintenance" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
@@ -5316,8 +5417,8 @@ export default function ManagedPropertiesTab({
                       aria-selected={propertyDrawerTab === "audit"}
                       onClick={() => setPropertyDrawerTab("audit")}
                       className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "audit"
-                          ? "border-[#1B5888] text-[#1B5888]"
-                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        ? "border-[#1B5888] text-[#1B5888]"
+                        : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
                         }`}
                     >
                       <Clock className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "audit" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
@@ -6415,10 +6516,10 @@ export default function ManagedPropertiesTab({
                                                     <div key={logItem.id} className="flex items-start gap-2">
                                                       <span
                                                         className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${logItem.type === "rent_disputed" || logItem.type === "rent_rejected" || logItem.type === "invoice_rejected"
-                                                            ? "bg-rose-500"
-                                                            : logItem.type === "rent_approved" || logItem.type === "rent_auto_approved" || (logItem.type === "payment_toggle" && logItem.metadata?.paid)
-                                                              ? "bg-emerald-600"
-                                                              : "bg-slate-400"
+                                                          ? "bg-rose-500"
+                                                          : logItem.type === "rent_approved" || logItem.type === "rent_auto_approved" || (logItem.type === "payment_toggle" && logItem.metadata?.paid)
+                                                            ? "bg-emerald-600"
+                                                            : "bg-slate-400"
                                                           }`}
                                                       />
                                                       <div className="min-w-0 flex-1">
@@ -6491,7 +6592,7 @@ export default function ManagedPropertiesTab({
                                           <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-200/60 text-[#666666]">
                                             <div>
                                               <span>{t("agency_contracts_col_due")}: {pay.due_date || "-"}</span>
-                                              {pay.paid_at && (
+                                              {isPaid && pay.paid_at && (
                                                 <span className="ml-2">
                                                   • {t("agency_financials_paid_date_prefix")}: {new Date(pay.paid_at).toLocaleDateString(activeLocale)}
                                                 </span>
@@ -6505,10 +6606,10 @@ export default function ManagedPropertiesTab({
                                                   type="button"
                                                   onClick={() => openInvoiceModal(pay)}
                                                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${isDisputed
-                                                      ? "bg-[#FFF1F2] text-[#E11D48] hover:bg-rose-100 font-bold border border-[#FDA4AF]"
-                                                      : pay.amount === 0
-                                                        ? "bg-[#FBF1DC] text-[#8A5206] hover:bg-amber-200 font-bold border border-amber-300 animate-pulse"
-                                                        : "bg-slate-100 text-[#4A4A4A] hover:bg-slate-200"
+                                                    ? "bg-[#FFF1F2] text-[#E11D48] hover:bg-rose-100 font-bold border border-[#FDA4AF]"
+                                                    : pay.amount === 0
+                                                      ? "bg-[#FBF1DC] text-[#8A5206] hover:bg-amber-200 font-bold border border-amber-300 animate-pulse"
+                                                      : "bg-slate-100 text-[#4A4A4A] hover:bg-slate-200"
                                                     }`}
                                                   title={isDisputed ? t("agency_payment_btn_update_disputed") : t("agency_invoice_btn_enter_amount")}
                                                 >
@@ -6532,14 +6633,18 @@ export default function ManagedPropertiesTab({
                                                     onClick={() => handleApprovePayment(pay)}
                                                     className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#1B5888] text-white hover:bg-emerald-700 shadow-xs cursor-pointer transition-colors"
                                                   >
-                                                    {t("agency_payments_btn_approve")}
+                                                    {isInvoiceAwaitingAgencyApproval(pay)
+                                                      ? t("agency_invoice_btn_approve")
+                                                      : t("agency_payments_btn_approve")}
                                                   </button>
                                                   <button
                                                     type="button"
                                                     onClick={() => openDisputeModal(pay)}
                                                     className="px-2.5 py-1 rounded-lg text-xs font-semibold text-[#A33C29] hover:bg-[#FBEAE6] cursor-pointer transition-colors"
                                                   >
-                                                    {t("agency_payments_btn_reject")}
+                                                    {isInvoiceAwaitingAgencyApproval(pay)
+                                                      ? t("agency_invoice_btn_reject")
+                                                      : t("agency_payments_btn_reject")}
                                                   </button>
                                                 </div>
                                               )}
@@ -7911,8 +8016,8 @@ export default function ManagedPropertiesTab({
                                   <div
                                     key={`awaiting-${pay.id}`}
                                     className={`flex items-start gap-3 p-3.5 rounded-[10px] border ${isDisp
-                                        ? "bg-[#FBEAE6]/60 border-[#B5432E]/20"
-                                        : "bg-[#E5EEF6]/60 border-[#1B5888]/20"
+                                      ? "bg-[#FBEAE6]/60 border-[#B5432E]/20"
+                                      : "bg-[#E5EEF6]/60 border-[#1B5888]/20"
                                       }`}
                                   >
                                     <div
@@ -9451,8 +9556,8 @@ export default function ManagedPropertiesTab({
                                       title={t("agency_tasks_view_property_tasks")}
                                       aria-label={t("agency_tasks_view_property_tasks")}
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${propTaskCount > 0
-                                          ? "bg-[#E5EEF6] text-[#1B5888] hover:bg-[#1B5888] hover:text-white"
-                                          : "text-slate-400 hover:text-[#1B5888] hover:bg-slate-100"
+                                        ? "bg-[#E5EEF6] text-[#1B5888] hover:bg-[#1B5888] hover:text-white"
+                                        : "text-slate-400 hover:text-[#1B5888] hover:bg-slate-100"
                                         }`}
                                     >
                                       <CheckSquare className="w-3.5 h-3.5 shrink-0" />
@@ -11997,8 +12102,8 @@ export default function ManagedPropertiesTab({
                       </h3>
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${linkedListing
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-blue-100 text-[#1B5888]"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-blue-100 text-[#1B5888]"
                           }`}
                       >
                         {linkedListing

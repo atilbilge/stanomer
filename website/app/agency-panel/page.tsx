@@ -179,7 +179,7 @@ import {
   DEMO_AGENCY_LISTINGS,
 } from "./demoData";
 
-import { processRentPayments } from "./utils";
+import { processRentPayments, isInvoiceAwaitingAgencyApproval, getUtcMonthDateRange } from "./utils";
 
 export default function AgencyPanelPage() {
   const { lang, setLang, t } = useLanguage();
@@ -3492,52 +3492,142 @@ export default function AgencyPanelPage() {
       setIsGatekeeperModalOpen(true);
       return;
     }
+    const isInvoiceApproval = isInvoiceAwaitingAgencyApproval(p);
     setProcessingPaymentId(p.id);
     try {
-      if (userId && userId !== "demo") {
-        const { error } = await supabase
-          .from("rent_payments")
-          .update({
-            status: "paid",
-            paid_at: new Date().toISOString(),
-            dispute_reason: null,
-          })
-          .eq("id", p.id);
-        if (error) throw error;
-
-        try {
-          const isRent = (p.title || "").toLowerCase().includes("kira") || (p.title || "").toLowerCase().includes("rent") || (p.title || "").toLowerCase().includes("kirij");
-          const logType = isRent ? "rent_approved" : "payment_toggle";
-          await supabase.from("activity_logs").insert({
-            property_id: p.property_id,
-            user_id: userId,
-            type: logType,
-            metadata: {
-              payment_id: p.id,
-              title: p.title,
-              amount: p.amount,
-              currency: p.currency,
-              due_date: p.due_date,
-              paid: true,
-            },
-          });
-        } catch (logErr) {
-          console.warn("Could not insert activity log for payment approval:", logErr);
+      let monthPrefix = "";
+      if (p.due_date) {
+        const dPart = p.due_date.split("T")[0];
+        const parts = dPart.split("-");
+        if (parts.length >= 2) {
+          monthPrefix = `${parts[0]}-${parts[1]}`;
         }
       }
+
+      if (userId && userId !== "demo") {
+        if (isInvoiceApproval) {
+          // Exact Flutter SSOT (approvePaymentInvoice): reflect bill as pending due, NOT paid!
+          const { data: updatedRows, error } = await supabase
+            .from("rent_payments")
+            .update({
+              status: "pending",
+              declared_at: null,
+              paid_at: null,
+              dispute_reason: null,
+            })
+            .eq("id", p.id)
+            .select("id");
+          if (error) throw error;
+
+          // Also update any duplicate same-property, same-title, same-month rows (exact Flutter parity)
+          if (p.title && p.title.trim() && p.due_date) {
+            const range = getUtcMonthDateRange(p.due_date);
+            if (range) {
+              await supabase
+                .from("rent_payments")
+                .update({
+                  status: "pending",
+                  declared_at: null,
+                  dispute_reason: null,
+                })
+                .eq("property_id", p.property_id)
+                .ilike("title", p.title.trim())
+                .gte("due_date", range.startOfMonth)
+                .lte("due_date", range.endOfMonth);
+            }
+          }
+
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error("No rent_payments row updated (check RLS / permissions).");
+          }
+
+          try {
+            await supabase.from("activity_logs").insert({
+              property_id: p.property_id,
+              user_id: userId,
+              type: "invoice_approved",
+              metadata: {
+                payment_id: p.id,
+                title: p.title,
+                amount: p.amount,
+                currency: p.currency,
+                due_date: p.due_date,
+              },
+            });
+          } catch (logErr) {
+            console.warn("Could not insert activity log for invoice approval:", logErr);
+          }
+        } else {
+          const { data: updatedRows, error } = await supabase
+            .from("rent_payments")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              dispute_reason: null,
+            })
+            .eq("id", p.id)
+            .select("id");
+          if (error) throw error;
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error("No rent_payments row updated (check RLS / permissions).");
+          }
+
+          try {
+            const isRent = (p.title || "").toLowerCase().includes("kira") || (p.title || "").toLowerCase().includes("rent") || (p.title || "").toLowerCase().includes("kirij");
+            const logType = isRent ? "rent_approved" : "payment_toggle";
+            await supabase.from("activity_logs").insert({
+              property_id: p.property_id,
+              user_id: userId,
+              type: logType,
+              metadata: {
+                payment_id: p.id,
+                title: p.title,
+                amount: p.amount,
+                currency: p.currency,
+                due_date: p.due_date,
+                paid: true,
+              },
+            });
+          } catch (logErr) {
+            console.warn("Could not insert activity log for payment approval:", logErr);
+          }
+        }
+      }
+      const normalizedTitle = (p.title || "").trim().toLowerCase();
       setPayments((prev) =>
-        prev.map((item) =>
-          item.id === p.id
-            ? { ...item, status: "paid", paid_at: new Date().toISOString() }
-            : item
-        )
+        prev.map((item) => {
+          const sameMonthTitle =
+            isInvoiceApproval &&
+            monthPrefix &&
+            item.property_id === p.property_id &&
+            (item.title || "").trim().toLowerCase() === normalizedTitle &&
+            (item.due_date || "").startsWith(monthPrefix);
+          if (item.id !== p.id && !sameMonthTitle) return item;
+          return isInvoiceApproval
+            ? {
+                ...item,
+                status: "pending",
+                declared_at: null,
+                paid_at: null,
+                dispute_reason: null,
+                is_pending_approval: false,
+              }
+            : {
+                ...item,
+                status: "paid",
+                paid_at: new Date().toISOString(),
+                dispute_reason: null,
+                is_pending_approval: false,
+                is_overdue: false,
+              };
+        })
       );
       if (selectedReceiptPayment?.id === p.id) {
         setSelectedReceiptPayment(null);
       }
       setStatusMessage({
         type: "success",
-        text: t("agency_payments_approved_success"),
+        text: isInvoiceApproval ? t("agency_invoice_approved_success") : t("agency_payments_approved_success"),
       });
     } catch (err) {
       console.error("Approve payment error:", err);
@@ -3555,52 +3645,141 @@ export default function AgencyPanelPage() {
       setIsGatekeeperModalOpen(true);
       return;
     }
+    const isInvoiceApproval = isInvoiceAwaitingAgencyApproval(p);
     setProcessingPaymentId(p.id);
     try {
-      if (userId && userId !== "demo") {
-        const { error } = await supabase
-          .from("rent_payments")
-          .update({
-            status: "pending",
-            declared_at: null,
-            dispute_reason: null,
-          })
-          .eq("id", p.id);
-        if (error) throw error;
-
-        try {
-          const isRent = (p.title || "").toLowerCase().includes("kira") || (p.title || "").toLowerCase().includes("rent") || (p.title || "").toLowerCase().includes("kirij");
-          const logType = isRent ? "rent_rejected" : "payment_toggle";
-          await supabase.from("activity_logs").insert({
-            property_id: p.property_id,
-            user_id: userId,
-            type: logType,
-            metadata: {
-              payment_id: p.id,
-              title: p.title,
-              amount: p.amount,
-              currency: p.currency,
-              due_date: p.due_date,
-              paid: false,
-            },
-          });
-        } catch (logErr) {
-          console.warn("Could not insert activity log for payment rejection:", logErr);
+      let monthPrefix = "";
+      if (p.due_date) {
+        const dPart = p.due_date.split("T")[0];
+        const parts = dPart.split("-");
+        if (parts.length >= 2) {
+          monthPrefix = `${parts[0]}-${parts[1]}`;
         }
       }
+
+      if (userId && userId !== "demo") {
+        if (isInvoiceApproval) {
+          // Exact Flutter SSOT (rejectPaymentInvoice): reset amount to 0 & clear invoice_url
+          const { data: updatedRows, error } = await supabase
+            .from("rent_payments")
+            .update({
+              amount: 0,
+              invoice_url: null,
+              status: "pending",
+              declared_at: null,
+              dispute_reason: null,
+              owner_note: null,
+            })
+            .eq("id", p.id)
+            .select("id");
+          if (error) throw error;
+
+          if (p.title && p.title.trim() && p.due_date) {
+            const range = getUtcMonthDateRange(p.due_date);
+            if (range) {
+              await supabase
+                .from("rent_payments")
+                .update({
+                  amount: 0,
+                  invoice_url: null,
+                  status: "pending",
+                  declared_at: null,
+                  dispute_reason: null,
+                  owner_note: null,
+                })
+                .eq("property_id", p.property_id)
+                .ilike("title", p.title.trim())
+                .gte("due_date", range.startOfMonth)
+                .lte("due_date", range.endOfMonth);
+            }
+          }
+
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error("No rent_payments row updated (check RLS / permissions).");
+          }
+
+          try {
+            await supabase.from("activity_logs").insert({
+              property_id: p.property_id,
+              user_id: userId,
+              type: "invoice_rejected",
+              metadata: {
+                payment_id: p.id,
+                title: p.title,
+                amount: p.amount,
+                currency: p.currency,
+                due_date: p.due_date,
+              },
+            });
+          } catch (logErr) {
+            console.warn("Could not insert activity log for invoice rejection:", logErr);
+          }
+        } else {
+          const { data: updatedRows, error } = await supabase
+            .from("rent_payments")
+            .update({
+              status: "pending",
+              declared_at: null,
+              dispute_reason: null,
+            })
+            .eq("id", p.id)
+            .select("id");
+          if (error) throw error;
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error("No rent_payments row updated (check RLS / permissions).");
+          }
+
+          try {
+            const isRent = (p.title || "").toLowerCase().includes("kira") || (p.title || "").toLowerCase().includes("rent") || (p.title || "").toLowerCase().includes("kirij");
+            const logType = isRent ? "rent_rejected" : "payment_toggle";
+            await supabase.from("activity_logs").insert({
+              property_id: p.property_id,
+              user_id: userId,
+              type: logType,
+              metadata: {
+                payment_id: p.id,
+                title: p.title,
+                amount: p.amount,
+                currency: p.currency,
+                due_date: p.due_date,
+                paid: false,
+              },
+            });
+          } catch (logErr) {
+            console.warn("Could not insert activity log for payment rejection:", logErr);
+          }
+        }
+      }
+      const normalizedTitle = (p.title || "").trim().toLowerCase();
       setPayments((prev) =>
-        prev.map((item) =>
-          item.id === p.id
-            ? { ...item, status: "pending", declared_at: null }
-            : item
-        )
+        prev.map((item) => {
+          const sameMonthTitle =
+            isInvoiceApproval &&
+            monthPrefix &&
+            item.property_id === p.property_id &&
+            (item.title || "").trim().toLowerCase() === normalizedTitle &&
+            (item.due_date || "").startsWith(monthPrefix);
+          if (item.id !== p.id && !sameMonthTitle) return item;
+          return isInvoiceApproval
+            ? {
+                ...item,
+                amount: 0,
+                invoice_url: null,
+                status: "pending",
+                declared_at: null,
+                owner_note: undefined,
+                is_pending_approval: false,
+                is_unentered_bill: true,
+              }
+            : { ...item, status: "pending", declared_at: null, is_pending_approval: false };
+        })
       );
       if (selectedReceiptPayment?.id === p.id) {
         setSelectedReceiptPayment(null);
       }
       setStatusMessage({
         type: "success",
-        text: t("agency_payments_rejected_success"),
+        text: isInvoiceApproval ? t("agency_invoice_rejected_success") : t("agency_payments_rejected_success"),
       });
     } catch (err) {
       console.error("Reject payment error:", err);

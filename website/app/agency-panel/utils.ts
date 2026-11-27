@@ -104,3 +104,48 @@ export function processRentPayments(rawRows: AgencyRentPayment[]): AgencyRentPay
 
   return combined;
 }
+
+/**
+ * Exact Flutter SSOT (property_detail_screen.dart:6557-6566):
+ * Landlord entered a utility/bill amount (receiver_type = 'owner' | 'included', not rent),
+ * status === 'declared', amount > 0, and NO payment receipt (receipt_url is empty).
+ * -> Agency approves the INVOICE (status -> 'pending' so tenant owes it), NOT as 'paid'.
+ * -> Agency rejecting the INVOICE resets amount -> 0 and invoice_url -> null.
+ */
+export function isInvoiceAwaitingAgencyApproval(p: AgencyRentPayment): boolean {
+  if (p.is_maintenance) return false;
+  const title = (p.title || "").trim().toLowerCase();
+  const isRent =
+    title === "kira" ||
+    title === "rent" ||
+    title.includes("kira") ||
+    title.includes("zakupnina") ||
+    title.includes("kirija");
+  const receiverType = p.receiver_type || "owner";
+  const isOwnerExpense = receiverType === "owner" && !isRent;
+  const isIncludedExpense = receiverType === "included";
+  const isLandlordExpense = isOwnerExpense || isIncludedExpense;
+  const amount = Number(p.amount) || 0;
+  const hasReceipt = Boolean(p.receipt_url && p.receipt_url.trim().length > 0);
+  return isLandlordExpense && amount > 0 && p.status === "declared" && !hasReceipt;
+}
+
+/**
+ * Timezone-safe YYYY-MM-DD month boundaries (avoids UTC+1 off-by-one shift on last day of month).
+ */
+export function getUtcMonthDateRange(dueDate?: string | null): { startOfMonth: string; endOfMonth: string } | null {
+  if (!dueDate) return null;
+  const datePart = dueDate.split("T")[0];
+  const parts = datePart.split("-");
+  if (parts.length < 2) return null;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return null;
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const mm = String(m).padStart(2, "0");
+  const dd = String(lastDay).padStart(2, "0");
+  return {
+    startOfMonth: `${y}-${mm}-01`,
+    endOfMonth: `${y}-${mm}-${dd}`,
+  };
+}

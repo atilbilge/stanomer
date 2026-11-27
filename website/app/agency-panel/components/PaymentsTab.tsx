@@ -1615,6 +1615,21 @@ export default function PaymentsTab({
                         {/* 6. Action */}
                         <td className="py-3.5 px-4 text-right sticky right-0 bg-white group-hover:bg-[#F8FAFC] z-10 shadow-[-6px_0_10px_rgba(0,0,0,0.04)] border-l border-slate-100 transition-colors">
                           <div className="flex items-center justify-end gap-1.5">
+                            {/* Invoice Document Button */}
+                            {p.invoice_url && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setViewingReceiptUrl(p.invoice_url || null);
+                                }}
+                                title={t("viewInvoice")}
+                                className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                              >
+                                <Receipt className="w-4 h-4" />
+                              </button>
+                            )}
+
                             {/* Receipt Button */}
                             {p.receipt_url && p.receipt_url !== "CASH" && (
                               <button
@@ -1806,6 +1821,19 @@ export default function PaymentsTab({
                   )}
 
                   <div className="flex items-center gap-1">
+                    {p.invoice_url && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingReceiptUrl(p.invoice_url || null);
+                        }}
+                        className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
+                        title={t("viewInvoice")}
+                      >
+                        <Receipt className="w-4 h-4" />
+                      </button>
+                    )}
                     {p.receipt_url && p.receipt_url !== "CASH" && (
                       <button
                         type="button"
