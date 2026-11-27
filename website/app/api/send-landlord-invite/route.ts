@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase Admin / Service Client if available, fallback to anon
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nbcbfmhztnnhfnapvaet.supabase.co";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  "https://nbcbfmhztnnhfnapvaet.supabase.co";
 const supabaseKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
   "sb_publishable_kY2aoizXZkGz2DsG6-sg-Q_Vm2Ef2mq";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -468,6 +472,8 @@ export async function POST(request: Request) {
       agencyEmail = "info@stanomer.online",
       language = "sr",
       inviterId,
+      token: clientToken,
+      invitationCreatedByClient = false,
     } = body;
 
     if (!landlordEmail || !landlordEmail.includes("@")) {
@@ -486,20 +492,21 @@ export async function POST(request: Request) {
 
     const trimmedEmail = landlordEmail.trim().toLowerCase();
     const trimmedName = landlordName?.trim() || trimmedEmail;
-    const token = `landlord_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
+    const token =
+      typeof clientToken === "string" && clientToken.trim()
+        ? clientToken.trim()
+        : `landlord_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
 
-    // 1. Create invitation record in Supabase
-    try {
-      // Cancel previous pending invites for this property & email
+    // 1. Ensure invitation record exists in Supabase (fail-fast: never email a phantom invite!)
+    if (!invitationCreatedByClient) {
       await supabase
         .from("invitations")
         .update({ status: "cancelled" })
         .eq("property_id", propertyId)
-        .eq("invitee_email", trimmedEmail)
+        .eq("target_role", "landlord")
         .eq("status", "pending");
 
-      // Insert fresh pending invitation
-      await supabase.from("invitations").insert({
+      const { error: insertErr } = await supabase.from("invitations").insert({
         property_id: propertyId,
         inviter_id: inviterId || null,
         agency_id: inviterId || null,
@@ -510,8 +517,17 @@ export async function POST(request: Request) {
         status: "pending",
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       });
-    } catch (dbErr) {
-      console.warn("Could not insert invitation into DB (continuing email dispatch):", dbErr);
+
+      if (insertErr) {
+        console.error("Failed to create landlord invitation in Supabase:", insertErr);
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Could not persist invitation record (${insertErr.message || insertErr.code})`,
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // 2. Prepare email content

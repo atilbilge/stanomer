@@ -18,8 +18,10 @@ import {
   AgencyRentPayment,
   AgencyContract,
   AgencyMaintenanceRequest,
+  AgencyMaintStatusFilter,
   AgencyPanelTab,
 } from "../types";
+import { processRentPayments } from "../utils";
 
 export interface PmCockpitCardsProps {
   managedProperties: AgencyManagedProperty[];
@@ -34,8 +36,8 @@ export interface PmCockpitCardsProps {
   maintenanceRequests: AgencyMaintenanceRequest[];
   setActiveTab: (tab: AgencyPanelTab) => void;
   setPaymentStatusFilter?: (status: "all" | "awaiting" | "overdue" | "paid") => void;
-  setPropOccupancyFilter?: (filter: "all" | "occupied" | "vacant") => void;
-  setMaintStatusFilter?: (status: "all" | "open" | "in_progress" | "resolved") => void;
+  setPropOccupancyFilter?: (filter: "all" | "occupied" | "vacant" | "expiring" | "expired") => void;
+  setMaintStatusFilter?: (status: AgencyMaintStatusFilter) => void;
   t: (key: string) => string;
 }
 
@@ -121,14 +123,24 @@ export default function PmCockpitCards({
     return parts.length === 0 ? emptyText : parts.join(" + ");
   };
 
-  // 1. Finans ve Tahsilat Hesaplamaları
-  const overdueList = payments.filter((p) => {
-    const status = (p.status as string) || "pending";
-    if (status === "declared" || status === "paid" || status === "cancelled") return false;
-    const amt = Number(p.amount) || 0;
+  // 1. Finans ve Tahsilat Hesaplamaları (PaymentsTab ile 1:1 SSOT)
+  const deduplicatedPayments = processRentPayments(payments);
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+
+  const overdueList = deduplicatedPayments.filter((item) => {
+    if (item.is_overdue !== undefined) return item.is_overdue;
+    const status = (item.status as string) || "pending";
+    if (status === "declared" || status === "disputed" || status === "paid" || status === "cancelled") {
+      return false;
+    }
+    const amt = Number(item.amount) || 0;
     if (amt <= 0) return false;
     if (status === "overdue") return true;
-    return status === "pending" && Boolean(p.due_date && p.due_date < todayStr);
+    if (status === "pending" && item.due_date) {
+      return new Date(item.due_date) < todayMidnight;
+    }
+    return false;
   });
   const overdueRentsList = overdueList.filter((p) => isRentTitle(p.title));
   const overdueBillsList = overdueList.filter((p) => !isRentTitle(p.title));
@@ -139,52 +151,64 @@ export default function PmCockpitCards({
   const overdueBillTotals = calculateCurrencyTotals(overdueBillsList);
   const isOverdueEmpty = overdueList.length === 0;
 
-  const sevenDaysAhead = new Date(Date.now() + 7 * 86400 * 1000).toISOString().split("T")[0];
-  const upcomingList = payments.filter((p) => {
-    if (p.status !== "pending") return false;
-    if (p.declared_at) return false;
-    return Boolean(p.due_date && p.due_date >= todayStr && p.due_date <= sevenDaysAhead);
+  // Card 2: Unentered Bills (PaymentsTab unenteredBillsList ile 1:1)
+  const unenteredBillsList = deduplicatedPayments.filter((item) => {
+    const status = (item.status as string) || "pending";
+    if (status === "paid" || status === "declared" || status === "disputed") return false;
+    const receiverType = item.receiver_type || "owner";
+    const isOwnerExpense =
+      (receiverType === "owner" || receiverType === "included") && !isRentTitle(item.title);
+    if (!isOwnerExpense) return false;
+    const amt = Number(item.amount) || 0;
+    return amt === 0;
   });
-  const upcomingCount = upcomingList.length;
-  const upcomingRents = upcomingList.filter((p) => isRentTitle(p.title)).length;
-  const upcomingBills = upcomingList.filter((p) => !isRentTitle(p.title)).length;
-  const isUpcomingEmpty = upcomingCount === 0;
+  const unenteredBillsCount = unenteredBillsList.length;
+  const unenteredBillsPropCount = new Set(unenteredBillsList.map((b) => b.property_id)).size;
+  const isUnenteredBillsEmpty = unenteredBillsCount === 0;
 
-  const isPaymentDeclared = (p: AgencyRentPayment) =>
-    p.status === "declared" || (p.status === "pending" && Boolean(p.declared_at));
+  // Card 3: Pending Approvals (PaymentsTab pendingApprovalsList ile 1:1)
+  const pendingApprovalsList = deduplicatedPayments.filter(
+    (p) =>
+      p.status === "disputed" ||
+      (p.is_pending_approval ??
+        (p.status === "declared" || (p.status === "pending" && Boolean(p.declared_at))))
+  );
   const isPaymentDisputed = (p: AgencyRentPayment) => p.status === "disputed";
-
-  const declaredRentsCount = payments.filter(
-    (p) => isPaymentDeclared(p) && !p.is_maintenance && isRentTitle(p.title)
+  const declaredRentsCount = pendingApprovalsList.filter(
+    (p) => !isPaymentDisputed(p) && !p.is_maintenance && isRentTitle(p.title)
   ).length;
-  const declaredBillsCount = payments.filter(
-    (p) => isPaymentDeclared(p) && !p.is_maintenance && !isRentTitle(p.title)
+  const declaredBillsCount = pendingApprovalsList.filter(
+    (p) => !isPaymentDisputed(p) && !p.is_maintenance && !isRentTitle(p.title)
   ).length;
-  const declaredMaintenanceCount = payments.filter(
-    (p) => isPaymentDeclared(p) && Boolean(p.is_maintenance)
+  const declaredMaintenanceCount = pendingApprovalsList.filter(
+    (p) => !isPaymentDisputed(p) && Boolean(p.is_maintenance)
   ).length;
-  const disputedPaymentsCount = payments.filter(isPaymentDisputed).length;
-  const pendingContractsCount = contracts.filter(
-    (c) => c.status === "pending" || (c.status as string) === "negotiating"
-  ).length;
-  const pendingApprovalsTotal =
-    declaredRentsCount +
-    declaredBillsCount +
-    declaredMaintenanceCount +
-    disputedPaymentsCount +
-    pendingContractsCount;
+  const disputedPaymentsCount = pendingApprovalsList.filter(isPaymentDisputed).length;
+  const pendingApprovalsTotal = pendingApprovalsList.length;
   const isPendingApprovalsEmpty = pendingApprovalsTotal === 0;
 
   const totalFinancePending =
-    (isOverdueEmpty ? 0 : overdueRentCount + overdueBillCount) +
-    (isUpcomingEmpty ? 0 : upcomingCount) +
+    (isOverdueEmpty ? 0 : overdueList.length) +
+    (isUnenteredBillsEmpty ? 0 : unenteredBillsCount) +
     (isPendingApprovalsEmpty ? 0 : pendingApprovalsTotal);
 
   // 2. Sözleşme ve Portföy Hesaplamaları
-  const expiredContracts = contracts.filter((c) => {
-    if (c.status === "expired") return true;
-    return Boolean(c.end_date && c.end_date < todayStr);
+  const managedPropIdSet = new Set(managedProperties.map((p) => p.id));
+
+  // Her mülk için tekil/en güncel süresi dolmuş sözleşmeyi say (ManagedPropertiesTab ile 1:1)
+  const expiredByProperty = new Map<string, AgencyContract>();
+  contracts.forEach((c) => {
+    if (!managedPropIdSet.has(c.property_id)) return;
+    const isExpired =
+      c.status === "expired" ||
+      (c.status === "active" && Boolean(c.end_date && c.end_date < todayStr));
+    if (!isExpired) return;
+    const prev = expiredByProperty.get(c.property_id);
+    if (!prev || (c.end_date || "") > (prev.end_date || "")) {
+      expiredByProperty.set(c.property_id, c);
+    }
   });
+  const expiredContracts = Array.from(expiredByProperty.values());
   const expiredCount = expiredContracts.length;
   const expiredNegotiating = expiredContracts.filter(
     (c) => (c.status as string) === "negotiating"
@@ -192,11 +216,20 @@ export default function PmCockpitCards({
   const expiredPendingAction = expiredCount - expiredNegotiating;
   const isExpiredEmpty = expiredCount === 0;
 
-  const sixtyDaysAhead = new Date(Date.now() + 60 * 86400 * 1000).toISOString().split("T")[0];
-  const expiringContracts = contracts.filter((c) => {
-    if (c.status !== "active") return false;
-    return Boolean(c.end_date && c.end_date >= todayStr && c.end_date <= sixtyDaysAhead);
+  // Her mülk için tekil/en güncel aktif sözleşmeyi say (ManagedPropertiesTab ile 1:1)
+  const nowMs = Date.now();
+  const expiringByProperty = new Map<string, AgencyContract>();
+  contracts.forEach((c) => {
+    if (!managedPropIdSet.has(c.property_id)) return;
+    if (c.status !== "active" || !c.end_date) return;
+    const diffDays = Math.ceil((new Date(c.end_date).getTime() - nowMs) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0 || diffDays > 60) return;
+    const prev = expiringByProperty.get(c.property_id);
+    if (!prev || (c.end_date || "") > (prev.end_date || "")) {
+      expiringByProperty.set(c.property_id, c);
+    }
   });
+  const expiringContracts = Array.from(expiringByProperty.values());
   const expiringCount = expiringContracts.length;
   let t0 = 0,
     t15 = 0,
@@ -204,7 +237,7 @@ export default function PmCockpitCards({
     t60 = 0;
   expiringContracts.forEach((c) => {
     if (c.end_date) {
-      const diff = Math.ceil((new Date(c.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      const diff = Math.ceil((new Date(c.end_date).getTime() - nowMs) / (1000 * 60 * 60 * 24));
       if (diff <= 0) t0++;
       else if (diff <= 15) t15++;
       else if (diff <= 30) t30++;
@@ -213,12 +246,7 @@ export default function PmCockpitCards({
   });
   const isExpiringEmpty = expiringCount === 0;
 
-  const activePropIds = new Set(
-    contracts.filter((c) => c.status === "active").map((c) => c.property_id)
-  );
-  const withoutContractsProps = managedProperties.filter(
-    (p) => !activePropIds.has(p.id) && !p.is_occupied
-  );
+  const withoutContractsProps = managedProperties.filter((p) => !p.is_occupied);
   const withoutContractsCount = withoutContractsProps.length;
   const vacantCount = withoutContractsProps.filter((p) => !p.tenant_id).length;
   const invitePendingCount = withoutContractsCount - vacantCount;
@@ -396,13 +424,13 @@ export default function PmCockpitCards({
             </div>
           </div>
 
-          {/* Card 2: Vadesi Yaklaşanlar */}
+          {/* Card 2: Girilmeyen Faturalar (Unentered Bills) */}
           <div
             onClick={() => {
               setPaymentStatusFilter?.("all");
               setActiveTab("payments");
             }}
-            className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 sm:p-5 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${isUpcomingEmpty ? "opacity-75" : ""
+            className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 sm:p-5 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${isUnenteredBillsEmpty ? "opacity-75" : ""
               }`}
           >
             <Clock className="absolute -right-4 -bottom-4 w-32 h-32 text-[#8A5206] opacity-[0.03] group-hover:scale-105 transition-transform pointer-events-none" />
@@ -417,33 +445,27 @@ export default function PmCockpitCards({
             </div>
 
             <p className="text-xs font-semibold text-[#666666] mt-2.5">
-              {t("agency_financials_stat_upcoming")}
+              {t("unenteredBillsTitle")}
             </p>
             <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] tracking-tight mt-0.5">
-              {isUpcomingEmpty
-                ? `0 ${t("agency_pm_dash_operation_unit")}`
-                : `${t("agency_pm_dash_days_7_badge")} (${upcomingCount} ${t(
-                  "agency_pm_dash_operation_unit"
-                )})`}
+              {unenteredBillsCount} {t("agency_pm_dash_bill")}
             </p>
 
             <div className="space-y-1 mt-2.5">
-              {isUpcomingEmpty ? (
+              {isUnenteredBillsEmpty ? (
                 <p className="text-xs text-[#666666] font-medium">
-                  {t("agency_pm_dash_empty_tooltip_upcoming")}
+                  {t("agency_pm_dash_unentered_bills_empty")}
                 </p>
               ) : (
                 <>
                   <div className="flex items-start gap-1.5 text-xs font-medium text-[#4A4A4A]">
                     <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-amber-500" />
-                    <span>
-                      {upcomingRents} {t("agency_pm_dash_rent_collection")}
-                    </span>
+                    <span>{t("agency_pm_dash_unentered_bills_desc")}</span>
                   </div>
                   <div className="flex items-start gap-1.5 text-xs font-medium text-[#4A4A4A]">
                     <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-amber-500" />
                     <span>
-                      {upcomingBills} {t("agency_pm_dash_bill_due")}
+                      {unenteredBillsPropCount} {t("financeFilterProperties")}
                     </span>
                   </div>
                 </>
@@ -452,9 +474,9 @@ export default function PmCockpitCards({
 
             <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-[#8A5206]">
               <span>
-                {isUpcomingEmpty
+                {isUnenteredBillsEmpty
                   ? t("agency_pm_dash_no_action_needed")
-                  : t("agency_pm_dash_upcoming_action")}
+                  : t("agency_pm_dash_unentered_bills_action")}
               </span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -512,14 +534,6 @@ export default function PmCockpitCards({
                       </span>
                     </div>
                   )}
-                  {pendingContractsCount > 0 && (
-                    <div className="flex items-start gap-1.5 text-xs font-medium text-[#4A4A4A]">
-                      <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-[#1B5888]" />
-                      <span>
-                        {pendingContractsCount} {t("agency_pm_dash_contract_approval")}
-                      </span>
-                    </div>
-                  )}
                 </>
               )}
             </div>
@@ -571,7 +585,7 @@ export default function PmCockpitCards({
           {/* Card 4: Süresi Dolan Sözleşmeler */}
           <div
             onClick={() => {
-              setPropOccupancyFilter?.("all");
+              setPropOccupancyFilter?.("expired");
               setActiveTab("managed_properties");
             }}
             className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 sm:p-5 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${isExpiredEmpty ? "opacity-75" : ""
@@ -630,7 +644,10 @@ export default function PmCockpitCards({
 
           {/* Card 5: Bitişi Yaklaşanlar */}
           <div
-            onClick={() => setActiveTab("managed_properties")}
+            onClick={() => {
+              setPropOccupancyFilter?.("expiring");
+              setActiveTab("managed_properties");
+            }}
             className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 sm:p-5 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${isExpiringEmpty ? "opacity-75" : ""
               }`}
           >
@@ -909,7 +926,10 @@ export default function PmCockpitCards({
 
           {/* Card 7C: Onay Bekleyen Masraflar */}
           <div
-            onClick={() => setActiveTab("maintenance")}
+            onClick={() => {
+              setMaintStatusFilter?.("pending_approval");
+              setActiveTab("maintenance");
+            }}
             className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 sm:p-5 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${isPendingExpenseEmpty ? "opacity-75" : ""
               }`}
           >

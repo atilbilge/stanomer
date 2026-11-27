@@ -278,10 +278,15 @@ export default function EditPropertyOwnersModal({
           ? primary.company_name?.trim() || ""
           : `${primary.first_name?.trim() || ""} ${primary.last_name?.trim() || ""}`.trim();
 
+      const nextPrimaryEmail = primary.email?.trim().toLowerCase() || "";
+      const prevPrimaryEmail = (property.landlord_email || "").trim().toLowerCase();
+      const primaryEmailChanged = Boolean(nextPrimaryEmail && nextPrimaryEmail !== prevPrimaryEmail);
+
       const updatedProperty: AgencyManagedProperty = {
         ...property,
+        ...(primaryEmailChanged ? { landlord_id: undefined } : {}),
         landlord_name: primaryDisplayName || undefined,
-        landlord_email: primary.email?.trim() || undefined,
+        landlord_email: nextPrimaryEmail || undefined,
         landlord_phone: primary.phone?.trim() || undefined,
         owners: owners,
       };
@@ -315,15 +320,25 @@ export default function EditPropertyOwnersModal({
 
         await supabase.from("property_owners").insert(insertPayload);
 
-        // 2. Update properties table with primary owner
+        // 2. Update properties table with primary owner (clear landlord_id & stale invites if email changed)
         await supabase
           .from("properties")
           .update({
+            ...(primaryEmailChanged ? { landlord_id: null } : {}),
             landlord_name: primaryDisplayName || null,
-            landlord_email: primary.email?.trim() || null,
+            landlord_email: nextPrimaryEmail || null,
             landlord_phone: primary.phone?.trim() || null,
           })
           .eq("id", property.id);
+
+        if (primaryEmailChanged) {
+          await supabase
+            .from("invitations")
+            .update({ status: "cancelled" })
+            .eq("property_id", property.id)
+            .eq("target_role", "landlord")
+            .eq("status", "pending");
+        }
 
         // 3. Log activity
         try {

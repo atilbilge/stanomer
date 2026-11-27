@@ -110,10 +110,34 @@ export default function PaymentsTab({
   onInspectPayment,
 }: PaymentsTabProps) {
   // 1. Sub-Tab (0: Action Required, 1: Report)
-  const [financeSubTab, setFinanceSubTab] = useState<0 | 1>(0);
+  const [financeSubTab, setFinanceSubTab] = useState<0 | 1>(() =>
+    paymentStatusFilter === "paid" ? 1 : 0
+  );
 
   // 2. Selected Segment in each sub-tab
-  const [selectedSegment, setSelectedSegment] = useState<number>(0);
+  const [selectedSegment, setSelectedSegment] = useState<number>(() => {
+    if (paymentStatusFilter === "overdue") return 2;
+    if (paymentStatusFilter === "paid") return 3;
+    if (paymentStatusFilter === "awaiting") return 0;
+    return 0;
+  });
+
+  // Sync cockpit / external paymentStatusFilter into active sub-tab & segment
+  React.useEffect(() => {
+    if (paymentStatusFilter === "overdue") {
+      setFinanceSubTab(0);
+      setSelectedSegment(2);
+    } else if (paymentStatusFilter === "awaiting") {
+      setFinanceSubTab(0);
+      setSelectedSegment(0);
+    } else if (paymentStatusFilter === "paid") {
+      setFinanceSubTab(1);
+      setSelectedSegment(3);
+    } else if (paymentStatusFilter === "all") {
+      setFinanceSubTab(0);
+      setSelectedSegment(1);
+    }
+  }, [paymentStatusFilter]);
 
   // 3. Search & Detailed Filters state
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(true);
@@ -619,30 +643,30 @@ export default function PaymentsTab({
     const rowsHtml = displayedPayments.length === 0
       ? `<tr><td colspan="8" style="text-align:center; padding: 24px; color:#64748b;">Seçili dönem için işlem bulunamadı.</td></tr>`
       : displayedPayments.map((p, idx) => {
-          const prop = propertiesMap[p.property_id];
-          const propTitle = p.property_title || prop?.title || "Mülk";
-          const propAddr = p.property_address || prop?.address || "";
-          const landlord = p.landlord_name || prop?.landlord_name || "-";
-          const tenant = p.tenant_name || "-";
-          const amt = Number(p.amount) || 0;
-          const curSym = p.currency === "RSD" ? "RSD" : "€";
-          const amtStr = `${amt.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${curSym}`;
-          const dueDate = p.due_date ? formatDueDate(p.due_date) : "-";
+        const prop = propertiesMap[p.property_id];
+        const propTitle = p.property_title || prop?.title || "Mülk";
+        const propAddr = p.property_address || prop?.address || "";
+        const landlord = p.landlord_name || prop?.landlord_name || "-";
+        const tenant = p.tenant_name || "-";
+        const amt = Number(p.amount) || 0;
+        const curSym = p.currency === "RSD" ? "RSD" : "€";
+        const amtStr = `${amt.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${curSym}`;
+        const dueDate = p.due_date ? formatDueDate(p.due_date) : "-";
 
-          let badgeClass = "badge-pending";
-          let statusText = "Beklemede";
-          if (p.status === "paid") {
-            badgeClass = "badge-paid";
-            statusText = "Ödendi";
-          } else if (p.status === "declared") {
-            badgeClass = "badge-declared";
-            statusText = "Bildirildi";
-          } else if (p.status === "disputed") {
-            badgeClass = "badge-disputed";
-            statusText = "İtirazlı";
-          }
+        let badgeClass = "badge-pending";
+        let statusText = "Beklemede";
+        if (p.status === "paid") {
+          badgeClass = "badge-paid";
+          statusText = "Ödendi";
+        } else if (p.status === "declared") {
+          badgeClass = "badge-declared";
+          statusText = "Bildirildi";
+        } else if (p.status === "disputed") {
+          badgeClass = "badge-disputed";
+          statusText = "İtirazlı";
+        }
 
-          return `<tr>
+        return `<tr>
             <td style="text-align:center; color:#64748b;">${idx + 1}</td>
             <td><strong>${propTitle}</strong><br><span style="font-size:11px; color:#64748b;">${propAddr}</span></td>
             <td>${formatPaymentTitle(p.title)}</td>
@@ -652,7 +676,7 @@ export default function PaymentsTab({
             <td style="text-align:right; font-weight:700;">${amtStr}</td>
             <td style="text-align:center;"><span class="badge ${badgeClass}">${statusText}</span></td>
           </tr>`;
-        }).join("");
+      }).join("");
 
     return `<!DOCTYPE html>
 <html lang="${activeLocale}">
@@ -907,16 +931,14 @@ export default function PaymentsTab({
             setSelectedSegment(0);
             setPeriodPreset("all_time");
           }}
-          className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${
-            financeSubTab === 0
-              ? "border-[#1B5888] text-[#1B5888]"
-              : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-          }`}
+          className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${financeSubTab === 0
+            ? "border-[#1B5888] text-[#1B5888]"
+            : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+            }`}
         >
           <AlertCircle
-            className={`w-4 h-4 shrink-0 ${
-              financeSubTab === 0 ? "text-[#1B5888]" : "text-[#8A8A8A]"
-            }`}
+            className={`w-4 h-4 shrink-0 ${financeSubTab === 0 ? "text-[#1B5888]" : "text-[#8A8A8A]"
+              }`}
           />
           <span>{t("financeSubTabActionRequired")}</span>
         </button>
@@ -930,16 +952,14 @@ export default function PaymentsTab({
             setSelectedSegment(3);
             setPeriodPreset("this_month");
           }}
-          className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${
-            financeSubTab === 1
-              ? "border-[#1B5888] text-[#1B5888]"
-              : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-          }`}
+          className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${financeSubTab === 1
+            ? "border-[#1B5888] text-[#1B5888]"
+            : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+            }`}
         >
           <FileBarChart
-            className={`w-4 h-4 shrink-0 ${
-              financeSubTab === 1 ? "text-[#1B5888]" : "text-[#8A8A8A]"
-            }`}
+            className={`w-4 h-4 shrink-0 ${financeSubTab === 1 ? "text-[#1B5888]" : "text-[#8A8A8A]"
+              }`}
           />
           <span>{t("financeSubTabReport")}</span>
         </button>
@@ -1024,7 +1044,7 @@ export default function PaymentsTab({
                   onChange={(e) => setSelectedLandlord(e.target.value)}
                   className="w-full pl-9 pr-8 py-2.5 font-medium text-[#0F172A] bg-transparent rounded-[8px] appearance-none focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                 >
-                  <option value="all">{t("financeFilterLandlords")}: All</option>
+                  <option value="all">{t("financeFilterLandlords")}: {t("financeFilterAll")}</option>
                   {landlordList.map((l) => (
                     <option key={l} value={l}>
                       {l}
@@ -1042,7 +1062,7 @@ export default function PaymentsTab({
                   onChange={(e) => setSelectedPropertyId(e.target.value)}
                   className="w-full pl-9 pr-8 py-2.5 font-medium text-[#0F172A] bg-transparent rounded-[8px] appearance-none focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                 >
-                  <option value="all">{t("financeFilterProperties")}: All</option>
+                  <option value="all">{t("financeFilterProperties")}: {t("financeFilterAll")}</option>
                   {managedProperties.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.title}
@@ -1060,10 +1080,10 @@ export default function PaymentsTab({
                   onChange={(e) => setSelectedType(e.target.value)}
                   className="w-full pl-9 pr-8 py-2.5 font-medium text-[#0F172A] bg-transparent rounded-[8px] appearance-none focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                 >
-                  <option value="all">{t("financeFilterType")}: All</option>
-                  <option value="rent">Rent (Kira)</option>
-                  <option value="bills">Bills (Fatura)</option>
-                  <option value="maintenance">Maintenance (Bakım)</option>
+                  <option value="all">{t("financeFilterType")}: {t("financeFilterAll")}</option>
+                  <option value="rent">{t("financeFilterTypeRent")}</option>
+                  <option value="bills">{t("financeFilterTypeBills")}</option>
+                  <option value="maintenance">{t("financeFilterTypeMaintenance")}</option>
                 </select>
                 <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -1139,11 +1159,10 @@ export default function PaymentsTab({
           {/* 1. Pending Approvals */}
           <div
             onClick={() => setSelectedSegment(0)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 0
-                ? "bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/40 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 0
+              ? "bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/40 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 truncate">
@@ -1161,11 +1180,10 @@ export default function PaymentsTab({
           {/* 2. Unentered Bills */}
           <div
             onClick={() => setSelectedSegment(1)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 1
-                ? "bg-[#FEF6EE] border-[#EA580C] ring-2 ring-[#EA580C]/20 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 1
+              ? "bg-[#FEF6EE] border-[#EA580C] ring-2 ring-[#EA580C]/20 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 truncate">
@@ -1183,11 +1201,10 @@ export default function PaymentsTab({
           {/* 3. Overdue Payments */}
           <div
             onClick={() => setSelectedSegment(2)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 2
-                ? "bg-rose-50/80 border-rose-300 ring-2 ring-rose-400/40 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 2
+              ? "bg-rose-50/80 border-rose-300 ring-2 ring-rose-400/40 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 truncate">
@@ -1205,11 +1222,10 @@ export default function PaymentsTab({
           {/* 4. Unpaid Maintenance */}
           <div
             onClick={() => setSelectedSegment(8)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 8
-                ? "bg-red-50/80 border-red-300 ring-2 ring-red-400/40 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 8
+              ? "bg-red-50/80 border-red-300 ring-2 ring-red-400/40 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 truncate">
@@ -1227,11 +1243,10 @@ export default function PaymentsTab({
           {/* 5. Tenant Offsets */}
           <div
             onClick={() => setSelectedSegment(10)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer col-span-2 md:col-span-1 ${
-              selectedSegment === 10
-                ? "bg-teal-50/80 border-teal-300 ring-2 ring-teal-400/40 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer col-span-2 md:col-span-1 ${selectedSegment === 10
+              ? "bg-teal-50/80 border-teal-300 ring-2 ring-teal-400/40 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 truncate">
@@ -1252,11 +1267,10 @@ export default function PaymentsTab({
           {/* 1. Rent Collected */}
           <div
             onClick={() => setSelectedSegment(3)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 3
-                ? "bg-emerald-50/60 border-emerald-500 ring-1 ring-emerald-500 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 3
+              ? "bg-emerald-50/60 border-emerald-500 ring-1 ring-emerald-500 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="p-1.5 rounded-[8px] bg-emerald-500/10 text-emerald-600">
@@ -1278,11 +1292,10 @@ export default function PaymentsTab({
           {hasIncludedExpenses && (
             <div
               onClick={() => setSelectedSegment(5)}
-              className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-                selectedSegment === 5
-                  ? "bg-purple-50/60 border-purple-500 ring-1 ring-purple-500 shadow-xs"
-                  : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
-              }`}
+              className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 5
+                ? "bg-purple-50/60 border-purple-500 ring-1 ring-purple-500 shadow-xs"
+                : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-1.5 rounded-[8px] bg-purple-500/10 text-purple-600">
@@ -1304,11 +1317,10 @@ export default function PaymentsTab({
           {/* 3. Maintenance Paid */}
           <div
             onClick={() => setSelectedSegment(6)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 6
-                ? "bg-emerald-50/60 border-emerald-500 ring-1 ring-emerald-500 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 6
+              ? "bg-emerald-50/60 border-emerald-500 ring-1 ring-emerald-500 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="p-1.5 rounded-[8px] bg-emerald-500/10 text-emerald-600">
@@ -1329,11 +1341,10 @@ export default function PaymentsTab({
           {/* 4. Maintenance Owed to Agency */}
           <div
             onClick={() => setSelectedSegment(7)}
-            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${
-              selectedSegment === 7
-                ? "bg-amber-50/60 border-amber-500 ring-1 ring-amber-500 shadow-xs"
-                : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
-            }`}
+            className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${selectedSegment === 7
+              ? "bg-amber-50/60 border-amber-500 ring-1 ring-amber-500 shadow-xs"
+              : "bg-white border-[#E2E8F0] hover:bg-slate-50/80 shadow-xs"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="p-1.5 rounded-[8px] bg-amber-500/10 text-amber-600">
@@ -1382,11 +1393,10 @@ export default function PaymentsTab({
               type="button"
               onClick={() => setViewMode("table")}
               title={t("viewModeTable")}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-slate-100 text-[#0F172A]"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "table"
+                ? "bg-slate-100 text-[#0F172A]"
+                : "text-slate-400 hover:text-slate-600"
+                }`}
             >
               <TableProperties className="w-4 h-4" />
             </button>
@@ -1394,11 +1404,10 @@ export default function PaymentsTab({
               type="button"
               onClick={() => setViewMode("grid")}
               title={t("viewModeGrid")}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-slate-100 text-[#0F172A]"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid"
+                ? "bg-slate-100 text-[#0F172A]"
+                : "text-slate-400 hover:text-slate-600"
+                }`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -1482,12 +1491,12 @@ export default function PaymentsTab({
                     const daysOverdue =
                       isOverdue && p.due_date
                         ? Math.max(
-                            0,
-                            Math.floor(
-                              (new Date().getTime() - new Date(p.due_date).getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            )
+                          0,
+                          Math.floor(
+                            (new Date().getTime() - new Date(p.due_date).getTime()) /
+                            (1000 * 60 * 60 * 24)
                           )
+                        )
                         : 0;
 
                     return (
@@ -1539,9 +1548,8 @@ export default function PaymentsTab({
                         {/* 3. Due Date */}
                         <td className="py-3.5 px-4">
                           <div
-                            className={`font-semibold text-xs ${
-                              isOverdue ? "text-rose-600 font-bold" : "text-slate-800"
-                            }`}
+                            className={`font-semibold text-xs ${isOverdue ? "text-rose-600 font-bold" : "text-slate-800"
+                              }`}
                           >
                             {formatDueDate(p.due_date)}
                           </div>

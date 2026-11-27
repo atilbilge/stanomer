@@ -337,6 +337,17 @@ export default function LeadsTab({
                                     ? leads.length
                                     : leads.filter((l) => l.lead_type === leadPoolFilter).length,
                               },
+                              {
+                                id: "open",
+                                label: t("agency_panel_filter_status_open"),
+                                desc: t("agency_panel_filter_status_open_desc"),
+                                count: leads.filter((l) => {
+                                  if (leadPoolFilter !== "all" && l.lead_type !== leadPoolFilter) {
+                                    return false;
+                                  }
+                                  return l.status !== "archived" && l.status !== "converted";
+                                }).length,
+                              },
                             ];
 
                             const statusList: LeadStatus[] =

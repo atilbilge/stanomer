@@ -82,7 +82,7 @@ export default function LeadCockpitCards({
             type="button"
             onClick={() => {
               setLeadPoolFilter?.("all");
-              setLeadStatusFilter?.("all");
+              setLeadStatusFilter?.("open");
               setActiveTab("leads");
             }}
             className="text-xs font-semibold text-[#1B5888] hover:text-[#12406A] flex items-center gap-1 cursor-pointer"
@@ -138,7 +138,7 @@ export default function LeadCockpitCards({
         <div
           onClick={() => {
             setLeadPoolFilter?.("owner_consignment");
-            setLeadStatusFilter?.("all");
+            setLeadStatusFilter?.("open");
             setActiveTab("leads");
           }}
           className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${
@@ -177,7 +177,7 @@ export default function LeadCockpitCards({
         <div
           onClick={() => {
             setLeadPoolFilter?.("viewing_request");
-            setLeadStatusFilter?.("all");
+            setLeadStatusFilter?.("open");
             setActiveTab("leads");
           }}
           className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${
@@ -216,7 +216,7 @@ export default function LeadCockpitCards({
         <div
           onClick={() => {
             setLeadPoolFilter?.("general_inquiry");
-            setLeadStatusFilter?.("all");
+            setLeadStatusFilter?.("open");
             setActiveTab("leads");
           }}
           className={`bg-white rounded-[10px] border border-[#E5E3DF] p-4 shadow-2xs hover:border-[#8A8A8A] transition-all cursor-pointer relative overflow-hidden group ${

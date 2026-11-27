@@ -81,7 +81,7 @@ export function HomeContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* Left Copy & CTAs */}
           <div className="lg:col-span-6 space-y-6">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
+            <h1 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A1A1A] tracking-tight leading-[1.12]">
               {t("lp_hero_title")}
             </h1>
 

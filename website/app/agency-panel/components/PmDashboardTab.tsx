@@ -11,6 +11,7 @@ import {
   AgencyRentPayment,
   AgencyContract,
   AgencyMaintenanceRequest,
+  AgencyMaintStatusFilter,
   AgencyPanelTab,
 } from "../types";
 import PmCockpitCards from "./PmCockpitCards";
@@ -29,7 +30,8 @@ export interface PmDashboardTabProps {
   maintenanceRequests: AgencyMaintenanceRequest[];
   setActiveTab: (tab: AgencyPanelTab) => void;
   setPaymentStatusFilter: (status: "all" | "awaiting" | "overdue" | "paid") => void;
-  setPropOccupancyFilter: (filter: "all" | "occupied" | "vacant") => void;
+  setPropOccupancyFilter: (filter: "all" | "occupied" | "vacant" | "expiring" | "expired") => void;
+  setMaintStatusFilter?: (status: AgencyMaintStatusFilter) => void;
   resetForm: () => void;
   setNewMaintPropId: (id: string) => void;
   setIsNewMaintModalOpen: (open: boolean) => void;
@@ -49,6 +51,7 @@ export default function PmDashboardTab({
   setActiveTab,
   setPaymentStatusFilter,
   setPropOccupancyFilter,
+  setMaintStatusFilter,
   resetForm,
   setNewMaintPropId,
   setIsNewMaintModalOpen,
@@ -137,6 +140,7 @@ export default function PmDashboardTab({
         setActiveTab={setActiveTab}
         setPaymentStatusFilter={setPaymentStatusFilter}
         setPropOccupancyFilter={setPropOccupancyFilter}
+        setMaintStatusFilter={setMaintStatusFilter}
         t={t}
       />
     </div>

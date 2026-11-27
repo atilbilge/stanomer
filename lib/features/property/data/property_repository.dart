@@ -2604,15 +2604,34 @@ class PropertyRepository {
   }
 
   Stream<List<Map<String, dynamic>>> getPendingInvitationsStreamForEmail(String email) {
+    final cleanEmail = email.trim().toLowerCase();
     return resilientStream(
-      () => _client
-          .from('invitations')
-          .stream(primaryKey: ['id'])
-          .eq('invitee_email', email.trim().toLowerCase())
-          .cast<dynamic>()
-          .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
-          .asyncMap((rows) => _filterAndEnrichInvitations(rows)),
-      debugName: 'getPendingInvitationsStreamForEmail($email)',
+      () {
+        // Initial direct REST query (case-insensitive) so landlord invites appear immediately
+        // without depending solely on Realtime websocket delivery.
+        final directStream = Stream.fromFuture(
+          _client
+              .from('invitations')
+              .select()
+              .ilike('invitee_email', cleanEmail)
+              .then((rows) => _filterAndEnrichInvitations(rows))
+              .catchError((e) {
+                debugPrint('DEBUG [PendingInvitations direct]: $e');
+                return <Map<String, dynamic>>[];
+              }),
+        );
+
+        final realtimeStream = _client
+            .from('invitations')
+            .stream(primaryKey: ['id'])
+            .eq('invitee_email', cleanEmail)
+            .cast<dynamic>()
+            .map((data) => (data as List).map((json) => json as Map<String, dynamic>).toList())
+            .asyncMap((rows) => _filterAndEnrichInvitations(rows));
+
+        return Rx.merge([directStream, realtimeStream]);
+      },
+      debugName: 'getPendingInvitationsStreamForEmail($cleanEmail)',
     );
   }
 

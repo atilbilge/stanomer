@@ -143,7 +143,7 @@ export default function AgenciesPage() {
         <div className="rounded-[12px] overflow-hidden border border-[#1B5888]/20 bg-[#12406A] text-white p-7 sm:p-10 lg:p-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-5">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-[1.15]">
+              <h1 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.12]">
                 {t("lp_hero_title")}
               </h1>
 
@@ -220,8 +220,8 @@ export default function AgenciesPage() {
               {t("nav_agency_optional_badge")}
             </span>
           </div>
-          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
-            {t("nav_agency_mod_portfolio")}
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
+            {t("agencies_sec_portfolio_title")}
           </h2>
           <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
             {t("agencies_anchor_portfolio_desc")}
@@ -280,8 +280,8 @@ export default function AgenciesPage() {
                 {t("nav_agency_optional_badge")}
               </span>
             </div>
-            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
-              {t("nav_agency_mod_property")}
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("agencies_sec_property_title")}
             </h2>
             <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
               {t("agencies_anchor_property_desc")}
@@ -400,8 +400,8 @@ export default function AgenciesPage() {
               {t("nav_agency_included_badge")}
             </span>
           </div>
-          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
-            {t("nav_agency_mod_tasks")}
+          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
+            {t("agencies_sec_tasks_title")}
           </h2>
           <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
             {t("agencies_anchor_tasks_desc")}
@@ -473,8 +473,8 @@ export default function AgenciesPage() {
                 {t("nav_agency_included_badge")}
               </span>
             </div>
-            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
-              {t("nav_agency_mod_compliance")}
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("agencies_sec_compliance_title")}
             </h2>
             <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
               {t("agencies_anchor_compliance_desc")}

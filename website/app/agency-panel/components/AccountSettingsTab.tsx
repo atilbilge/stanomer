@@ -745,6 +745,7 @@ export default function AccountSettingsTab({
                     type="text"
                     value={regNo}
                     onChange={(e) => setRegNo(e.target.value)}
+                    placeholder={t("eop_print_registar_no_placeholder")}
                     className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
                   />
                 </div>

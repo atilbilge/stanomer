@@ -218,7 +218,6 @@ export default function AgencyPanelPage() {
   const [agencyRegistryInfo, setAgencyRegistryInfo] = useState<AgencyRegistryInfo>({});
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeModules, setActiveModules] = useState<string[]>([
-    "portfolio_distribution",
     "property_lease_management",
   ]);
   const [agencyName, setAgencyName] = useState<string>("");
@@ -806,7 +805,7 @@ export default function AgencyPanelPage() {
   // Managed Properties State
   const [managedProperties, setManagedProperties] = useState<AgencyManagedProperty[]>([]);
   const [loadingProperties, setLoadingProperties] = useState<boolean>(false);
-  const [propOccupancyFilter, setPropOccupancyFilter] = useState<"all" | "occupied" | "vacant">("all");
+  const [propOccupancyFilter, setPropOccupancyFilter] = useState<"all" | "occupied" | "vacant" | "expiring" | "expired">("all");
   const [propSearchQuery, setPropSearchQuery] = useState<string>("");
   const managedPropertyStats = useMemo(() => {
     const total = managedProperties.length;
@@ -817,20 +816,27 @@ export default function AgencyPanelPage() {
   }, [managedProperties]);
 
   const filteredManagedProperties = useMemo(() => {
-    return managedProperties.filter((p) => {
-      if (propOccupancyFilter === "occupied" && !p.is_occupied) return false;
-      if (propOccupancyFilter === "vacant" && p.is_occupied) return false;
-      if (propSearchQuery.trim()) {
-        const q = propSearchQuery.toLowerCase().trim();
-        const matchTitle = (p.title || "").toLowerCase().includes(q);
-        const matchAddress = (p.address || "").toLowerCase().includes(q) || (p.city || "").toLowerCase().includes(q);
-        const matchLandlord = (p.landlord_name || "").toLowerCase().includes(q) || (p.landlord_phone || "").toLowerCase().includes(q);
-        const matchTenant = (p.active_tenant_name || "").toLowerCase().includes(q);
-        if (!matchTitle && !matchAddress && !matchLandlord && !matchTenant) return false;
-      }
-      return true;
-    });
-  }, [managedProperties, propOccupancyFilter, propSearchQuery]);
+    return managedProperties
+      .filter((p) => {
+        if (propOccupancyFilter === "occupied" && !p.is_occupied) return false;
+        if (propOccupancyFilter === "vacant" && p.is_occupied) return false;
+        if (propSearchQuery.trim()) {
+          const q = propSearchQuery.toLowerCase().trim();
+          const matchTitle = (p.title || "").toLowerCase().includes(q);
+          const matchAddress = (p.address || "").toLowerCase().includes(q) || (p.city || "").toLowerCase().includes(q);
+          const matchLandlord = (p.landlord_name || "").toLowerCase().includes(q) || (p.landlord_phone || "").toLowerCase().includes(q);
+          const matchTenant = (p.active_tenant_name || "").toLowerCase().includes(q);
+          if (!matchTitle && !matchAddress && !matchLandlord && !matchTenant) return false;
+        }
+        return true;
+      })
+      .sort((a, b) =>
+        (a.title || a.address || "").localeCompare(b.title || b.address || "", activeLocale, {
+          sensitivity: "base",
+          numeric: true,
+        })
+      );
+  }, [managedProperties, propOccupancyFilter, propSearchQuery, activeLocale]);
 
   // Contracts State
   const [contracts, setContracts] = useState<AgencyContract[]>([]);
@@ -1123,7 +1129,11 @@ export default function AgencyPanelPage() {
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       if (leadPoolFilter !== "all" && lead.lead_type !== leadPoolFilter) return false;
-      if (leadStatusFilter !== "all" && lead.status !== leadStatusFilter) return false;
+      if (leadStatusFilter === "open") {
+        if (lead.status === "archived" || lead.status === "converted") return false;
+      } else if (leadStatusFilter !== "all" && lead.status !== leadStatusFilter) {
+        return false;
+      }
       if (leadSearchQuery.trim()) {
         const q = leadSearchQuery.toLowerCase().trim();
         const matchName = (lead.client_name || "").toLowerCase().includes(q);
@@ -2147,9 +2157,10 @@ export default function AgencyPanelPage() {
   };
 
   async function loadAgencyProfile(uid: string, fallbackEmail?: string) {
+    // Use select("*") so Dev-only registry/AML columns don't break Production profiles schema
     const { data: prof } = await supabase
       .from("profiles")
-      .select("company_name, full_name, phone_number, email, website_url, logo_url, color_scheme, active_modules, is_demo, demo_expires_at, registar_posrednika_no, pib, maticni_broj, official_address, aml_officer_name, aml_deputy_name")
+      .select("*")
       .eq("id", uid)
       .maybeSingle();
 
@@ -2173,7 +2184,8 @@ export default function AgencyPanelPage() {
     }
 
     let activeMods = prof?.active_modules;
-    if (typeof window !== "undefined") {
+    // Only merge localStorage demo modules for demo accounts (never pollute real agencies)
+    if (prof?.is_demo && typeof window !== "undefined") {
       try {
         const s = localStorage.getItem("stanomer_agency_demo");
         if (s) {
@@ -2185,15 +2197,18 @@ export default function AgencyPanelPage() {
       } catch { }
     }
 
-    if (activeMods && Array.isArray(activeMods) && activeMods.length > 0) {
-      setActiveModules(activeMods);
-      if (activeMods.includes("portfolio_distribution") && activeMods.includes("property_lease_management")) {
-        setDemoFocus("both");
-      } else if (activeMods.includes("portfolio_distribution")) {
-        setDemoFocus("presales");
-      } else if (activeMods.includes("property_lease_management")) {
-        setDemoFocus("aftersales");
-      }
+    const resolvedActiveMods =
+      activeMods && Array.isArray(activeMods) && activeMods.length > 0
+        ? activeMods
+        : ["property_lease_management"];
+
+    setActiveModules(resolvedActiveMods);
+    if (resolvedActiveMods.includes("portfolio_distribution") && resolvedActiveMods.includes("property_lease_management")) {
+      setDemoFocus("both");
+    } else if (resolvedActiveMods.includes("portfolio_distribution")) {
+      setDemoFocus("presales");
+    } else if (resolvedActiveMods.includes("property_lease_management")) {
+      setDemoFocus("aftersales");
     }
 
     const resolvedName =
@@ -3736,11 +3751,11 @@ export default function AgencyPanelPage() {
         }
 
         // Fallbacks:
-        // 1. Registered landlord profile from `profiles`
-        // 2. Direct property columns (`properties.landlord_name`, etc.)
-        resolvedLandlordName = resolvedLandlordName || landlord?.full_name || p.landlord_name || null;
-        resolvedLandlordPhone = resolvedLandlordPhone || landlord?.phone || p.landlord_phone || null;
-        resolvedLandlordEmail = resolvedLandlordEmail || landlord?.email || p.landlord_email || null;
+        // 1. Direct property columns (`properties.landlord_name`, etc.)
+        // 2. Registered landlord profile from `profiles`
+        resolvedLandlordName = resolvedLandlordName || p.landlord_name?.trim() || landlord?.full_name || null;
+        resolvedLandlordPhone = resolvedLandlordPhone || p.landlord_phone?.trim() || landlord?.phone || null;
+        resolvedLandlordEmail = resolvedLandlordEmail || p.landlord_email?.trim() || landlord?.email || null;
 
         const resolvedTenantName =
           activeCtr?.tenant_name?.trim() ||
@@ -8983,6 +8998,7 @@ export default function AgencyPanelPage() {
                   setActiveTab={setActiveTab}
                   setPaymentStatusFilter={setPaymentStatusFilter}
                   setPropOccupancyFilter={setPropOccupancyFilter}
+                  setMaintStatusFilter={setMaintStatusFilter}
                   resetForm={resetForm}
                   setNewMaintPropId={setNewMaintPropId}
                   setIsNewMaintModalOpen={setIsNewMaintModalOpen}

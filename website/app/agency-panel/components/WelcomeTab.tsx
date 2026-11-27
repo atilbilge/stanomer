@@ -54,7 +54,7 @@ export interface WelcomeTabProps {
   setActiveTab: (tab: AgencyPanelTab) => void;
   setStatusMessage: (msg: { type: "success" | "error"; text: string } | null) => void;
   setPaymentStatusFilter?: (status: "all" | "awaiting" | "overdue" | "paid") => void;
-  setPropOccupancyFilter?: (filter: "all" | "occupied" | "vacant") => void;
+  setPropOccupancyFilter?: (filter: "all" | "occupied" | "vacant" | "expiring" | "expired") => void;
   setLeadPoolFilter?: (filter: "all" | LeadType) => void;
   setLeadStatusFilter?: (filter: string) => void;
   setMaintStatusFilter?: (status: AgencyMaintStatusFilter) => void;
@@ -120,8 +120,7 @@ export default function WelcomeTab({
 
   // Determine whether each module's setup steps are completely satisfied
   const isPortfolioSetupCompleted = hasProfileConfigured && hasListings;
-  const isPropertyLeaseSetupCompleted =
-    hasProfileConfigured && hasManagedProperties && hasContracts;
+  const isPropertyLeaseSetupCompleted = hasManagedProperties && hasContracts;
 
   // Dynamically assemble onboarding steps tailored to the agency's subscribed/selected modules
   const steps: SetupStep[] = [];

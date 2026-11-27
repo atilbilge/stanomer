@@ -117,8 +117,8 @@ export interface ManagedPropertiesTabProps {
   payments: AgencyRentPayment[];
   setPayments: React.Dispatch<React.SetStateAction<AgencyRentPayment[]>>;
   loadingProperties: boolean;
-  propOccupancyFilter: "all" | "occupied" | "vacant";
-  setPropOccupancyFilter: (filter: "all" | "occupied" | "vacant") => void;
+  propOccupancyFilter: "all" | "occupied" | "vacant" | "expiring" | "expired";
+  setPropOccupancyFilter: (filter: "all" | "occupied" | "vacant" | "expiring" | "expired") => void;
   propSearchQuery: string;
   setPropSearchQuery: (query: string) => void;
   handleConvertPropertyToListing: (prop: AgencyManagedProperty) => void;
@@ -527,7 +527,7 @@ export default function ManagedPropertiesTab({
     const hasLinkedTenantUser = Boolean(
       existingContractTarget?.tenant_id || newContractProperty?.tenant_id
     );
-    if (initEmail === "" && !hasLinkedTenantUser && !existingContractTarget) return true;
+    if (initEmail === "" && !hasLinkedTenantUser) return true;
     return false;
   }, [
     hasExistingTenant,
@@ -722,13 +722,21 @@ export default function ManagedPropertiesTab({
   });
 
   // Portfolio filter & display state (Flutter Web Parity)
-  const [filterBy, setFilterBy] = useState<"all" | "has_debt" | "occupied" | "vacant" | "expiring">("all");
+  const [filterBy, setFilterBy] = useState<"all" | "has_debt" | "occupied" | "vacant" | "expiring" | "expired">(
+    propOccupancyFilter || "all"
+  );
+
+  useEffect(() => {
+    if (propOccupancyFilter) {
+      setFilterBy(propOccupancyFilter);
+    }
+  }, [propOccupancyFilter]);
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedLandlord, setSelectedLandlord] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<"none" | "landlord" | "city" | "status" | "debt_consent">("none");
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "debt" | "rent_desc" | "rent_asc" | "name_asc" | "city_asc" | "landlord_asc">("newest");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "debt" | "rent_desc" | "rent_asc" | "name_asc" | "city_asc" | "landlord_asc">("name_asc");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [actionMenuPropId, setActionMenuPropId] = useState<string | null>(null);
 
@@ -851,6 +859,17 @@ export default function ManagedPropertiesTab({
     return Array.from(set).sort();
   }, [managedProperties]);
 
+  const expiredPropertyIds = useMemo(() => {
+    const ids = new Set<string>();
+    const todayIso = new Date().toISOString().split("T")[0];
+    contracts.forEach((c) => {
+      if (c.status === "expired" || (c.status === "active" && c.end_date && c.end_date < todayIso)) {
+        ids.add(c.property_id);
+      }
+    });
+    return ids;
+  }, [contracts]);
+
   const expiringPropertyIds = useMemo(() => {
     const ids = new Set<string>();
     const now = Date.now();
@@ -858,7 +877,7 @@ export default function ManagedPropertiesTab({
       if (c.status === "active" && c.end_date) {
         const diffTime = new Date(c.end_date).getTime() - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays <= 60) {
+        if (diffDays >= 0 && diffDays <= 60) {
           ids.add(c.property_id);
         }
       }
@@ -897,7 +916,7 @@ export default function ManagedPropertiesTab({
     selectedCity !== "all" ||
     selectedLandlord !== "all" ||
     groupBy !== "none" ||
-    sortBy !== "newest" ||
+    sortBy !== "name_asc" ||
     filterBy !== "all";
 
   const handleResetFilters = () => {
@@ -905,15 +924,16 @@ export default function ManagedPropertiesTab({
     setSelectedCity("all");
     setSelectedLandlord("all");
     setGroupBy("none");
-    setSortBy("newest");
+    setSortBy("name_asc");
     setFilterBy("all");
+    setPropOccupancyFilter("all");
   };
 
   // Filtered & Sorted properties
   const filteredAndSortedProperties = useMemo(() => {
     let list = [...scopedProperties];
 
-    // Quick filter (from summary cards)
+    // Quick filter (from summary cards & cockpit navigation)
     if (filterBy === "has_debt") {
       list = list.filter((p) => debtPropertyIds.has(p.id));
     } else if (filterBy === "occupied") {
@@ -922,6 +942,8 @@ export default function ManagedPropertiesTab({
       list = list.filter((p) => !p.is_occupied);
     } else if (filterBy === "expiring") {
       list = list.filter((p) => expiringPropertyIds.has(p.id));
+    } else if (filterBy === "expired") {
+      list = list.filter((p) => expiredPropertyIds.has(p.id));
     }
 
     // Sort
@@ -953,7 +975,7 @@ export default function ManagedPropertiesTab({
     });
 
     return list;
-  }, [scopedProperties, filterBy, sortBy, debtPropertyIds, expiringPropertyIds]);
+  }, [scopedProperties, filterBy, sortBy, debtPropertyIds, expiringPropertyIds, expiredPropertyIds]);
 
   // Grouped properties
   const groupedProperties = useMemo(() => {
@@ -2533,7 +2555,10 @@ export default function ManagedPropertiesTab({
       try {
         const cleanTenantName = newContractTenantName.trim();
         const cleanTenantPhone = newContractTenantPhone.trim() || null;
-        const cleanTenantEmail = newContractTenantEmail.trim() || existingContractTarget.invitee_email || null;
+        const cleanTenantEmail =
+          newContractTenantEmail.trim().toLowerCase() ||
+          existingContractTarget.invitee_email?.trim().toLowerCase() ||
+          null;
         const cleanTenantIdNum = newContractTenantIdNumber.trim() || null;
         const cleanTenantNotes = newContractTenantNotes.trim() || null;
         const cleanSecContacts = newContractSecondaryContacts.filter(
@@ -2755,7 +2780,7 @@ export default function ManagedPropertiesTab({
             landlord_id: p.landlord_id || userId,
             agency_id: userId,
             inviter_name: agencyName || "Acente",
-            invitee_email: newContractTenantEmail.trim() || null,
+            invitee_email: newContractTenantEmail.trim().toLowerCase() || null,
             token: generatedToken,
             monthly_rent: rentNum,
             deposit_amount: depNum,
@@ -7135,9 +7160,7 @@ export default function ManagedPropertiesTab({
                             onClick={() => openEditPropertySpecsModal(p)}
                             className="text-xs font-semibold text-[#1B5888] hover:underline cursor-pointer"
                           >
-                            {p.area_sqm || p.floor || p.room_count
-                              ? t("agency_prop_btn_edit_short")
-                              : t("agency_prop_add_details")}
+                            {t("agency_prop_edit_details")}
                           </button>
                         </div>
 
@@ -7318,7 +7341,7 @@ export default function ManagedPropertiesTab({
                             onClick={() => setEditingOwnersProperty(p)}
                             className="text-xs font-semibold text-[#1B5888] hover:underline cursor-pointer"
                           >
-                            {t("agency_prop_add_owner")}
+                            {t("editOwners")}
                           </button>
                         </div>
 
@@ -9060,8 +9083,8 @@ export default function ManagedPropertiesTab({
 
                       {filterBy !== "all" && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                          {filterBy === "has_debt" ? t("propsFilterHasDebt") : filterBy === "occupied" ? t("propsFilterOccupied") : filterBy === "vacant" ? t("propsFilterVacant") : t("propsFilterExpiring")}
-                          <X className="w-3 h-3 cursor-pointer hover:text-purple-900" onClick={() => setFilterBy("all")} />
+                          {filterBy === "has_debt" ? t("propsFilterHasDebt") : filterBy === "occupied" ? t("propsFilterOccupied") : filterBy === "vacant" ? t("propsFilterVacant") : filterBy === "expired" ? t("cockpitExpiredContracts") : t("propsFilterExpiring")}
+                          <X className="w-3 h-3 cursor-pointer hover:text-purple-900" onClick={() => { setFilterBy("all"); setPropOccupancyFilter("all"); }} />
                         </span>
                       )}
                     </div>
@@ -9084,7 +9107,7 @@ export default function ManagedPropertiesTab({
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* Card 1: All Properties */}
             <div
-              onClick={() => setFilterBy("all")}
+              onClick={() => { setFilterBy("all"); setPropOccupancyFilter("all"); }}
               className={`p-3.5 rounded-[10px] border transition-all cursor-pointer ${filterBy === "all"
                 ? "bg-slate-100/90 border-[#1B5888] ring-2 ring-[#1B5888]/30 shadow-xs"
                 : "bg-white border-[#E2E8F0] hover:bg-slate-50"
