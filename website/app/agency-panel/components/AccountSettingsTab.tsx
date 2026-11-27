@@ -45,7 +45,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { AgencyPanelTab } from "../types";
+import { AgencyPanelTab, AgencyRegistryInfo } from "../types";
 import { supabase } from "../../../lib/supabaseClient";
 import TeamManagementSection from "./TeamManagementSection";
 
@@ -67,6 +67,8 @@ export interface AccountSettingsTabProps {
   setActiveTab?: (tab: AgencyPanelTab) => void;
   moduleUpgradeRequested?: boolean;
   handleRequestModuleUpgrade?: () => void;
+  registryInfo?: AgencyRegistryInfo;
+  onSaveRegistryInfo?: (info: AgencyRegistryInfo) => Promise<void>;
 }
 
 export interface AgencyInvoice {
@@ -204,7 +206,51 @@ export default function AccountSettingsTab({
   setActiveTab,
   moduleUpgradeRequested = false,
   handleRequestModuleUpgrade,
+  registryInfo,
+  onSaveRegistryInfo,
 }: AccountSettingsTabProps) {
+  const [regNo, setRegNo] = useState(registryInfo?.registar_posrednika_no || "");
+  const [regPib, setRegPib] = useState(registryInfo?.pib || "");
+  const [regMaticni, setRegMaticni] = useState(registryInfo?.maticni_broj || "");
+  const [regAddress, setRegAddress] = useState(registryInfo?.official_address || "");
+  const [amlOfficerName, setAmlOfficerName] = useState(registryInfo?.aml_officer_name || "");
+  const [amlDeputyName, setAmlDeputyName] = useState(registryInfo?.aml_deputy_name || "");
+  const [savingRegistry, setSavingRegistry] = useState(false);
+  const [registrySavedMsg, setRegistrySavedMsg] = useState(false);
+  const [registryErrorMsg, setRegistryErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRegNo(registryInfo?.registar_posrednika_no || "");
+    setRegPib(registryInfo?.pib || "");
+    setRegMaticni(registryInfo?.maticni_broj || "");
+    setRegAddress(registryInfo?.official_address || "");
+    setAmlOfficerName(registryInfo?.aml_officer_name || "");
+    setAmlDeputyName(registryInfo?.aml_deputy_name || "");
+  }, [registryInfo]);
+
+  const handleSaveRegistry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onSaveRegistryInfo) return;
+    setSavingRegistry(true);
+    setRegistrySavedMsg(false);
+    setRegistryErrorMsg(null);
+    try {
+      await onSaveRegistryInfo({
+        registar_posrednika_no: regNo.trim() || null,
+        pib: regPib.trim() || null,
+        maticni_broj: regMaticni.trim() || null,
+        official_address: regAddress.trim() || null,
+        aml_officer_name: amlOfficerName.trim() || null,
+        aml_deputy_name: amlDeputyName.trim() || null,
+      });
+      setRegistrySavedMsg(true);
+      setTimeout(() => setRegistrySavedMsg(false), 3000);
+    } catch {
+      setRegistryErrorMsg(t("eop_registry_save_error"));
+    } finally {
+      setSavingRegistry(false);
+    }
+  };
   // Sub-tab state: "account" (Packages & Invoices) vs "profile" (Profile, Security & Preferences) vs "team" (Admin only)
   const [activeSubTab, setActiveSubTab] = useState<"account" | "profile" | "team">("account");
 
@@ -664,6 +710,112 @@ export default function AccountSettingsTab({
       {/* ========================================================================= */}
       {activeSubTab === "account" && (
         <div className="space-y-6">
+          {/* 0. Official Registry & EOP Details (Serbia) */}
+          {onSaveRegistryInfo && (
+            <form
+              onSubmit={handleSaveRegistry}
+              className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-xs"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {t("eop_registry_section_title")}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {t("eop_registry_section_desc")}
+                  </p>
+                </div>
+                {registrySavedMsg && (
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                    {t("eop_registry_saved_msg")}
+                  </span>
+                )}
+                {registryErrorMsg && (
+                  <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg">
+                    {registryErrorMsg}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("eop_print_registar_no")}
+                  </label>
+                  <input
+                    type="text"
+                    value={regNo}
+                    onChange={(e) => setRegNo(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("eop_print_pib")}
+                  </label>
+                  <input
+                    type="text"
+                    value={regPib}
+                    onChange={(e) => setRegPib(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("eop_print_maticni")}
+                  </label>
+                  <input
+                    type="text"
+                    value={regMaticni}
+                    onChange={(e) => setRegMaticni(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("eop_print_address")}
+                  </label>
+                  <input
+                    type="text"
+                    value={regAddress}
+                    onChange={(e) => setRegAddress(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("aml_settings_officer_label")}
+                  </label>
+                  <input
+                    type="text"
+                    value={amlOfficerName}
+                    onChange={(e) => setAmlOfficerName(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    {t("aml_settings_deputy_label")}
+                  </label>
+                  <input
+                    type="text"
+                    value={amlDeputyName}
+                    onChange={(e) => setAmlDeputyName(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingRegistry}
+                  className="px-4 py-2 rounded-xl bg-[#1B5888] hover:bg-[#12406A] text-xs font-semibold text-white disabled:opacity-50 cursor-pointer"
+                >
+                  {savingRegistry ? t("eop_btn_saving") : t("eop_btn_save")}
+                </button>
+              </div>
+            </form>
+          )}
+
           {/* 1. Subscription & Package Summary Cards */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">

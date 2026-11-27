@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Building2,
   Check,
@@ -32,7 +33,8 @@ import {
   UserCheck,
   X,
 } from "lucide-react";
-import { AgencyListingRow, AgencyManagedProperty, AgencyPanelTab, AgencyTask, AgencyTaskPrefill } from "../types";
+import { AgencyListingRow, AgencyManagedProperty, AgencyPanelTab, AgencyTask, AgencyTaskPrefill, EopPrefill, EopRecord } from "../types";
+import { findRejectedAmlForContext } from "../../../lib/amlRiskEngine";
 import { PORTAL_LIST } from "../constants";
 import { TRANSACTION_TYPES, PROPERTY_TYPES, getDictLabel } from "../../../lib/serbianRealEstateDict";
 import { validate4ZidaListing, validateHaloOglasiListing } from "../../../lib/portalValidators";
@@ -79,6 +81,11 @@ export interface ListingsTabProps {
   onCreateTask?: (prefill: AgencyTaskPrefill) => void;
   tasks?: AgencyTask[];
   onViewListingTasks?: (listingId: string) => void;
+  eopRecords?: EopRecord[];
+  onOpenEopModal?: (prefill: EopPrefill) => void;
+  onViewListingEop?: (listingId: string) => void;
+  amlRecords?: import("../types").AmlRecord[];
+  onOpenAmlModal?: (prefill: import("../types").AmlPrefill) => void;
 }
 
 export default function ListingsTab({
@@ -102,6 +109,11 @@ export default function ListingsTab({
   onCreateTask,
   tasks = [],
   onViewListingTasks,
+  eopRecords = [],
+  onOpenEopModal,
+  onViewListingEop,
+  amlRecords = [],
+  onOpenAmlModal,
 }: ListingsTabProps) {
   const [portfolioTxFilter, setPortfolioTxFilter] = useState<string>("all");
   const [portfolioStatusFilter, setPortfolioStatusFilter] = useState<string>("all");
@@ -579,7 +591,7 @@ export default function ListingsTab({
 
                               <div className="absolute top-3 right-3 flex items-center gap-1.5 flex-wrap justify-end">
                                 {item.listing_status === "rented" && (
-                                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs bg-indigo-600 text-white">
+                                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs bg-[#1B5888] text-white">
                                     {t("agency_bridge_status_rented")}
                                   </span>
                                 )}
@@ -761,6 +773,72 @@ export default function ListingsTab({
                                     </button>
                                   )}
 
+                                  {onOpenEopModal && (() => {
+                                    const listingEopCount = eopRecords.filter(
+                                      (r) => r.listing_id === item.id
+                                    ).length;
+                                    const specs = [
+                                      item.area_sqm ? `${item.area_sqm} m²` : null,
+                                      item.room_count || null,
+                                      item.floor ? `${item.floor}` : null,
+                                    ].filter(Boolean).join(", ");
+                                    const addr = [item.address, item.neighborhood, item.municipality, item.city]
+                                      .filter(Boolean)
+                                      .join(", ");
+                                    return (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            onOpenEopModal({
+                                              mode: "create",
+                                              listing_id: item.id,
+                                              property_id: item.managed_property_id || null,
+                                              transaction_type: item.transaction_type === "prodaja" ? "prodaja" : "izdavanje",
+                                              client_role: item.transaction_type === "prodaja" ? "seller" : "landlord",
+                                              property_type: item.property_type || "apartment",
+                                              property_address: addr || item.title || "",
+                                              property_specs: specs,
+                                              asking_price: item.price || null,
+                                              currency: item.currency || "EUR",
+                                            })
+                                          }
+                                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E5E3DF] bg-white text-[#1A1A1A] hover:bg-slate-50 text-xs font-semibold cursor-pointer transition-colors"
+                                        >
+                                          <span>{t("eop_btn_add_eop")}</span>
+                                        </button>
+                                        {listingEopCount > 0 && onViewListingEop && (
+                                          <button
+                                            type="button"
+                                            onClick={() => onViewListingEop(item.id)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors bg-[#E5EEF6] text-[#1B5888] border border-[#1B5888]/25 hover:bg-[#1B5888] hover:text-white"
+                                          >
+                                            <span>{t("eop_badge_active_eop")} ({listingEopCount})</span>
+                                          </button>
+                                        )}
+                                        {(() => {
+                                          const rejAml = findRejectedAmlForContext(amlRecords, {
+                                            listingId: item.id,
+                                            propertyId: item.managed_property_id || null,
+                                            eopRecords,
+                                          });
+                                          if (!rejAml) return null;
+                                          return (
+                                            <button
+                                              type="button"
+                                              onClick={() => onOpenAmlModal?.({ mode: "edit", existingRecord: rejAml })}
+                                              title={`${t("aml_warn_client_rejected")} (${rejAml.aml_ref_no})`}
+                                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-600 hover:text-white"
+                                            >
+                                              <AlertTriangle className="w-3.5 h-3.5" />
+                                              <span>{t("aml_eop_badge_rejected")} ({rejAml.aml_ref_no})</span>
+                                            </button>
+                                          );
+                                        })()}
+                                      </>
+                                    );
+                                  })()}
+
                                   {onViewListingTasks && (() => {
                                     const listingTaskCount = tasks.filter(
                                       (tk) => tk.listing_id === item.id && tk.status !== "done" && tk.status !== "cancelled"
@@ -818,8 +896,8 @@ export default function ListingsTab({
                                       onClick={() => openClosingModal(item)}
                                       className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                                         item.listing_status === "rented" || item.listing_status === "sold"
-                                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                                          : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80"
+                                          ? "bg-[#1B5888] text-white hover:bg-indigo-700"
+                                          : "bg-indigo-50 hover:bg-[#E5EEF6] text-[#1B5888] border border-[#1B5888]/25/80"
                                       }`}
                                       title={
                                         item.transaction_type === "prodaja"
@@ -907,7 +985,7 @@ export default function ListingsTab({
                         {/* Modal Header */}
                         <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-[#E5EEF6] text-[#1B5888] flex items-center justify-center shrink-0">
                               <KeyRound className="w-5 h-5" />
                             </div>
                             <div>
@@ -1007,17 +1085,17 @@ export default function ListingsTab({
                           {/* Property & Lease Management Handover Section (when closingStatus === "rented") */}
                           {closingStatus === "rented" && (
                             hasPmModule ? (
-                              <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 space-y-4">
+                              <div className="rounded-xl border border-[#1B5888]/25 bg-indigo-50/40 p-4 space-y-4">
                                 <label className="flex items-start gap-3 cursor-pointer select-none">
                                   <input
                                     type="checkbox"
                                     checked={handoverToPm}
                                     onChange={(e) => setHandoverToPm(e.target.checked)}
-                                    className="mt-0.5 w-4 h-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                    className="mt-0.5 w-4 h-4 rounded border-indigo-300 text-[#1B5888] focus:ring-[#1B5888] cursor-pointer"
                                   />
                                   <div>
                                     <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                      <Home className="w-3.5 h-3.5 text-indigo-600" />
+                                      <Home className="w-3.5 h-3.5 text-[#1B5888]" />
                                       <span>{t("agency_bridge_handover_toggle")}</span>
                                     </span>
                                     <p className="text-[11px] text-slate-600 mt-0.5">
@@ -1027,7 +1105,7 @@ export default function ListingsTab({
                                 </label>
 
                                 {handoverToPm && (
-                                  <div className="space-y-4 pt-2 border-t border-indigo-200/60">
+                                  <div className="space-y-4 pt-2 border-t border-[#1B5888]/25/60">
                                     {/* Target Property Mode Selector */}
                                     <div className="grid grid-cols-2 gap-2">
                                       <button

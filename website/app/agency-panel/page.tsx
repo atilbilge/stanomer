@@ -15,6 +15,14 @@ import {
   AgencyTaskSourceType,
   AgencyTaskStatus,
   AgencyAssigneeOption,
+  AgencyClient,
+  AgencyRegistryInfo,
+  AmlDocument,
+  AmlDocumentType,
+  AmlPrefill,
+  AmlRecord,
+  EopPrefill,
+  EopRecord,
 } from "./types";
 import ManagedPropertiesTab from "./components/ManagedPropertiesTab";
 import SettingsTab from "./components/SettingsTab";
@@ -28,6 +36,8 @@ import XmlFeedsTab from "./components/XmlFeedsTab";
 import WelcomeTab from "./components/WelcomeTab";
 import AccountSettingsTab from "./components/AccountSettingsTab";
 import TasksTab, { TaskFormModal } from "./components/TasksTab";
+import EopTab, { EopFormModal } from "./components/EopTab";
+import AmlTab, { AmlFormModal } from "./components/AmlTab";
 import DemoVerificationModal from "./components/DemoVerificationModal";
 import DemoFloatingNudge from "./components/DemoFloatingNudge";
 import { MAINTENANCE_CATEGORIES } from "./categoryAndPaymentIcons";
@@ -47,6 +57,7 @@ import {
 import { validate4ZidaListing, validateHaloOglasiListing } from "../../lib/portalValidators";
 import {
   Building2,
+  BookOpen,
   Compass,
   LayoutDashboard,
   ShieldCheck,
@@ -192,6 +203,19 @@ export default function AgencyPanelPage() {
   const [taskPrefill, setTaskPrefill] = useState<AgencyTaskPrefill | null>(null);
   const [taskPropertyFilter, setTaskPropertyFilter] = useState<string | null>(null);
   const [taskListingFilter, setTaskListingFilter] = useState<string | null>(null);
+  const [eopRecords, setEopRecords] = useState<EopRecord[]>([]);
+  const [agencyClients, setAgencyClients] = useState<AgencyClient[]>([]);
+  const [loadingEop, setLoadingEop] = useState(false);
+  const [isEopModalOpen, setIsEopModalOpen] = useState(false);
+  const [eopPrefill, setEopPrefill] = useState<EopPrefill | null>(null);
+  const [eopModalQueue, setEopModalQueue] = useState<EopPrefill[]>([]);
+  const [eopPropertyFilter, setEopPropertyFilter] = useState<string | null>(null);
+  const [eopListingFilter, setEopListingFilter] = useState<string | null>(null);
+  const [amlRecords, setAmlRecords] = useState<AmlRecord[]>([]);
+  const [loadingAml, setLoadingAml] = useState(false);
+  const [isAmlModalOpen, setIsAmlModalOpen] = useState(false);
+  const [amlPrefill, setAmlPrefill] = useState<AmlPrefill | null>(null);
+  const [agencyRegistryInfo, setAgencyRegistryInfo] = useState<AgencyRegistryInfo>({});
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeModules, setActiveModules] = useState<string[]>([
     "portfolio_distribution",
@@ -580,6 +604,8 @@ export default function AgencyPanelPage() {
   type AgencyPanelTab =
     | "welcome"
     | "tasks"
+    | "eop"
+    | "aml"
     | "listings"
     | "form"
     | "leads"
@@ -627,8 +653,11 @@ export default function AgencyPanelPage() {
   }, [activeTab]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [moduleUpgradeRequested, setModuleUpgradeRequested] = useState<boolean>(false);
+  const [isRequestingModuleUpgrade, setIsRequestingModuleUpgrade] = useState<boolean>(false);
 
   async function handleRequestModuleUpgrade(targetCategory?: "portfolio" | "property_lease") {
+    if (isRequestingModuleUpgrade || moduleUpgradeRequested) return;
+    setIsRequestingModuleUpgrade(true);
     const requestedModuleLabel =
       targetCategory === "portfolio"
         ? "Portfolio & Distribution Module Upgrade"
@@ -651,16 +680,14 @@ export default function AgencyPanelPage() {
         throw new Error(errBody?.error || `HTTP ${res.status}`);
       }
       setModuleUpgradeRequested(true);
-      setStatusMessage({
-        type: "success",
-        text: t("agency_welcome_upgrade_sent"),
-      });
     } catch (err: any) {
       console.error("Upgrade request error:", err);
       setStatusMessage({
         type: "error",
         text: err?.message || t("agency_panel_msg_save_error"),
       });
+    } finally {
+      setIsRequestingModuleUpgrade(false);
     }
   }
   const [portfolioSearch, setPortfolioSearch] = useState("");
@@ -1269,6 +1296,648 @@ export default function AgencyPanelPage() {
     }
   }
 
+  async function loadAgencyEopData(effectiveAgencyId: string) {
+    if (!effectiveAgencyId || effectiveAgencyId === "demo") {
+      try {
+        const savedEop = typeof window !== "undefined" ? localStorage.getItem("stanomer_agency_eop_demo") : null;
+        const savedClients = typeof window !== "undefined" ? localStorage.getItem("stanomer_agency_clients_demo") : null;
+        const savedRegistry = typeof window !== "undefined" ? localStorage.getItem("stanomer_agency_registry_demo") : null;
+        const { DEMO_EOP_RECORDS, DEMO_AGENCY_CLIENTS } = await import("./demoData");
+        setEopRecords(savedEop ? JSON.parse(savedEop) : DEMO_EOP_RECORDS);
+        setAgencyClients(savedClients ? JSON.parse(savedClients) : DEMO_AGENCY_CLIENTS);
+        if (savedRegistry) {
+          setAgencyRegistryInfo(JSON.parse(savedRegistry));
+        }
+      } catch {
+        setEopRecords([]);
+        setAgencyClients([]);
+      }
+      return;
+    }
+    setLoadingEop(true);
+    try {
+      const [eopRes, clientRes] = await Promise.all([
+        supabase
+          .from("eop_records")
+          .select("*")
+          .eq("agency_id", effectiveAgencyId)
+          .order("sequence_year", { ascending: false })
+          .order("sequence_number", { ascending: false }),
+        supabase
+          .from("agency_clients")
+          .select("*")
+          .eq("agency_id", effectiveAgencyId)
+          .order("full_name", { ascending: true }),
+      ]);
+      if (!eopRes.error && Array.isArray(eopRes.data)) {
+        setEopRecords(eopRes.data as EopRecord[]);
+      }
+      if (!clientRes.error && Array.isArray(clientRes.data)) {
+        setAgencyClients(clientRes.data as AgencyClient[]);
+      }
+    } catch (err) {
+      console.warn("Could not load EOP data:", err);
+    } finally {
+      setLoadingEop(false);
+    }
+  }
+
+  const handleOpenEopModal = (prefill: EopPrefill) => {
+    if (!checkEffectiveDemoVerified()) {
+      setIsGatekeeperModalOpen(true);
+      return;
+    }
+    setEopPrefill(prefill);
+    setIsEopModalOpen(true);
+  };
+
+  const handleSaveEopRecord = async (payload: {
+    id?: string;
+    saveClientToDirectory?: boolean;
+    record: Omit<EopRecord, "id" | "agency_id" | "sequence_year" | "sequence_number" | "redni_broj" | "created_at" | "updated_at">;
+  }) => {
+    const effectiveAgencyId = userId || "demo";
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    let resolvedClientId = payload.record.client_id || null;
+
+    // Auto-match existing client by JMBG/PIB or exact name to avoid duplicate directory rows
+    if (!resolvedClientId) {
+      const normJmbg = (payload.record.client_jmbg_pib_snapshot || "").trim().toLowerCase();
+      const normName = payload.record.client_name_snapshot.trim().toLowerCase();
+      const matched = agencyClients.find(
+        (c) =>
+          (normJmbg && (c.jmbg_pib || "").trim().toLowerCase() === normJmbg) ||
+          c.full_name.trim().toLowerCase() === normName
+      );
+      if (matched) {
+        resolvedClientId = matched.id;
+      }
+    }
+
+    if (!isRealUser) {
+      if (payload.saveClientToDirectory && !resolvedClientId) {
+        const newClient: AgencyClient = {
+          id: `demo-client-${Date.now()}`,
+          agency_id: "demo",
+          party_type: payload.record.client_type,
+          full_name: payload.record.client_name_snapshot,
+          jmbg_pib: payload.record.client_jmbg_pib_snapshot || null,
+          address: payload.record.client_address_snapshot || null,
+          phone: payload.record.client_phone_snapshot || null,
+          email: payload.record.client_email_snapshot || null,
+          created_at: new Date().toISOString(),
+        };
+        resolvedClientId = newClient.id;
+        setAgencyClients((prev) => {
+          const next = [newClient, ...prev];
+          try { localStorage.setItem("stanomer_agency_clients_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+      }
+
+      if (payload.id) {
+        setEopRecords((prev) => {
+          const next = prev.map((r) =>
+            r.id === payload.id
+              ? { ...r, ...payload.record, client_id: resolvedClientId, updated_at: new Date().toISOString() }
+              : r
+          );
+          try { localStorage.setItem("stanomer_agency_eop_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+        setStatusMessage({ type: "success", text: t("eop_msg_updated") });
+      } else {
+        const parsedYear = Number((payload.record.mediation_contract_date || "").slice(0, 4));
+        const year = Number.isFinite(parsedYear) && parsedYear > 1900 ? parsedYear : new Date().getFullYear();
+        setEopRecords((prev) => {
+          const maxSeq = prev
+            .filter((r) => r.sequence_year === year)
+            .reduce((acc, r) => Math.max(acc, r.sequence_number), 0);
+          const nextSeq = maxSeq + 1;
+          const created: EopRecord = {
+            ...payload.record,
+            id: `demo-eop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            agency_id: "demo",
+            client_id: resolvedClientId,
+            sequence_year: year,
+            sequence_number: nextSeq,
+            redni_broj: `${nextSeq}/${year}`,
+            created_at: new Date().toISOString(),
+          };
+          const next = [created, ...prev];
+          try { localStorage.setItem("stanomer_agency_eop_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+        setStatusMessage({ type: "success", text: t("eop_msg_created") });
+      }
+      return;
+    }
+
+    if (payload.saveClientToDirectory && !resolvedClientId) {
+      const { data: insertedClient } = await supabase
+        .from("agency_clients")
+        .insert({
+          agency_id: effectiveAgencyId,
+          party_type: payload.record.client_type,
+          full_name: payload.record.client_name_snapshot,
+          jmbg_pib: payload.record.client_jmbg_pib_snapshot || null,
+          address: payload.record.client_address_snapshot || null,
+          phone: payload.record.client_phone_snapshot || null,
+          email: payload.record.client_email_snapshot || null,
+          created_by: currentUser?.id || effectiveAgencyId,
+        })
+        .select("*")
+        .single();
+      if (insertedClient) {
+        resolvedClientId = insertedClient.id;
+        setAgencyClients((prev) => [insertedClient as AgencyClient, ...prev]);
+      }
+    }
+
+    if (payload.id) {
+      const { data, error } = await supabase
+        .from("eop_records")
+        .update({
+          ...payload.record,
+          client_id: resolvedClientId,
+        })
+        .eq("id", payload.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        setEopRecords((prev) => prev.map((r) => (r.id === payload.id ? (data as EopRecord) : r)));
+      }
+      setStatusMessage({
+        type: "success",
+        text:
+          payload.record.status === "realized"
+            ? t("eop_msg_realized")
+            : payload.record.status === "cancelled"
+              ? t("eop_msg_cancelled")
+              : t("eop_msg_updated"),
+      });
+    } else {
+      const parsedYear = Number((payload.record.mediation_contract_date || "").slice(0, 4));
+      const year = Number.isFinite(parsedYear) && parsedYear > 1900 ? parsedYear : new Date().getFullYear();
+      const { data, error } = await supabase
+        .from("eop_records")
+        .insert({
+          ...payload.record,
+          agency_id: effectiveAgencyId,
+          client_id: resolvedClientId,
+          sequence_year: year,
+          sequence_number: 0,
+          redni_broj: "",
+          created_by: currentUser?.id || effectiveAgencyId,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        setEopRecords((prev) => [data as EopRecord, ...prev]);
+      }
+      setStatusMessage({ type: "success", text: t("eop_msg_created") });
+    }
+  };
+
+  const handleSaveRegistryInfo = async (info: AgencyRegistryInfo) => {
+    if (userId && userId !== "demo" && isValidUuid(userId)) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          registar_posrednika_no: info.registar_posrednika_no || null,
+          pib: info.pib || null,
+          maticni_broj: info.maticni_broj || null,
+          official_address: info.official_address || null,
+          aml_officer_name: info.aml_officer_name || null,
+          aml_deputy_name: info.aml_deputy_name || null,
+        })
+        .eq("id", userId);
+      if (error) throw error;
+      setAgencyRegistryInfo(info);
+    } else {
+      setAgencyRegistryInfo(info);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("stanomer_agency_registry_demo", JSON.stringify(info));
+        } catch { }
+      }
+    }
+  };
+
+  async function loadAgencyAmlData(effectiveAgencyId: string) {
+    if (!effectiveAgencyId || effectiveAgencyId === "demo") {
+      try {
+        const savedAml = typeof window !== "undefined" ? localStorage.getItem("stanomer_agency_aml_demo") : null;
+        const { DEMO_AML_RECORDS } = await import("./demoData");
+        setAmlRecords(savedAml ? JSON.parse(savedAml) : DEMO_AML_RECORDS);
+      } catch {
+        setAmlRecords([]);
+      }
+      return;
+    }
+    setLoadingAml(true);
+    try {
+      const [recRes, docRes] = await Promise.all([
+        supabase
+          .from("aml_records")
+          .select("*")
+          .eq("agency_id", effectiveAgencyId)
+          .order("sequence_year", { ascending: false })
+          .order("sequence_number", { ascending: false }),
+        supabase
+          .from("aml_documents")
+          .select("*")
+          .eq("agency_id", effectiveAgencyId)
+          .order("created_at", { ascending: false }),
+      ]);
+      if (!recRes.error && Array.isArray(recRes.data)) {
+        const docsByRecord = new Map<string, AmlDocument[]>();
+        if (!docRes.error && Array.isArray(docRes.data)) {
+          for (const d of docRes.data as AmlDocument[]) {
+            const list = docsByRecord.get(d.aml_record_id) || [];
+            list.push(d);
+            docsByRecord.set(d.aml_record_id, list);
+          }
+        }
+        setAmlRecords(
+          (recRes.data as AmlRecord[]).map((r) => ({
+            ...r,
+            documents: docsByRecord.get(r.id) || [],
+          }))
+        );
+      }
+    } catch (err) {
+      console.warn("Could not load AML data:", err);
+    } finally {
+      setLoadingAml(false);
+    }
+  }
+
+  const handleOpenAmlModal = (prefill: AmlPrefill) => {
+    if (!checkEffectiveDemoVerified()) {
+      setIsGatekeeperModalOpen(true);
+      return;
+    }
+    setAmlPrefill(prefill);
+    setIsAmlModalOpen(true);
+  };
+
+  const handleSaveAmlRecord = async (payload: {
+    id?: string;
+    supersededFromId?: string;
+    lockAction?: "approve" | "reject" | null;
+    saveClientToDirectory?: boolean;
+    record: Omit<
+      AmlRecord,
+      "id" | "agency_id" | "sequence_year" | "sequence_number" | "aml_ref_no" | "created_at" | "updated_at" | "documents"
+    >;
+  }): Promise<AmlRecord | null> => {
+    const effectiveAgencyId = userId || "demo";
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    let resolvedClientId = payload.record.client_id || null;
+
+    if (!resolvedClientId) {
+      const normJmbg = (payload.record.jmbg_pib_snapshot || "").trim().toLowerCase();
+      const normName = payload.record.client_name_snapshot.trim().toLowerCase();
+      const matched = agencyClients.find(
+        (c) =>
+          (normJmbg && (c.jmbg_pib || "").trim().toLowerCase() === normJmbg) ||
+          c.full_name.trim().toLowerCase() === normName
+      );
+      if (matched) resolvedClientId = matched.id;
+    }
+
+    if (!isRealUser) {
+      if (payload.saveClientToDirectory && !resolvedClientId) {
+        const newClient: AgencyClient = {
+          id: `demo-client-${Date.now()}`,
+          agency_id: "demo",
+          party_type: payload.record.party_type,
+          full_name: payload.record.client_name_snapshot,
+          jmbg_pib: payload.record.jmbg_pib_snapshot || null,
+          maticni_broj: payload.record.maticni_broj_snapshot || null,
+          address: payload.record.address_snapshot || null,
+          phone: payload.record.phone_snapshot || null,
+          email: payload.record.email_snapshot || null,
+          created_at: new Date().toISOString(),
+        };
+        resolvedClientId = newClient.id;
+        setAgencyClients((prev) => {
+          const next = [newClient, ...prev];
+          try { localStorage.setItem("stanomer_agency_clients_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+      }
+
+      let savedRecord: AmlRecord | null = null;
+      if (payload.id) {
+        setAmlRecords((prev) => {
+          const next = prev.map((r) => {
+            if (r.id !== payload.id) return r;
+            savedRecord = { ...r, ...payload.record, client_id: resolvedClientId, updated_at: new Date().toISOString() };
+            return savedRecord;
+          });
+          try { localStorage.setItem("stanomer_agency_aml_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+      } else {
+        const year = Number((payload.record.transaction_date || "").slice(0, 4)) || new Date().getFullYear();
+        setAmlRecords((prev) => {
+          const maxSeq = prev.filter((r) => r.sequence_year === year).reduce((acc, r) => Math.max(acc, r.sequence_number), 0);
+          const nextSeq = maxSeq + 1;
+          savedRecord = {
+            ...payload.record,
+            id: `demo-aml-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            agency_id: "demo",
+            client_id: resolvedClientId,
+            sequence_year: year,
+            sequence_number: nextSeq,
+            aml_ref_no: `AML-${nextSeq}/${year}`,
+            created_at: new Date().toISOString(),
+            documents: [],
+          };
+          const shouldSupersedeInDemo = Boolean(payload.supersededFromId && payload.lockAction);
+          const next = [
+            savedRecord,
+            ...prev.map((r) =>
+              shouldSupersedeInDemo && r.id === payload.supersededFromId
+                ? { ...r, status: "superseded" as const, superseded_by_id: savedRecord!.id }
+                : r
+            ),
+          ];
+          try { localStorage.setItem("stanomer_agency_aml_demo", JSON.stringify(next)); } catch { }
+          return next;
+        });
+      }
+      setStatusMessage({ type: "success", text: payload.lockAction ? t("aml_msg_locked") : t("aml_msg_saved") });
+      return savedRecord;
+    }
+
+    if (payload.saveClientToDirectory && !resolvedClientId) {
+      const { data: insertedClient } = await supabase
+        .from("agency_clients")
+        .insert({
+          agency_id: effectiveAgencyId,
+          party_type: payload.record.party_type,
+          full_name: payload.record.client_name_snapshot,
+          jmbg_pib: payload.record.jmbg_pib_snapshot || null,
+          maticni_broj: payload.record.maticni_broj_snapshot || null,
+          address: payload.record.address_snapshot || null,
+          phone: payload.record.phone_snapshot || null,
+          email: payload.record.email_snapshot || null,
+          created_by: currentUser?.id || effectiveAgencyId,
+        })
+        .select("*")
+        .single();
+      if (insertedClient) {
+        resolvedClientId = insertedClient.id;
+        setAgencyClients((prev) => [insertedClient as AgencyClient, ...prev]);
+      }
+    }
+
+    let resultRow: AmlRecord | null = null;
+    if (payload.id) {
+      // If locking a draft that shares an eop_record_id with an older finalized record, supersede the older one first
+      if (payload.lockAction && payload.record.eop_record_id) {
+        const priorFinal = amlRecords.find(
+          (r) =>
+            r.id !== payload.id &&
+            r.eop_record_id === payload.record.eop_record_id &&
+            (r.status === "approved" || r.status === "rejected")
+        );
+        if (priorFinal) {
+          await supabase
+            .from("aml_records")
+            .update({ status: "superseded", superseded_by_id: payload.id })
+            .eq("id", priorFinal.id);
+          setAmlRecords((prev) =>
+            prev.map((r) =>
+              r.id === priorFinal.id ? { ...r, status: "superseded" as const, superseded_by_id: payload.id } : r
+            )
+          );
+        }
+      }
+      const { data, error } = await supabase
+        .from("aml_records")
+        .update({
+          ...payload.record,
+          client_id: resolvedClientId,
+        })
+        .eq("id", payload.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        resultRow = data as AmlRecord;
+        setAmlRecords((prev) =>
+          prev.map((r) => (r.id === payload.id ? { ...resultRow!, documents: r.documents || [] } : r))
+        );
+      }
+    } else {
+      const year = Number((payload.record.transaction_date || "").slice(0, 4)) || new Date().getFullYear();
+      const shouldSupersedeNow = Boolean(payload.supersededFromId && payload.lockAction);
+      const { data, error } = await supabase
+        .from("aml_records")
+        .insert({
+          ...payload.record,
+          eop_record_id: shouldSupersedeNow ? null : payload.record.eop_record_id,
+          status: shouldSupersedeNow ? "draft" : payload.record.status,
+          is_locked: shouldSupersedeNow ? false : payload.record.is_locked,
+          locked_at: shouldSupersedeNow ? null : payload.record.locked_at,
+          retention_until: shouldSupersedeNow ? null : payload.record.retention_until,
+          agency_id: effectiveAgencyId,
+          client_id: resolvedClientId,
+          sequence_year: year,
+          sequence_number: 0,
+          aml_ref_no: "",
+          created_by: currentUser?.id || effectiveAgencyId,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      if (data) {
+        resultRow = { ...(data as AmlRecord), documents: [] };
+        if (shouldSupersedeNow && payload.supersededFromId) {
+          await supabase
+            .from("aml_records")
+            .update({ status: "superseded", superseded_by_id: resultRow.id })
+            .eq("id", payload.supersededFromId);
+          const { data: lockedRow, error: lockErr } = await supabase
+            .from("aml_records")
+            .update({
+              eop_record_id: payload.record.eop_record_id,
+              status: payload.record.status,
+              is_locked: true,
+              locked_at: payload.record.locked_at,
+              retention_until: payload.record.retention_until,
+            })
+            .eq("id", resultRow.id)
+            .select("*")
+            .single();
+          if (lockErr) throw lockErr;
+          if (lockedRow) {
+            resultRow = { ...(lockedRow as AmlRecord), documents: [] };
+          }
+        }
+        setAmlRecords((prev) => [
+          resultRow!,
+          ...prev.map((r) =>
+            shouldSupersedeNow && payload.supersededFromId && r.id === payload.supersededFromId
+              ? { ...r, status: "superseded" as const, superseded_by_id: resultRow!.id }
+              : r
+          ),
+        ]);
+      }
+    }
+
+    setStatusMessage({ type: "success", text: payload.lockAction ? t("aml_msg_locked") : t("aml_msg_saved") });
+    return resultRow;
+  };
+
+  const handleUploadAmlDocument = async (amlRecordId: string, file: File, docType: AmlDocumentType) => {
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    if (!isRealUser) {
+      const demoDoc: AmlDocument = {
+        id: `demo-aml-doc-${Date.now()}`,
+        agency_id: "demo",
+        aml_record_id: amlRecordId,
+        doc_type: docType,
+        file_name: file.name,
+        storage_path: `demo/${amlRecordId}/${file.name}`,
+        mime_type: file.type,
+        file_size_bytes: file.size,
+        created_at: new Date().toISOString(),
+      };
+      setAmlRecords((prev) => {
+        const next = prev.map((r) =>
+          r.id === amlRecordId ? { ...r, documents: [demoDoc, ...(r.documents || [])] } : r
+        );
+        try { localStorage.setItem("stanomer_agency_aml_demo", JSON.stringify(next)); } catch { }
+        return next;
+      });
+      setAmlPrefill((prev) =>
+        prev?.existingRecord?.id === amlRecordId
+          ? { ...prev, existingRecord: { ...prev.existingRecord, documents: [demoDoc, ...(prev.existingRecord.documents || [])] } }
+          : prev
+      );
+      setStatusMessage({ type: "success", text: t("aml_msg_doc_uploaded") });
+      return;
+    }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = `${userId}/${amlRecordId}/${Date.now()}_${safeName}`;
+    const { error: uploadErr } = await supabase.storage
+      .from("aml-documents")
+      .upload(storagePath, file, { upsert: false, contentType: file.type || undefined });
+    if (uploadErr) throw uploadErr;
+
+    const { data: docRow, error: metaErr } = await supabase
+      .from("aml_documents")
+      .insert({
+        agency_id: userId,
+        aml_record_id: amlRecordId,
+        doc_type: docType,
+        file_name: file.name,
+        storage_path: storagePath,
+        mime_type: file.type || null,
+        file_size_bytes: file.size || null,
+        uploaded_by: currentUser?.id || userId,
+      })
+      .select("*")
+      .single();
+    if (metaErr) {
+      await supabase.storage.from("aml-documents").remove([storagePath]);
+      throw metaErr;
+    }
+    if (docRow) {
+      const inserted = docRow as AmlDocument;
+      setAmlRecords((prev) =>
+        prev.map((r) => (r.id === amlRecordId ? { ...r, documents: [inserted, ...(r.documents || [])] } : r))
+      );
+      setAmlPrefill((prev) =>
+        prev?.existingRecord?.id === amlRecordId
+          ? { ...prev, existingRecord: { ...prev.existingRecord, documents: [inserted, ...(prev.existingRecord.documents || [])] } }
+          : prev
+      );
+      setStatusMessage({ type: "success", text: t("aml_msg_doc_uploaded") });
+    }
+  };
+
+  const handleOpenAmlDocument = async (doc: AmlDocument) => {
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    if (!isRealUser) return;
+    const { data, error } = await supabase.storage
+      .from("aml-documents")
+      .createSignedUrl(doc.storage_path, 120);
+    if (error || !data?.signedUrl) {
+      setStatusMessage({ type: "error", text: error?.message || t("aml_msg_error") });
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDeleteAmlDocument = async (doc: AmlDocument) => {
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    if (!isRealUser) {
+      setAmlRecords((prev) => {
+        const next = prev.map((r) =>
+          r.id === doc.aml_record_id
+            ? { ...r, documents: (r.documents || []).filter((d) => d.id !== doc.id) }
+            : r
+        );
+        try { localStorage.setItem("stanomer_agency_aml_demo", JSON.stringify(next)); } catch { }
+        return next;
+      });
+      setAmlPrefill((prev) =>
+        prev?.existingRecord?.id === doc.aml_record_id
+          ? { ...prev, existingRecord: { ...prev.existingRecord, documents: (prev.existingRecord.documents || []).filter((d) => d.id !== doc.id) } }
+          : prev
+      );
+      setStatusMessage({ type: "success", text: t("aml_msg_doc_deleted") });
+      return;
+    }
+    const { error } = await supabase.from("aml_documents").delete().eq("id", doc.id);
+    if (error) throw error;
+    await supabase.storage.from("aml-documents").remove([doc.storage_path]);
+    setAmlRecords((prev) =>
+      prev.map((r) =>
+        r.id === doc.aml_record_id
+          ? { ...r, documents: (r.documents || []).filter((d) => d.id !== doc.id) }
+          : r
+      )
+    );
+    setAmlPrefill((prev) =>
+      prev?.existingRecord?.id === doc.aml_record_id
+        ? { ...prev, existingRecord: { ...prev.existingRecord, documents: (prev.existingRecord.documents || []).filter((d) => d.id !== doc.id) } }
+        : prev
+    );
+    setStatusMessage({ type: "success", text: t("aml_msg_doc_deleted") });
+  };
+
+  const handleDeleteDraftAmlRecord = async (record: AmlRecord) => {
+    if (record.is_locked) return;
+    const isRealUser = Boolean(userId && userId !== "demo" && isValidUuid(userId));
+    if (!isRealUser) {
+      setAmlRecords((prev) => {
+        const next = prev.filter((r) => r.id !== record.id);
+        try { localStorage.setItem("stanomer_agency_aml_demo", JSON.stringify(next)); } catch { }
+        return next;
+      });
+      setStatusMessage({ type: "success", text: t("aml_msg_deleted") });
+      return;
+    }
+    const paths = (record.documents || []).map((d) => d.storage_path).filter(Boolean);
+    if (paths.length > 0) {
+      await supabase.storage.from("aml-documents").remove(paths);
+    }
+    const { error } = await supabase.from("aml_records").delete().eq("id", record.id);
+    if (error) throw error;
+    setAmlRecords((prev) => prev.filter((r) => r.id !== record.id));
+    setStatusMessage({ type: "success", text: t("aml_msg_deleted") });
+  };
+
   async function loadTeamAssignees(effectiveAgencyId: string, authUser?: any) {
     if (!effectiveAgencyId || effectiveAgencyId === "demo") {
       setTeamAssignees([
@@ -1480,9 +2149,20 @@ export default function AgencyPanelPage() {
   async function loadAgencyProfile(uid: string, fallbackEmail?: string) {
     const { data: prof } = await supabase
       .from("profiles")
-      .select("company_name, full_name, phone_number, email, website_url, logo_url, color_scheme, active_modules, is_demo, demo_expires_at")
+      .select("company_name, full_name, phone_number, email, website_url, logo_url, color_scheme, active_modules, is_demo, demo_expires_at, registar_posrednika_no, pib, maticni_broj, official_address, aml_officer_name, aml_deputy_name")
       .eq("id", uid)
       .maybeSingle();
+
+    if (prof) {
+      setAgencyRegistryInfo({
+        registar_posrednika_no: (prof as any).registar_posrednika_no || null,
+        pib: (prof as any).pib || null,
+        maticni_broj: (prof as any).maticni_broj || null,
+        official_address: (prof as any).official_address || null,
+        aml_officer_name: (prof as any).aml_officer_name || null,
+        aml_deputy_name: (prof as any).aml_deputy_name || null,
+      });
+    }
 
     if (prof?.is_demo) {
       setIsDemoMode(true);
@@ -1978,6 +2658,8 @@ export default function AgencyPanelPage() {
           loadAgencyContracts(effectiveId);
           loadAgencyMaintenance(effectiveId);
           loadAgencyTasks(effectiveId);
+          loadAgencyEopData(effectiveId);
+          loadAgencyAmlData(effectiveId);
           loadTeamAssignees(effectiveId, sessionUser);
         } else if (mounted) {
           // 2. Check localStorage for active unexpired demo
@@ -2023,6 +2705,8 @@ export default function AgencyPanelPage() {
           loadAgencyManagedProperties("demo");
           loadAgencyContracts("demo");
           loadAgencyMaintenance("demo");
+          loadAgencyEopData("demo");
+          loadAgencyAmlData("demo");
           if (typeof window !== "undefined") {
             try {
               const savedListings = localStorage.getItem("stanomer_agency_listings_demo");
@@ -3695,6 +4379,54 @@ export default function AgencyPanelPage() {
       }
     }
 
+    // Lifecycle EOP check: only on realized deals (rented / sold), never on reserved
+    if (closingStatus === "rented" || closingStatus === "sold") {
+      const activeListingEops = eopRecords.filter(
+        (r) => r.listing_id === listing.id && r.status === "active"
+      );
+      if (activeListingEops.length > 0) {
+        const prefills: EopPrefill[] = activeListingEops.map((rec) => ({
+          mode: "realize",
+          existingRecord: rec,
+          listing_id: listing.id,
+          property_id: targetPropId || rec.property_id || null,
+          lease_contract_id: createdContractId || rec.lease_contract_id || null,
+          agreed_price: closingPrice,
+          realized_at: nowIso.split("T")[0],
+        }));
+        setEopPrefill(prefills[0]);
+        setEopModalQueue(prefills.slice(1));
+        setIsEopModalOpen(true);
+      } else {
+        const specs = [
+          listing.area_sqm ? `${listing.area_sqm} m²` : null,
+          listing.room_count || null,
+          listing.floor ? `${listing.floor}` : null,
+        ].filter(Boolean).join(", ");
+        const addr = [listing.address, listing.neighborhood, listing.municipality, listing.city]
+          .filter(Boolean)
+          .join(", ");
+        const isSale = closingStatus === "sold" || listing.transaction_type === "prodaja";
+        setEopPrefill({
+          mode: "create",
+          status: "realized",
+          listing_id: listing.id,
+          property_id: targetPropId || listing.managed_property_id || null,
+          lease_contract_id: createdContractId || null,
+          transaction_type: isSale ? "prodaja" : "izdavanje",
+          client_role: isSale ? "seller" : "landlord",
+          property_type: listing.property_type || "apartment",
+          property_address: addr || listing.title || "",
+          property_specs: specs,
+          asking_price: listing.price || null,
+          agreed_price: closingPrice,
+          currency: listing.currency || "EUR",
+          realized_at: nowIso.split("T")[0],
+        });
+        setIsEopModalOpen(true);
+      }
+    }
+
     setStatusMessage({
       type: "success",
       text: handoverToPm ? t("agency_bridge_msg_handover_success") : t("agency_bridge_msg_closed_success"),
@@ -4542,6 +5274,7 @@ export default function AgencyPanelPage() {
         await loadAgencyContracts(effectiveId);
         await loadAgencyMaintenance(effectiveId);
         await loadAgencyTasks(effectiveId);
+        await loadAgencyEopData(effectiveId);
         await loadTeamAssignees(effectiveId, data.user);
       }
     } catch (err: unknown) {
@@ -5058,7 +5791,24 @@ export default function AgencyPanelPage() {
       setIsGatekeeperModalOpen(true);
       return;
     }
-    if (typeof window !== "undefined" && !window.confirm(t("agency_panel_delete_confirm"))) {
+    const activeListingEops = eopRecords.filter(
+      (r) => r.listing_id === item.id && r.status === "active"
+    );
+    if (activeListingEops.length > 0) {
+      const refs = activeListingEops.map((r) => `#${r.redni_broj}`).join(", ");
+      setStatusMessage({
+        type: "error",
+        text: `${t("eop_delete_listing_blocked_active")} (${refs})`,
+      });
+      return;
+    }
+    const hasClosedListingEop = eopRecords.some(
+      (r) => r.listing_id === item.id
+    );
+    const deleteConfirmText = hasClosedListingEop
+      ? `${t("agency_panel_delete_confirm")}\n\n${t("eop_delete_listing_warning")}`
+      : t("agency_panel_delete_confirm");
+    if (typeof window !== "undefined" && !window.confirm(deleteConfirmText)) {
       return;
     }
     if (isDemoMode && (!userId || userId === "demo")) {
@@ -5074,6 +5824,15 @@ export default function AgencyPanelPage() {
         })();
       const nextListings = currentListings.filter((row) => row.id !== item.id);
       setListings(nextListings);
+      setEopRecords((prev) => {
+        const nextEop = prev.map((r) => (r.listing_id === item.id ? { ...r, listing_id: null } : r));
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("stanomer_agency_eop_demo", JSON.stringify(nextEop));
+          } catch { }
+        }
+        return nextEop;
+      });
       if (typeof window !== "undefined") {
         try {
           localStorage.setItem(
@@ -5094,6 +5853,7 @@ export default function AgencyPanelPage() {
         .eq("agency_id", userId);
       if (error) throw error;
       setListings((prev) => prev.filter((row) => row.id !== item.id));
+      setEopRecords((prev) => prev.map((r) => (r.listing_id === item.id ? { ...r, listing_id: null } : r)));
       if (editingId === item.id) resetForm();
       setStatusMessage({ type: "success", text: t("agency_panel_msg_deleted") });
     } catch (err: unknown) {
@@ -5466,7 +6226,11 @@ export default function AgencyPanelPage() {
                           ? t("agency_panel_menu_account_settings")
                           : activeTab === "tasks"
                             ? t("agency_tasks_page_title")
-                            : t("agency_panel_menu_settings");
+                            : activeTab === "eop"
+                              ? t("eop_tab_title")
+                              : activeTab === "aml"
+                                ? t("aml_tab_title")
+                                : t("agency_panel_menu_settings");
 
   const activeTabDescription =
     activeTab === "welcome"
@@ -5493,7 +6257,11 @@ export default function AgencyPanelPage() {
                           ? t("agency_page_desc_account_settings")
                           : activeTab === "tasks"
                             ? t("agency_tasks_page_subtitle")
-                            : t("agency_page_desc_settings");
+                            : activeTab === "eop"
+                              ? t("eop_tab_subtitle")
+                              : activeTab === "aml"
+                                ? t("aml_tab_subtitle")
+                                : t("agency_page_desc_settings");
 
   const isPortfolioLocked = !activeModules.includes("portfolio_distribution");
   const isPropertyLeaseLocked = !activeModules.includes("property_lease_management");
@@ -5595,37 +6363,55 @@ export default function AgencyPanelPage() {
               </p>
             </div>
 
+            {moduleUpgradeRequested && !isDemoMode && (
+              <div className="p-3.5 rounded-[12px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium flex items-start gap-2.5 text-left">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>{t("agency_welcome_upgrade_sent")}</span>
+              </div>
+            )}
+
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  if (isDemoMode || !userId) {
-                    handleActivateDemoModule();
-                  } else {
-                    handleRequestModuleUpgrade(category);
-                  }
-                }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                <Sparkles className="w-4 h-4 shrink-0" />
-                <span className="text-center">
-                  {(() => {
-                    const text = isDemoMode
-                      ? t("agency_panel_locked_try_now_btn")
-                      : t("agency_panel_locked_upgrade_btn");
-                    const match = text.match(/^(.*?)(\s*\(.*?\))$/);
-                    if (match) {
-                      return (
-                        <>
-                          <span>{match[1]}</span>{" "}
-                          <span className="inline-block whitespace-nowrap">{match[2].trim()}</span>
-                        </>
-                      );
+              {moduleUpgradeRequested && !isDemoMode ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("welcome")}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <span>{t("close")}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isRequestingModuleUpgrade}
+                  onClick={() => {
+                    if (isDemoMode || !userId) {
+                      handleActivateDemoModule();
+                    } else {
+                      handleRequestModuleUpgrade(category);
                     }
-                    return text;
-                  })()}
-                </span>
-              </button>
+                  }}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] active:bg-[#12406A] disabled:opacity-60 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Sparkles className="w-4 h-4 shrink-0" />
+                  <span className="text-center">
+                    {(() => {
+                      const text = isDemoMode
+                        ? t("agency_panel_locked_try_now_btn")
+                        : t("agency_panel_locked_upgrade_btn");
+                      const match = text.match(/^(.*?)(\s*\(.*?\))$/);
+                      if (match) {
+                        return (
+                          <>
+                            <span>{match[1]}</span>{" "}
+                            <span className="inline-block whitespace-nowrap">{match[2].trim()}</span>
+                          </>
+                        );
+                      }
+                      return text;
+                    })()}
+                  </span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setActiveTab("account_settings")}
@@ -5672,9 +6458,12 @@ export default function AgencyPanelPage() {
                 )}
 
                 {/* Agency Name & Stanomer Hub Breadcrumb */}
-                <div className="flex flex-col min-w-0 text-left notranslate" translate="no" suppressHydrationWarning>
-                  <div className="flex items-center gap-1.5 leading-tight">
-                    <span className="text-sm sm:text-base font-bold tracking-tight text-[#1A1A1A] truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px] lg:max-w-[240px]">
+                <div className="flex flex-col flex-1 min-w-0 text-left notranslate" translate="no" suppressHydrationWarning>
+                  <div className="flex items-center gap-1.5 leading-tight min-w-0">
+                    <span
+                      className="text-sm sm:text-base font-bold tracking-tight text-[#1A1A1A] truncate"
+                      title={agencyName || undefined}
+                    >
                       {agencyName || "Agencija"}
                     </span>
                     {isDemoMode && (
@@ -5683,10 +6472,15 @@ export default function AgencyPanelPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] font-semibold text-[#666666] leading-tight">
-                    <span>Stanomer Hub</span>
-                    <span className="hidden sm:inline">/</span>
-                    <span className="hidden sm:inline text-[#4A4A4A] truncate max-w-[140px]">{agencyName || "Agencija"}</span>
+                  <div className="flex items-center gap-1 text-[10px] font-semibold text-[#666666] leading-tight min-w-0">
+                    <span className="shrink-0">Stanomer Hub</span>
+                    <span className="hidden sm:inline shrink-0">/</span>
+                    <span
+                      className="hidden sm:inline text-[#4A4A4A] truncate"
+                      title={agencyName || undefined}
+                    >
+                      {agencyName || "Agencija"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -6864,128 +7658,236 @@ export default function AgencyPanelPage() {
             }`}>
             {/* Desktop Left Sidebar Navigation */}
             <aside
-              className={`w-full shrink-0 hidden lg:block sticky top-24 z-20 space-y-3 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "lg:w-[68px]" : "lg:w-64"
+              className={`w-full shrink-0 hidden lg:block sticky top-24 z-20 space-y-2 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "lg:w-[68px]" : "lg:w-64"
                 }`}
             >
-              {/* PRIMARY ENTRY: WELCOME & OVERVIEW */}
-              <div
-                className={`relative bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-1.5 transition-all duration-200 flex items-center gap-1.5`}
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-welcome"
-                  aria-controls="tabpanel-welcome"
-                  aria-selected={activeTab === "welcome"}
-                  onClick={() => setActiveTab("welcome")}
-                  title={isSidebarCollapsed ? undefined : t("agency_panel_menu_welcome")}
-                  aria-label={t("agency_panel_menu_welcome")}
-                  className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "px-3 py-2.5 flex-1 gap-2.5 min-w-0"
-                    } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "welcome"
-                      ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
-                      : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
-                    }`}
-                >
-                  <Compass className="w-4 h-4 shrink-0" />
-                  {!isSidebarCollapsed && (
-                    <span className="truncate">{t("agency_panel_menu_welcome")}</span>
-                  )}
-                  {isSidebarCollapsed && (
-                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
-                      {t("agency_panel_menu_welcome")}
+              {/* CARD 0: WORKSPACE (Welcome & Setup, Task Management, EOP Ledger) */}
+              <div className="relative bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-2 space-y-1.5 transition-all duration-200">
+                {/* Group Header + Sidebar Collapse / Expand Toggle */}
+                {!isSidebarCollapsed ? (
+                  <div className="h-7 px-2 border-b border-[#E5E3DF] flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-[#8A8A8A] truncate block">
+                      {t("agency_panel_nav_group_workspace")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={toggleSidebar}
+                      className="p-1 rounded-lg text-[#666666] hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-colors cursor-pointer shrink-0"
+                      title={t("agency_panel_sidebar_collapse")}
+                      aria-label={t("agency_panel_sidebar_collapse")}
+                    >
+                      <PanelLeftClose className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="relative group/header h-7 flex items-center justify-center border-b border-[#E5E3DF] cursor-default select-none"
+                    aria-label={t("agency_panel_nav_group_workspace")}
+                  >
+                    <span className="text-xs font-mono font-bold tracking-wider text-[#666666]">
+                      WS
+                    </span>
+                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover/header:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                      {t("agency_panel_nav_group_workspace")}
                       <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
                     </div>
-                  )}
-                </button>
-
-                {/* Sidebar Collapse / Expand Toggle Button (Overhanging Tab Handle on Right Edge when Collapsed) */}
-                <button
-                  type="button"
-                  onClick={toggleSidebar}
-                  className={
-                    isSidebarCollapsed
-                      ? "absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-[#E5E3DF] shadow-[0_2px_6px_rgba(0,0,0,0.12)] flex items-center justify-center text-[#666666] hover:text-[#1B5888] hover:border-[#1B5888] hover:scale-110 transition-all cursor-pointer z-30 group"
-                      : "p-2 rounded-lg text-[#666666] hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-colors cursor-pointer shrink-0"
-                  }
-                  title={isSidebarCollapsed ? undefined : t("agency_panel_sidebar_collapse")}
-                  aria-label={isSidebarCollapsed ? t("agency_panel_sidebar_expand") : t("agency_panel_sidebar_collapse")}
-                >
-                  {isSidebarCollapsed ? (
-                    <>
+                    <button
+                      type="button"
+                      onClick={toggleSidebar}
+                      className="absolute -right-5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-[#E5E3DF] shadow-[0_2px_6px_rgba(0,0,0,0.12)] flex items-center justify-center text-[#666666] hover:text-[#1B5888] hover:border-[#1B5888] hover:scale-110 transition-all cursor-pointer z-30 group/expand"
+                      aria-label={t("agency_panel_sidebar_expand")}
+                    >
                       <ChevronRight className="w-3.5 h-3.5 text-[#1B5888]" />
-                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover/expand:opacity-100 transition-opacity duration-100 delay-0 z-50">
                         {t("agency_panel_sidebar_expand")}
                         <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
                       </div>
-                    </>
-                  ) : (
-                    <PanelLeftClose className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Module-Independent Task Management Button (Right after Welcome, before Portfolio & Distribution) */}
-              <div className="bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-1.5 transition-all duration-200">
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-tasks"
-                  aria-controls="tabpanel-tasks"
-                  aria-selected={activeTab === "tasks"}
-                  onClick={() => setActiveTab("tasks")}
-                  title={isSidebarCollapsed ? undefined : t("agency_tasks_menu_label")}
-                  aria-label={t("agency_tasks_menu_label")}
-                  className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
-                    } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "tasks"
-                      ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
-                      : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
-                    }`}
-                >
-                  <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
-                    <CheckSquare className="w-4 h-4 shrink-0" />
-                    {!isSidebarCollapsed && (
-                      <span className="truncate">{t("agency_tasks_menu_label")}</span>
-                    )}
+                    </button>
                   </div>
-                  {!isSidebarCollapsed ? (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 tabular-nums ${activeTab === "tasks"
-                        ? "bg-[#1B5888] text-white"
-                        : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
-                        }`}
-                    >
-                      {agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length}
-                    </span>
-                  ) : (
-                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
-                      {t("agency_tasks_menu_label")}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                )}
+
+                <div className="space-y-1">
+                  {/* 1. Welcome & Setup */}
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-welcome"
+                    aria-controls="tabpanel-welcome"
+                    aria-selected={activeTab === "welcome"}
+                    onClick={() => setActiveTab("welcome")}
+                    title={isSidebarCollapsed ? undefined : t("agency_panel_menu_welcome")}
+                    aria-label={t("agency_panel_menu_welcome")}
+                    className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "px-3 gap-2.5 min-w-0"
+                      } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "welcome"
+                        ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
+                        : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
+                      }`}
+                  >
+                    <Compass className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && (
+                      <span className="truncate">{t("agency_panel_menu_welcome")}</span>
+                    )}
+                    {isSidebarCollapsed && (
+                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                        {t("agency_panel_menu_welcome")}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* 2. Task Management */}
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-tasks"
+                    aria-controls="tabpanel-tasks"
+                    aria-selected={activeTab === "tasks"}
+                    onClick={() => setActiveTab("tasks")}
+                    title={isSidebarCollapsed ? undefined : t("agency_tasks_menu_label")}
+                    aria-label={t("agency_tasks_menu_label")}
+                    className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
+                      } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "tasks"
+                        ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
+                        : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
+                      }`}
+                  >
+                    <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
+                      <CheckSquare className="w-4 h-4 shrink-0" />
+                      {!isSidebarCollapsed && (
+                        <span className="truncate">{t("agency_tasks_menu_label")}</span>
+                      )}
                     </div>
-                  )}
-                </button>
+                    {!isSidebarCollapsed ? (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 tabular-nums ${activeTab === "tasks"
+                          ? "bg-[#1B5888] text-white"
+                          : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
+                          }`}
+                      >
+                        {agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length}
+                      </span>
+                    ) : (
+                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                        {t("agency_tasks_menu_label")}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* 3. EOP Ledger */}
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-eop"
+                    aria-controls="tabpanel-eop"
+                    aria-selected={activeTab === "eop"}
+                    onClick={() => {
+                      setActiveTab("eop");
+                      if (eopRecords.length === 0) {
+                        loadAgencyEopData(userId || "demo");
+                      }
+                    }}
+                    title={isSidebarCollapsed ? undefined : t("eop_tab_title")}
+                    aria-label={t("eop_tab_title")}
+                    className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
+                      } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "eop"
+                        ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
+                        : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
+                      }`}
+                  >
+                    <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
+                      <BookOpen className="w-4 h-4 shrink-0" />
+                      {!isSidebarCollapsed && (
+                        <span className="truncate">{t("eop_tab_title")}</span>
+                      )}
+                    </div>
+                    {!isSidebarCollapsed ? (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 tabular-nums ${activeTab === "eop"
+                          ? "bg-[#1B5888] text-white"
+                          : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
+                          }`}
+                      >
+                        {eopRecords.filter((r) => r.status === "active").length}
+                      </span>
+                    ) : (
+                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                        {t("eop_tab_title")}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* 4. AML / SPN Compliance */}
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-aml"
+                    aria-controls="tabpanel-aml"
+                    aria-selected={activeTab === "aml"}
+                    onClick={() => {
+                      setActiveTab("aml");
+                      if (amlRecords.length === 0) {
+                        loadAgencyAmlData(userId || "demo");
+                      }
+                    }}
+                    title={isSidebarCollapsed ? undefined : t("aml_tab_title")}
+                    aria-label={t("aml_tab_title")}
+                    className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
+                      } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "aml"
+                        ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
+                        : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
+                      }`}
+                  >
+                    <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
+                      <ShieldCheck className="w-4 h-4 shrink-0" />
+                      {!isSidebarCollapsed && (
+                        <span className="truncate">{t("aml_tab_title")}</span>
+                      )}
+                    </div>
+                    {!isSidebarCollapsed ? (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 tabular-nums ${activeTab === "aml"
+                          ? "bg-[#1B5888] text-white"
+                          : "bg-[#F8F7F5] text-[#666666] border border-[#E5E3DF]"
+                          }`}
+                      >
+                        {amlRecords.filter((r) => r.status !== "superseded").length}
+                      </span>
+                    ) : (
+                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-100 delay-0 z-50">
+                        {t("aml_tab_title")}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* CARD 1: MARKETING & SYNDICATION */}
-              <div
-                className={`bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-200 ${isSidebarCollapsed ? "p-2 space-y-2" : "p-3 space-y-2.5"
-                  }`}
-              >
+              <div className="bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-2 space-y-1.5 transition-all duration-200">
                 {/* Module 1 Header (Portfolio & Distribution / P&D when Collapsed) */}
                 {!isSidebarCollapsed ? (
-                  <div className="px-2.5 pt-1.5 pb-1 flex items-center justify-between" title={t("agency_panel_nav_group_marketing")}>
-                    <span className="text-xs font-semibold text-[#666666] truncate block">
+                  <div className="h-7 px-2 border-b border-[#E5E3DF] flex items-center justify-between" title={t("agency_panel_nav_group_marketing")}>
+                    <span className="text-[11px] font-semibold text-[#8A8A8A] truncate block">
                       {t("agency_panel_nav_group_marketing")}
                     </span>
                     {isPortfolioLocked && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#8A5206] bg-[#FBF1DC] px-1.5 py-0.5 rounded border border-[#8A5206]/20 shrink-0">
+                      <span
+                        className="relative group/lock inline-flex items-center justify-center w-5 h-5 rounded bg-[#FBF1DC] border border-[#8A5206]/20 shrink-0 cursor-default"
+                        aria-label={t("agency_panel_pkg_available")}
+                      >
                         <Lock className="w-2.5 h-2.5 text-[#8A5206]" />
-                        <span>{t("agency_panel_pkg_available")}</span>
+                        <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 pointer-events-none group-hover/lock:opacity-100 transition-opacity duration-100 z-50">
+                          {t("agency_panel_pkg_available")}
+                          <span className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                        </span>
                       </span>
                     )}
                   </div>
                 ) : (
                   <div
-                    className="relative group/header flex items-center justify-center pb-1.5 mb-1 border-b border-[#E5E3DF] cursor-default select-none"
+                    className="relative group/header h-7 flex items-center justify-center border-b border-[#E5E3DF] cursor-default select-none"
                     aria-label={t("agency_panel_nav_group_marketing")}
                   >
                     <span className="text-xs font-mono font-bold tracking-wider text-[#666666]">
@@ -7015,7 +7917,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("listings")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_listings")} (${listings.length})`}
                       aria-label={`${t("agency_panel_menu_listings")} (${listings.length})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "listings"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7058,7 +7960,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("leads")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_leads")} (${leads.length})`}
                       aria-label={`${t("agency_panel_menu_leads")} (${leads.length})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "leads"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7114,7 +8016,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("xml")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_xml")} (${PORTAL_LIST.filter((p) => p.status === "live").length} ${t("agency_panel_portal_word")})`}
                       aria-label={`${t("agency_panel_menu_xml")} (${PORTAL_LIST.filter((p) => p.status === "live").length} ${t("agency_panel_portal_word")})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "xml"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7155,7 +8057,7 @@ export default function AgencyPanelPage() {
                         rel="noopener noreferrer"
                         title={isSidebarCollapsed ? undefined : t("agency_panel_sidebar_vitrin_title")}
                         aria-label={t("agency_panel_sidebar_vitrin_title")}
-                        className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                        className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                           } rounded-lg text-xs font-semibold transition-all cursor-pointer text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5] group`}
                       >
                         <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
@@ -7178,7 +8080,7 @@ export default function AgencyPanelPage() {
                         onClick={() => setActiveTab("account_settings")}
                         title={isSidebarCollapsed ? undefined : t("agency_panel_sidebar_vitrin_title")}
                         aria-label={t("agency_panel_sidebar_vitrin_title")}
-                        className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                        className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                           } rounded-lg text-xs font-semibold transition-all cursor-pointer text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5] group`}
                       >
                         <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
@@ -7209,7 +8111,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("settings")}
                       title={isSidebarCollapsed ? undefined : t("agency_panel_menu_settings")}
                       aria-label={t("agency_panel_menu_settings")}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "settings"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7231,26 +8133,29 @@ export default function AgencyPanelPage() {
               </div>
 
               {/* CARD 2: PROPERTY & LEASE MANAGEMENT (PMS) */}
-              <div
-                className={`bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-200 ${isSidebarCollapsed ? "p-2 space-y-2" : "p-3 space-y-2.5"
-                  }`}
-              >
+              <div className="bg-white rounded-[10px] border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] p-2 space-y-1.5 transition-all duration-200">
                 {/* Module 2 Header (Property & Lease Management / P&L when Collapsed) */}
                 {!isSidebarCollapsed ? (
-                  <div className="px-2.5 pt-1.5 pb-1 flex items-center justify-between" title={t("agency_panel_nav_group_management")}>
-                    <span className="text-xs font-semibold text-[#666666] truncate block">
+                  <div className="h-7 px-2 border-b border-[#E5E3DF] flex items-center justify-between" title={t("agency_panel_nav_group_management")}>
+                    <span className="text-[11px] font-semibold text-[#8A8A8A] truncate block">
                       {t("agency_panel_nav_group_management")}
                     </span>
                     {isPropertyLeaseLocked && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#8A5206] bg-[#FBF1DC] px-1.5 py-0.5 rounded border border-[#8A5206]/20 shrink-0">
+                      <span
+                        className="relative group/lock inline-flex items-center justify-center w-5 h-5 rounded bg-[#FBF1DC] border border-[#8A5206]/20 shrink-0 cursor-default"
+                        aria-label={t("agency_panel_pkg_available")}
+                      >
                         <Lock className="w-2.5 h-2.5 text-[#8A5206]" />
-                        <span>{t("agency_panel_pkg_available")}</span>
+                        <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 pointer-events-none group-hover/lock:opacity-100 transition-opacity duration-100 z-50">
+                          {t("agency_panel_pkg_available")}
+                          <span className="absolute right-full top-1/2 -translate-y-1/2 -mr-1 border-4 border-transparent border-r-slate-900" />
+                        </span>
                       </span>
                     )}
                   </div>
                 ) : (
                   <div
-                    className="relative group/header flex items-center justify-center pb-1.5 mb-1 border-b border-[#E5E3DF] cursor-default select-none"
+                    className="relative group/header h-7 flex items-center justify-center border-b border-[#E5E3DF] cursor-default select-none"
                     aria-label={t("agency_panel_nav_group_management")}
                   >
                     <span className="text-xs font-mono font-bold tracking-wider text-[#666666]">
@@ -7280,7 +8185,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("managed_properties")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_properties")} (${managedProperties.length})`}
                       aria-label={`${t("agency_panel_menu_properties")} (${managedProperties.length})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "managed_properties"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7323,7 +8228,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("payments")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_payments")} (${payments.length})`}
                       aria-label={`${t("agency_panel_menu_payments")} (${payments.length})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "payments"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7379,7 +8284,7 @@ export default function AgencyPanelPage() {
                       onClick={() => setActiveTab("maintenance")}
                       title={isSidebarCollapsed ? undefined : `${t("agency_panel_menu_maintenance")} (${maintenanceRequests.length})`}
                       aria-label={`${t("agency_panel_menu_maintenance")} (${maintenanceRequests.length})`}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                      className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                         } rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "maintenance"
                           ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs"
                           : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5]"
@@ -7437,7 +8342,7 @@ export default function AgencyPanelPage() {
                   onClick={() => setActiveTab("account_settings")}
                   title={isSidebarCollapsed ? undefined : t("agency_panel_menu_account_settings")}
                   aria-label={t("agency_panel_menu_account_settings")}
-                  className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5 relative group" : "justify-between px-3 py-2.5"
+                  className={`w-full h-9 flex items-center ${isSidebarCollapsed ? "justify-center relative group" : "justify-between px-3"
                     } rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${activeTab === "account_settings"
                       ? "bg-[#E5EEF6] text-[#1B5888] font-bold shadow-xs border border-[#1B5888]/20"
                       : "text-[#4A4A4A] hover:text-[#1A1A1A] hover:bg-[#F8F7F5] bg-white border border-[#E5E3DF] shadow-[0_1px_0_rgba(0,0,0,0.04)]"
@@ -7615,6 +8520,15 @@ export default function AgencyPanelPage() {
                     setTaskPropertyFilter(null);
                     setTaskListingFilter(listingId);
                     setActiveTab("tasks");
+                  }}
+                  eopRecords={eopRecords}
+                  onOpenEopModal={handleOpenEopModal}
+                  amlRecords={amlRecords}
+                  onOpenAmlModal={handleOpenAmlModal}
+                  onViewListingEop={(listingId) => {
+                    setEopPropertyFilter(null);
+                    setEopListingFilter(listingId);
+                    setActiveTab("eop");
                   }}
                 />
               ))}
@@ -7839,6 +8753,102 @@ export default function AgencyPanelPage() {
                 t={t}
               />
 
+              {/* TAB 4.45: MODULE-INDEPENDENT EOP (EVIDENCIJA O POSREDOVANJU) */}
+              {activeTab === "eop" && (
+                <EopTab
+                  records={eopRecords}
+                  clients={agencyClients}
+                  amlRecords={amlRecords}
+                  properties={managedProperties}
+                  listings={listings}
+                  agencyName={agencyName}
+                  registryInfo={agencyRegistryInfo}
+                  loading={loadingEop}
+                  initialPropertyFilter={eopPropertyFilter}
+                  initialListingFilter={eopListingFilter}
+                  onClearScopeFilter={() => {
+                    setEopPropertyFilter(null);
+                    setEopListingFilter(null);
+                  }}
+                  onOpenModal={handleOpenEopModal}
+                  onOpenAmlModal={handleOpenAmlModal}
+                  onOpenSettings={() => setActiveTab("account_settings")}
+                  t={t}
+                />
+              )}
+
+              {/* TAB 4.46: MODULE-INDEPENDENT AML / SPN (ZSPNFT) */}
+              {activeTab === "aml" && (
+                <AmlTab
+                  records={amlRecords}
+                  eopRecords={eopRecords}
+                  agencyName={agencyName}
+                  registryInfo={agencyRegistryInfo}
+                  loading={loadingAml}
+                  onOpenModal={handleOpenAmlModal}
+                  onCreateTask={handleOpenCreateTask}
+                  onOpenEopTab={() => setActiveTab("eop")}
+                  t={t}
+                />
+              )}
+
+              {/* Global Create / Edit / Lock / Supersede AML Modal */}
+              <AmlFormModal
+                isOpen={isAmlModalOpen}
+                prefill={amlPrefill}
+                clients={agencyClients}
+                eopRecords={eopRecords}
+                existingAmlRecords={amlRecords}
+                managedProperties={managedProperties}
+                contracts={contracts}
+                leads={leads}
+                agencyRole={agencyRole}
+                agencyName={agencyName}
+                registryInfo={agencyRegistryInfo}
+                onClose={() => {
+                  setIsAmlModalOpen(false);
+                  setAmlPrefill(null);
+                }}
+                onSave={handleSaveAmlRecord}
+                onUploadDocument={handleUploadAmlDocument}
+                onOpenDocument={handleOpenAmlDocument}
+                onDeleteDocument={handleDeleteAmlDocument}
+                onDeleteDraft={handleDeleteDraftAmlRecord}
+                onStartRevision={(rec) => {
+                  setAmlPrefill({ mode: "supersede", existingRecord: rec });
+                  setIsAmlModalOpen(true);
+                }}
+                t={t}
+              />
+
+              {/* Global Create / Edit / Realize / Storno EOP Modal */}
+              <EopFormModal
+                isOpen={isEopModalOpen}
+                prefill={eopPrefill}
+                clients={agencyClients}
+                listings={listings}
+                managedProperties={managedProperties}
+                existingRecords={eopRecords}
+                amlRecords={amlRecords}
+                onClose={() => {
+                  if (eopModalQueue.length > 0) {
+                    const [nextPrefill, ...rest] = eopModalQueue;
+                    setEopModalQueue(rest);
+                    setEopPrefill(nextPrefill);
+                    setIsEopModalOpen(true);
+                  } else {
+                    setIsEopModalOpen(false);
+                    setEopPrefill(null);
+                  }
+                }}
+                onSave={handleSaveEopRecord}
+                onAddCounterparty={(counterpartyPrefill) => {
+                  setEopPrefill(counterpartyPrefill);
+                  setIsEopModalOpen(true);
+                }}
+                t={t}
+              />
+
               {/* TAB 4.5: ACCOUNT & APP SETTINGS (MODULE-INDEPENDENT) */}
               {activeTab === "account_settings" && (
                 <AccountSettingsTab
@@ -7861,6 +8871,8 @@ export default function AgencyPanelPage() {
                   onActivateModule={(modKey) => {
                     handleActivateDemoModule(modKey);
                   }}
+                  registryInfo={agencyRegistryInfo}
+                  onSaveRegistryInfo={handleSaveRegistryInfo}
                 />
               )}
 
@@ -7946,6 +8958,16 @@ export default function AgencyPanelPage() {
                     setTaskListingFilter(null);
                     setTaskPropertyFilter(propId);
                     setActiveTab("tasks");
+                  }}
+                  eopRecords={eopRecords}
+                  agencyClients={agencyClients}
+                  onOpenEopModal={handleOpenEopModal}
+                  amlRecords={amlRecords}
+                  onOpenAmlModal={handleOpenAmlModal}
+                  onViewPropertyEop={(propId) => {
+                    setEopListingFilter(null);
+                    setEopPropertyFilter(propId);
+                    setActiveTab("eop");
                   }}
                 />
               ))}
@@ -9142,6 +10164,57 @@ export default function AgencyPanelPage() {
                   </button>
                 </div>
 
+                {/* Workspace Actions (Always available: EOP Ledger) */}
+                <div className="space-y-1 mb-4">
+                  <p className="text-[11px] font-semibold text-[#8A8A8A] px-2 mb-1">
+                    {t("agency_panel_nav_group_workspace")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("eop");
+                      if (eopRecords.length === 0) {
+                        loadAgencyEopData(userId || "demo");
+                      }
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${activeTab === "eop"
+                      ? "bg-[#E5EEF6] text-[#1B5888] font-bold"
+                      : "bg-[#F8F7F5] text-[#1A1A1A] hover:bg-[#E5E3DF]/50"
+                      }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <BookOpen className="w-4 h-4 text-[#1B5888]" />
+                      <span>{t("eop_tab_title")}</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-white text-[#666666] border border-[#E5E3DF] tabular-nums">
+                      {eopRecords.filter((r) => r.status === "active").length}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("aml");
+                      if (amlRecords.length === 0) {
+                        loadAgencyAmlData(userId || "demo");
+                      }
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${activeTab === "aml"
+                      ? "bg-[#E5EEF6] text-[#1B5888] font-bold"
+                      : "bg-[#F8F7F5] text-[#1A1A1A] hover:bg-[#E5E3DF]/50"
+                      }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ShieldCheck className="w-4 h-4 text-[#1B5888]" />
+                      <span>{t("aml_tab_title")}</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-white text-[#666666] border border-[#E5E3DF] tabular-nums">
+                      {amlRecords.filter((r) => r.status !== "superseded").length}
+                    </span>
+                  </button>
+                </div>
+
                 {/* Module Secondary Actions */}
                 <div className="space-y-1 mb-4">
                   <p className="text-[11px] font-semibold text-[#8A8A8A] uppercase tracking-wider px-2 mb-1">
@@ -9396,8 +10469,36 @@ export default function AgencyPanelPage() {
                 }`}
             >
               <Compass className="w-5 h-5" />
-              <span className="text-[10px] mt-1 truncate max-w-[65px]">
+              <span className="text-[10px] mt-1 truncate max-w-[56px]">
                 {t("agency_panel_menu_welcome")}
+              </span>
+            </button>
+
+            {/* 1.5 Task Management (Always Visible) */}
+            <button
+              type="button"
+              role="tab"
+              id="mobtab-tasks"
+              aria-controls="tabpanel-tasks"
+              aria-selected={activeTab === "tasks"}
+              onClick={() => setActiveTab("tasks")}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-0.5 rounded-[10px] transition-colors cursor-pointer relative ${activeTab === "tasks"
+                ? "text-[#1B5888] font-bold"
+                : "text-[#666666] hover:text-[#1A1A1A]"
+                }`}
+            >
+              <div className="relative">
+                <CheckSquare className="w-5 h-5" />
+                {agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length > 0 && (
+                  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full bg-[#1B5888] text-white text-[9px] font-bold flex items-center justify-center">
+                    {agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length > 9
+                      ? "9+"
+                      : agencyTasks.filter((tk) => tk.status === "todo" || tk.status === "in_progress").length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] mt-1 truncate max-w-[56px]">
+                {t("agency_tasks_menu_label")}
               </span>
             </button>
 

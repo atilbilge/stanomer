@@ -175,9 +175,8 @@ body {
   isolation: isolate;
   background: linear-gradient(135deg, #ffffff 0%, #eef5fb 100%);
   box-shadow:
-    0 0 0 1px rgba(27, 88, 136, calc(0.15 + var(--demo-glow, 0.25) * 0.35)),
-    0 4px 16px rgba(27, 88, 136, calc(0.12 + var(--demo-glow, 0.25) * 0.34)),
-    0 0 26px rgba(42, 110, 67, calc(var(--demo-glow, 0.25) * 0.28));
+    0 2px 12px rgba(27, 88, 136, calc(0.10 + var(--demo-glow, 0.25) * 0.26)),
+    0 0 22px rgba(42, 110, 67, calc(var(--demo-glow, 0.25) * 0.22));
   transition: box-shadow 220ms ease, border-color 180ms ease, transform 160ms ease, background-color 180ms ease;
 }
 
@@ -219,7 +218,7 @@ body {
 }
 
 .st-demo-glow-btn:hover {
-  border-color: #12406A;
+  border-color: #1B5888;
   transform: translateY(-1px);
 }
 

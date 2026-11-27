@@ -22,11 +22,12 @@ import {
   Building,
   AlertTriangle,
 } from "lucide-react";
-import { AgencyManagedProperty } from "../types";
+import { AgencyClient, AgencyManagedProperty } from "../types";
 import { supabase } from "../../../lib/supabaseClient";
 
 export interface PropertyOwnerItem {
   id?: string;
+  client_id?: string | null;
   is_primary: boolean;
   ownership_percentage: number | string;
   owner_type: "individual" | "company";
@@ -58,6 +59,7 @@ interface EditPropertyOwnersModalProps {
   property: AgencyManagedProperty | null;
   isDemoMode?: boolean;
   userId?: string | null;
+  agencyClients?: AgencyClient[];
   t: (key: string, params?: Record<string, any>) => string;
   onOwnersSaved: (updatedProperty: AgencyManagedProperty, owners: PropertyOwnerItem[]) => void;
 }
@@ -68,6 +70,7 @@ export default function EditPropertyOwnersModal({
   property,
   isDemoMode = false,
   userId,
+  agencyClients = [],
   t,
   onOwnersSaved,
 }: EditPropertyOwnersModalProps) {
@@ -94,6 +97,7 @@ export default function EditPropertyOwnersModal({
             setOwners(
               data.map((row: any) => ({
                 id: row.id,
+                client_id: row.client_id || null,
                 is_primary: row.is_primary ?? false,
                 ownership_percentage: row.ownership_percentage ?? 100,
                 owner_type: row.owner_type === "company" ? "company" : "individual",
@@ -288,6 +292,7 @@ export default function EditPropertyOwnersModal({
 
         const insertPayload = owners.map((o) => ({
           property_id: property.id,
+          client_id: o.client_id || null,
           owner_type: o.owner_type,
           is_primary: o.is_primary,
           ownership_percentage: parseFloat(o.ownership_percentage as any) || 100,
@@ -402,6 +407,58 @@ export default function EditPropertyOwnersModal({
                       : "border-slate-200 bg-slate-50/40"
                   }`}
                 >
+                  {/* Optional Agency Client Directory Link (EOP/AML SSOT) */}
+                  {agencyClients.length > 0 && (
+                    <div className="mb-3">
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        {t("eop_field_client_select")}
+                      </label>
+                      <select
+                        value={owner.client_id || ""}
+                        onChange={(e) => {
+                          const cid = e.target.value;
+                          if (!cid) {
+                            updateOwner(index, { client_id: null });
+                            return;
+                          }
+                          const c = agencyClients.find((item) => item.id === cid);
+                          if (!c) return;
+                          if (c.party_type === "company") {
+                            updateOwner(index, {
+                              client_id: c.id,
+                              owner_type: "company",
+                              company_name: c.full_name,
+                              pib: c.jmbg_pib || owner.pib || "",
+                              registration_number: c.maticni_broj || owner.registration_number || "",
+                              registered_address: c.address || owner.registered_address || "",
+                              phone: c.phone || owner.phone || "",
+                              email: c.email || owner.email || "",
+                            });
+                          } else {
+                            const parts = c.full_name.trim().split(/\s+/);
+                            updateOwner(index, {
+                              client_id: c.id,
+                              owner_type: "individual",
+                              first_name: parts[0] || "",
+                              last_name: parts.slice(1).join(" ") || "",
+                              id_document_number: c.jmbg_pib || owner.id_document_number || "",
+                              phone: c.phone || owner.phone || "",
+                              email: c.email || owner.email || "",
+                            });
+                          }
+                        }}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50/70"
+                      >
+                        <option value="">{t("eop_field_client_new_option")}</option>
+                        {agencyClients.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.full_name} {c.jmbg_pib ? `(${c.jmbg_pib})` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   {/* Card Header: Badge, Share %, Delete */}
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-[#1B5888] border border-blue-200/60">

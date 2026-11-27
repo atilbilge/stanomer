@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { findRejectedAmlForContext } from "../../../lib/amlRiskEngine";
 import {
   AlertCircle,
   AlertTriangle,
@@ -150,6 +151,12 @@ export interface ManagedPropertiesTabProps {
   onCreateTask?: (prefill: AgencyTaskPrefill) => void;
   tasks?: AgencyTask[];
   onViewPropertyTasks?: (propertyId: string) => void;
+  eopRecords?: import("../types").EopRecord[];
+  agencyClients?: import("../types").AgencyClient[];
+  onOpenEopModal?: (prefill: import("../types").EopPrefill) => void;
+  onViewPropertyEop?: (propertyId: string) => void;
+  amlRecords?: import("../types").AmlRecord[];
+  onOpenAmlModal?: (prefill: import("../types").AmlPrefill) => void;
   onQuickRelistProperty?: (params: {
     property: AgencyManagedProperty;
     linkedListing: AgencyListingRow | null;
@@ -205,6 +212,12 @@ export default function ManagedPropertiesTab({
   onCreateTask,
   tasks = [],
   onViewPropertyTasks,
+  eopRecords = [],
+  agencyClients = [],
+  onOpenEopModal,
+  onViewPropertyEop,
+  amlRecords = [],
+  onOpenAmlModal,
   onQuickRelistProperty,
 }: ManagedPropertiesTabProps) {
   const { lang } = useLanguage();
@@ -312,6 +325,63 @@ export default function ManagedPropertiesTab({
   const [relistPrice, setRelistPrice] = useState("");
   const [relistCurrency, setRelistCurrency] = useState("EUR");
   const [isSubmittingRelist, setIsSubmittingRelist] = useState(false);
+
+  // Sticky compact property detail header on scroll (with hysteresis to prevent jitter)
+  const [isDetailHeaderCompact, setIsDetailHeaderCompact] = useState(false);
+
+  // Responsive Priority+ Action Bar overflow into "More" dropdown
+  const actionBarRef = useRef<HTMLDivElement | null>(null);
+  const measureBarRef = useRef<HTMLDivElement | null>(null);
+  const moreBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [visibleActionCount, setVisibleActionCount] = useState<number>(4);
+
+  useEffect(() => {
+    if (!selectedPropertyDrawer || isDetailHeaderCompact) return;
+    const recalc = () => {
+      const container = actionBarRef.current;
+      const measure = measureBarRef.current;
+      if (!container || !measure) return;
+      const containerWidth = container.clientWidth;
+      const moreWidth = (moreBtnRef.current?.offsetWidth || 92) + 8;
+      const gap = 8;
+      const children = Array.from(measure.children) as HTMLElement[];
+      let used = 0;
+      let count = 0;
+      for (const el of children) {
+        const w = el.offsetWidth;
+        const needed = (count > 0 ? gap : 0) + w;
+        if (used + needed + moreWidth <= containerWidth) {
+          used += needed;
+          count++;
+        } else {
+          break;
+        }
+      }
+      setVisibleActionCount(count);
+    };
+    recalc();
+    const ro = new ResizeObserver(recalc);
+    if (actionBarRef.current) ro.observe(actionBarRef.current);
+    return () => ro.disconnect();
+  }, [selectedPropertyDrawer?.id, isDetailHeaderCompact, eopRecords.length, lang]);
+
+  useEffect(() => {
+    if (!selectedPropertyDrawer) {
+      setIsDetailHeaderCompact(false);
+      return;
+    }
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setIsDetailHeaderCompact((prev) => {
+        if (!prev && y > 135) return true;
+        if (prev && y < 65) return false;
+        return prev;
+      });
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [selectedPropertyDrawer?.id]);
 
   const hasPortfolioModule =
     activeModules.includes("portfolio_distribution") ||
@@ -2211,7 +2281,7 @@ export default function ManagedPropertiesTab({
             .select("*")
             .eq("maintenance_request_id", rejectingSettlementReq.id);
           if (charges && charges.length > 0) existingCharge = charges[0];
-        } catch (_) {}
+        } catch (_) { }
       }
 
       const isPaymentReceiptRejection =
@@ -2838,17 +2908,17 @@ export default function ManagedPropertiesTab({
           setContracts((prev) => {
             const updatedPrev = isTenantInfoChanged
               ? prev.map((c) =>
-                  c.property_id === p.id &&
+                c.property_id === p.id &&
                   c.id !== data.id &&
                   (c.status === "active" || c.status === "pending")
-                    ? {
-                      ...c,
-                      status: "terminated" as const,
-                      termination_date: newContractStartDate,
-                      termination_approved: true,
-                    }
-                    : c
-                )
+                  ? {
+                    ...c,
+                    status: "terminated" as const,
+                    termination_date: newContractStartDate,
+                    termination_approved: true,
+                  }
+                  : c
+              )
               : prev;
             return [data as AgencyContract, ...updatedPrev];
           });
@@ -2943,6 +3013,57 @@ export default function ManagedPropertiesTab({
         type: "success",
         text: t("agency_contract_created_success"),
       });
+
+      // Lifecycle Scenario #11: New lease contract (Scenario A) -> realize active EOP or offer new realized EOP
+      if (onOpenEopModal) {
+        const activePropEop = eopRecords.find(
+          (r) =>
+            (r.property_id === p.id || (p.last_listing_id && r.listing_id === p.last_listing_id)) &&
+            r.status === "active"
+        );
+        const alreadyLinkedToContract = eopRecords.some(
+          (r) => r.lease_contract_id === effectiveContractId
+        );
+        if (activePropEop) {
+          onOpenEopModal({
+            mode: "realize",
+            existingRecord: activePropEop,
+            property_id: p.id,
+            listing_id: p.last_listing_id || activePropEop.listing_id || null,
+            lease_contract_id: effectiveContractId,
+            agreed_price: rentNum,
+            realized_at: newContractStartDate || new Date().toISOString().split("T")[0],
+          });
+        } else if (!alreadyLinkedToContract) {
+          const specs = [
+            p.area_sqm ? `${p.area_sqm} m²` : null,
+            p.room_count || null,
+            p.floor ? `${p.floor}` : null,
+          ].filter(Boolean).join(", ");
+          const addr = [p.address, p.unit_number ? `#${p.unit_number}` : null, p.city]
+            .filter(Boolean)
+            .join(", ");
+          onOpenEopModal({
+            mode: "create",
+            status: "realized",
+            property_id: p.id,
+            listing_id: p.last_listing_id || null,
+            lease_contract_id: effectiveContractId,
+            transaction_type: "izdavanje",
+            client_role: "landlord",
+            client_name: p.landlord_name || "",
+            client_phone: p.landlord_phone || "",
+            client_email: p.landlord_email || "",
+            property_type: p.property_type || "apartment",
+            property_address: addr || p.title || "",
+            property_specs: specs,
+            asking_price: p.default_monthly_rent || rentNum,
+            agreed_price: rentNum,
+            currency: newContractCurrency || p.currency || "EUR",
+            realized_at: newContractStartDate || new Date().toISOString().split("T")[0],
+          });
+        }
+      }
     } catch (err: any) {
       console.error("Create contract error:", err);
       setStatusMessage({
@@ -3955,9 +4076,9 @@ export default function ManagedPropertiesTab({
       meta.currency ||
       matchedPayment?.currency ||
       (rawTitle &&
-      (rawTitle.toLowerCase().includes("kira") ||
-        rawTitle.toLowerCase().includes("rent") ||
-        rawTitle.toLowerCase().includes("kirij"))
+        (rawTitle.toLowerCase().includes("kira") ||
+          rawTitle.toLowerCase().includes("rent") ||
+          rawTitle.toLowerCase().includes("kirij"))
         ? "EUR"
         : "RSD");
     const formattedAmt =
@@ -4726,152 +4847,458 @@ export default function ManagedPropertiesTab({
               </span>
             </div>
 
-            {/* 2. Property Header Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-[#1B5888] text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Home className="w-6 h-6" />
-                </div>
-                <div className="min-w-0 space-y-1">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate">
+            {/* 2. Sticky Unified Property Header + Action Bar + Tabs */}
+            <div
+              className={`sticky top-14 sm:top-16 z-30 bg-white/95 backdrop-blur-md border border-slate-200/80 transition-all duration-200 ${isDetailHeaderCompact
+                  ? "rounded-xl px-4 py-2.5 shadow-md"
+                  : "rounded-2xl px-5 sm:px-6 pt-5 sm:pt-6 pb-0 shadow-xs"
+                }`}
+            >
+              {isDetailHeaderCompact ? (
+                /* Compact Single-Row Sticky Bar (Title + Status + Tabs merged) */
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPropertyDrawer(null);
+                        setTargetPaymentId(null);
+                        if (onBackFromDrawer) onBackFromDrawer();
+                      }}
+                      title={t("agency_props_btn_back_to_list")}
+                      className="p-1.5 rounded-lg text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer shrink-0"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="w-7 h-7 rounded-lg bg-[#1B5888] text-white flex items-center justify-center shrink-0">
+                      <Home className="w-3.5 h-3.5" />
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
                       {p.title}
                     </h2>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${p.is_occupied && propContract && !isActivelyListedInPortfolio
-                      ? "bg-[#EAF5EE] text-[#2A6E43] border border-[#2A6E43]/20"
-                      : "bg-slate-100 text-slate-600 border border-slate-200"
-                      }`}>
+                    <span
+                      className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${p.is_occupied && propContract && !isActivelyListedInPortfolio
+                          ? "bg-[#EAF5EE] text-[#2A6E43] border border-[#2A6E43]/20"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                        }`}
+                    >
                       {p.is_occupied && propContract && !isActivelyListedInPortfolio
                         ? t("agency_props_status_occupied")
                         : t("agency_props_status_vacant")}
                     </span>
-                    {isActivelyListedInPortfolio && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EFF6FF] text-[#1B5888] border border-[#BFDBFE]">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{t("agency_prop_banner_listed_badge")}</span>
-                      </span>
-                    )}
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-500 truncate">
-                    {p.address}{p.city ? `, ${p.city}` : ""}
-                  </p>
+
+                  {/* Inline Merged Tabs */}
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "overview"}
+                      onClick={() => setPropertyDrawerTab("overview")}
+                      className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "overview"
+                          ? "bg-[#E5EEF6] text-[#1B5888]"
+                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        }`}
+                    >
+                      <Home className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline">{t("agency_prop_tab_overview")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "payments"}
+                      onClick={() => setPropertyDrawerTab("payments")}
+                      className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "payments"
+                          ? "bg-[#E5EEF6] text-[#1B5888]"
+                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        }`}
+                    >
+                      <Receipt className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline">{t("agency_prop_drawer_tab_payments")}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/80 font-bold tabular-nums">
+                        {propPayments.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "maintenance"}
+                      onClick={() => setPropertyDrawerTab("maintenance")}
+                      className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "maintenance"
+                          ? "bg-[#E5EEF6] text-[#1B5888]"
+                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        }`}
+                    >
+                      <Wrench className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline">{t("agency_prop_drawer_tab_maintenance")}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/80 font-bold tabular-nums">
+                        {propMaintenance.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "audit"}
+                      onClick={() => setPropertyDrawerTab("audit")}
+                      className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "audit"
+                          ? "bg-[#E5EEF6] text-[#1B5888]"
+                          : "text-[#666666] hover:text-[#1A1A1A] hover:bg-slate-100"
+                        }`}
+                    >
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline">{t("agency_prop_tab_activity")}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-                {onCreateTask && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onCreateTask({
-                        source_type: "property",
-                        property_id: p.id,
-                        title: p.title || p.address || "",
-                      })
-                    }
-                    className="px-4 py-2 rounded-xl border border-[#1B5888]/30 text-xs font-semibold text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer bg-white"
-                  >
-                    {t("agency_tasks_quick_btn")}
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isDemoMode && !isDemoVerified) {
-                      onRequestVerification?.();
-                      return;
-                    }
-                    setIsAddPaymentModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white"
-                >
-                  {t("agency_prop_btn_add_bill_expense")}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isDemoMode && !isDemoVerified) {
-                      onRequestVerification?.();
-                      return;
-                    }
-                    setNewMaintPropId(p.id);
-                    setIsNewMaintModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white"
-                >
-                  {t("agency_prop_btn_report_issue")}
-                </button>
-
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                    className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white inline-flex items-center gap-1.5"
-                  >
-                    <span>{t("agency_prop_btn_more")}</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-
-                  {moreMenuOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-20"
-                        onClick={() => setMoreMenuOpen(false)}
-                        aria-hidden="true"
-                      />
-                      <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-30 animate-in fade-in duration-100">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMoreMenuOpen(false);
-                            inspectProperty(p);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{t("agency_prop_refresh_plan")}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMoreMenuOpen(false);
-                            setEditingOwnersProperty(p);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
-                        >
-                          <UserCog className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{t("agency_ownership_btn_edit")}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMoreMenuOpen(false);
-                            openRelistModal(p);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
-                        >
-                          <PlusCircle className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{t("agency_bridge_btn_relist_or_update")}</span>
-                        </button>
-                        {propContract?.contract_url && (
-                          <a
-                            href={propContract.contract_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => setMoreMenuOpen(false)}
-                            className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                          >
-                            <FileDown className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{t("agency_contract_view_pdf")}</span>
-                          </a>
+              ) : (
+                /* Expanded Header + Action Bar + Integrated Tabs */
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start sm:items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#1B5888] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Home className="w-6 h-6" />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight break-words">
+                          {p.title}
+                        </h2>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 ${p.is_occupied && propContract && !isActivelyListedInPortfolio
+                          ? "bg-[#EAF5EE] text-[#2A6E43] border border-[#2A6E43]/20"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}>
+                          {p.is_occupied && propContract && !isActivelyListedInPortfolio
+                            ? t("agency_props_status_occupied")
+                            : t("agency_props_status_vacant")}
+                        </span>
+                        {isActivelyListedInPortfolio && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 bg-[#EFF6FF] text-[#1B5888] border border-[#BFDBFE]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>{t("agency_prop_banner_listed_badge")}</span>
+                          </span>
                         )}
+                        {(() => {
+                          const propEopCount = eopRecords.filter(
+                            (r) =>
+                              r.property_id === p.id ||
+                              (p.last_listing_id && r.listing_id === p.last_listing_id)
+                          ).length;
+                          if (propEopCount === 0 || !onViewPropertyEop) return null;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => onViewPropertyEop(p.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 bg-[#E5EEF6] text-[#1B5888] border border-[#1B5888]/25 hover:bg-[#1B5888] hover:text-white transition-colors cursor-pointer"
+                            >
+                              <span>{t("eop_badge_active_eop")} ({propEopCount})</span>
+                            </button>
+                          );
+                        })()}
+                        {(() => {
+                          const ownerNames = Array.isArray(p.owners)
+                            ? p.owners.map((o: any) => o?.full_name || o?.name)
+                            : [];
+                          const rejAml = findRejectedAmlForContext(amlRecords, {
+                            propertyId: p.id,
+                            listingId: p.last_listing_id || null,
+                            clientNames: [p.landlord_name, p.active_tenant_name, ...ownerNames],
+                            eopRecords,
+                          });
+                          if (!rejAml) return null;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => onOpenAmlModal?.({ mode: "edit", existingRecord: rejAml })}
+                              title={`${t("aml_warn_client_rejected")} (${rejAml.aml_ref_no})`}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
+                            >
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span>{t("aml_eop_badge_rejected")} ({rejAml.aml_ref_no})</span>
+                            </button>
+                          );
+                        })()}
                       </div>
-                    </>
-                  )}
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        {p.address}{p.city ? `, ${p.city}` : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Bar (Single-Row Priority+ Overflow into More Dropdown) */}
+                  {(() => {
+                    const specs = [
+                      p.area_sqm ? `${p.area_sqm} m²` : null,
+                      p.room_count || null,
+                      p.floor ? `${p.floor}` : null,
+                    ].filter(Boolean).join(", ");
+                    const addr = [p.address, p.unit_number ? `#${p.unit_number}` : null, p.city]
+                      .filter(Boolean)
+                      .join(", ");
+
+                    type ActionItem = {
+                      key: string;
+                      label: string;
+                      className: string;
+                      onClick: () => void;
+                    };
+
+                    const primaryActions: ActionItem[] = [];
+
+                    if (onCreateTask) {
+                      primaryActions.push({
+                        key: "add_task",
+                        label: t("agency_tasks_quick_btn"),
+                        className:
+                          "px-4 py-2 rounded-xl border border-[#1B5888]/30 text-xs font-semibold text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer bg-white whitespace-nowrap shrink-0",
+                        onClick: () =>
+                          onCreateTask({
+                            source_type: "property",
+                            property_id: p.id,
+                            title: p.title || p.address || "",
+                          }),
+                      });
+                    }
+
+                    if (onOpenEopModal) {
+                      primaryActions.push({
+                        key: "eop",
+                        label: t("eop_btn_add_eop"),
+                        className:
+                          "px-4 py-2 rounded-xl border border-[#1B5888]/30 text-xs font-semibold text-[#1B5888] hover:bg-[#E5EEF6] transition-colors cursor-pointer bg-white whitespace-nowrap shrink-0",
+                        onClick: () =>
+                          onOpenEopModal({
+                            mode: "create",
+                            property_id: p.id,
+                            listing_id: p.last_listing_id || null,
+                            lease_contract_id: p.active_contract_id || null,
+                            transaction_type: "izdavanje",
+                            client_role: "landlord",
+                            client_name: p.landlord_name || "",
+                            client_phone: p.landlord_phone || "",
+                            client_email: p.landlord_email || "",
+                            property_type: p.property_type || "apartment",
+                            property_address: addr || p.title || "",
+                            property_specs: specs,
+                            asking_price: p.default_monthly_rent || null,
+                            currency: p.currency || "EUR",
+                          }),
+                      });
+                    }
+
+                    primaryActions.push({
+                      key: "add_bill",
+                      label: t("agency_prop_btn_add_bill_expense"),
+                      className:
+                        "px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white whitespace-nowrap shrink-0",
+                      onClick: () => {
+                        if (isDemoMode && !isDemoVerified) {
+                          onRequestVerification?.();
+                          return;
+                        }
+                        setIsAddPaymentModalOpen(true);
+                      },
+                    });
+
+                    primaryActions.push({
+                      key: "report_issue",
+                      label: t("agency_prop_btn_report_issue"),
+                      className:
+                        "px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white whitespace-nowrap shrink-0",
+                      onClick: () => {
+                        if (isDemoMode && !isDemoVerified) {
+                          onRequestVerification?.();
+                          return;
+                        }
+                        setNewMaintPropId(p.id);
+                        setIsNewMaintModalOpen(true);
+                      },
+                    });
+
+                    const visibleActions = primaryActions.slice(0, visibleActionCount);
+                    const overflowActions = primaryActions.slice(visibleActionCount);
+
+                    return (
+                      <div
+                        ref={actionBarRef}
+                        className="relative pt-3.5 border-t border-slate-100 flex items-center gap-2 flex-nowrap"
+                      >
+                        {/* Invisible width measurement mirror so widening restores overflowed buttons */}
+                        <div
+                          ref={measureBarRef}
+                          aria-hidden="true"
+                          className="pointer-events-none invisible absolute left-0 top-0 flex items-center gap-2 whitespace-nowrap"
+                        >
+                          {primaryActions.map((act) => (
+                            <span key={act.key} className={act.className}>
+                              {act.label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {visibleActions.map((act) => (
+                          <button
+                            key={act.key}
+                            type="button"
+                            onClick={act.onClick}
+                            className={act.className}
+                          >
+                            {act.label}
+                          </button>
+                        ))}
+
+                        <div className="relative ml-auto shrink-0">
+                          <button
+                            ref={moreBtnRef}
+                            type="button"
+                            onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                            className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white inline-flex items-center gap-1.5 whitespace-nowrap"
+                          >
+                            <span>{t("agency_prop_btn_more")}</span>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+
+                          {moreMenuOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-20"
+                                onClick={() => setMoreMenuOpen(false)}
+                                aria-hidden="true"
+                              />
+                              <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-30 animate-in fade-in duration-100">
+                                {overflowActions.length > 0 && (
+                                  <div className="pb-1.5 mb-1.5 border-b border-slate-100">
+                                    {overflowActions.map((act) => (
+                                      <button
+                                        key={act.key}
+                                        type="button"
+                                        onClick={() => {
+                                          setMoreMenuOpen(false);
+                                          act.onClick();
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                                      >
+                                        <span>{act.label}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMoreMenuOpen(false);
+                                    inspectProperty(p);
+                                  }}
+                                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{t("agency_prop_refresh_plan")}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMoreMenuOpen(false);
+                                    setEditingOwnersProperty(p);
+                                  }}
+                                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <UserCog className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{t("agency_ownership_btn_edit")}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMoreMenuOpen(false);
+                                    openRelistModal(p);
+                                  }}
+                                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <PlusCircle className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{t("agency_bridge_btn_relist_or_update")}</span>
+                                </button>
+                                {propContract?.contract_url && (
+                                  <a
+                                    href={propContract.contract_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setMoreMenuOpen(false)}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                  >
+                                    <FileDown className="w-3.5 h-3.5 text-slate-400" />
+                                    <span>{t("agency_contract_view_pdf")}</span>
+                                  </a>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Integrated Tab Bar (bottom of expanded header card) */}
+                  <div className="flex items-center gap-1 sm:gap-2 border-t border-slate-100 pt-1 -mx-5 sm:-mx-6 px-5 sm:px-6 overflow-x-auto no-scrollbar">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "overview"}
+                      onClick={() => setPropertyDrawerTab("overview")}
+                      className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "overview"
+                          ? "border-[#1B5888] text-[#1B5888]"
+                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        }`}
+                    >
+                      <Home className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "overview" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
+                      <span>{t("agency_prop_tab_overview")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "payments"}
+                      onClick={() => setPropertyDrawerTab("payments")}
+                      className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "payments"
+                          ? "border-[#1B5888] text-[#1B5888]"
+                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        }`}
+                    >
+                      <Receipt className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "payments" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
+                      <span>{t("agency_prop_drawer_tab_payments")}</span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold tabular-nums shrink-0 ml-0.5 ${propertyDrawerTab === "payments" ? "bg-[#E5EEF6] text-[#1B5888]" : "bg-slate-100 text-[#666666]"
+                        }`}>
+                        {propPayments.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "maintenance"}
+                      onClick={() => setPropertyDrawerTab("maintenance")}
+                      className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "maintenance"
+                          ? "border-[#1B5888] text-[#1B5888]"
+                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        }`}
+                    >
+                      <Wrench className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "maintenance" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
+                      <span>{t("agency_prop_drawer_tab_maintenance")}</span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold tabular-nums shrink-0 ml-0.5 ${propertyDrawerTab === "maintenance" ? "bg-[#E5EEF6] text-[#1B5888]" : "bg-slate-100 text-[#666666]"
+                        }`}>
+                        {propMaintenance.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={propertyDrawerTab === "audit"}
+                      onClick={() => setPropertyDrawerTab("audit")}
+                      className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${propertyDrawerTab === "audit"
+                          ? "border-[#1B5888] text-[#1B5888]"
+                          : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
+                        }`}
+                    >
+                      <Clock className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "audit" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
+                      <span>{t("agency_prop_tab_activity")}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* 3. Renewal / Expiration Banner OR Terminated / Listed Status Banner */}
@@ -4891,17 +5318,17 @@ export default function ManagedPropertiesTab({
                     </span>
                     {(lastTerminatedContract?.end_date ||
                       terminationLogForProp?.metadata?.termination_date) && (
-                      <span className="font-bold text-sm sm:text-base">
-                        •{" "}
-                        {t("agency_prop_banner_terminated_msg", {
-                          date: formatEuropeanDate(
-                            terminationLogForProp?.metadata?.termination_date ||
-                            lastTerminatedContract?.termination_date ||
-                            lastTerminatedContract?.end_date
-                          ),
-                        })}
-                      </span>
-                    )}
+                        <span className="font-bold text-sm sm:text-base">
+                          •{" "}
+                          {t("agency_prop_banner_terminated_msg", {
+                            date: formatEuropeanDate(
+                              terminationLogForProp?.metadata?.termination_date ||
+                              lastTerminatedContract?.termination_date ||
+                              lastTerminatedContract?.end_date
+                            ),
+                          })}
+                        </span>
+                      )}
                     {isActivelyListedInPortfolio && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#1B5888] text-white">
                         <CheckCircle2 className="w-3 h-3" />
@@ -5004,77 +5431,6 @@ export default function ManagedPropertiesTab({
                 </div>
               </div>
             ) : null}
-
-            {/* 4. Tab Navigation Bar */}
-            <div className="flex items-center gap-1 sm:gap-2 border-b border-[#E5E3DF] overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={propertyDrawerTab === "overview"}
-                onClick={() => setPropertyDrawerTab("overview")}
-                className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${propertyDrawerTab === "overview"
-                  ? "border-[#1B5888] text-[#1B5888]"
-                  : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-                  }`}
-              >
-                <Home className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "overview" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
-                <span>{t("agency_prop_tab_overview")}</span>
-              </button>
-
-              <button
-                type="button"
-                role="tab"
-                aria-selected={propertyDrawerTab === "payments"}
-                onClick={() => setPropertyDrawerTab("payments")}
-                className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${propertyDrawerTab === "payments"
-                  ? "border-[#1B5888] text-[#1B5888]"
-                  : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-                  }`}
-              >
-                <Receipt className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "payments" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
-                <span>{t("agency_prop_drawer_tab_payments")}</span>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold tabular-nums shrink-0 ml-0.5 ${propertyDrawerTab === "payments"
-                  ? "bg-[#E5EEF6] text-[#1B5888]"
-                  : "bg-slate-100 text-[#666666]"
-                  }`}>
-                  {propPayments.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                role="tab"
-                aria-selected={propertyDrawerTab === "maintenance"}
-                onClick={() => setPropertyDrawerTab("maintenance")}
-                className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${propertyDrawerTab === "maintenance"
-                  ? "border-[#1B5888] text-[#1B5888]"
-                  : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-                  }`}
-              >
-                <Wrench className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "maintenance" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
-                <span>{t("agency_prop_drawer_tab_maintenance")}</span>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold tabular-nums shrink-0 ml-0.5 ${propertyDrawerTab === "maintenance"
-                  ? "bg-[#E5EEF6] text-[#1B5888]"
-                  : "bg-slate-100 text-[#666666]"
-                  }`}>
-                  {propMaintenance.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                role="tab"
-                aria-selected={propertyDrawerTab === "audit"}
-                onClick={() => setPropertyDrawerTab("audit")}
-                className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap -mb-px ${propertyDrawerTab === "audit"
-                  ? "border-[#1B5888] text-[#1B5888]"
-                  : "border-transparent text-[#666666] hover:text-[#1A1A1A] hover:border-slate-300"
-                  }`}
-              >
-                <Clock className={`w-4 h-4 shrink-0 ${propertyDrawerTab === "audit" ? "text-[#1B5888]" : "text-[#8A8A8A]"}`} />
-                <span>{t("agency_prop_tab_activity")}</span>
-              </button>
-            </div>
 
             {/* 5. Tab Body Content */}
             <div className="space-y-6 pt-2">
@@ -6031,13 +6387,12 @@ export default function ManagedPropertiesTab({
                                                   {itemActivityLogs.map((logItem) => (
                                                     <div key={logItem.id} className="flex items-start gap-2">
                                                       <span
-                                                        className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                                                          logItem.type === "rent_disputed" || logItem.type === "rent_rejected" || logItem.type === "invoice_rejected"
+                                                        className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${logItem.type === "rent_disputed" || logItem.type === "rent_rejected" || logItem.type === "invoice_rejected"
                                                             ? "bg-rose-500"
                                                             : logItem.type === "rent_approved" || logItem.type === "rent_auto_approved" || (logItem.type === "payment_toggle" && logItem.metadata?.paid)
                                                               ? "bg-emerald-600"
                                                               : "bg-slate-400"
-                                                        }`}
+                                                          }`}
                                                       />
                                                       <div className="min-w-0 flex-1">
                                                         <p className="text-xs font-semibold text-[#334155] leading-snug">
@@ -6122,13 +6477,12 @@ export default function ManagedPropertiesTab({
                                                 <button
                                                   type="button"
                                                   onClick={() => openInvoiceModal(pay)}
-                                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                                                    isDisputed
+                                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${isDisputed
                                                       ? "bg-[#FFF1F2] text-[#E11D48] hover:bg-rose-100 font-bold border border-[#FDA4AF]"
                                                       : pay.amount === 0
                                                         ? "bg-[#FBF1DC] text-[#8A5206] hover:bg-amber-200 font-bold border border-amber-300 animate-pulse"
                                                         : "bg-slate-100 text-[#4A4A4A] hover:bg-slate-200"
-                                                  }`}
+                                                    }`}
                                                   title={isDisputed ? t("agency_payment_btn_update_disputed") : t("agency_invoice_btn_enter_amount")}
                                                 >
                                                   {isDisputed ? (
@@ -7531,16 +7885,14 @@ export default function ManagedPropertiesTab({
                                 return (
                                   <div
                                     key={`awaiting-${pay.id}`}
-                                    className={`flex items-start gap-3 p-3.5 rounded-[10px] border ${
-                                      isDisp
+                                    className={`flex items-start gap-3 p-3.5 rounded-[10px] border ${isDisp
                                         ? "bg-[#FBEAE6]/60 border-[#B5432E]/20"
                                         : "bg-[#E5EEF6]/60 border-[#1B5888]/20"
-                                    }`}
+                                      }`}
                                   >
                                     <div
-                                      className={`w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5 ${
-                                        isDisp ? "bg-[#FBEAE6] text-[#A33C29]" : "bg-[#E5EEF6] text-[#12406A]"
-                                      }`}
+                                      className={`w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5 ${isDisp ? "bg-[#FBEAE6] text-[#A33C29]" : "bg-[#E5EEF6] text-[#12406A]"
+                                        }`}
                                     >
                                       {isDisp ? <AlertCircle className="w-4 h-4" /> : <Receipt className="w-4 h-4" />}
                                     </div>
@@ -9073,11 +9425,10 @@ export default function ManagedPropertiesTab({
                                       }}
                                       title={t("agency_tasks_view_property_tasks")}
                                       aria-label={t("agency_tasks_view_property_tasks")}
-                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                                        propTaskCount > 0
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${propTaskCount > 0
                                           ? "bg-[#E5EEF6] text-[#1B5888] hover:bg-[#1B5888] hover:text-white"
                                           : "text-slate-400 hover:text-[#1B5888] hover:bg-slate-100"
-                                      }`}
+                                        }`}
                                     >
                                       <CheckSquare className="w-3.5 h-3.5 shrink-0" />
                                       {propTaskCount > 0 && <span>{propTaskCount}</span>}
@@ -9667,6 +10018,7 @@ export default function ManagedPropertiesTab({
           property={editingOwnersProperty}
           isDemoMode={isDemoMode}
           userId={userId}
+          agencyClients={agencyClients}
           t={t}
           onOwnersSaved={(updatedProperty) => {
             setManagedProperties((prev) =>
@@ -11155,8 +11507,8 @@ export default function ManagedPropertiesTab({
                                     <ArrowRight className="w-3 h-3 text-slate-400" />
                                     <span
                                       className={`font-mono font-bold ${otherNewAmount <= 0
-                                          ? "text-emerald-600"
-                                          : "text-amber-700"
+                                        ? "text-emerald-600"
+                                        : "text-amber-700"
                                         }`}
                                     >
                                       {otherNewAmount <= 0
@@ -11487,8 +11839,8 @@ export default function ManagedPropertiesTab({
                   disabled={isExecutingDirectSettlement}
                   onClick={handleConfirmDirectSettlement}
                   className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors shadow-2xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer ${isCash
-                      ? "bg-amber-600 hover:bg-amber-700"
-                      : "bg-emerald-600 hover:bg-emerald-700"
+                    ? "bg-amber-600 hover:bg-amber-700"
+                    : "bg-emerald-600 hover:bg-emerald-700"
                     }`}
                 >
                   {isExecutingDirectSettlement ? (
@@ -11619,11 +11971,10 @@ export default function ManagedPropertiesTab({
                         {t("agency_bridge_relist_modal_title")}
                       </h3>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          linkedListing
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${linkedListing
                             ? "bg-emerald-100 text-emerald-800"
                             : "bg-blue-100 text-[#1B5888]"
-                        }`}
+                          }`}
                       >
                         {linkedListing
                           ? t("agency_bridge_relist_found_badge")

@@ -411,6 +411,8 @@ export interface AgencyTaskPrefill {
 export type AgencyPanelTab =
   | "welcome"
   | "tasks"
+  | "eop"
+  | "aml"
   | "listings"
   | "leads"
   | "form"
@@ -423,6 +425,104 @@ export type AgencyPanelTab =
   | "maintenance"
   | "account_settings";
 
+export type AgencyPartyType = "individual" | "company";
+export type EopStatus = "active" | "realized" | "cancelled";
+export type EopClientRole = "seller" | "buyer" | "landlord" | "tenant";
+export type EopCommissionType = "percent" | "fixed";
+
+export interface AgencyRegistryInfo {
+  registar_posrednika_no?: string | null;
+  pib?: string | null;
+  maticni_broj?: string | null;
+  official_address?: string | null;
+  aml_officer_name?: string | null;
+  aml_deputy_name?: string | null;
+}
+
+export interface AgencyClient {
+  id: string;
+  agency_id: string;
+  party_type: AgencyPartyType;
+  full_name: string;
+  jmbg_pib?: string | null;
+  maticni_broj?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface EopRecord {
+  id: string;
+  agency_id: string;
+  sequence_year: number;
+  sequence_number: number;
+  redni_broj: string;
+  mediation_contract_no: string;
+  mediation_contract_date: string;
+  contract_valid_until?: string | null;
+  is_exclusive: boolean;
+  client_role: EopClientRole;
+  transaction_type: "prodaja" | "izdavanje";
+  status: EopStatus;
+  cancellation_reason?: string | null;
+  client_id?: string | null;
+  listing_id?: string | null;
+  property_id?: string | null;
+  lease_contract_id?: string | null;
+  client_type: AgencyPartyType;
+  client_name_snapshot: string;
+  client_jmbg_pib_snapshot?: string | null;
+  client_address_snapshot?: string | null;
+  client_phone_snapshot?: string | null;
+  client_email_snapshot?: string | null;
+  property_type_snapshot?: string | null;
+  property_address_snapshot: string;
+  property_specs_snapshot?: string | null;
+  asking_price?: number | null;
+  agreed_price?: number | null;
+  currency: string;
+  commission_type: EopCommissionType;
+  commission_value?: number | null;
+  commission_currency?: string | null;
+  realized_at?: string | null;
+  invoice_ref?: string | null;
+  contract_pdf_url?: string | null;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface EopPrefill {
+  mode?: "create" | "edit" | "realize" | "cancel";
+  existingRecord?: EopRecord | null;
+  listing_id?: string | null;
+  property_id?: string | null;
+  lease_contract_id?: string | null;
+  client_id?: string | null;
+  client_role?: EopClientRole;
+  client_type?: AgencyPartyType;
+  client_name?: string;
+  client_jmbg_pib?: string;
+  client_address?: string;
+  client_phone?: string;
+  client_email?: string;
+  transaction_type?: "prodaja" | "izdavanje";
+  property_type?: string;
+  property_address?: string;
+  property_specs?: string;
+  asking_price?: number | null;
+  agreed_price?: number | null;
+  currency?: string;
+  status?: EopStatus;
+  realized_at?: string | null;
+  notes?: string;
+}
+
 export type ShowcaseCurrency = "EUR" | "RSD" | "USD";
 
 export type AgencyMaintStatusFilter =
@@ -432,3 +532,128 @@ export type AgencyMaintStatusFilter =
   | "pending_approval"
   | "resolved";
 
+
+export type AmlIdDocType = "licna_karta" | "pasos" | "boravisna" | "apr_izvod" | "other";
+export type AmlPaymentMethod = "bank_transfer" | "cash" | "mixed" | "crypto";
+export type AmlSourceOfFundsCategory =
+  | "salary"
+  | "savings"
+  | "property_sale"
+  | "loan"
+  | "business"
+  | "inheritance"
+  | "other";
+export type AmlRiskLevel = "low" | "medium" | "high";
+export type AmlStatus = "draft" | "approved" | "rejected" | "superseded";
+export type AmlDocumentType =
+  | "id_card"
+  | "passport"
+  | "apr_extract"
+  | "ubo_declaration"
+  | "source_of_funds"
+  | "signed_upitnik"
+  | "sanctions_check"
+  | "other";
+
+export interface AmlUboItem {
+  full_name: string;
+  jmbg_passport?: string;
+  ownership_pct?: number | null;
+  citizenship?: string;
+  is_pep?: boolean;
+}
+
+export interface AmlRiskFactor {
+  key: string;
+  points: number;
+  autoHigh?: boolean;
+}
+
+export interface AmlDocument {
+  id: string;
+  agency_id: string;
+  aml_record_id: string;
+  doc_type: AmlDocumentType;
+  file_name: string;
+  storage_path: string;
+  mime_type?: string | null;
+  file_size_bytes?: number | null;
+  uploaded_by?: string | null;
+  created_at: string;
+}
+
+export interface AmlRecord {
+  id: string;
+  agency_id: string;
+  sequence_year: number;
+  sequence_number: number;
+  aml_ref_no: string;
+  client_id?: string | null;
+  eop_record_id?: string | null;
+  property_id?: string | null;
+  listing_id?: string | null;
+  superseded_by_id?: string | null;
+  party_type: AgencyPartyType;
+  client_name_snapshot: string;
+  jmbg_pib_snapshot?: string | null;
+  maticni_broj_snapshot?: string | null;
+  id_doc_type?: AmlIdDocType | null;
+  id_doc_number?: string | null;
+  id_doc_issuer?: string | null;
+  id_doc_expiry?: string | null;
+  birth_date?: string | null;
+  citizenship?: string | null;
+  residency_country?: string | null;
+  address_snapshot?: string | null;
+  phone_snapshot?: string | null;
+  email_snapshot?: string | null;
+  occupation_or_activity?: string | null;
+  is_pep: boolean;
+  pep_details?: string | null;
+  ubo_list: AmlUboItem[];
+  ubo_unclear: boolean;
+  acts_on_behalf_of_third_party: boolean;
+  third_party_details?: string | null;
+  transaction_type: "prodaja" | "izdavanje";
+  transaction_value_eur?: number | null;
+  transaction_date: string;
+  payment_method: AmlPaymentMethod;
+  source_of_funds_category?: AmlSourceOfFundsCategory | null;
+  source_of_funds?: string | null;
+  purpose_of_relationship?: string | null;
+  high_risk_country_involved: boolean;
+  risk_score: number;
+  risk_level: AmlRiskLevel;
+  risk_factors: AmlRiskFactor[];
+  enhanced_due_diligence_notes?: string | null;
+  next_review_at?: string | null;
+  status: AmlStatus;
+  is_locked: boolean;
+  locked_at?: string | null;
+  locked_by?: string | null;
+  retention_until?: string | null;
+  decision_notes?: string | null;
+  created_by?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  documents?: AmlDocument[];
+}
+
+export interface AmlPrefill {
+  mode?: "create" | "edit" | "supersede";
+  existingRecord?: AmlRecord | null;
+  client_id?: string | null;
+  eop_record_id?: string | null;
+  property_id?: string | null;
+  listing_id?: string | null;
+  party_type?: AgencyPartyType;
+  client_name?: string;
+  jmbg_pib?: string;
+  maticni_broj?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  transaction_type?: "prodaja" | "izdavanje";
+  transaction_value_eur?: number | null;
+  transaction_date?: string;
+}

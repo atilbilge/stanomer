@@ -75,6 +75,10 @@ Kullanıcıların profil, kimlik ve rol bilgilerini saklar. `auth.users` ile Bir
 | `monthly_fee` | `NUMERIC(10,2)` | YES | `0.00` | - | **[YENİ]** Acente aylık abonelik bedeli |
 | `billing_currency` | `TEXT` | YES | `'EUR'` | - | **[YENİ]** Fatura para birimi |
 | `next_billing_date` | `DATE` | YES | `NULL` | - | **[YENİ]** Sonraki fatura kesim tarihi |
+| `registar_posrednika_no` | `TEXT` | YES | `NULL` | - | **[YENİ]** Sırbistan Emlak Aracıları Sicil No (*Registar posrednika*) |
+| `pib` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente Vergi Kimlik Numarası (PIB) |
+| `maticni_broj` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente Ticaret Sicil No (*Matični broj*) |
+| `official_address` | `TEXT` | YES | `NULL` | - | **[YENİ]** Acente resmi sicil adresi (EOP & yasal çıktılar için) |
 | `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
 | `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Güncellenme zamanı |
 
@@ -828,6 +832,145 @@ Kullanıcıların şifrelerini unuttuklarında e-posta adreslerine gönderilen �
 
 #### RLS Politikaları (`public.password_reset_tokens`)
 * **`"No direct public access to password reset tokens"`**: `FOR ALL TO authenticated USING (false)` (Yalnızca `SECURITY DEFINER` RPC fonksiyonları üzerinden erişilebilir).
+
+---
+
+### 2.20 `agency_clients`
+Acentenin aracılık ve uyumluluk (EOP / AML) süreçlerinde işlem yaptığı gerçek ve tüzel kişilerin (*Nalogodavac / Stranka*) tekil müşteri kayıtlarını saklar. `listings.client_id` ve `property_owners.client_id` alanları bu tabloya opsiyonel (`ON DELETE SET NULL`) olarak bağlanır.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | Müşteri benzersiz kimliği |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Bağlı acente ID |
+| `party_type` | `TEXT` | **NO** | `'individual'` | `CHECK (party_type IN ('individual', 'company'))` | Gerçek kişi / Tüzel kişi |
+| `full_name` | `TEXT` | **NO** | - | - | Ad Soyad veya Şirket Unvanı |
+| `jmbg_pib` | `TEXT` | YES | `NULL` | - | JMBG / Pasaport No (şahıs) veya PIB (şirket) |
+| `maticni_broj` | `TEXT` | YES | `NULL` | - | Tüzel kişi Matični broj |
+| `address` | `TEXT` | YES | `NULL` | - | Resmi adres |
+| `phone` | `TEXT` | YES | `NULL` | - | Telefon numarası |
+| `email` | `TEXT` | YES | `NULL` | - | E-posta adresi |
+| `notes` | `TEXT` | YES | `NULL` | - | İç notlar |
+| `created_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE SET NULL` | Kaydı oluşturan kullanıcı |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Son güncelleme zamanı |
+
+#### RLS Politikaları (`public.agency_clients`)
+* **`Agency members can view/insert/update agency clients`**: `public.is_agency_member(agency_id, auth.uid())`
+* **`Agency admins can delete agency clients`**: `agency_id = auth.uid()`
+
+---
+
+### 2.21 `eop_records`
+Sırbistan Emlak Aracılık Yasası (*Zakon o posredovanju u prometu i zakupu nepokretnosti*) kapsamında her acentenin tutması zorunlu olan **Evidencija o posredovanju (EOP)** resmi aracılık defteridir. Paketten bağımsız olarak hem `listings` hem `properties`/`contracts` ile entegredir.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | EOP kayıt ID |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Bağlı acente ID |
+| `sequence_year` | `INTEGER` | **NO** | Mevcut yıl | `UNIQUE (agency_id, sequence_year, sequence_number)` | Defter yılı |
+| `sequence_number` | `INTEGER` | **NO** | Trigger ile otomatik | Atomik yıllık sıra no | Boşluksuz artan sıra no |
+| `redni_broj` | `TEXT` | **NO** | Trigger ile otomatik | Örn. `1/2026`, `2/2026` | Resmi EOP sıra numarası |
+| `mediation_contract_no` | `TEXT` | **NO** | - | UNIQUE değildir (çerçeve sözleşme desteklenir) | Aracılık sözleşmesi numarası |
+| `mediation_contract_date` | `DATE` | **NO** | `CURRENT_DATE` | - | Aracılık sözleşmesi tarihi |
+| `contract_valid_until` | `DATE` | YES | `NULL` | - | Aracılık yetkisi bitiş tarihi |
+| `is_exclusive` | `BOOLEAN` | **NO** | `FALSE` | - | Münhasır (tek yetkili) sözleşme mi? |
+| `client_role` | `TEXT` | **NO** | `'landlord'` | `CHECK (client_role IN ('seller', 'buyer', 'landlord', 'tenant'))` | Müşterinin işlemdeki rolü |
+| `transaction_type` | `TEXT` | **NO** | `'izdavanje'` | `CHECK (transaction_type IN ('prodaja', 'izdavanje'))` | Satış / Kiralama |
+| `status` | `TEXT` | **NO** | `'active'` | `CHECK (status IN ('active', 'realized', 'cancelled'))` | Aktif / Gerçekleşti / İptal (Storno) |
+| `cancellation_reason` | `TEXT` | YES | `NULL` | - | Storno/iptal nedeni |
+| `client_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES agency_clients(id) ON DELETE SET NULL` | Bağlı müşteri kartı |
+| `listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | Bağlı portföy ilanı |
+| `property_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES properties(id) ON DELETE SET NULL` | Bağlı yönetilen mülk |
+| `lease_contract_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES contracts(id) ON DELETE SET NULL` | Bağlı kira sözleşmesi |
+| `client_type` | `TEXT` | **NO** | `'individual'` | `CHECK (client_type IN ('individual', 'company'))` | Snapshot: Müşteri türü |
+| `client_name_snapshot` | `TEXT` | **NO** | - | - | Snapshot: Ad Soyad / Unvan |
+| `client_jmbg_pib_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: JMBG / Pasaport / PIB |
+| `client_address_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: Müşteri adresi |
+| `client_phone_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: Müşteri telefonu |
+| `client_email_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: Müşteri e-postası |
+| `property_type_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: Mülk tipi |
+| `property_address_snapshot` | `TEXT` | **NO** | - | - | Snapshot: Mülk adresi |
+| `property_specs_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: m², oda, kat özeti |
+| `asking_price` | `NUMERIC(12,2)` | YES | `NULL` | - | İstenen / ilan fiyatı |
+| `agreed_price` | `NUMERIC(12,2)` | YES | `NULL` | - | Gerçekleşen satış/kira bedeli |
+| `currency` | `TEXT` | **NO** | `'EUR'` | - | İşlem para birimi |
+| `commission_type` | `TEXT` | **NO** | `'percent'` | `CHECK (commission_type IN ('percent', 'fixed'))` | Komisyon tipi (`%` veya sabit) |
+| `commission_value` | `NUMERIC(12,2)` | YES | `NULL` | - | Anlaşılan komisyon oranı veya tutarı |
+| `commission_currency` | `TEXT` | YES | `'EUR'` | - | Sabit komisyon para birimi |
+| `realized_at` | `DATE` | YES | `NULL` | - | İşlem gerçekleşme tarihi |
+| `invoice_ref` | `TEXT` | YES | `NULL` | - | Komisyon fatura referansı |
+| `contract_pdf_url` | `TEXT` | YES | `NULL` | - | İmzalı aracılık sözleşmesi PDF adresi |
+| `notes` | `TEXT` | YES | `NULL` | - | Denetim / işlem notları |
+| `created_by` | `UUID` | YES | `NULL` | **FK** `REFERENCES profiles(id) ON DELETE SET NULL` | Kaydı oluşturan kullanıcı |
+| `created_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Oluşturulma zamanı |
+| `updated_at` | `TIMESTAMPTZ` | **NO** | `now()` | - | Son güncelleme zamanı |
+
+#### Tetikleyiciler & RLS (`public.eop_records`)
+* **`trg_assign_eop_sequence_number`**: `BEFORE INSERT` — `pg_advisory_xact_lock` ile `(agency_id, sequence_year)` bazında atomik `sequence_number` ve `redni_broj` üretir.
+* **`trg_protect_eop_sequence_on_update`**: `BEFORE UPDATE` — Sıra numarasının sonradan değiştirilmesini engeller.
+* **RLS:** `SELECT`, `INSERT`, `UPDATE` politikaları `public.is_agency_member(agency_id, auth.uid())` ile tanımlıdır. **`DELETE` politikası kasıtlı olarak yoktur** (yasal defter satırları silinemez, `status = 'cancelled'` / storno yapılır).
+
+---
+
+### 2.22 `aml_records`
+Sırbistan Kara Para Aklamanın Önlenmesi Yasası (*Zakon o sprečavanju pranja novca i finansiranja terorizma — ZSPNFT*) kapsamında müşteri tanıma formu (**Upitnik za stranku**), deterministik risk puanlama ve **10 yıllık yasal arşiv kilidi** (*Madde 95*) kayıtlarını saklar.
+
+#### Tablo Yapısı
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Kısıtlamalar & İlişkiler | Açıklama |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** | AML kayıt ID |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` | Bağlı acente ID |
+| `sequence_year` | `INTEGER` | **NO** | Mevcut yıl | `UNIQUE (agency_id, sequence_year, sequence_number)` | Kayıt yılı |
+| `sequence_number` | `INTEGER` | **NO** | Trigger ile otomatik | Atomik yıllık sıra no | Boşluksuz artan sıra no |
+| `aml_ref_no` | `TEXT` | **NO** | Trigger ile otomatik | Örn. `AML-1/2026` | Resmi AML dosya referans no |
+| `client_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES agency_clients(id) ON DELETE SET NULL` | Bağlı müşteri kartı (1:N) |
+| `eop_record_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES eop_records(id) ON DELETE SET NULL` + `UNIQUE WHERE status <> 'superseded'` | Bağlı EOP kaydı (EOP başına en fazla 1 aktif AML) |
+| `property_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES properties(id) ON DELETE SET NULL` | Bağlı yönetilen mülk |
+| `listing_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES listings(id) ON DELETE SET NULL` | Bağlı portföy ilanı |
+| `superseded_by_id` | `UUID` | YES | `NULL` | **FK** `REFERENCES aml_records(id) ON DELETE SET NULL` | Kilitli kaydın yeni revizyonuna bağlantı |
+| `party_type` | `TEXT` | **NO** | `'individual'` | `CHECK (party_type IN ('individual', 'company'))` | Gerçek kişi / Tüzel kişi |
+| `client_name_snapshot` | `TEXT` | **NO** | - | - | Snapshot: Ad Soyad / Şirket Unvanı |
+| `jmbg_pib_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: JMBG / Pasaport / PIB |
+| `maticni_broj_snapshot` | `TEXT` | YES | `NULL` | - | Snapshot: Tüzel kişi Matični broj |
+| `id_doc_type` | `TEXT` | YES | `NULL` | `CHECK (... IN ('licna_karta', 'pasos', 'boravisna', 'apr_izvod', 'other'))` | Kimlik / sicil belge tipi |
+| `id_doc_number` / `id_doc_issuer` / `id_doc_expiry` | `TEXT` / `TEXT` / `DATE` | YES | `NULL` | - | Kimlik belge no, veren makam ve geçerlilik |
+| `birth_date` / `citizenship` / `residency_country` | `DATE` / `TEXT` / `TEXT` | YES | `NULL` / `NULL` / `'RS'` | - | Doğum tarihi, uyruk ve ikamet ülkesi |
+| `address_snapshot` / `phone_snapshot` / `email_snapshot` / `occupation_or_activity` | `TEXT` | YES | `NULL` | - | Snapshot iletişim & meslek/faaliyet |
+| `is_pep` / `pep_details` | `BOOLEAN` / `TEXT` | **NO** / YES | `FALSE` / `NULL` | - | Kamu görevlisi (*Funkcioner*) durumu |
+| `ubo_list` / `ubo_unclear` | `JSONB` / `BOOLEAN` | **NO** | `'[]'::jsonb` / `FALSE` | - | Gerçek faydalanıcılar (*Stvarni vlasnik*) |
+| `acts_on_behalf_of_third_party` / `third_party_details` | `BOOLEAN` / `TEXT` | **NO** / YES | `FALSE` / `NULL` | - | Üçüncü kişi adına işlem beyanı |
+| `transaction_type` / `transaction_value_eur` / `transaction_date` | `TEXT` / `NUMERIC(14,2)` / `DATE` | **NO** / YES / **NO** | `'prodaja'` / `NULL` / `CURRENT_DATE` | `CHECK (transaction_type IN ('prodaja', 'izdavanje'))` | İşlem türü, EUR tutarı ve tarihi |
+| `payment_method` / `source_of_funds_category` / `source_of_funds` / `purpose_of_relationship` | `TEXT` | **NO** / YES | `'bank_transfer'` | `CHECK (payment_method IN ('bank_transfer', 'cash', 'mixed', 'crypto'))` | Ödeme yöntemi ve fon kaynağı (*Poreklo novca*) |
+| `high_risk_country_involved` | `BOOLEAN` | **NO** | `FALSE` | - | FATF / yüksek riskli ülke bağlantısı |
+| `risk_score` / `risk_level` / `risk_factors` | `INTEGER` / `TEXT` / `JSONB` | **NO** | `0` / `'low'` / `'[]'::jsonb` | `CHECK (risk_score BETWEEN 0 AND 100)`, `CHECK (risk_level IN ('low', 'medium', 'high'))` | Deterministik risk puanı ve faktör kırılımı |
+| `enhanced_due_diligence_notes` / `next_review_at` | `TEXT` / `DATE` | YES | `NULL` | - | Artırılmış tedbir notu ve sonraki inceleme |
+| `status` | `TEXT` | **NO** | `'draft'` | `CHECK (status IN ('draft', 'approved', 'rejected', 'superseded'))` | Durum |
+| `is_locked` / `locked_at` / `locked_by` / `retention_until` | `BOOLEAN` / `TIMESTAMPTZ` / `UUID` / `DATE` | **NO** / YES | `FALSE` / `NULL` | - | 10 yıllık yasal arşiv kilidi (`transaction_date + 10 yıl`) |
+| `decision_notes` / `created_by` / `created_at` / `updated_at` | `TEXT` / `UUID` / `TIMESTAMPTZ` | YES / **NO** | `now()` | - | Karar notları ve denetim izi |
+
+#### Tetikleyiciler & RLS (`public.aml_records`)
+* **`trg_assign_aml_sequence_number`**: `BEFORE INSERT` — Atomik `AML-N/YYYY` sıra numarası üretir.
+* **`trg_enforce_aml_archive_lock`**: `BEFORE UPDATE OR DELETE` — Kilitleme geçişini yalnızca `agency_admin` rolüne (`auth.uid() = agency_id`) sınırlar; kilitli ve `CURRENT_DATE < retention_until` kayıtların değiştirilmesini ve silinmesini `RAISE EXCEPTION` ile engeller (yalnızca tek seferlik `superseded_by_id` bağlantısına ve `is_demo = TRUE` sandbox sıfırlamasına izin verir).
+* **RLS:** `SELECT`, `INSERT`, `UPDATE` politikaları `public.is_agency_member(agency_id, auth.uid())` ile; `DELETE` yalnızca `agency_id = auth.uid() AND is_locked = FALSE AND status = 'draft'` için açıktır.
+
+---
+
+### 2.23 `aml_documents`
+Private `aml-documents` bucket'ına yüklenen KYC/AML belgelerinin metadata kayıtlarını tutar (`1:N` `aml_records`).
+
+| Sütun Adı | Veri Tipi | Nullable | Varsayılan Değer | Açıklama |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `UUID` | **NO** | `gen_random_uuid()` | **PK** |
+| `agency_id` | `UUID` | **NO** | - | **FK** `REFERENCES profiles(id) ON DELETE CASCADE` |
+| `aml_record_id` | `UUID` | **NO** | - | **FK** `REFERENCES aml_records(id) ON DELETE CASCADE` |
+| `doc_type` | `TEXT` | **NO** | `'id_card'` | `id_card`, `passport`, `apr_extract`, `ubo_declaration`, `source_of_funds`, `signed_upitnik`, `sanctions_check`, `other` |
+| `file_name` / `storage_path` | `TEXT` | **NO** | - | Dosya adı ve private bucket göreli yolu (`{agency_id}/{aml_record_id}/...`) |
+| `mime_type` / `file_size_bytes` | `TEXT` / `BIGINT` | YES | `NULL` | MIME türü ve boyut |
+| `uploaded_by` / `created_at` | `UUID` / `TIMESTAMPTZ` | YES / **NO** | `now()` | Yükleyen kullanıcı ve zamanı |
+
+* **`trg_protect_aml_documents_lock`**: Bağlı `aml_records` kaydı 10 yıllık arşiv kilidindeyse yeni belge eklenmesini, güncellenmesini ve silinmesini engeller.
 
 ---
 
@@ -1858,6 +2001,13 @@ $$;
 * **Public**: `true`
 * **Erişim Politikaları**:
   * **Okuma & Yükleme & Silme**: İlgili mülkün ev sahibi, kiracısı veya yetkili acentesi (`is_agency_of_property`) ya da nesne sahibi (`auth.uid()`).
+
+### 5.5 `aml-documents` (Private KYC/AML Arşiv Kovası — 10 Yıl Korumalı)
+* **Public**: `false` (Maksimum 10 MB; yalnızca `application/pdf`, `image/jpeg`, `image/png`, `image/webp`; erişim yalnızca kısa ömürlü `createSignedUrl` ile).
+* **Path Kuralı**: `{agency_id}/{aml_record_id}/{uuid}_{filename}`
+* **Erişim Politikaları**:
+  * **Okuma**: `public.is_agency_member(try_parse_uuid((storage.foldername(name))[1]), auth.uid())`
+  * **Yükleme & Silme**: Acente üyeliği **VE** bağlı `aml_record_id` kaydının 10 yıllık arşiv kilidinde olmaması (`is_locked = FALSE` veya `CURRENT_DATE >= retention_until`).
 
 ---
 

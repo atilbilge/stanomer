@@ -15,8 +15,9 @@ import {
   Building2,
   Home,
   CheckSquare,
+  ShieldCheck,
   Calculator,
-  Sparkles,
+  Play,
   Globe,
   MapPin,
   FileText,
@@ -113,10 +114,38 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navRef = useRef<HTMLDivElement>(null);
+  const demoBtnRef = useRef<HTMLAnchorElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     captureUtmParams();
+  }, []);
+
+  useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      const btn = demoBtnRef.current;
+      if (!btn) return;
+      const vw = Math.max(1, window.innerWidth);
+      const vh = Math.max(1, window.innerHeight);
+      const pctX = Math.max(0, Math.min(100, (e.clientX / vw) * 100));
+      const pctY = Math.max(0, Math.min(100, (e.clientY / vh) * 100));
+      btn.style.setProperty("--demo-mx", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-my", `${pctY.toFixed(1)}%`);
+      btn.style.setProperty("--demo-mx-pct", `${pctX.toFixed(1)}%`);
+      btn.style.setProperty("--demo-glow", "1");
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (demoBtnRef.current) {
+          demoBtnRef.current.style.setProperty("--demo-glow", "0.25");
+        }
+      }, 450);
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (idleTimer) clearTimeout(idleTimer);
+    };
   }, []);
 
   // Close dropdown on outside click or ESC
@@ -214,6 +243,7 @@ export function Navbar() {
     { href: "/agencies#section-portfolio", icon: Globe, color: "text-[#1B5888]", label: t("nav_agency_mod_portfolio"), badge: t("nav_agency_optional_badge") },
     { href: "/agencies#section-property-lease", icon: Home, color: "text-[#2A6E43]", label: t("nav_agency_mod_property"), badge: t("nav_agency_optional_badge") },
     { href: "/agencies#section-tasks", icon: CheckSquare, color: "text-indigo-600", label: t("nav_agency_mod_tasks") },
+    { href: "/agencies#section-compliance", icon: ShieldCheck, color: "text-[#1B5888]", label: t("nav_agency_mod_compliance") },
     { href: "/agencies#section-pricing", icon: Calculator, color: "text-amber-600", label: t("nav_agency_pricing") }
   ];
   const guideLinks = [
@@ -365,14 +395,14 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Request Demo */}
+          {/* Launch Interactive Demo */}
           <Link
-            href="/agency-demo"
-            aria-current={pathname === "/agency-demo" ? "page" : undefined}
-            className={`hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-semibold text-purple-700 border border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-colors ${focus}`}
+            ref={demoBtnRef}
+            href="/agency-panel?launch_demo=1"
+            className={`st-demo-glow-btn hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-[#1B5888]/45 text-sm font-bold text-[#12406A] cursor-pointer ${focus}`}
           >
-            <Sparkles className="w-4 h-4" aria-hidden="true" />
-            {t("agencies_cta_demo")}
+            <Play className="w-3.5 h-3.5 text-[#1B5888] fill-[#1B5888]" aria-hidden="true" />
+            <span>{t("lp_hero_cta_demo")}</span>
           </Link>
 
           {/* Get the app */}

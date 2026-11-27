@@ -140,33 +140,14 @@ export default function AgenciesPage() {
       {/* SECTION 1: AGENCY SUITE HERO                                          */}
       {/* ===================================================================== */}
       <section className="pt-10 pb-14 lg:pt-16 lg:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="rounded-[16px] overflow-hidden border border-[#E5E3DF] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-7 sm:p-10 lg:p-12 shadow-[0_18px_48px_rgba(18,64,106,0.18)] relative">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-55"
-            style={{
-              backgroundImage:
-                "radial-gradient(rgba(229, 238, 246, 0.16) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-20 w-96 h-96 rounded-full bg-[#2A6E43]/30 blur-3xl"
-          />
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="rounded-[12px] overflow-hidden border border-[#1B5888]/20 bg-[#12406A] text-white p-7 sm:p-10 lg:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[6px] bg-white/15 border border-white/20 text-[#E5EEF6] text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-[#FBF1DC]" />
-                <span>{t("lp_hero_badge")}</span>
-              </div>
-
-              <h1 className="font-[family-name:var(--font-outfit)] text-3xl sm:text-4xl lg:text-[44px] font-bold text-white leading-[1.08] tracking-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-[1.15]">
                 {t("lp_hero_title")}
               </h1>
 
-              <p className="text-sm sm:text-base text-[#D8E7F5] leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg text-[#D8E7F5] leading-relaxed max-w-2xl">
                 {t("lp_hero_desc")}
               </p>
 
@@ -174,7 +155,7 @@ export default function AgenciesPage() {
                 <Link
                   ref={demoBtnRef}
                   href="/agency-panel?launch_demo=1"
-                  className="st-demo-glow-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] border-[1.5px] border-white/80 text-[#0E3152] font-bold text-sm cursor-pointer"
+                  className="st-demo-glow-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] border border-white/60 text-[#0E3152] font-bold text-sm cursor-pointer"
                 >
                   <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
                   <span>{t("lp_hero_cta_demo")}</span>
@@ -375,7 +356,7 @@ export default function AgenciesPage() {
                     {t("lp_flow_title")}
                   </span>
                   <span className="font-mono text-[11px] font-bold text-[#2A6E43] bg-[#E6F3EA] px-2 py-0.5 rounded-[6px]">
-                    Live Sync
+                    {t("lp_live_sync")}
                   </span>
                 </div>
                 <div className="space-y-3 text-xs">
@@ -475,7 +456,81 @@ export default function AgenciesPage() {
       </section>
 
       {/* ===================================================================== */}
-      {/* SECTION 4: TRANSPARENT AGENCY PRICING CALCULATOR                      */}
+      {/* SECTION 5: #section-compliance — EOP & AML (ZSPNFT) COMPLIANCE        */}
+      {/* ===================================================================== */}
+      <section
+        id="section-compliance"
+        className="py-12 lg:py-16 px-4 sm:px-6 lg:px-8 bg-white border-t border-[#E5E3DF] scroll-mt-24"
+      >
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-3xl space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] text-xs font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{t("nav_agency_mod_compliance")}</span>
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-[#E6F3EA] text-[#2A6E43] text-[11px] font-bold">
+                {t("nav_agency_included_badge")}
+              </span>
+            </div>
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("nav_agency_mod_compliance")}
+            </h2>
+            <p className="text-sm sm:text-base text-[#4A4A4A] leading-relaxed">
+              {t("agencies_anchor_compliance_desc")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              {
+                icon: FileText,
+                tag: "EOP",
+                title: t("agencies_eop_title"),
+                desc: t("agencies_eop_desc"),
+                bullets: [t("agencies_eop_b1"), t("agencies_eop_b2"), t("agencies_eop_b3")],
+              },
+              {
+                icon: ShieldCheck,
+                tag: "AML / ZSPNFT",
+                title: t("agencies_aml_title"),
+                desc: t("agencies_aml_desc"),
+                bullets: [t("agencies_aml_b1"), t("agencies_aml_b2"), t("agencies_aml_b3")],
+              },
+            ].map((card) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.tag}
+                  className="rounded-[10px] border border-[#E5E3DF] bg-[#F8F7F5] p-6 flex flex-col justify-between space-y-4 hover:border-[#1B5888]/40 transition-colors"
+                >
+                  <div className="space-y-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#E5EEF6] text-[#1B5888] font-mono text-xs font-bold">
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{card.tag}</span>
+                    </span>
+                    <h3 className="font-[family-name:var(--font-outfit)] text-lg font-bold text-[#1A1A1A] leading-snug">
+                      {card.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">{card.desc}</p>
+                  </div>
+                  <ul className="space-y-2 pt-3 border-t border-[#E5E3DF] text-xs text-[#1A1A1A] font-medium">
+                    {card.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6E43] shrink-0 mt-0.5" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* SECTION 6: TRANSPARENT AGENCY PRICING CALCULATOR                      */}
       {/* ===================================================================== */}
       <AgencyPricingSection onOpenSimulation={() => router.push("/agency-panel?launch_demo=1")} />
 
@@ -518,32 +573,34 @@ export default function AgenciesPage() {
       </section>
 
       {/* ===================================================================== */}
-      {/* SECTION 6: BOTTOM CONVERSION CTA                                      */}
+      {/* SECTION 6: MINIMAL TYPOGRAPHIC CLOSING STRIP                          */}
       {/* ===================================================================== */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-6">
-        <div className="rounded-[16px] bg-gradient-to-br from-[#0E3152] via-[#1B5888] to-[#12406A] text-white p-8 sm:p-12 text-center space-y-5 shadow-[0_14px_36px_rgba(18,64,106,0.2)]">
-          <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-white tracking-tight max-w-2xl mx-auto">
-            {t("lp_cta_title")}
-          </h2>
-          <p className="text-sm sm:text-base text-[#D8E7F5] max-w-xl mx-auto leading-relaxed">
-            {t("lp_cta_desc")}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+      <section className="py-14 px-4 sm:px-6 lg:px-8 border-t border-[#E5E3DF] bg-[#F8F7F5]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1.5 max-w-xl">
+            <h2 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+              {t("lp_cta_title")}
+            </h2>
+            <p className="text-sm text-[#4A4A4A] leading-relaxed">
+              {t("lp_cta_desc")}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/agency-panel?launch_demo=1"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white text-[#0E3152] hover:bg-[#E5EEF6] font-bold text-sm transition-colors shadow-lg"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-[#1B5888] hover:bg-[#12406A] text-white font-bold text-sm transition-colors"
             >
-              <Play className="w-4 h-4 text-[#1B5888] fill-[#1B5888]" />
+              <Play className="w-4 h-4 fill-white" />
               <span>{t("lp_hero_cta_demo")}</span>
-              <ArrowRight className="w-4 h-4 text-[#1B5888]" />
+              <ArrowRight className="w-4 h-4" />
             </Link>
             <a
               href="https://wa.me/381616036556"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[10px] bg-white/12 hover:bg-white/20 border border-white/25 text-white font-bold text-sm transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-[10px] bg-white hover:bg-[#E5EEF6]/50 border border-[#E5E3DF] text-[#1A1A1A] font-bold text-sm transition-colors"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-4 h-4 text-[#2A6E43]" />
               <span>{t("lp_cta_whatsapp")}</span>
             </a>
           </div>

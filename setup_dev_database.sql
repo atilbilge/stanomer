@@ -3683,3 +3683,277 @@ CREATE POLICY "Agency admins and creators can delete agency tasks" ON public.age
     );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.agency_tasks TO authenticated, service_role;
+
+
+-- ==============================================================================
+-- Agency Clients & EOP (Evidencija o posredovanju) v0
+-- ==============================================================================
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS registar_posrednika_no TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pib TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS maticni_broj TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS official_address TEXT;
+
+CREATE TABLE IF NOT EXISTS public.agency_clients (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    party_type TEXT NOT NULL DEFAULT 'individual' CHECK (party_type IN ('individual', 'company')),
+    full_name TEXT NOT NULL,
+    jmbg_pib TEXT,
+    maticni_broj TEXT,
+    address TEXT,
+    phone TEXT,
+    email TEXT,
+    notes TEXT,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agency_clients_agency_id ON public.agency_clients(agency_id);
+CREATE INDEX IF NOT EXISTS idx_agency_clients_jmbg_pib ON public.agency_clients(agency_id, jmbg_pib);
+
+ALTER TABLE public.agency_clients ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Agency members can view agency clients" ON public.agency_clients;
+CREATE POLICY "Agency members can view agency clients" ON public.agency_clients
+    FOR SELECT TO authenticated
+    USING (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency members can insert agency clients" ON public.agency_clients;
+CREATE POLICY "Agency members can insert agency clients" ON public.agency_clients
+    FOR INSERT TO authenticated
+    WITH CHECK (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency members can update agency clients" ON public.agency_clients;
+CREATE POLICY "Agency members can update agency clients" ON public.agency_clients
+    FOR UPDATE TO authenticated
+    USING (public.is_agency_member(agency_id, auth.uid()))
+    WITH CHECK (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency admins can delete agency clients" ON public.agency_clients;
+CREATE POLICY "Agency admins can delete agency clients" ON public.agency_clients
+    FOR DELETE TO authenticated
+    USING (agency_id = auth.uid());
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.agency_clients TO authenticated, service_role;
+
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES public.agency_clients(id) ON DELETE SET NULL;
+ALTER TABLE public.property_owners ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES public.agency_clients(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS public.eop_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    sequence_year INTEGER NOT NULL DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER,
+    sequence_number INTEGER NOT NULL,
+    redni_broj TEXT NOT NULL,
+    mediation_contract_no TEXT NOT NULL,
+    mediation_contract_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    contract_valid_until DATE,
+    is_exclusive BOOLEAN NOT NULL DEFAULT FALSE,
+    client_role TEXT NOT NULL DEFAULT 'landlord' CHECK (client_role IN ('seller', 'buyer', 'landlord', 'tenant')),
+    transaction_type TEXT NOT NULL DEFAULT 'izdavanje' CHECK (transaction_type IN ('prodaja', 'izdavanje')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'realized', 'cancelled')),
+    cancellation_reason TEXT,
+    client_id UUID REFERENCES public.agency_clients(id) ON DELETE SET NULL,
+    listing_id UUID REFERENCES public.listings(id) ON DELETE SET NULL,
+    property_id UUID REFERENCES public.properties(id) ON DELETE SET NULL,
+    lease_contract_id UUID REFERENCES public.contracts(id) ON DELETE SET NULL,
+    client_type TEXT NOT NULL DEFAULT 'individual' CHECK (client_type IN ('individual', 'company')),
+    client_name_snapshot TEXT NOT NULL,
+    client_jmbg_pib_snapshot TEXT,
+    client_address_snapshot TEXT,
+    client_phone_snapshot TEXT,
+    client_email_snapshot TEXT,
+    property_type_snapshot TEXT,
+    property_address_snapshot TEXT NOT NULL,
+    property_specs_snapshot TEXT,
+    asking_price NUMERIC(12,2),
+    agreed_price NUMERIC(12,2),
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    commission_type TEXT NOT NULL DEFAULT 'percent' CHECK (commission_type IN ('percent', 'fixed')),
+    commission_value NUMERIC(12,2),
+    commission_currency TEXT DEFAULT 'EUR',
+    realized_at DATE,
+    invoice_ref TEXT,
+    contract_pdf_url TEXT,
+    notes TEXT,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT eop_records_agency_year_seq_unique UNIQUE (agency_id, sequence_year, sequence_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_eop_records_agency_year ON public.eop_records(agency_id, sequence_year DESC, sequence_number DESC);
+CREATE INDEX IF NOT EXISTS idx_eop_records_listing_id ON public.eop_records(listing_id);
+CREATE INDEX IF NOT EXISTS idx_eop_records_property_id ON public.eop_records(property_id);
+CREATE INDEX IF NOT EXISTS idx_eop_records_lease_contract_id ON public.eop_records(lease_contract_id);
+CREATE INDEX IF NOT EXISTS idx_eop_records_client_id ON public.eop_records(client_id);
+CREATE INDEX IF NOT EXISTS idx_eop_records_status ON public.eop_records(agency_id, status);
+
+CREATE OR REPLACE FUNCTION public.assign_eop_sequence_number()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+    v_year INTEGER;
+    v_next_seq INTEGER;
+BEGIN
+    v_year := COALESCE(NEW.sequence_year, EXTRACT(YEAR FROM COALESCE(NEW.mediation_contract_date, CURRENT_DATE))::INTEGER);
+    NEW.sequence_year := v_year;
+    PERFORM pg_advisory_xact_lock(hashtext(NEW.agency_id::text || ':' || v_year::text));
+    IF NEW.sequence_number IS NULL OR NEW.sequence_number <= 0 THEN
+        SELECT COALESCE(MAX(sequence_number), 0) + 1 INTO v_next_seq
+        FROM public.eop_records WHERE agency_id = NEW.agency_id AND sequence_year = v_year;
+        NEW.sequence_number := v_next_seq;
+    END IF;
+    NEW.redni_broj := NEW.sequence_number::text || '/' || v_year::text;
+    NEW.updated_at := now();
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_assign_eop_sequence_number ON public.eop_records;
+CREATE TRIGGER trg_assign_eop_sequence_number
+    BEFORE INSERT ON public.eop_records
+    FOR EACH ROW EXECUTE FUNCTION public.assign_eop_sequence_number();
+
+CREATE OR REPLACE FUNCTION public.protect_eop_sequence_on_update()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    NEW.sequence_year := OLD.sequence_year;
+    NEW.sequence_number := OLD.sequence_number;
+    NEW.redni_broj := OLD.redni_broj;
+    NEW.updated_at := now();
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_protect_eop_sequence_on_update ON public.eop_records;
+CREATE TRIGGER trg_protect_eop_sequence_on_update
+    BEFORE UPDATE ON public.eop_records
+    FOR EACH ROW EXECUTE FUNCTION public.protect_eop_sequence_on_update();
+
+ALTER TABLE public.eop_records ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Agency members can view eop records" ON public.eop_records;
+CREATE POLICY "Agency members can view eop records" ON public.eop_records
+    FOR SELECT TO authenticated USING (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency members can insert eop records" ON public.eop_records;
+CREATE POLICY "Agency members can insert eop records" ON public.eop_records
+    FOR INSERT TO authenticated WITH CHECK (public.is_agency_member(agency_id, auth.uid()));
+
+DROP POLICY IF EXISTS "Agency members can update eop records" ON public.eop_records;
+CREATE POLICY "Agency members can update eop records" ON public.eop_records
+    FOR UPDATE TO authenticated
+    USING (public.is_agency_member(agency_id, auth.uid()))
+    WITH CHECK (public.is_agency_member(agency_id, auth.uid()));
+
+GRANT SELECT, INSERT, UPDATE ON public.eop_records TO authenticated;
+GRANT ALL ON public.eop_records TO service_role;
+
+
+-- ==============================================================================
+-- Faz 2: Module-Independent AML / SPN (ZSPNFT) Compliance Module v0
+-- ==============================================================================
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS aml_officer_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS aml_deputy_name TEXT;
+
+CREATE OR REPLACE FUNCTION public.try_parse_uuid(p_text TEXT)
+RETURNS UUID LANGUAGE plpgsql IMMUTABLE AS $$
+BEGIN
+    IF p_text IS NULL OR p_text !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
+        RETURN NULL;
+    END IF;
+    RETURN p_text::UUID;
+END;
+$$;
+
+CREATE TABLE IF NOT EXISTS public.aml_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    sequence_year INTEGER NOT NULL DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER,
+    sequence_number INTEGER NOT NULL,
+    aml_ref_no TEXT NOT NULL,
+    client_id UUID REFERENCES public.agency_clients(id) ON DELETE SET NULL,
+    eop_record_id UUID REFERENCES public.eop_records(id) ON DELETE SET NULL,
+    property_id UUID REFERENCES public.properties(id) ON DELETE SET NULL,
+    listing_id UUID REFERENCES public.listings(id) ON DELETE SET NULL,
+    superseded_by_id UUID REFERENCES public.aml_records(id) ON DELETE SET NULL,
+    party_type TEXT NOT NULL DEFAULT 'individual' CHECK (party_type IN ('individual', 'company')),
+    client_name_snapshot TEXT NOT NULL,
+    jmbg_pib_snapshot TEXT,
+    maticni_broj_snapshot TEXT,
+    id_doc_type TEXT CHECK (id_doc_type IS NULL OR id_doc_type IN ('licna_karta', 'pasos', 'boravisna', 'apr_izvod', 'other')),
+    id_doc_number TEXT,
+    id_doc_issuer TEXT,
+    id_doc_expiry DATE,
+    birth_date DATE,
+    citizenship TEXT,
+    residency_country TEXT DEFAULT 'RS',
+    address_snapshot TEXT,
+    phone_snapshot TEXT,
+    email_snapshot TEXT,
+    occupation_or_activity TEXT,
+    is_pep BOOLEAN NOT NULL DEFAULT FALSE,
+    pep_details TEXT,
+    ubo_list JSONB NOT NULL DEFAULT '[]'::jsonb,
+    ubo_unclear BOOLEAN NOT NULL DEFAULT FALSE,
+    acts_on_behalf_of_third_party BOOLEAN NOT NULL DEFAULT FALSE,
+    third_party_details TEXT,
+    transaction_type TEXT NOT NULL DEFAULT 'prodaja' CHECK (transaction_type IN ('prodaja', 'izdavanje')),
+    transaction_value_eur NUMERIC(14,2),
+    transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    payment_method TEXT NOT NULL DEFAULT 'bank_transfer' CHECK (payment_method IN ('bank_transfer', 'cash', 'mixed', 'crypto')),
+    source_of_funds_category TEXT CHECK (source_of_funds_category IS NULL OR source_of_funds_category IN ('salary', 'savings', 'property_sale', 'loan', 'business', 'inheritance', 'other')),
+    source_of_funds TEXT,
+    purpose_of_relationship TEXT,
+    high_risk_country_involved BOOLEAN NOT NULL DEFAULT FALSE,
+    risk_score INTEGER NOT NULL DEFAULT 0 CHECK (risk_score >= 0 AND risk_score <= 100),
+    risk_level TEXT NOT NULL DEFAULT 'low' CHECK (risk_level IN ('low', 'medium', 'high')),
+    risk_factors JSONB NOT NULL DEFAULT '[]'::jsonb,
+    enhanced_due_diligence_notes TEXT,
+    next_review_at DATE,
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'rejected', 'superseded')),
+    is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+    locked_at TIMESTAMPTZ,
+    locked_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    retention_until DATE,
+    decision_notes TEXT,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT aml_records_agency_year_seq_unique UNIQUE (agency_id, sequence_year, sequence_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_aml_records_agency_year ON public.aml_records(agency_id, sequence_year DESC, sequence_number DESC);
+CREATE INDEX IF NOT EXISTS idx_aml_records_client_id ON public.aml_records(client_id);
+CREATE INDEX IF NOT EXISTS idx_aml_records_eop_record_id ON public.aml_records(eop_record_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_aml_one_draft_per_eop
+    ON public.aml_records(eop_record_id)
+    WHERE eop_record_id IS NOT NULL AND status = 'draft';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_aml_one_final_per_eop
+    ON public.aml_records(eop_record_id)
+    WHERE eop_record_id IS NOT NULL AND status IN ('approved', 'rejected');
+CREATE INDEX IF NOT EXISTS idx_aml_records_property_id ON public.aml_records(property_id);
+CREATE INDEX IF NOT EXISTS idx_aml_records_listing_id ON public.aml_records(listing_id);
+CREATE INDEX IF NOT EXISTS idx_aml_records_status_risk ON public.aml_records(agency_id, status, risk_level);
+CREATE INDEX IF NOT EXISTS idx_aml_records_retention ON public.aml_records(agency_id, is_locked, retention_until);
+
+CREATE TABLE IF NOT EXISTS public.aml_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agency_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    aml_record_id UUID NOT NULL REFERENCES public.aml_records(id) ON DELETE CASCADE,
+    doc_type TEXT NOT NULL DEFAULT 'id_card' CHECK (doc_type IN ('id_card', 'passport', 'apr_extract', 'ubo_declaration', 'source_of_funds', 'signed_upitnik', 'sanctions_check', 'other')),
+    file_name TEXT NOT NULL,
+    storage_path TEXT NOT NULL,
+    mime_type TEXT,
+    file_size_bytes BIGINT,
+    uploaded_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_aml_documents_record_id ON public.aml_documents(aml_record_id);
+CREATE INDEX IF NOT EXISTS idx_aml_documents_agency_id ON public.aml_documents(agency_id);
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('aml-documents', 'aml-documents', false, 10485760, ARRAY['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO UPDATE SET public = false, file_size_limit = 10485760, allowed_mime_types = ARRAY['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
